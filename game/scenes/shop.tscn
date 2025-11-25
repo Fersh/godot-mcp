@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bsh0p5c3n3"]
+[gd_scene load_steps=3 format=3 uid="uid://bsh0p5c3n3"]
 
 [ext_resource type="Script" path="res://scripts/shop.gd" id="1_shop"]
+[ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [node name="Shop" type="CanvasLayer"]
 script = ExtResource("1_shop")
@@ -26,15 +27,16 @@ layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="BackButton" type="Button" parent="MainContainer/Header"]
-custom_minimum_size = Vector2(100, 60)
+custom_minimum_size = Vector2(120, 60)
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 22
-text = "< Back"
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "< BACK"
 
 [node name="Title" type="Label" parent="MainContainer/Header"]
 layout_mode = 2
@@ -43,7 +45,8 @@ theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 theme_override_colors/font_shadow_color = Color(0.2, 0.1, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 36
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
 text = "UPGRADES"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -59,7 +62,8 @@ theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
 text = "GOLD:"
 vertical_alignment = 1
 
@@ -69,7 +73,8 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
 text = " 0"
 vertical_alignment = 1
 
@@ -77,17 +82,32 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 
+[node name="HeaderDivider" type="ColorRect" parent="MainContainer"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+color = Color(0.4, 0.35, 0.25, 0.6)
+
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="GridContainer" type="GridContainer" parent="MainContainer/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MainContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 20
+
+[node name="CenterContainer" type="CenterContainer" parent="MainContainer/ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GridContainer" type="GridContainer" parent="MainContainer/ScrollContainer/MarginContainer/CenterContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
 columns = 4
 
 [node name="FooterTooltip" type="PanelContainer" parent="MainContainer"]
@@ -109,26 +129,30 @@ theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 26
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
 text = "Upgrade Name"
 
 [node name="RankLabel" type="Label" parent="MainContainer/FooterTooltip/TooltipContent/TopRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.65, 0.5, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
 text = "Rank 0/5"
 
 [node name="Description" type="Label" parent="MainContainer/FooterTooltip/TooltipContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.8, 0.7, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
 text = "Upgrade description goes here"
 autowrap_mode = 2
 
 [node name="BenefitLabel" type="Label" parent="MainContainer/FooterTooltip/TooltipContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5, 0.9, 0.4, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
 text = "Current: +0% | Next: +10%"
 
 [node name="Spacer" type="Control" parent="MainContainer/FooterTooltip/TooltipContent"]
@@ -146,18 +170,20 @@ theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
 text = "Cost: 100"
 vertical_alignment = 1
 
 [node name="UpgradeButton" type="Button" parent="MainContainer/FooterTooltip/TooltipContent/BottomRow"]
-custom_minimum_size = Vector2(180, 55)
+custom_minimum_size = Vector2(200, 55)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 22
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
 text = "UPGRADE"
 
 [node name="RefundButton" type="Button" parent="MainContainer"]
@@ -167,8 +193,9 @@ theme_override_colors/font_color = Color(0.8, 0.5, 0.4, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 16
-text = "Refund All Upgrades"
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "REFUND ALL"
 
 [node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
 title = "Confirm Refund"

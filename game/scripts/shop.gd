@@ -1,9 +1,12 @@
 extends CanvasLayer
 
+# Font
+var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
 # Node references
 @onready var back_button: Button = $MainContainer/Header/BackButton
 @onready var coin_amount: Label = $MainContainer/Header/CoinsContainer/CoinAmount
-@onready var grid_container: GridContainer = $MainContainer/ScrollContainer/GridContainer
+@onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/CenterContainer/GridContainer
 @onready var footer_tooltip: PanelContainer = $MainContainer/FooterTooltip
 @onready var upgrade_name_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/UpgradeName
 @onready var rank_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/RankLabel
@@ -198,8 +201,12 @@ func _create_upgrade_tile(upgrade) -> Button:
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = upgrade.name
-	name_label.add_theme_font_size_override("font_size", 15)
+	name_label.add_theme_font_override("font", pixel_font)
+	name_label.add_theme_font_size_override("font_size", 10)
 	name_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85, 1))
+	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	name_label.add_theme_constant_override("shadow_offset_x", 1)
+	name_label.add_theme_constant_override("shadow_offset_y", 1)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -236,13 +243,17 @@ func _create_upgrade_tile(upgrade) -> Button:
 	var cost = PermanentUpgrades.get_upgrade_cost(upgrade.id)
 	var cost_label = Label.new()
 	cost_label.name = "CostLabel"
+	cost_label.add_theme_font_override("font", pixel_font)
+	cost_label.add_theme_font_size_override("font_size", 8)
+	cost_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+	cost_label.add_theme_constant_override("shadow_offset_x", 1)
+	cost_label.add_theme_constant_override("shadow_offset_y", 1)
 	if rank >= upgrade.max_rank:
 		cost_label.text = "MAX"
 		cost_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.4, 1))
 	else:
-		cost_label.text = "%d gold" % cost
+		cost_label.text = "%d GOLD" % cost
 		cost_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 0.9))
-	cost_label.add_theme_font_size_override("font_size", 12)
 	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(cost_label)
@@ -259,105 +270,71 @@ func _create_upgrade_tile(upgrade) -> Button:
 
 	return tile
 
-func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool) -> void:
+func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool = true) -> void:
 	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
 
 	var style = StyleBoxFlat.new()
 	if is_maxed:
-		style.bg_color = Color(0.12, 0.1, 0.08, 0.95)
+		# Maxed - golden glow effect
+		style.bg_color = Color(0.12, 0.1, 0.06, 0.95)
 		style.border_width_left = 2
 		style.border_width_right = 2
 		style.border_width_top = 2
 		style.border_width_bottom = 3
-		style.border_color = category_color.darkened(0.2)
+		style.border_color = Color(0.6, 0.5, 0.2, 0.8)
+	elif can_afford:
+		# Affordable - brighter, inviting
+		style.bg_color = Color(0.12, 0.1, 0.07, 0.95)
+		style.border_width_left = 2
+		style.border_width_right = 2
+		style.border_width_top = 2
+		style.border_width_bottom = 3
+		style.border_color = Color(0.5, 0.45, 0.3, 1)
 	else:
-		style.bg_color = Color(0.1, 0.08, 0.06, 0.95)
+		# Can't afford - dimmed
+		style.bg_color = Color(0.08, 0.07, 0.05, 0.9)
 		style.border_width_left = 2
 		style.border_width_right = 2
 		style.border_width_top = 2
 		style.border_width_bottom = 3
-		style.border_color = Color(0.35, 0.3, 0.25, 1)
+		style.border_color = Color(0.25, 0.22, 0.18, 0.7)
 
-	style.corner_radius_top_left = 6
-	style.corner_radius_top_right = 6
-	style.corner_radius_bottom_left = 6
-	style.corner_radius_bottom_right = 6
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.15, 0.12, 0.08, 0.98)
+	style_hover.bg_color = Color(0.16, 0.13, 0.09, 0.98)
 	style_hover.border_width_left = 2
 	style_hover.border_width_right = 2
 	style_hover.border_width_top = 2
 	style_hover.border_width_bottom = 3
-	style_hover.border_color = category_color.darkened(0.1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.border_color = category_color.lightened(0.1)
+	style_hover.corner_radius_top_left = 8
+	style_hover.corner_radius_top_right = 8
+	style_hover.corner_radius_bottom_left = 8
+	style_hover.corner_radius_bottom_right = 8
 
 	var style_selected = StyleBoxFlat.new()
-	style_selected.bg_color = Color(0.12, 0.1, 0.06, 0.98)
+	style_selected.bg_color = Color(0.14, 0.11, 0.07, 0.98)
 	style_selected.border_width_left = 3
 	style_selected.border_width_right = 3
 	style_selected.border_width_top = 3
 	style_selected.border_width_bottom = 4
 	style_selected.border_color = category_color
-	style_selected.corner_radius_top_left = 6
-	style_selected.corner_radius_top_right = 6
-	style_selected.corner_radius_bottom_left = 6
-	style_selected.corner_radius_bottom_right = 6
+	style_selected.corner_radius_top_left = 8
+	style_selected.corner_radius_top_right = 8
+	style_selected.corner_radius_bottom_left = 8
+	style_selected.corner_radius_bottom_right = 8
 
 	tile.add_theme_stylebox_override("normal", style)
 	tile.add_theme_stylebox_override("hover", style_hover)
 	tile.add_theme_stylebox_override("pressed", style_selected)
 	tile.add_theme_stylebox_override("focus", style)
 
-func _style_progress_bar(progress: ProgressBar, category: int) -> void:
-	var category_color = CATEGORY_COLORS.get(category, Color.WHITE)
-
-	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.15, 0.12, 0.1, 1)
-	bg_style.corner_radius_top_left = 3
-	bg_style.corner_radius_top_right = 3
-	bg_style.corner_radius_bottom_left = 3
-	bg_style.corner_radius_bottom_right = 3
-
-	var fill_style = StyleBoxFlat.new()
-	fill_style.bg_color = category_color
-	fill_style.corner_radius_top_left = 3
-	fill_style.corner_radius_top_right = 3
-	fill_style.corner_radius_bottom_left = 3
-	fill_style.corner_radius_bottom_right = 3
-
-	progress.add_theme_stylebox_override("background", bg_style)
-	progress.add_theme_stylebox_override("fill", fill_style)
-
-func _get_upgrade_icon(upgrade_id: String) -> String:
-	# Text-based icons for each upgrade
-	match upgrade_id:
-		"neon_power": return "PWR"
-		"hard_light_shield": return "DEF"
-		"overclocked_emitter": return "SPD"
-		"volatile_plasma": return "AOE"
-		"magnetic_accelerator": return "VEL"
-		"split_chamber": return "x2"
-		"viral_payload": return "VIR"
-		"precision_core": return "CRT"
-		"core_integrity": return "HP"
-		"auto_repair": return "REG"
-		"thruster_boost": return "MOV"
-		"evasion_matrix": return "EVD"
-		"stable_fields": return "DUR"
-		"attractor_beam": return "MAG"
-		"quantum_flux": return "LCK"
-		"cooldown_matrix": return "CDR"
-		"data_mining": return "XP"
-		"score_multiplier": return "PTS"
-		"coin_magnet": return "GOLD"
-		"daredevil_protocol": return "!!!"
-		"emergency_reboot": return "1UP"
-		"starting_arsenal": return "+"
-		_: return "?"
+	# Dim the tile content if can't afford
+	tile.modulate = Color(1, 1, 1, 1) if (can_afford or is_maxed) else Color(0.7, 0.65, 0.6, 1)
 
 func _on_tile_pressed(upgrade_id: String) -> void:
 	if selected_upgrade_id == upgrade_id:
@@ -429,8 +406,8 @@ func _on_upgrade_pressed() -> void:
 
 	if PermanentUpgrades and PermanentUpgrades.purchase_upgrade(selected_upgrade_id):
 		_update_tooltip(selected_upgrade_id)
-		_update_tile(selected_upgrade_id)
 		_update_coin_display()
+		_update_all_tiles_affordability()
 
 func _update_tile(upgrade_id: String) -> void:
 	if not upgrade_tiles.has(upgrade_id):
@@ -439,19 +416,39 @@ func _update_tile(upgrade_id: String) -> void:
 	var tile = upgrade_tiles[upgrade_id]
 	var upgrade = PermanentUpgrades.get_upgrade(upgrade_id)
 	var rank = PermanentUpgrades.get_rank(upgrade_id)
+	var cost = PermanentUpgrades.get_upgrade_cost(upgrade_id)
+	var is_maxed = rank >= upgrade.max_rank
+	var can_afford = StatsManager.spendable_coins >= cost
 
-	# Update rank display
-	var rank_display = tile.get_node("VBoxContainer/RankDisplay")
-	if rank_display:
-		rank_display.text = "%d/%d" % [rank, upgrade.max_rank]
+	# Update rank squares
+	var rank_container = tile.get_node("VBoxContainer/RankContainer")
+	if rank_container:
+		var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
+		for i in range(upgrade.max_rank):
+			var square = rank_container.get_node("Square%d" % i)
+			if square:
+				if i < rank:
+					square.color = category_color
+				else:
+					square.color = Color(0.2, 0.18, 0.15, 1)
 
-	# Update progress bar
-	var progress = tile.get_node("VBoxContainer/ProgressBar")
-	if progress:
-		progress.value = rank
+	# Update cost label
+	var cost_label = tile.get_node("VBoxContainer/CostLabel")
+	if cost_label:
+		if is_maxed:
+			cost_label.text = "MAX"
+			cost_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.4, 1))
+		else:
+			cost_label.text = "%d GOLD" % cost
+			cost_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 0.9))
 
-	# Re-style tile if maxed
-	_style_upgrade_tile(tile, upgrade, rank >= upgrade.max_rank)
+	# Re-style tile
+	_style_upgrade_tile(tile, upgrade, is_maxed, can_afford)
+
+func _update_all_tiles_affordability() -> void:
+	# Update all tiles when coins change
+	for upgrade_id in upgrade_tiles.keys():
+		_update_tile(upgrade_id)
 
 func _update_coin_display() -> void:
 	if StatsManager:
