@@ -45,10 +45,10 @@ const ROW_IDLE = 0          # 4 frames
 const ROW_MOVE = 1          # 8 frames
 const ROW_SHOOT_STRAIGHT = 2 # 8 frames
 const ROW_SHOOT_UP = 3      # 8 frames
-const ROW_DEATH = 4         # 4 frames (death animation)
+const ROW_SHOOT_DOWN = 4    # 8 frames
 const ROW_DAMAGE = 5        # 4 frames
-const ROW_SHOOT_DOWN = 6    # 8 frames
-const ROW_JUMP = 7          # 8 frames
+const ROW_DEATH = 6         # 4 frames (death animation)
+const ROW_JUMP = 8          # 8 frames (not used)
 
 const COLS_PER_ROW = 8
 
