@@ -146,10 +146,13 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 	var row = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 
+	# Get rarity color (static method requires rarity parameter)
+	var rarity_color = AbilityData.get_rarity_color(ability.rarity)
+
 	# Icon placeholder (colored square based on rarity)
 	var icon_bg = ColorRect.new()
 	icon_bg.custom_minimum_size = Vector2(24, 24)
-	icon_bg.color = ability.get_rarity_color()
+	icon_bg.color = rarity_color
 	row.add_child(icon_bg)
 
 	# Name with count if stacked
@@ -161,7 +164,7 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", ability.get_rarity_color())
+	name_label.add_theme_color_override("font_color", rarity_color)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
 

@@ -3,8 +3,8 @@ extends Node2D
 # Melee swipe arc effect for knight attacks
 
 var direction: Vector2 = Vector2.RIGHT
-var arc_angle: float = PI / 2  # 90 degrees (25% of circle)
-var arc_radius: float = 80.0
+var arc_angle: float = PI / 2  # 90 degrees base, modified by melee_area
+var arc_radius: float = 80.0  # Modified by melee_range
 var lifetime: float = 0.25
 var timer: float = 0.0
 

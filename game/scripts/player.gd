@@ -79,7 +79,7 @@ var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 15.0
+var xp_to_next_level: float = 45.0  # Base XP required (tripled from 15)
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
@@ -490,6 +490,11 @@ func spawn_swipe_effect() -> void:
 	if AbilityManager:
 		melee_reach *= AbilityManager.get_melee_range_multiplier()
 	swipe.arc_radius = melee_reach
+	# Set arc angle based on melee area
+	var melee_arc = PI / 2  # Base 90 degrees
+	if AbilityManager:
+		melee_arc *= AbilityManager.get_melee_area_multiplier()
+	swipe.arc_angle = melee_arc
 	get_parent().add_child(swipe)
 
 func spawn_single_arrow(direction: Vector2) -> void:

@@ -111,20 +111,20 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 
 func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(280, 380)
+	button.custom_minimum_size = Vector2(280, 280)
 	button.focus_mode = Control.FOCUS_ALL
 
 	# Create container for card content
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 12)
+	vbox.add_theme_constant_override("separation", 8)
 
 	# Rarity label
 	var rarity_label = Label.new()
 	rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
 	rarity_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 10)
+	rarity_label.add_theme_font_size_override("font_size", 14)
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(rarity_label)
@@ -133,7 +133,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var name_label = Label.new()
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
@@ -150,7 +150,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 11)
+	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -158,16 +158,11 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
-	# Spacer
-	var spacer = Control.new()
-	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(spacer)
-
 	# Select hint
 	var hint_label = Label.new()
-	hint_label.text = "[TAP TO SELECT]"
+	hint_label.text = "[TAP]"
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 8)
+	hint_label.add_theme_font_size_override("font_size", 12)
 	hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	if pixel_font:
 		hint_label.add_theme_font_override("font", pixel_font)
@@ -176,10 +171,10 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	# Add margin container
 	var margin = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 16)
-	margin.add_theme_constant_override("margin_right", 16)
-	margin.add_theme_constant_override("margin_top", 16)
-	margin.add_theme_constant_override("margin_bottom", 16)
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_bottom", 12)
 	margin.add_child(vbox)
 
 	button.add_child(margin)
