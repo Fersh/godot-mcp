@@ -161,15 +161,16 @@ func die() -> void:
 	animation_frame = 0.0
 	velocity = Vector2.ZERO
 
+	# Clear hit flash immediately on death
+	flash_timer = 0.0
+	if sprite.material:
+		sprite.material.set_shader_parameter("flash_intensity", 0.0)
+
 	# Remove from enemies group so player stops targeting
 	remove_from_group("enemies")
 
 	# Spawn death particles
 	spawn_death_particles()
-
-	# Juice effects on kill (subtle hitstop only, no shake - too frequent)
-	if JuiceManager:
-		JuiceManager.hitstop_small()
 
 	# Give player kill XP
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
