@@ -252,7 +252,7 @@ func take_damage(amount: float) -> void:
 		is_dead = true
 		death_animation_finished = false
 		animation_frame = 0.0
-		current_row = ROW_DEATH
+		current_row = row_death
 		emit_signal("player_died")
 		if JuiceManager:
 			JuiceManager.shake_large()

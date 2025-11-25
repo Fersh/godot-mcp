@@ -20,15 +20,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 20
 
 [node name="TopBar" type="HBoxContainer" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 70)
 layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="BackButton" type="Button" parent="VBoxContainer/TopBar"]
-custom_minimum_size = Vector2(120, 60)
+custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_fonts/font = ExtResource("2_font")
@@ -43,7 +43,7 @@ theme_override_colors/font_shadow_color = Color(0.15, 0.4, 0.2, 1)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
 text = "SELECT CHARACTER"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -52,14 +52,18 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 
-[node name="CharactersContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="PreviewPanel" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 40
+
+[node name="SelectorContainer" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="SelectButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(400, 80)
+custom_minimum_size = Vector2(400, 70)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
@@ -67,9 +71,9 @@ theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
 theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 22
 text = "START GAME"
 
 [node name="BottomSpacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
