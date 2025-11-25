@@ -29,6 +29,7 @@ func set_crit_kill(is_crit: bool) -> void:
 		spawn_crit_particles()
 
 func _ready() -> void:
+	z_index = -5  # Render above background (-10) but below characters (0)
 	spawn_particles()
 
 func spawn_crit_particles() -> void:
@@ -45,7 +46,7 @@ func spawn_crit_particles() -> void:
 		var blood_base = Color(0.85, 0.08, 0.08, 1.0)
 		var blood_dark = Color(0.5, 0.03, 0.03, 1.0)
 		p.color = blood_base.lerp(blood_dark, randf())
-		p.max_lifetime = randf_range(2.0, 4.0)
+		p.max_lifetime = randf_range(4.0, 8.0)
 		p.lifetime = p.max_lifetime
 		p.ground_y = float(randi_range(10, 45))
 		particles.append(p)
@@ -56,7 +57,7 @@ func spawn_crit_particles() -> void:
 		pool.pos = Vector2(randf_range(-30, 30), randf_range(-10, 25))
 		pool.size = float(randi_range(6, 14))
 		pool.color = Color(0.55, 0.03, 0.03, 0.95)
-		pool.lifetime = randf_range(4.0, 6.0)
+		pool.lifetime = randf_range(8.0, 12.0)
 		blood_pools.append(pool)
 
 func spawn_particles() -> void:
@@ -73,7 +74,7 @@ func spawn_particles() -> void:
 		var blood_base = Color(0.7, 0.05, 0.05, 1.0)
 		var blood_dark = Color(0.4, 0.02, 0.02, 1.0)
 		p.color = blood_base.lerp(blood_dark, randf())
-		p.max_lifetime = randf_range(1.5, 3.0)  # Longer lifetime
+		p.max_lifetime = randf_range(3.0, 6.0)  # Longer lifetime
 		p.lifetime = p.max_lifetime
 		p.ground_y = float(randi_range(6, 30))
 		particles.append(p)
@@ -84,7 +85,7 @@ func spawn_particles() -> void:
 		pool.pos = Vector2(randf_range(-15, 15), randf_range(-5, 15))
 		pool.size = float(randi_range(4, 10))
 		pool.color = Color(0.5, 0.02, 0.02, 0.9)
-		pool.lifetime = randf_range(3.0, 5.0)  # Stays for a few seconds
+		pool.lifetime = randf_range(6.0, 10.0)  # Stays for a few seconds
 		blood_pools.append(pool)
 
 func _process(delta: float) -> void:
@@ -112,7 +113,7 @@ func _process(delta: float) -> void:
 					pool.pos = p.pos
 					pool.size = p.size * randf_range(1.2, 2.0)
 					pool.color = Color(0.45, 0.02, 0.02, 0.85)
-					pool.lifetime = randf_range(2.5, 4.5)
+					pool.lifetime = randf_range(5.0, 9.0)
 					blood_pools.append(pool)
 		else:
 			# Fade out on ground faster
