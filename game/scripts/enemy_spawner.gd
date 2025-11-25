@@ -11,7 +11,8 @@ extends Node2D
 @export var ramp_up_time: float = 90.0
 @export var min_spawn_distance: float = 200.0
 
-const ARENA_SIZE = 1536
+const ARENA_WIDTH = 1536
+const ARENA_HEIGHT = 1382
 
 var spawn_timer: float = 0.0
 var game_time: float = 0.0
@@ -145,12 +146,12 @@ func get_spawn_position() -> Vector2:
 
 	match edge:
 		0:  # Top
-			pos = Vector2(randf_range(50, ARENA_SIZE - 50), -50)
+			pos = Vector2(randf_range(50, ARENA_WIDTH - 50), -50)
 		1:  # Bottom
-			pos = Vector2(randf_range(50, ARENA_SIZE - 50), ARENA_SIZE + 50)
+			pos = Vector2(randf_range(50, ARENA_WIDTH - 50), ARENA_HEIGHT + 50)
 		2:  # Left
-			pos = Vector2(-50, randf_range(50, ARENA_SIZE - 50))
+			pos = Vector2(-50, randf_range(50, ARENA_HEIGHT - 50))
 		3:  # Right
-			pos = Vector2(ARENA_SIZE + 50, randf_range(50, ARENA_SIZE - 50))
+			pos = Vector2(ARENA_WIDTH + 50, randf_range(50, ARENA_HEIGHT - 50))
 
 	return pos

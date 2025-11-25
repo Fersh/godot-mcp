@@ -302,9 +302,9 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 			toxic_timer = 0.0
 			apply_toxic_damage(player)
 
-func heal_player(player: Node2D, amount: float) -> void:
+func heal_player(player: Node2D, amount: float, play_sound: bool = false) -> void:
 	if player.has_method("heal"):
-		player.heal(amount)
+		player.heal(amount, play_sound)
 
 func fire_tesla_coil(player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

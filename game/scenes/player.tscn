@@ -31,11 +31,11 @@ frame = 0
 shape = SubResource("RectangleShape2D_player")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(2.34, 2.34)
+zoom = Vector2(2.808, 2.808)
 limit_left = 0
 limit_top = 0
 limit_right = 1536
-limit_bottom = 1536
+limit_bottom = 1382
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
 offset_y = -30.0

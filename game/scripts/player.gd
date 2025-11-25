@@ -79,7 +79,7 @@ var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 45.0  # Base XP required (tripled from 15)
+var xp_to_next_level: float = 225.0  # Base XP required (5x from 45)
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
@@ -375,11 +375,12 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * effective_speed
 	move_and_slide()
 
-	# Keep player within arena bounds (1536x1536)
-	const ARENA_SIZE = 1536
+	# Keep player within arena bounds (1536x1382)
+	const ARENA_WIDTH = 1536
+	const ARENA_HEIGHT = 1382
 	const MARGIN = 40
-	position.x = clamp(position.x, MARGIN, ARENA_SIZE - MARGIN)
-	position.y = clamp(position.y, MARGIN, ARENA_SIZE - MARGIN)
+	position.x = clamp(position.x, MARGIN, ARENA_WIDTH - MARGIN)
+	position.y = clamp(position.y, MARGIN, ARENA_HEIGHT - MARGIN)
 
 	# Auto-attack
 	attack_timer += delta
@@ -709,7 +710,7 @@ func give_kill_xp() -> void:
 	add_xp(xp_gain)
 
 # Ability system helper functions
-func heal(amount: float) -> void:
+func heal(amount: float, _play_sound: bool = true) -> void:
 	var actual_heal = min(amount, max_health - current_health)
 	if actual_heal <= 0:
 		return  # Already at full health
@@ -718,10 +719,6 @@ func heal(amount: float) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
-
-	# Play heal sound
-	if SoundManager:
-		SoundManager.play_heal()
 
 	# Update low HP vignette
 	if JuiceManager:

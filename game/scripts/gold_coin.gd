@@ -11,6 +11,7 @@ var initial_y: float = 0.0
 var time: float = 0.0
 var is_magnetized: bool = false
 var player: Node2D = null
+var collected: bool = false
 
 func _ready() -> void:
 	initial_y = position.y
@@ -53,6 +54,10 @@ func _on_body_entered(body: Node2D) -> void:
 		collect_coin()
 
 func collect_coin() -> void:
+	if collected:
+		return
+	collected = true
+
 	if player and player.has_method("add_xp"):
 		player.add_xp(xp_value)
 

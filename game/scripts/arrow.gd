@@ -42,7 +42,8 @@ func _physics_process(delta: float) -> void:
 		check_wall_bounce()
 
 func check_wall_bounce() -> void:
-	const ARENA_SIZE = 1536
+	const ARENA_WIDTH = 1536
+	const ARENA_HEIGHT = 1382
 	const MARGIN = 20
 
 	var bounced = false
@@ -51,18 +52,18 @@ func check_wall_bounce() -> void:
 		direction.x = abs(direction.x)
 		global_position.x = MARGIN
 		bounced = true
-	elif global_position.x > ARENA_SIZE - MARGIN:
+	elif global_position.x > ARENA_WIDTH - MARGIN:
 		direction.x = -abs(direction.x)
-		global_position.x = ARENA_SIZE - MARGIN
+		global_position.x = ARENA_WIDTH - MARGIN
 		bounced = true
 
 	if global_position.y < MARGIN:
 		direction.y = abs(direction.y)
 		global_position.y = MARGIN
 		bounced = true
-	elif global_position.y > ARENA_SIZE - MARGIN:
+	elif global_position.y > ARENA_HEIGHT - MARGIN:
 		direction.y = -abs(direction.y)
-		global_position.y = ARENA_SIZE - MARGIN
+		global_position.y = ARENA_HEIGHT - MARGIN
 		bounced = true
 
 	if bounced:

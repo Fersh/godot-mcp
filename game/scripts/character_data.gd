@@ -91,7 +91,7 @@ static func create_archer() -> CharacterData:
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 8
 	data.vframes = 8
-	data.sprite_scale = Vector2(1.875, 1.875)
+	data.sprite_scale = Vector2(1.6875, 1.6875)  # Reduced 10% from 1.875
 
 	# Animation rows
 	data.row_idle = 0
@@ -138,12 +138,10 @@ static func create_knight() -> CharacterData:
 	data.base_dodge_rate = 0.05  # 5% dodge
 
 	# Sprite config (knight is 128x64 per frame based on user specification)
-	# Ranger is 32x32 at 1.875 scale = 60px. Knight should be 10% bigger = ~2.06 uniform scale
-	# Using uniform scale to preserve proportions
 	data.frame_size = Vector2(128, 64)
 	data.hframes = 8
 	data.vframes = 7
-	data.sprite_scale = Vector2(1.5, 1.5)  # Slightly smaller than ranger's 1.875
+	data.sprite_scale = Vector2(1.575, 1.575)  # Increased 5% from 1.5
 
 	# Animation rows (based on knight spritesheet: idle, walk, block, block hit, attack, damage, death)
 	data.row_idle = 0

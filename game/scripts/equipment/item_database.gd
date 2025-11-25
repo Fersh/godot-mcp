@@ -103,7 +103,7 @@ const BASE_ITEMS: Dictionary = {
 		"display_name": "Mace",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
-		"base_stats": {"damage": 0.06, "attack_speed": -0.05},
+		"base_stats": {"damage": 0.08, "knockback": 20.0},
 		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/halberds/halberd_1.png"
 	},
 	"dagger_basic": {
@@ -133,7 +133,7 @@ const BASE_ITEMS: Dictionary = {
 		"display_name": "Crossbow",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
-		"base_stats": {"damage": 0.08, "attack_speed": -0.10},
+		"base_stats": {"damage": 0.10, "crit_chance": 0.05},
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/crossbows/crossbow_1.png"
 	},
 	"shortbow_basic": {
@@ -207,7 +207,7 @@ const BASE_ITEMS: Dictionary = {
 		"display_name": "Plate",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
-		"base_stats": {"max_hp": 0.10, "move_speed": -0.03},
+		"base_stats": {"max_hp": 0.12, "damage_reduction": 0.03},
 		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
 	},
 
@@ -223,7 +223,7 @@ const BASE_ITEMS: Dictionary = {
 		"display_name": "Sandals",
 		"slot": ItemData.Slot.BOOTS,
 		"weapon_type": ItemData.WeaponType.NONE,
-		"base_stats": {"move_speed": 0.08, "max_hp": -0.03},
+		"base_stats": {"move_speed": 0.08, "dodge_chance": 0.02},
 		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
 	},
 	"greaves_basic": {
