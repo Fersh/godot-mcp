@@ -219,7 +219,7 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * effective_speed
 	move_and_slide()
 
-	# Keep player within arena bounds (1536x1536 - reduced 25%)
+	# Keep player within arena bounds (1536x1536)
 	const ARENA_SIZE = 1536
 	const MARGIN = 40
 	position.x = clamp(position.x, MARGIN, ARENA_SIZE - MARGIN)

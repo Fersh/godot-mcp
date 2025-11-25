@@ -121,7 +121,7 @@ func _init_upgrade_definitions() -> void:
 
 	# Special Upgrades
 	_add_upgrade("daredevil_protocol", "Daredevil Protocol", "Harder enemies, more points", "skull",
-		Category.SPECIAL, 100, 1.2, 50, 0.10, "daredevil", "+%d0%% difficulty, +%d0%% points")
+		Category.SPECIAL, 50, 1.4, 10, 0.10, "daredevil", "+%d0%% difficulty, +%d0%% points")
 
 	_add_upgrade("emergency_reboot", "Emergency Reboot", "Revive once per run at 50%% HP", "revive",
 		Category.SPECIAL, 5000, 10.0, 1, 1.0, "revive", "Revive once per run")
