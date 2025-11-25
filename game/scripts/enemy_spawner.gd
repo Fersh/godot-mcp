@@ -1,14 +1,12 @@
 extends Node2D
 
 @export var enemy_scene: PackedScene
-@export var spawn_interval: float = 2.0
+@export var spawn_interval: float = 1.6  # 25% faster spawning
 @export var min_spawn_distance: float = 200.0
 
-var spawn_timer: float = 0.0
-var viewport_size: Vector2
+const ARENA_SIZE = 2048
 
-func _ready() -> void:
-	viewport_size = get_viewport_rect().size
+var spawn_timer: float = 0.0
 
 func _process(delta: float) -> void:
 	spawn_timer += delta
@@ -25,18 +23,18 @@ func spawn_enemy() -> void:
 	get_parent().add_child(enemy)
 
 func get_spawn_position() -> Vector2:
-	# Spawn from edges of the screen
+	# Spawn from edges of the arena
 	var edge = randi() % 4
 	var pos: Vector2
 
 	match edge:
 		0:  # Top
-			pos = Vector2(randf_range(0, viewport_size.x), -50)
+			pos = Vector2(randf_range(50, ARENA_SIZE - 50), -50)
 		1:  # Bottom
-			pos = Vector2(randf_range(0, viewport_size.x), viewport_size.y + 50)
+			pos = Vector2(randf_range(50, ARENA_SIZE - 50), ARENA_SIZE + 50)
 		2:  # Left
-			pos = Vector2(-50, randf_range(0, viewport_size.y))
+			pos = Vector2(-50, randf_range(50, ARENA_SIZE - 50))
 		3:  # Right
-			pos = Vector2(viewport_size.x + 50, randf_range(0, viewport_size.y))
+			pos = Vector2(ARENA_SIZE + 50, randf_range(50, ARENA_SIZE - 50))
 
 	return pos

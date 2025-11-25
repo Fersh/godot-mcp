@@ -2,8 +2,13 @@ extends CharacterBody2D
 
 @export var speed: float = 180.0  # 3 pixels/frame * 60fps
 @export var animation_speed: float = 10.0
-@export var attack_cooldown: float = 0.333  # 20 frames / 60fps = 3 attacks per second
+@export var attack_cooldown: float = 0.592  # ~1.7 attacks per second (50% slower than original)
+@export var fire_range: float = 440.0  # 55 frames * 8 pixels/frame
 @export var arrow_scene: PackedScene
+@export var max_health: float = 25.0
+
+var current_health: float
+@onready var health_bar: Node2D = $HealthBar
 
 var touch_start_pos: Vector2 = Vector2.ZERO
 var touch_current_pos: Vector2 = Vector2.ZERO
@@ -49,6 +54,23 @@ var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
 signal level_up(new_level: int)
+signal health_changed(current_health: float, max_health: float)
+signal player_died()
+
+func _ready() -> void:
+	current_health = max_health
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+
+func take_damage(amount: float) -> void:
+	current_health -= amount
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+	emit_signal("health_changed", current_health, max_health)
+
+	if current_health <= 0:
+		emit_signal("player_died")
+		# TODO: Handle player death
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
@@ -87,10 +109,11 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * speed
 	move_and_slide()
 
-	# Keep player within screen bounds
-	var viewport_size = get_viewport_rect().size
-	position.x = clamp(position.x, 40, viewport_size.x - 40)
-	position.y = clamp(position.y, 40, viewport_size.y - 40)
+	# Keep player within arena bounds (2048x2048)
+	const ARENA_SIZE = 2048
+	const MARGIN = 40
+	position.x = clamp(position.x, MARGIN, ARENA_SIZE - MARGIN)
+	position.y = clamp(position.y, MARGIN, ARENA_SIZE - MARGIN)
 
 	# Auto-attack
 	attack_timer += delta
@@ -118,7 +141,7 @@ func try_attack() -> void:
 func find_closest_enemy() -> Node2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest: Node2D = null
-	var closest_dist: float = INF
+	var closest_dist: float = fire_range  # Only consider enemies within fire range
 
 	for enemy in enemies:
 		if is_instance_valid(enemy):

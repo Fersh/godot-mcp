@@ -3,18 +3,47 @@ extends Area2D
 @export var xp_value: float = 1.0
 @export var bob_speed: float = 3.0
 @export var bob_height: float = 5.0
+@export var magnet_range: float = 80.0
+@export var magnet_speed: float = 400.0
+@export var collect_distance: float = 20.0
 
 var initial_y: float = 0.0
 var time: float = 0.0
+var is_magnetized: bool = false
+var player: Node2D = null
 
 func _ready() -> void:
 	initial_y = position.y
-	# Random starting phase for variety
 	time = randf() * TAU
 
 func _physics_process(delta: float) -> void:
-	time += delta * bob_speed
-	position.y = initial_y + sin(time) * bob_height
+	# Find player if not found
+	if player == null:
+		player = get_tree().get_first_node_in_group("player")
+
+	if player and is_instance_valid(player):
+		var distance = global_position.distance_to(player.global_position)
+
+		# Start magnetizing when player is close
+		if distance < magnet_range:
+			is_magnetized = true
+
+		if is_magnetized:
+			# Move toward player
+			var direction = (player.global_position - global_position).normalized()
+			global_position += direction * magnet_speed * delta
+
+			# Collect when very close
+			if distance < collect_distance:
+				if player.has_method("add_xp"):
+					player.add_xp(xp_value)
+				queue_free()
+				return
+
+	# Only bob if not magnetized
+	if not is_magnetized:
+		time += delta * bob_speed
+		position.y = initial_y + sin(time) * bob_height
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and body.has_method("add_xp"):

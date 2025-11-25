@@ -4,11 +4,15 @@ extends CharacterBody2D
 @export var attack_range: float = 50.0
 @export var animation_speed: float = 10.0
 @export var max_health: float = 20.0
+@export var attack_damage: float = 5.0
+@export var attack_cooldown: float = 0.8  # Time between attacks
 @export var gold_coin_scene: PackedScene
 
 var player: Node2D = null
 var current_health: float
 var is_dying: bool = false
+var attack_timer: float = 0.0
+var can_attack: bool = true
 
 # Animation rows (0-indexed)
 const ROW_IDLE = 0       # 4 frames
@@ -55,6 +59,13 @@ func _physics_process(delta: float) -> void:
 		update_death_animation(delta)
 		return
 
+	# Handle attack cooldown
+	if not can_attack:
+		attack_timer += delta
+		if attack_timer >= attack_cooldown:
+			attack_timer = 0.0
+			can_attack = true
+
 	if player and is_instance_valid(player):
 		var direction = (player.global_position - global_position)
 		var distance = direction.length()
@@ -67,6 +78,10 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity = Vector2.ZERO
 			update_animation(delta, ROW_ATTACK, direction)
+			# Deal damage to player
+			if can_attack and player.has_method("take_damage"):
+				player.take_damage(attack_damage)
+				can_attack = false
 	else:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)

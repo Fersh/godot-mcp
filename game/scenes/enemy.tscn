@@ -25,3 +25,4 @@ frame = 0
 shape = SubResource("RectangleShape2D_enemy")
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
+offset_y = -32.5

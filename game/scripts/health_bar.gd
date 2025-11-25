@@ -2,13 +2,13 @@ extends Node2D
 
 @export var bar_width: float = 40.0
 @export var bar_height: float = 6.0
-@export var offset_y: float = -40.0
+@export var offset_y: float = -25.0
 
 var max_health: float = 100.0
 var current_health: float = 100.0
 
-@onready var background: ColorRect = $Background
-@onready var fill: ColorRect = $Fill
+@onready var background: Panel = $Background
+@onready var fill: Panel = $Fill
 
 func _ready() -> void:
 	position.y = offset_y
@@ -24,9 +24,11 @@ func set_health(current: float, maximum: float) -> void:
 	fill.size.x = bar_width * ratio
 
 	# Change color based on health
+	var style = fill.get_theme_stylebox("panel").duplicate()
 	if ratio > 0.5:
-		fill.color = Color(0.2, 0.8, 0.2, 1)  # Green
+		style.bg_color = Color(0.2, 0.8, 0.2, 1)  # Green
 	elif ratio > 0.25:
-		fill.color = Color(0.9, 0.7, 0.1, 1)  # Yellow
+		style.bg_color = Color(0.9, 0.7, 0.1, 1)  # Yellow
 	else:
-		fill.color = Color(0.9, 0.2, 0.2, 1)  # Red
+		style.bg_color = Color(0.9, 0.2, 0.2, 1)  # Red
+	fill.add_theme_stylebox_override("panel", style)
