@@ -43,7 +43,8 @@ func setup(data: ItemData) -> void:
 		var texture = load(data.icon_path)
 		if texture and sprite:
 			sprite.texture = texture
-			sprite.scale = Vector2(1.5, 1.5)
+			sprite.scale = Vector2(2.0, 2.0)
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	else:
 		# Hide sprite if no icon
 		if sprite:

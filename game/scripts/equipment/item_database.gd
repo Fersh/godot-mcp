@@ -90,35 +90,35 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.05},
-		"icon_path": "res://assets/sprites/items/Melee/demo32_01.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_1.png"
 	},
 	"axe_basic": {
 		"display_name": "Axe",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08},
-		"icon_path": "res://assets/sprites/items/Melee/demo32_03.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/axe/axe_1.png"
 	},
 	"mace_basic": {
 		"display_name": "Mace",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.06, "attack_speed": -0.05},
-		"icon_path": "res://assets/sprites/items/Melee/demo32_05.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/halberds/halberd_1.png"
 	},
 	"dagger_basic": {
 		"display_name": "Dagger",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"attack_speed": 0.10},
-		"icon_path": "res://assets/sprites/items/Melee/demo32_07.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/daggers/dagger_1.png"
 	},
 	"spear_basic": {
 		"display_name": "Spear",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.04, "melee_range": 0.15},
-		"icon_path": "res://assets/sprites/items/Melee/demo32_09.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/spears/spear_1.png"
 	},
 
 	# WEAPONS - Ranged
@@ -282,7 +282,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.15, "knockback": 50.0},
 		"grants_ability": "concussive_hit",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_11.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/halberds/halberd_2.png"
 	},
 	"vampire_fang": {
 		"display_name": "Vampire's Toothpick",
@@ -291,7 +291,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.10, "attack_speed": 0.10},
 		"grants_ability": "vampirism",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_13.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/daggers/dagger_2.png"
 	},
 	"cactus_sword": {
 		"display_name": "Ow Ow Ow Blade",
@@ -300,7 +300,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.20},
 		"grants_ability": "thorns",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_15.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_2.png"
 	},
 	"rubber_mallet": {
 		"display_name": "Squeaky Hammer",
@@ -309,7 +309,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.20},
 		"grants_equipment_ability": "bounce_attack",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_17.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/halberds/halberd_3.png"
 	},
 	"cheese_knife": {
 		"display_name": "Le Fromage Slicer",
@@ -318,7 +318,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.12, "crit_chance": 0.10},
 		"grants_ability": "bleeding",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_19.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/daggers/dagger_3.png"
 	},
 
 	# Weapons - Ranged
@@ -496,7 +496,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15, "attack_speed": 0.10},
 		"grants_ability": "cull_weak",
 		"grants_equipment_ability": "holy_smite",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_02.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_3.png"
 	},
 	"ban_hammer": {
 		"display_name": "The Ban Hammer",
@@ -506,7 +506,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.25, "knockback": 100.0},
 		"grants_ability": "death_explosion",
 		"grants_equipment_ability": "permaban",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_04.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/halberds/halberd_4.png"
 	},
 	"infinity_blade": {
 		"display_name": "Infinity Blade +1",
@@ -516,7 +516,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.20, "attack_speed": 0.20, "crit_chance": 0.10},
 		"grants_ability": "whirlwind",
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_06.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_4.png"
 	},
 	"spaghetti_sword": {
 		"display_name": "Mom's Spaghetti Sword",
@@ -526,7 +526,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.18, "max_hp": 0.15},
 		"grants_ability": "vampirism",
 		"grants_equipment_ability": "comfort_food",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_08.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_5.png"
 	},
 	"nerf_sword": {
 		"display_name": "Nerf Sword (Pre-Nerf)",
@@ -535,7 +535,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.35, "attack_speed": 0.15},
 		"grants_equipment_ability": "overtuned",
-		"icon_path": "res://assets/sprites/items/Melee/demo32_10.png"
+		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/swords/sword_6.png"
 	},
 
 	# Weapons - Ranged
