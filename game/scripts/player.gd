@@ -223,6 +223,10 @@ func _apply_permanent_upgrades() -> void:
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
+	# Check for invulnerability (from dodge or abilities)
+	if is_invulnerable:
+		return
+
 	# Check for dodge first
 	if AbilityManager:
 		var dodge_chance = AbilityManager.get_dodge_chance()
@@ -394,6 +398,9 @@ func _physics_process(delta: float) -> void:
 
 	# Update animation
 	update_animation(delta, direction)
+
+	# Update active ability timers
+	_update_active_ability_timers(delta)
 
 func try_attack() -> void:
 	var closest_enemy = find_closest_enemy()
@@ -787,3 +794,75 @@ func update_ability_stats(modifiers: Dictionary) -> void:
 
 func get_pickup_range() -> float:
 	return 80.0 * pickup_range_multiplier  # Base pickup range * multiplier
+
+# ============================================
+# ACTIVE ABILITY HELPER FUNCTIONS
+# ============================================
+
+# Invulnerability state
+var is_invulnerable: bool = false
+var invulnerability_timer: float = 0.0
+
+# Damage boost state
+var damage_boost_multiplier: float = 1.0
+var damage_boost_timer: float = 0.0
+
+func set_invulnerable(invulnerable: bool) -> void:
+	"""Set the player's invulnerability state."""
+	is_invulnerable = invulnerable
+	if invulnerable:
+		# Visual feedback - make player slightly transparent
+		modulate.a = 0.6
+	else:
+		modulate.a = 1.0
+
+func get_attack_direction() -> Vector2:
+	"""Get the current attack/facing direction."""
+	return attack_direction
+
+func get_facing_direction() -> Vector2:
+	"""Get the direction the player is facing."""
+	return Vector2.RIGHT if facing_right else Vector2.LEFT
+
+func apply_damage_boost(multiplier: float, duration: float) -> void:
+	"""Apply a temporary damage boost."""
+	damage_boost_multiplier = multiplier
+	damage_boost_timer = duration
+
+func get_damage_boost() -> float:
+	"""Get the current damage boost multiplier."""
+	return damage_boost_multiplier if damage_boost_timer > 0 else 1.0
+
+func spawn_dodge_effect() -> void:
+	"""Spawn a visual effect for dodging."""
+	# Create afterimage effect
+	if sprite:
+		var afterimage = Sprite2D.new()
+		afterimage.texture = sprite.texture
+		afterimage.hframes = sprite.hframes
+		afterimage.vframes = sprite.vframes
+		afterimage.frame = sprite.frame
+		afterimage.flip_h = sprite.flip_h
+		afterimage.global_position = global_position
+		afterimage.scale = scale
+		afterimage.modulate = Color(0.4, 0.8, 1.0, 0.6)  # Cyan tint
+		get_parent().add_child(afterimage)
+
+		# Fade out and remove
+		var tween = afterimage.create_tween()
+		tween.tween_property(afterimage, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(afterimage.queue_free)
+
+func _update_active_ability_timers(delta: float) -> void:
+	"""Update timers for active ability effects."""
+	# Update invulnerability timer
+	if invulnerability_timer > 0:
+		invulnerability_timer -= delta
+		if invulnerability_timer <= 0:
+			set_invulnerable(false)
+
+	# Update damage boost timer
+	if damage_boost_timer > 0:
+		damage_boost_timer -= delta
+		if damage_boost_timer <= 0:
+			damage_boost_multiplier = 1.0

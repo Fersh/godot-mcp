@@ -35,6 +35,16 @@ var is_staggered: bool = false
 var stagger_timer: float = 0.0
 const STAGGER_DURATION: float = 0.35
 
+# Stun system (from active abilities)
+var is_stunned: bool = false
+var stun_timer: float = 0.0
+
+# Slow system (from active abilities)
+var is_slowed: bool = false
+var slow_timer: float = 0.0
+var slow_percent: float = 0.0
+var base_speed: float = 0.0
+
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
@@ -69,6 +79,7 @@ var animation_frame: float = 0.0
 
 func _ready() -> void:
 	current_health = max_health
+	base_speed = speed  # Store base speed for slow calculations
 	player = get_tree().get_first_node_in_group("player")
 	add_to_group("enemies")
 
@@ -93,11 +104,15 @@ func _physics_process(delta: float) -> void:
 		return
 
 	handle_hit_flash(delta)
+	handle_status_effects(delta)
 
 	if handle_knockback(delta):
 		return
 
 	if handle_stagger(delta):
+		return
+
+	if handle_stun(delta):
 		return
 
 	handle_attack_cooldown(delta)
@@ -219,6 +234,57 @@ func apply_stagger() -> void:
 	stagger_timer = STAGGER_DURATION
 	is_winding_up = false
 	windup_timer = 0.0
+
+# ============================================
+# STATUS EFFECTS FROM ACTIVE ABILITIES
+# ============================================
+
+func apply_stun(duration: float) -> void:
+	"""Apply stun effect - enemy cannot move or attack."""
+	is_stunned = true
+	stun_timer = max(stun_timer, duration)  # Don't reduce existing stun
+	is_winding_up = false
+	windup_timer = 0.0
+
+func apply_slow(percent: float, duration: float) -> void:
+	"""Apply slow effect - reduces movement speed."""
+	is_slowed = true
+	slow_percent = max(slow_percent, percent)  # Use strongest slow
+	slow_timer = max(slow_timer, duration)
+	_update_speed()
+
+func handle_stun(delta: float) -> bool:
+	"""Handle stun status - returns true if stunned and should skip behavior."""
+	if is_stunned:
+		stun_timer -= delta
+		if stun_timer <= 0:
+			is_stunned = false
+		else:
+			velocity = Vector2.ZERO
+			update_animation(delta, ROW_DAMAGE, Vector2.ZERO)
+			return true
+	return false
+
+func handle_status_effects(delta: float) -> void:
+	"""Update all status effect timers."""
+	# Handle slow timer
+	if is_slowed:
+		slow_timer -= delta
+		if slow_timer <= 0:
+			is_slowed = false
+			slow_percent = 0.0
+			_update_speed()
+
+func _update_speed() -> void:
+	"""Update current speed based on slow effects."""
+	if is_slowed:
+		speed = base_speed * (1.0 - slow_percent)
+	else:
+		speed = base_speed
+
+func get_current_speed() -> float:
+	"""Get the current effective speed (affected by slows)."""
+	return speed
 
 func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
 	if damage_number_scene == null:

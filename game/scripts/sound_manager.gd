@@ -164,3 +164,94 @@ func stop_music() -> void:
 func set_music_volume(volume_db: float) -> void:
 	if music_player:
 		music_player.volume_db = volume_db
+
+# ============================================
+# ACTIVE ABILITY SOUNDS
+# ============================================
+
+func play_dodge() -> void:
+	# Dodge roll sound - use swoosh
+	_play_sound(swoosh_sound, -3.0, 0.2)
+
+func play_ability_sound(ability_id: String) -> void:
+	# Route to specific sound based on ability type
+	match ability_id:
+		"cleave", "spinning_attack", "whirlwind", "bladestorm":
+			play_swing()
+		"shield_bash", "ground_slam", "seismic_slam", "earthquake":
+			_play_sound(block_sound, 0.0, 0.1)  # Impact sound
+		"power_shot", "multi_shot", "piercing_volley", "ballista_strike":
+			play_arrow()
+		"fireball", "meteor_strike":
+			_play_sound(swoosh_sound, -2.0, 0.1)  # Fire whoosh
+		"frost_nova", "totem_of_frost":
+			_play_sound(buff_sound, -5.0, 0.2)  # Magic sound
+		"chain_lightning", "thunderstorm":
+			_play_sound(damage_sound, 0.0, 0.3)  # Zap sound
+		"healing_light":
+			play_heal()
+		"shadowstep", "blade_rush", "savage_leap":
+			_play_sound(swoosh_sound, -2.0, 0.15)
+		_:
+			# Default ability sound
+			_play_sound(buff_sound, -5.0, 0.1)
+
+func play_ground_slam() -> void:
+	_play_sound(block_sound, 0.0, 0.1)
+
+func play_fireball() -> void:
+	_play_sound(swoosh_sound, -2.0, 0.1)
+
+func play_frost() -> void:
+	_play_sound(buff_sound, -5.0, 0.2)
+
+func play_lightning() -> void:
+	_play_sound(damage_sound, 0.0, 0.3)
+
+func play_thunder() -> void:
+	_play_sound(damage_sound, 2.0, 0.2)
+
+func play_meteor() -> void:
+	_play_sound(swoosh_sound, 0.0, 0.1)
+
+func play_flash() -> void:
+	_play_sound(buff_sound, 0.0)
+
+func play_throw() -> void:
+	_play_sound(swoosh_sound, -3.0, 0.2)
+
+func play_leap() -> void:
+	_play_sound(swoosh_sound, -2.0, 0.1)
+
+func play_dash() -> void:
+	_play_sound(swoosh_sound, -3.0, 0.15)
+
+func play_shield_bash() -> void:
+	_play_sound(block_sound, 0.0, 0.1)
+
+func play_black_hole() -> void:
+	_play_sound(buff_sound, -2.0, 0.1)
+
+func play_time_stop() -> void:
+	_play_sound(buff_sound, 0.0)
+
+func play_deploy() -> void:
+	_play_sound(ding_sound, -3.0)
+
+func play_ballista() -> void:
+	_play_sound(swoosh_sound, 2.0, 0.1)
+
+func play_arrow_storm() -> void:
+	_play_sound(swoosh_sound, 0.0, 0.1)
+
+func play_whirlwind() -> void:
+	play_swing()
+
+func play_bladestorm() -> void:
+	play_swing()
+
+func play_omnislash() -> void:
+	play_swing()
+
+func play_shadowstep() -> void:
+	_play_sound(swoosh_sound, -2.0, 0.15)

@@ -4,12 +4,19 @@ extends Node2D
 @onready var ability_selection: CanvasLayer = $AbilitySelection
 @onready var item_pickup_ui: CanvasLayer = $ItemPickupUI
 
+# Active ability UI components
+var active_ability_bar: ActiveAbilityBar = null
+var active_ability_selection_ui: ActiveAbilitySelectionUI = null
+
 var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
 var game_time: float = 0.0
 var kill_count: int = 0
 
 # Track dropped items for proximity detection
 var nearby_item: Node2D = null
+
+# Levels that grant active abilities (not passive)
+const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
 
 func _ready() -> void:
 	add_to_group("main")
@@ -31,6 +38,9 @@ func _ready() -> void:
 	if AbilityManager:
 		AbilityManager.apply_equipment_abilities()
 
+	# Setup active ability system
+	_setup_active_ability_system()
+
 func _process(delta: float) -> void:
 	game_time += delta
 
@@ -42,10 +52,14 @@ func _process(delta: float) -> void:
 	_check_nearby_items()
 
 func _on_player_level_up(new_level: int) -> void:
-	# Get random abilities and show selection
-	var choices = AbilityManager.get_random_abilities(3)
-	if choices.size() > 0:
-		ability_selection.show_choices(choices)
+	# Check if this level grants an active ability
+	if new_level in ACTIVE_ABILITY_LEVELS:
+		_show_active_ability_selection(new_level)
+	else:
+		# Regular passive ability selection
+		var choices = AbilityManager.get_random_abilities(3)
+		if choices.size() > 0:
+			ability_selection.show_choices(choices)
 
 func _on_player_died() -> void:
 	# Wait for death animation then show game over
@@ -99,3 +113,57 @@ func _check_nearby_items() -> void:
 			item_pickup_ui.show_item(closest_item, equipped != null)
 	elif not closest_item:
 		nearby_item = null
+
+# ============================================
+# ACTIVE ABILITY SYSTEM
+# ============================================
+
+func _setup_active_ability_system() -> void:
+	"""Initialize the active ability UI and manager."""
+	# Reset ActiveAbilityManager for new run
+	if ActiveAbilityManager:
+		ActiveAbilityManager.reset_for_new_run()
+		ActiveAbilityManager.register_player(player)
+
+	# Create the ability bar UI
+	var bar_script = load("res://scripts/active_abilities/ui/active_ability_bar.gd")
+	if bar_script:
+		active_ability_bar = CanvasLayer.new()
+		active_ability_bar.set_script(bar_script)
+		active_ability_bar.name = "ActiveAbilityBar"
+		add_child(active_ability_bar)
+
+	# Create the selection UI
+	var selection_script = load("res://scripts/active_abilities/ui/active_ability_selection_ui.gd")
+	if selection_script:
+		active_ability_selection_ui = CanvasLayer.new()
+		active_ability_selection_ui.set_script(selection_script)
+		active_ability_selection_ui.name = "ActiveAbilitySelectionUI"
+		add_child(active_ability_selection_ui)
+
+func _show_active_ability_selection(level: int) -> void:
+	"""Show the active ability selection UI for the given level."""
+	if not active_ability_selection_ui:
+		# Fallback to passive if UI not available
+		var choices = AbilityManager.get_random_abilities(3)
+		if choices.size() > 0:
+			ability_selection.show_choices(choices)
+		return
+
+	# Get character type for filtering abilities
+	var is_melee = false
+	if CharacterManager:
+		var char_data = CharacterManager.get_selected_character()
+		if char_data:
+			is_melee = char_data.attack_type == CharacterData.AttackType.MELEE
+
+	# Get random active abilities for this level
+	var choices = ActiveAbilityManager.get_random_abilities_for_level(level, is_melee, 3)
+
+	if choices.size() > 0:
+		active_ability_selection_ui.show_choices(choices, level)
+	else:
+		# No active abilities available, fall back to passive
+		var passive_choices = AbilityManager.get_random_abilities(3)
+		if passive_choices.size() > 0:
+			ability_selection.show_choices(passive_choices)
