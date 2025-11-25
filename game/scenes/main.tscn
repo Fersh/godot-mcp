@@ -13,11 +13,12 @@
 script = ExtResource("1_main")
 
 [node name="Background" type="Sprite2D" parent="."]
-position = Vector2(1024, 1024)
+position = Vector2(768, 768)
+scale = Vector2(0.75, 0.75)
 texture = ExtResource("5_arena")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(1024, 1024)
+position = Vector2(768, 768)
 
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("3_spawner")

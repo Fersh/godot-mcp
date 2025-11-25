@@ -41,7 +41,7 @@ func _physics_process(delta: float) -> void:
 		check_wall_bounce()
 
 func check_wall_bounce() -> void:
-	const ARENA_SIZE = 2048
+	const ARENA_SIZE = 1536
 	const MARGIN = 20
 
 	var bounced = false

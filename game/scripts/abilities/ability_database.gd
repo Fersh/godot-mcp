@@ -304,7 +304,7 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			"scattergun",
 			"Scattergun",
 			"+2 Projectiles, increased spread",
-			AbilityData.Rarity.RARE,
+			AbilityData.Rarity.LEGENDARY,  # Very powerful, made legendary
 			AbilityData.Type.RANGED_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 2.0},

@@ -4,7 +4,7 @@ extends Node2D
 @export var spawn_interval: float = 1.0  # Reduced spawn rate (25% slower)
 @export var min_spawn_distance: float = 200.0
 
-const ARENA_SIZE = 2048
+const ARENA_SIZE = 1536  # Reduced 25%
 
 var spawn_timer: float = 0.0
 

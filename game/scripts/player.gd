@@ -2,7 +2,7 @@ extends CharacterBody2D
 
 @export var speed: float = 180.0  # 3 pixels/frame * 60fps
 @export var animation_speed: float = 10.0
-@export var attack_cooldown: float = 0.592  # ~1.7 attacks per second (50% slower than original)
+@export var attack_cooldown: float = 0.79  # ~1.27 attacks per second (25% slower)
 @export var fire_range: float = 440.0  # 55 frames * 8 pixels/frame
 @export var arrow_scene: PackedScene
 @export var max_health: float = 25.0
@@ -63,7 +63,7 @@ var facing_right: bool = true
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 10.0
+var xp_to_next_level: float = 15.0
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
@@ -148,8 +148,8 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * effective_speed
 	move_and_slide()
 
-	# Keep player within arena bounds (2048x2048)
-	const ARENA_SIZE = 2048
+	# Keep player within arena bounds (1536x1536 - reduced 25%)
+	const ARENA_SIZE = 1536
 	const MARGIN = 40
 	position.x = clamp(position.x, MARGIN, ARENA_SIZE - MARGIN)
 	position.y = clamp(position.y, MARGIN, ARENA_SIZE - MARGIN)
@@ -312,16 +312,32 @@ func add_xp(amount: float) -> void:
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 func give_kill_xp() -> void:
-	# Killing enemy gives 5-10% of XP needed (halved)
-	var xp_gain = xp_to_next_level * randf_range(0.05, 0.10)
+	# Killing enemy gives 3-7% of XP needed
+	var xp_gain = xp_to_next_level * randf_range(0.03, 0.07)
 	add_xp(xp_gain)
 
 # Ability system helper functions
 func heal(amount: float) -> void:
-	current_health = min(current_health + amount, max_health)
+	var actual_heal = min(amount, max_health - current_health)
+	if actual_heal <= 0:
+		return  # Already at full health
+
+	current_health += actual_heal
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
+
+	# Show green heal number
+	spawn_heal_number(actual_heal)
+
+func spawn_heal_number(amount: float) -> void:
+	if damage_number_scene == null:
+		return
+
+	var heal_num = damage_number_scene.instantiate()
+	heal_num.global_position = global_position + Vector2(0, -40)
+	get_parent().add_child(heal_num)
+	heal_num.set_heal(amount)
 
 func apply_temporary_speed_boost(boost: float, duration: float) -> void:
 	temp_speed_boost = boost

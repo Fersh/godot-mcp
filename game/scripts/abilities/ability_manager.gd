@@ -192,11 +192,6 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 func heal_player(player: Node2D, amount: float) -> void:
 	if player.has_method("heal"):
 		player.heal(amount)
-	else:
-		# Fallback: directly modify health
-		player.current_health = min(player.current_health + amount, player.max_health)
-		if player.health_bar:
-			player.health_bar.set_health(player.current_health, player.max_health)
 
 func fire_tesla_coil(player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

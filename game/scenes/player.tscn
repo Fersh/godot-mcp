@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="5_damage_number"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(24, 28)
+size = Vector2(18, 21)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 collision_layer = 1
@@ -17,7 +17,7 @@ arrow_scene = ExtResource("3_arrow")
 damage_number_scene = ExtResource("5_damage_number")
 
 [node name="Sprite" type="Sprite2D" parent="."]
-scale = Vector2(2.5, 2.5)
+scale = Vector2(1.875, 1.875)
 texture = ExtResource("2_texture")
 hframes = 8
 vframes = 8
@@ -27,10 +27,10 @@ frame = 0
 shape = SubResource("RectangleShape2D_player")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.875, 1.875)
+zoom = Vector2(2.34, 2.34)
 limit_left = 0
 limit_top = 0
-limit_right = 2048
-limit_bottom = 2048
+limit_right = 1536
+limit_bottom = 1536
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]

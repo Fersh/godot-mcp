@@ -50,3 +50,9 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# Normal enemy hit - white
 		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
 		label.add_theme_font_size_override("font_size", 26)
+
+func set_heal(amount: float) -> void:
+	label.text = "+" + str(int(amount))
+	# Healing - green
+	label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3, 1))
+	label.add_theme_font_size_override("font_size", 28)
