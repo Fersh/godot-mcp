@@ -17,7 +17,11 @@ var bob_time: float = 0.0
 var glow_time: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite
-@onready var glow: Sprite2D = $Glow
+@onready var glow_outer: Polygon2D = $GlowOuter
+@onready var glow_inner: Polygon2D = $GlowInner
+@onready var item_base: Polygon2D = $ItemBase
+@onready var item_inner: Polygon2D = $ItemInner
+@onready var shine: Polygon2D = $Shine
 @onready var rarity_label: Label = $RarityLabel
 @onready var collision_shape: CollisionShape2D = $CollisionShape
 
@@ -32,23 +36,44 @@ func _ready() -> void:
 
 func setup(data: ItemData) -> void:
 	item_data = data
+	var rarity_color = data.get_rarity_color()
 
-	# Load icon
+	# Load icon if available
 	if data.icon_path != "" and ResourceLoader.exists(data.icon_path):
 		var texture = load(data.icon_path)
 		if texture and sprite:
 			sprite.texture = texture
-			sprite.scale = Vector2(2.0, 2.0)  # Scale up for visibility
+			sprite.scale = Vector2(1.5, 1.5)
+	else:
+		# Hide sprite if no icon
+		if sprite:
+			sprite.visible = false
 
-	# Set glow color based on rarity
-	if glow:
-		glow.modulate = data.get_rarity_color()
-		glow.modulate.a = 0.6
+	# Color the item based on rarity
+	if glow_outer:
+		glow_outer.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+	if glow_inner:
+		glow_inner.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.5)
+	if item_base:
+		# Darker version of rarity color
+		item_base.color = Color(rarity_color.r * 0.5, rarity_color.g * 0.5, rarity_color.b * 0.5, 1.0)
+	if item_inner:
+		# Lighter version of rarity color
+		item_inner.color = Color(rarity_color.r * 0.8, rarity_color.g * 0.8, rarity_color.b * 0.8, 1.0)
+	if shine:
+		# White shine with slight rarity tint
+		shine.color = Color(
+			0.7 + rarity_color.r * 0.3,
+			0.7 + rarity_color.g * 0.3,
+			0.7 + rarity_color.b * 0.3,
+			0.7
+		)
 
 	# Set rarity label
 	if rarity_label:
 		rarity_label.text = data.get_rarity_name()
-		rarity_label.add_theme_color_override("font_color", data.get_rarity_color())
+		rarity_label.add_theme_color_override("font_color", rarity_color)
+		rarity_label.add_theme_font_size_override("font_size", 12)
 
 func _process(delta: float) -> void:
 	# Bobbing animation
@@ -57,9 +82,11 @@ func _process(delta: float) -> void:
 
 	# Glow pulsing
 	glow_time += delta * glow_pulse_speed
-	if glow:
-		var pulse = (sin(glow_time) + 1.0) / 2.0  # 0 to 1
-		glow.modulate.a = 0.4 + pulse * 0.4
+	var pulse = (sin(glow_time) + 1.0) / 2.0  # 0 to 1
+	if glow_outer:
+		glow_outer.color.a = 0.2 + pulse * 0.3
+	if glow_inner:
+		glow_inner.color.a = 0.3 + pulse * 0.4
 
 	# Check distance to player
 	if player == null:

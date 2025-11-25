@@ -91,6 +91,9 @@ func _check_nearby_items() -> void:
 	if closest_item and closest_item != nearby_item:
 		nearby_item = closest_item
 		if item_pickup_ui and closest_item.has_method("get_item_data"):
-			item_pickup_ui.show_item(closest_item)
+			var item_data = closest_item.get_item_data()
+			var character_id = CharacterManager.selected_character_id if CharacterManager else "archer"
+			var equipped = EquipmentManager.get_equipped_item(character_id, item_data.slot) if EquipmentManager else null
+			item_pickup_ui.show_item(closest_item, equipped != null)
 	elif not closest_item:
 		nearby_item = null
