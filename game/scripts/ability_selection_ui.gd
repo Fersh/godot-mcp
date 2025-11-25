@@ -150,6 +150,10 @@ func _on_ability_selected(index: int) -> void:
 		# Acquire the ability
 		AbilityManager.acquire_ability(ability)
 
+		# Play buff sound
+		if SoundManager:
+			SoundManager.play_buff()
+
 		# Emit signal
 		emit_signal("ability_selected", ability)
 

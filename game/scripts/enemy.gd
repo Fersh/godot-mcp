@@ -16,6 +16,16 @@ var is_dying: bool = false
 var attack_timer: float = 0.0
 var can_attack: bool = true
 
+# Attack wind-up system
+var is_winding_up: bool = false
+var windup_timer: float = 0.0
+const WINDUP_DURATION: float = 0.5  # 0.5 second wind-up before damage
+
+# Stagger system (from melee hits)
+var is_staggered: bool = false
+var stagger_timer: float = 0.0
+const STAGGER_DURATION: float = 0.5  # 0.5 second stagger
+
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
@@ -89,12 +99,40 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 
+	# Handle stagger (from melee hits)
+	if is_staggered:
+		stagger_timer -= delta
+		if stagger_timer <= 0:
+			is_staggered = false
+		else:
+			velocity = Vector2.ZERO
+			# Stay on damage animation during stagger
+			update_animation(delta, ROW_DAMAGE, Vector2.ZERO)
+			return
+
 	# Handle attack cooldown
 	if not can_attack:
 		attack_timer += delta
 		if attack_timer >= attack_cooldown:
 			attack_timer = 0.0
 			can_attack = true
+
+	# Handle attack wind-up
+	if is_winding_up:
+		windup_timer -= delta
+		if windup_timer <= 0:
+			is_winding_up = false
+			# Now actually deal damage after wind-up completes - but only if still in range
+			if player and is_instance_valid(player) and player.has_method("take_damage"):
+				var dist_to_player = global_position.distance_to(player.global_position)
+				# Only deal damage if player is still within attack range (with small buffer)
+				if dist_to_player <= attack_range * 1.2:
+					player.take_damage(attack_damage)
+					# Thorns damage
+					if AbilityManager and AbilityManager.has_thorns:
+						take_damage(AbilityManager.thorns_damage, false)
+				can_attack = false
+		return
 
 	if player and is_instance_valid(player):
 		var direction = (player.global_position - global_position)
@@ -108,13 +146,10 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity = Vector2.ZERO
 			update_animation(delta, ROW_ATTACK, direction)
-			# Deal damage to player
-			if can_attack and player.has_method("take_damage"):
-				player.take_damage(attack_damage)
-				can_attack = false
-				# Thorns damage
-				if AbilityManager and AbilityManager.has_thorns:
-					take_damage(AbilityManager.thorns_damage, false)
+			# Start attack wind-up (damage dealt after wind-up completes)
+			if can_attack:
+				is_winding_up = true
+				windup_timer = WINDUP_DURATION
 	else:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)
@@ -126,6 +161,10 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	current_health -= amount
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+
+	# Play hit sound
+	if SoundManager:
+		SoundManager.play_hit()
 
 	# Spawn damage number
 	spawn_damage_number(amount, is_critical)
@@ -150,6 +189,13 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 func apply_knockback(force: Vector2) -> void:
 	knockback_velocity = force
 
+func apply_stagger() -> void:
+	is_staggered = true
+	stagger_timer = STAGGER_DURATION
+	# Cancel any attack wind-up when staggered
+	is_winding_up = false
+	windup_timer = 0.0
+
 func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
 	if damage_number_scene == null:
 		return
@@ -164,6 +210,10 @@ func die() -> void:
 	current_row = ROW_DEATH
 	animation_frame = 0.0
 	velocity = Vector2.ZERO
+
+	# Play death sound
+	if SoundManager:
+		SoundManager.play_enemy_death()
 
 	# Clear hit flash immediately on death
 	flash_timer = 0.0

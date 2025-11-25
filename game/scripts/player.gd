@@ -8,6 +8,7 @@ extends CharacterBody2D
 @export var max_health: float = 25.0
 @export var damage_number_scene: PackedScene
 @export var muzzle_flash_scene: PackedScene
+@export var swipe_effect_scene: PackedScene
 
 # Camera
 @onready var camera: Camera2D = $Camera2D
@@ -238,6 +239,10 @@ func take_damage(amount: float) -> void:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
 
+	# Play player hurt sound
+	if SoundManager:
+		SoundManager.play_player_hurt()
+
 	# Spawn damage number (red for player)
 	spawn_damage_number(final_damage)
 
@@ -344,6 +349,7 @@ func try_attack() -> void:
 	if closest_enemy:
 		attack_timer = 0.0
 		is_attacking = true
+		animation_frame = 0.0  # Reset animation frame to ensure attack animation plays from start
 		attack_direction = (closest_enemy.global_position - global_position).normalized()
 
 		# Update facing direction
@@ -375,6 +381,10 @@ func find_closest_enemy() -> Node2D:
 func spawn_arrow() -> void:
 	if arrow_scene == null:
 		return
+
+	# Play arrow sound
+	if SoundManager:
+		SoundManager.play_arrow()
 
 	# Muzzle flash
 	spawn_muzzle_flash()
@@ -418,6 +428,20 @@ func spawn_muzzle_flash() -> void:
 	flash.global_position = global_position + attack_direction * 20
 	get_parent().add_child(flash)
 
+func spawn_swipe_effect() -> void:
+	if swipe_effect_scene == null:
+		return
+
+	var swipe = swipe_effect_scene.instantiate()
+	swipe.global_position = global_position
+	swipe.direction = attack_direction
+	# Set arc radius based on melee range
+	var melee_reach = fire_range
+	if AbilityManager:
+		melee_reach *= AbilityManager.get_melee_range_multiplier()
+	swipe.arc_radius = melee_reach
+	get_parent().add_child(swipe)
+
 func spawn_single_arrow(direction: Vector2) -> void:
 	var arrow = arrow_scene.instantiate()
 	arrow.global_position = global_position
@@ -438,13 +462,27 @@ func spawn_single_arrow(direction: Vector2) -> void:
 
 	get_parent().add_child(arrow)
 
+func snap_to_8_directions(dir: Vector2) -> Vector2:
+	# Snap direction to nearest of 8 cardinal/diagonal directions
+	var angle = dir.angle()
+	# Round to nearest 45 degrees (PI/4)
+	var snapped_angle = round(angle / (PI / 4)) * (PI / 4)
+	return Vector2(cos(snapped_angle), sin(snapped_angle))
+
 func perform_melee_attack() -> void:
 	# Reset hit tracking for this attack
 	melee_hit_enemies.clear()
 	melee_hitbox_active = true
 
-	# Spawn muzzle flash effect at attack position
-	spawn_muzzle_flash()
+	# Snap attack direction to 8 directions for cleaner arc attacks
+	attack_direction = snap_to_8_directions(attack_direction)
+
+	# Play swing sound
+	if SoundManager:
+		SoundManager.play_swing()
+
+	# Spawn swipe effect for melee attacks
+	spawn_swipe_effect()
 
 	# Recoil - push player forward slightly for melee
 	recoil_offset = attack_direction * 0.5
@@ -502,6 +540,10 @@ func perform_melee_attack() -> void:
 					# Apply damage
 					if enemy.has_method("take_damage"):
 						enemy.take_damage(final_damage, is_crit)
+
+					# Apply stagger on melee hit (0.5s stun)
+					if enemy.has_method("apply_stagger"):
+						enemy.apply_stagger()
 
 					# Knockback
 					if AbilityManager and AbilityManager.has_knockback:
@@ -600,6 +642,9 @@ func add_xp(amount: float) -> void:
 		current_xp -= xp_to_next_level
 		current_level += 1
 		xp_to_next_level *= 1.5
+		# Play level up sound
+		if SoundManager:
+			SoundManager.play_levelup()
 		emit_signal("level_up", current_level)
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
@@ -618,6 +663,10 @@ func heal(amount: float) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
+
+	# Play heal sound
+	if SoundManager:
+		SoundManager.play_heal()
 
 	# Update low HP vignette
 	if JuiceManager:

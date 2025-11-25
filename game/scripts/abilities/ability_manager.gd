@@ -389,6 +389,13 @@ func has_ability(id: String) -> bool:
 			return true
 	return false
 
+func get_ability_acquisition_count(ability_id: String) -> int:
+	var count = 0
+	for ability in acquired_abilities:
+		if ability.id == ability_id:
+			count += 1
+	return count
+
 func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 	if abilities.size() == 0:
 		return null
@@ -419,7 +426,31 @@ func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 				break
 
 	if by_rarity.has(selected_rarity) and by_rarity[selected_rarity].size() > 0:
-		return by_rarity[selected_rarity][randi() % by_rarity[selected_rarity].size()]
+		var rarity_pool = by_rarity[selected_rarity]
+
+		# Weight abilities by how many times they've been acquired (diversity bonus)
+		# Each acquisition reduces the weight by 40%, encouraging variety
+		var weights: Array[float] = []
+		var total_weight: float = 0.0
+
+		for ability in rarity_pool:
+			var acquisition_count = get_ability_acquisition_count(ability.id)
+			# Base weight of 1.0, reduced by 40% for each time already acquired
+			var weight = pow(0.6, acquisition_count)
+			weights.append(weight)
+			total_weight += weight
+
+		# Pick based on weights
+		if total_weight > 0:
+			var weight_roll = randf() * total_weight
+			var weight_cumulative = 0.0
+			for i in rarity_pool.size():
+				weight_cumulative += weights[i]
+				if weight_roll <= weight_cumulative:
+					return rarity_pool[i]
+
+		# Fallback to random if weighting fails
+		return rarity_pool[randi() % rarity_pool.size()]
 
 	return null
 

@@ -56,6 +56,10 @@ func collect_coin() -> void:
 	if player and player.has_method("add_xp"):
 		player.add_xp(xp_value)
 
+	# Play XP pickup sound
+	if SoundManager:
+		SoundManager.play_xp()
+
 	# Update stats display
 	var stats = get_tree().get_first_node_in_group("stats_display")
 	if stats == null:

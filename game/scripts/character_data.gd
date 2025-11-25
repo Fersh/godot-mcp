@@ -120,13 +120,15 @@ static func create_knight() -> CharacterData:
 	data.base_speed = 140.0
 	data.base_attack_cooldown = 1.0
 	data.base_damage = 1.5
-	data.attack_range = 80.0  # Melee reach
+	data.attack_range = 60.0  # Melee reach (reduced by 25% from 80)
 
 	# Sprite config (knight is 128x64 per frame based on user specification)
+	# Ranger is 32x32 at 1.875 scale = 60px. Knight should be 10% bigger = ~2.06 uniform scale
+	# Using uniform scale to preserve proportions
 	data.frame_size = Vector2(128, 64)
 	data.hframes = 8
 	data.vframes = 7
-	data.sprite_scale = Vector2(1.0, 1.0)  # Adjust as needed
+	data.sprite_scale = Vector2(1.5, 1.5)  # Slightly smaller than ranger's 1.875
 
 	# Animation rows (based on knight spritesheet: idle, walk, block, block hit, attack, damage, death)
 	data.row_idle = 0

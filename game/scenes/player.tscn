@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/archer.png" id="2_texture"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/health_bar.tscn" id="4_health_bar"]
 [ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="5_damage_number"]
 [ext_resource type="PackedScene" path="res://scenes/muzzle_flash.tscn" id="6_muzzle_flash"]
+[ext_resource type="PackedScene" path="res://scenes/swipe_effect.tscn" id="7_swipe_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(18, 21)
@@ -17,6 +18,7 @@ script = ExtResource("1_script")
 arrow_scene = ExtResource("3_arrow")
 damage_number_scene = ExtResource("5_damage_number")
 muzzle_flash_scene = ExtResource("6_muzzle_flash")
+swipe_effect_scene = ExtResource("7_swipe_effect")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(1.875, 1.875)
