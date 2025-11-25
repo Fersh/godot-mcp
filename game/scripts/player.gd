@@ -33,6 +33,9 @@ var size_scale: float = 1.0
 var temp_speed_boost: float = 0.0
 var temp_speed_timer: float = 0.0
 
+# Heal accumulator (for small heals that would round to 0)
+var accumulated_heal: float = 0.0
+
 var touch_start_pos: Vector2 = Vector2.ZERO
 var touch_current_pos: Vector2 = Vector2.ZERO
 var is_touching: bool = false
@@ -105,9 +108,11 @@ func take_damage(amount: float) -> void:
 	# Spawn damage number (red for player)
 	spawn_damage_number(amount)
 
-	# Screen shake when taking damage
+	# Screen shake and damage flash when taking damage
 	if JuiceManager:
 		JuiceManager.shake_medium()
+		JuiceManager.damage_flash()
+		JuiceManager.update_player_health(current_health / max_health)
 
 	if current_health <= 0:
 		emit_signal("player_died")
@@ -370,8 +375,16 @@ func heal(amount: float) -> void:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
 
-	# Show green heal number
-	spawn_heal_number(actual_heal)
+	# Update low HP vignette
+	if JuiceManager:
+		JuiceManager.update_player_health(current_health / max_health)
+
+	# Accumulate heal for display - only show when >= 1
+	accumulated_heal += actual_heal
+	if accumulated_heal >= 1.0:
+		var display_amount = floor(accumulated_heal)
+		spawn_heal_number(display_amount)
+		accumulated_heal -= display_amount
 
 func spawn_heal_number(amount: float) -> void:
 	if damage_number_scene == null:
@@ -410,6 +423,9 @@ func update_ability_stats(modifiers: Dictionary) -> void:
 		current_health = max_health * health_percent
 		if health_bar:
 			health_bar.set_health(current_health, max_health)
+		# Update low HP vignette
+		if JuiceManager:
+			JuiceManager.update_player_health(current_health / max_health)
 
 	# Update pickup range
 	pickup_range_multiplier = 1.0 + modifiers.get("pickup_range", 0.0)
