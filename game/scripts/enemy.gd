@@ -64,6 +64,10 @@ func _ready() -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
+	# Duplicate shader material so hit flash only affects this enemy
+	if sprite and sprite.material:
+		sprite.material = sprite.material.duplicate()
+
 func _physics_process(delta: float) -> void:
 	if is_dying:
 		update_death_animation(delta)
@@ -131,10 +135,6 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	if sprite.material:
 		sprite.material.set_shader_parameter("flash_intensity", 1.0)
 
-	# Small screen shake on hit
-	if JuiceManager:
-		JuiceManager.shake_small()
-
 	# Check for cull the weak
 	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
 		current_health = 0
@@ -167,9 +167,8 @@ func die() -> void:
 	# Spawn death particles
 	spawn_death_particles()
 
-	# Juice effects on kill
+	# Juice effects on kill (subtle hitstop only, no shake - too frequent)
 	if JuiceManager:
-		JuiceManager.shake_medium()
 		JuiceManager.hitstop_small()
 
 	# Give player kill XP
