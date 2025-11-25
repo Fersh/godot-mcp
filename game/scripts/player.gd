@@ -758,14 +758,18 @@ func update_ability_stats(modifiers: Dictionary) -> void:
 	# Update max HP (add flat amount)
 	var hp_change = modifiers.get("max_hp", 0.0)
 	var old_max = max_health
-	max_health = base_max_health + hp_change
+	var new_max = base_max_health + hp_change
 
-	# Adjust current health proportionally
-	if old_max > 0 and max_health != old_max:
-		var health_percent = current_health / old_max
-		current_health = max_health * health_percent
+	# When max HP increases, add the bonus to current health too
+	# (so 10/25 + 50 max HP = 60/75, not 30/75)
+	if new_max != old_max:
+		var hp_difference = new_max - old_max
+		max_health = new_max
+		# Add the HP difference to current health (but cap at new max)
+		current_health = min(current_health + hp_difference, max_health)
 		if health_bar:
 			health_bar.set_health(current_health, max_health)
+		emit_signal("health_changed", current_health, max_health)
 		# Update low HP vignette
 		if JuiceManager:
 			JuiceManager.update_player_health(current_health / max_health)

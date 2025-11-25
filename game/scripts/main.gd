@@ -47,7 +47,7 @@ func _on_player_level_up(new_level: int) -> void:
 
 func _on_player_died() -> void:
 	# Wait for death animation then show game over
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(2.5).timeout
 	show_game_over()
 
 func show_game_over() -> void:

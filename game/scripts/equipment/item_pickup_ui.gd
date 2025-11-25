@@ -336,6 +336,13 @@ func _on_equip_pressed() -> void:
 	EquipmentManager.add_pending_item(current_item)
 	EquipmentManager.equip_item(current_item.id, character_id, current_item.slot)
 
+	# Award points for item pickup
+	var stats_display = get_tree().get_first_node_in_group("stats_display")
+	if stats_display == null:
+		stats_display = get_node_or_null("/root/Main/StatsDisplay")
+	if stats_display and stats_display.has_method("add_item_points"):
+		stats_display.add_item_points()
+
 	# Play sound
 	if SoundManager:
 		SoundManager.play_buff()
@@ -352,6 +359,13 @@ func _on_pickup_pressed() -> void:
 
 	# Just add to pending inventory
 	EquipmentManager.add_pending_item(current_item)
+
+	# Award points for item pickup
+	var stats_display = get_tree().get_first_node_in_group("stats_display")
+	if stats_display == null:
+		stats_display = get_node_or_null("/root/Main/StatsDisplay")
+	if stats_display and stats_display.has_method("add_item_points"):
+		stats_display.add_item_points()
 
 	# Play sound
 	if SoundManager:

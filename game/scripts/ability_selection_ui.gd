@@ -18,6 +18,7 @@ var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
 
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
+@onready var subtitle_label: Label = $Panel/VBoxContainer/SubtitleLabel
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
 var pixel_font: Font = null
@@ -25,11 +26,14 @@ var pixel_font: Font = null
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Process even when paused
-	pixel_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
+	# Use the same font as points/coins display
+	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
-	# Apply pixel font to title
+	# Apply pixel font to title and subtitle
 	if pixel_font and title_label:
 		title_label.add_theme_font_override("font", pixel_font)
+	if pixel_font and subtitle_label:
+		subtitle_label.add_theme_font_override("font", pixel_font)
 
 func _process(delta: float) -> void:
 	if not is_rolling:
@@ -102,6 +106,9 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 	visible = true
 	get_tree().paused = true
 
+	# Animate entrance
+	_animate_entrance()
+
 func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var button = Button.new()
 	button.custom_minimum_size = Vector2(280, 380)
@@ -117,7 +124,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
 	rarity_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 18)
+	rarity_label.add_theme_font_size_override("font_size", 10)
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(rarity_label)
@@ -126,7 +133,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var name_label = Label.new()
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 28)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
@@ -143,7 +150,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 22)
+	desc_label.add_theme_font_size_override("font_size", 11)
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -158,9 +165,9 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 
 	# Select hint
 	var hint_label = Label.new()
-	hint_label.text = "[Click to Select]"
+	hint_label.text = "[TAP TO SELECT]"
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 16)
+	hint_label.add_theme_font_size_override("font_size", 8)
 	hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	if pixel_font:
 		hint_label.add_theme_font_override("font", pixel_font)
@@ -295,3 +302,39 @@ func _input(event: InputEvent) -> void:
 			KEY_3:
 				if current_choices.size() > 2:
 					_on_ability_selected(2)
+
+func _animate_entrance() -> void:
+	# Animate the panel scaling up and fading in
+	if panel:
+		panel.scale = Vector2(0.8, 0.8)
+		panel.modulate.a = 0.0
+		panel.pivot_offset = panel.size / 2
+
+		var tween = create_tween()
+		tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		tween.set_parallel(true)
+		tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		tween.tween_property(panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+	# Animate title with a bounce
+	if title_label:
+		title_label.scale = Vector2(1.5, 1.5)
+		title_label.pivot_offset = Vector2(title_label.size.x / 2, title_label.size.y / 2)
+
+		var title_tween = create_tween()
+		title_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		title_tween.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+
+	# Animate each card sliding in from below with stagger
+	for i in ability_buttons.size():
+		var button = ability_buttons[i]
+		button.modulate.a = 0.0
+		var original_pos = button.position
+		button.position.y += 50
+
+		var card_tween = create_tween()
+		card_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		card_tween.tween_interval(0.1 * i)  # Stagger delay
+		card_tween.set_parallel(true)
+		card_tween.tween_property(button, "position:y", original_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		card_tween.tween_property(button, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
