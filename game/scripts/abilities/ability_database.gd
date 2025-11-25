@@ -9,6 +9,7 @@ static func get_all_abilities() -> Array[AbilityData]:
 	abilities.append_array(get_common_abilities())
 	abilities.append_array(get_rare_abilities())
 	abilities.append_array(get_legendary_abilities())
+	abilities.append_array(get_mythic_abilities())
 	abilities.append_array(get_ranged_abilities())
 	abilities.append_array(get_melee_abilities())
 	return abilities
@@ -80,6 +81,33 @@ static func get_common_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.DOUBLE_XP_CHANCE, value = 0.2}]
+		),
+		AbilityData.new(
+			"greed",
+			"Greed",
+			"+50% Coin Gain, -20% Max HP",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.STAT_BOOST,
+			[
+				{effect_type = AbilityData.EffectType.COIN_GAIN, value = 0.5},
+				{effect_type = AbilityData.EffectType.MAX_HP, value = -20.0}
+			]
+		),
+		AbilityData.new(
+			"focus",
+			"Focus",
+			"Regenerate HP while standing still",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.FOCUS_REGEN, value = 2.0}]  # HP per second while still
+		),
+		AbilityData.new(
+			"momentum",
+			"Momentum",
+			"Moving increases next hit damage",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.MOMENTUM, value = 0.5}]  # +50% max bonus
 		),
 	]
 
@@ -160,6 +188,38 @@ static func get_rare_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.KNOCKBACK, value = 150.0}]
+		),
+		AbilityData.new(
+			"retribution",
+			"Retribution",
+			"You explode when taking damage",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.RETRIBUTION, value = 15.0}]  # explosion damage
+		),
+		AbilityData.new(
+			"time_dilation",
+			"Time Dilation",
+			"Enemies move 20% slower permanently",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.TIME_DILATION, value = 0.2}]  # 20% slow
+		),
+		AbilityData.new(
+			"giant_slayer",
+			"Giant Slayer",
+			"+100% Damage to enemies with >80% HP",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.GIANT_SLAYER, value = 1.0}]  # +100% damage
+		),
+		AbilityData.new(
+			"backstab",
+			"Backstab",
+			"+50% Critical Hit chance",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.STAT_BOOST,
+			[{effect_type = AbilityData.EffectType.BACKSTAB, value = 0.5}]
 		),
 	]
 
@@ -243,6 +303,45 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.DRONE, value = 1.0}]
 		),
+		AbilityData.new(
+			"blood_money",
+			"Blood Money",
+			"Picking up coins heals you for 1 HP",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.BLOOD_MONEY, value = 1.0}]  # HP per coin
+		),
+		AbilityData.new(
+			"divine_shield",
+			"Divine Shield",
+			"Invulnerable for 2 seconds after taking damage",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.DIVINE_SHIELD, value = 2.0}]  # duration in seconds
+		),
+	]
+
+# ============================================
+# MYTHIC ABILITIES (Game Changers)
+# ============================================
+static func get_mythic_abilities() -> Array[AbilityData]:
+	return [
+		AbilityData.new(
+			"phoenix",
+			"Phoenix",
+			"Revive once per run with 50% HP and explosion",
+			AbilityData.Rarity.MYTHIC,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.PHOENIX, value = 0.5}]  # revive with 50% HP
+		),
+		AbilityData.new(
+			"boomerang",
+			"Boomerang",
+			"Projectiles fly out and return, hitting twice",
+			AbilityData.Rarity.MYTHIC,
+			AbilityData.Type.RANGED_ONLY,
+			[{effect_type = AbilityData.EffectType.BOOMERANG, value = 1.0}]
+		),
 	]
 
 # ============================================
@@ -260,12 +359,27 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.PROJECTILE_SPEED, value = 0.3}]
 		),
 		AbilityData.new(
-			"rubber_walls",
-			"Rubber Walls",
-			"Arrows bounce off walls",
+			"heavy_draw",
+			"Heavy Draw",
+			"+50% Damage, +20% Speed, -20% Fire Rate",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.RANGED_ONLY,
-			[{effect_type = AbilityData.EffectType.RUBBER_WALLS, value = 1.0}]
+			[
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.5},
+				{effect_type = AbilityData.EffectType.PROJECTILE_SPEED, value = 0.2},
+				{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = -0.2}
+			]
+		),
+		AbilityData.new(
+			"rapid_fire",
+			"Rapid Fire",
+			"+15% Fire Rate, -5% Damage",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.RANGED_ONLY,
+			[
+				{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.15},
+				{effect_type = AbilityData.EffectType.DAMAGE, value = -0.05}
+			]
 		),
 		# Rare
 		AbilityData.new(
@@ -301,6 +415,34 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.SNIPER_DAMAGE, value = 0.5}]  # +50% at max range
 		),
 		AbilityData.new(
+			"double_tap",
+			"Double Tap",
+			"20% chance to fire twice per shot",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.RANGED_ONLY,
+			[{effect_type = AbilityData.EffectType.DOUBLE_TAP, value = 0.2}]
+		),
+		AbilityData.new(
+			"barrage",
+			"Barrage",
+			"+3 Projectiles, +Spread, -20% Damage",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.RANGED_ONLY,
+			[
+				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 3.0},
+				{effect_type = AbilityData.EffectType.PROJECTILE_SPREAD, value = 0.4},
+				{effect_type = AbilityData.EffectType.DAMAGE, value = -0.2}
+			]
+		),
+		AbilityData.new(
+			"point_blank",
+			"Point Blank",
+			"+50% Damage to enemies within close range",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.RANGED_ONLY,
+			[{effect_type = AbilityData.EffectType.POINT_BLANK, value = 0.5}]  # +50% damage within close range
+		),
+		AbilityData.new(
 			"scattergun",
 			"Scattergun",
 			"+2 Projectiles, increased spread",
@@ -310,6 +452,14 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 2.0},
 				{effect_type = AbilityData.EffectType.PROJECTILE_SPREAD, value = 0.3}  # radians
 			]
+		),
+		AbilityData.new(
+			"ricochet",
+			"Ricochet",
+			"Arrows bounce to a nearby enemy on hit",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.RANGED_ONLY,
+			[{effect_type = AbilityData.EffectType.RICOCHET, value = 1.0}]  # number of bounces
 		),
 	]
 
@@ -341,12 +491,28 @@ static func get_melee_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"iron_skin",
 			"Iron Skin",
-			"+30 Max HP, -5% Damage Taken",
+			"+2 Armor (Flat damage reduction)",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.ARMOR, value = 2.0}]
+		),
+		AbilityData.new(
+			"knockout",
+			"Knockout",
+			"+10 Knockback force",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.MELEE_KNOCKBACK, value = 10.0}]
+		),
+		AbilityData.new(
+			"sword_mastery",
+			"Sword Mastery",
+			"+10% Damage and +10% Attack Speed",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.MELEE_ONLY,
 			[
-				{effect_type = AbilityData.EffectType.MAX_HP, value = 30.0},
-				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.0}  # Damage reduction handled separately
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.1},
+				{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.1}
 			]
 		),
 		# Rare
@@ -382,6 +548,30 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.4}]
 		),
+		AbilityData.new(
+			"parry",
+			"Parry",
+			"20% chance to block damage entirely",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.PARRY, value = 0.2}]
+		),
+		AbilityData.new(
+			"seismic_slam",
+			"Seismic Slam",
+			"Attacks have a chance to Stun enemies",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.SEISMIC_SLAM, value = 0.15}]  # 15% stun chance
+		),
+		AbilityData.new(
+			"bloodthirst",
+			"Bloodthirst",
+			"Kills grant temporary Attack Speed boost",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.BLOODTHIRST, value = 0.3}]  # +30% attack speed for 3s
+		),
 		# Legendary
 		AbilityData.new(
 			"whirlwind",
@@ -409,5 +599,13 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.FRENZY, value = 0.5}]
+		),
+		AbilityData.new(
+			"blade_beam",
+			"Blade Beam",
+			"Swinging your sword fires a projectile beam",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.BLADE_BEAM, value = 1.0}]
 		),
 	]

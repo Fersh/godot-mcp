@@ -72,6 +72,46 @@ var has_whirlwind: bool = false
 var whirlwind_cooldown: float = 3.0
 var whirlwind_timer: float = 0.0
 
+# New ability effects
+var armor: float = 0.0  # Flat damage reduction
+var coin_gain_bonus: float = 0.0
+var has_focus_regen: bool = false
+var focus_regen_rate: float = 0.0
+var has_momentum: bool = false
+var momentum_bonus: float = 0.0
+var melee_knockback: float = 0.0
+var has_retribution: bool = false
+var retribution_damage: float = 0.0
+var has_time_dilation: bool = false
+var time_dilation_slow: float = 0.0
+var has_giant_slayer: bool = false
+var giant_slayer_bonus: float = 0.0
+var has_backstab: bool = false
+var backstab_crit_bonus: float = 0.0
+var has_parry: bool = false
+var parry_chance: float = 0.0
+var has_seismic_slam: bool = false
+var seismic_stun_chance: float = 0.0
+var has_bloodthirst: bool = false
+var bloodthirst_boost: float = 0.0
+var has_double_tap: bool = false
+var double_tap_chance: float = 0.0
+var has_point_blank: bool = false
+var point_blank_bonus: float = 0.0
+var has_blade_beam: bool = false
+var has_blood_money: bool = false
+var blood_money_heal: float = 0.0
+var has_divine_shield: bool = false
+var divine_shield_duration: float = 0.0
+var divine_shield_active: bool = false
+var divine_shield_timer: float = 0.0
+var has_ricochet: bool = false
+var ricochet_bounces: int = 0
+var has_phoenix: bool = false
+var phoenix_hp_percent: float = 0.0
+var phoenix_used: bool = false
+var has_boomerang: bool = false
+
 # Timers for periodic effects
 var regen_timer: float = 0.0
 var tesla_timer: float = 0.0
@@ -159,6 +199,46 @@ func reset() -> void:
 	whirlwind_cooldown = 3.0
 	whirlwind_timer = 0.0
 
+	# Reset new ability effects
+	armor = 0.0
+	coin_gain_bonus = 0.0
+	has_focus_regen = false
+	focus_regen_rate = 0.0
+	has_momentum = false
+	momentum_bonus = 0.0
+	melee_knockback = 0.0
+	has_retribution = false
+	retribution_damage = 0.0
+	has_time_dilation = false
+	time_dilation_slow = 0.0
+	has_giant_slayer = false
+	giant_slayer_bonus = 0.0
+	has_backstab = false
+	backstab_crit_bonus = 0.0
+	has_parry = false
+	parry_chance = 0.0
+	has_seismic_slam = false
+	seismic_stun_chance = 0.0
+	has_bloodthirst = false
+	bloodthirst_boost = 0.0
+	has_double_tap = false
+	double_tap_chance = 0.0
+	has_point_blank = false
+	point_blank_bonus = 0.0
+	has_blade_beam = false
+	has_blood_money = false
+	blood_money_heal = 0.0
+	has_divine_shield = false
+	divine_shield_duration = 0.0
+	divine_shield_active = false
+	divine_shield_timer = 0.0
+	has_ricochet = false
+	ricochet_bounces = 0
+	has_phoenix = false
+	phoenix_hp_percent = 0.0
+	phoenix_used = false
+	has_boomerang = false
+
 	# Reset timers
 	regen_timer = 0.0
 	tesla_timer = 0.0
@@ -181,6 +261,18 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 		if regen_timer >= 1.0:
 			regen_timer = 0.0
 			heal_player(player, total_regen)
+
+	# Focus regen (only while standing still)
+	if has_focus_regen and player.has_method("get_velocity"):
+		var velocity = player.get_velocity() if player.has_method("get_velocity") else player.velocity
+		if velocity.length() < 5.0:  # Standing still
+			heal_player(player, focus_regen_rate * delta)
+
+	# Divine Shield timer
+	if divine_shield_active:
+		divine_shield_timer -= delta
+		if divine_shield_timer <= 0:
+			divine_shield_active = false
 
 	# Tesla Coil
 	if has_tesla_coil:
@@ -296,20 +388,6 @@ func spawn_lightning_bolt(pos: Vector2) -> void:
 	tween.tween_property(bolt, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(bolt.queue_free)
 
-# Called when an enemy dies - handles on-kill effects
-func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
-	# Vampirism
-	if has_vampirism and randf() < vampirism_chance:
-		heal_player(player, 1.0)
-
-	# Adrenaline
-	if has_adrenaline:
-		apply_adrenaline_buff(player)
-
-	# Death Detonation
-	if has_death_explosion:
-		trigger_death_explosion(enemy)
-
 func apply_adrenaline_buff(player: Node2D) -> void:
 	# Temporary speed boost
 	if player.has_method("apply_temporary_speed_boost"):
@@ -412,7 +490,7 @@ func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 	var cumulative = 0.0
 	var selected_rarity = AbilityData.Rarity.COMMON
 
-	for rarity in [AbilityData.Rarity.LEGENDARY, AbilityData.Rarity.RARE, AbilityData.Rarity.COMMON]:
+	for rarity in [AbilityData.Rarity.MYTHIC, AbilityData.Rarity.LEGENDARY, AbilityData.Rarity.RARE, AbilityData.Rarity.COMMON]:
 		cumulative += AbilityData.RARITY_WEIGHTS[rarity]
 		if roll <= cumulative and by_rarity.has(rarity) and by_rarity[rarity].size() > 0:
 			selected_rarity = rarity
@@ -563,6 +641,63 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.WHIRLWIND:
 				has_whirlwind = true
 				whirlwind_cooldown = value
+
+			# New ability effects
+			AbilityData.EffectType.ARMOR:
+				armor += value
+			AbilityData.EffectType.COIN_GAIN:
+				coin_gain_bonus += value
+			AbilityData.EffectType.FOCUS_REGEN:
+				has_focus_regen = true
+				focus_regen_rate += value
+			AbilityData.EffectType.MOMENTUM:
+				has_momentum = true
+				momentum_bonus += value
+			AbilityData.EffectType.MELEE_KNOCKBACK:
+				melee_knockback += value
+			AbilityData.EffectType.RETRIBUTION:
+				has_retribution = true
+				retribution_damage += value
+			AbilityData.EffectType.TIME_DILATION:
+				has_time_dilation = true
+				time_dilation_slow += value
+			AbilityData.EffectType.GIANT_SLAYER:
+				has_giant_slayer = true
+				giant_slayer_bonus += value
+			AbilityData.EffectType.BACKSTAB:
+				has_backstab = true
+				backstab_crit_bonus += value
+			AbilityData.EffectType.PARRY:
+				has_parry = true
+				parry_chance += value
+			AbilityData.EffectType.SEISMIC_SLAM:
+				has_seismic_slam = true
+				seismic_stun_chance += value
+			AbilityData.EffectType.BLOODTHIRST:
+				has_bloodthirst = true
+				bloodthirst_boost += value
+			AbilityData.EffectType.DOUBLE_TAP:
+				has_double_tap = true
+				double_tap_chance += value
+			AbilityData.EffectType.POINT_BLANK:
+				has_point_blank = true
+				point_blank_bonus += value
+			AbilityData.EffectType.BLADE_BEAM:
+				has_blade_beam = true
+			AbilityData.EffectType.BLOOD_MONEY:
+				has_blood_money = true
+				blood_money_heal += value
+			AbilityData.EffectType.DIVINE_SHIELD:
+				has_divine_shield = true
+				divine_shield_duration = maxf(divine_shield_duration, value)
+			AbilityData.EffectType.RICOCHET:
+				has_ricochet = true
+				ricochet_bounces += int(value)
+			AbilityData.EffectType.PHOENIX:
+				has_phoenix = true
+				phoenix_hp_percent = value
+			AbilityData.EffectType.BOOMERANG:
+				has_boomerang = true
 
 	# Apply stat changes to player immediately
 	apply_stats_to_player()
@@ -830,3 +965,158 @@ func has_equipment_ability(ability_id: String) -> bool:
 	var character_id = CharacterManager.selected_character_id
 	var abilities = EquipmentManager.get_equipment_exclusive_abilities(character_id)
 	return ability_id in abilities
+
+# ============================================
+# NEW ABILITY UTILITY FUNCTIONS
+# ============================================
+
+# Get armor (flat damage reduction)
+func get_armor() -> float:
+	return armor
+
+# Get coin gain multiplier
+func get_coin_gain_multiplier() -> float:
+	return 1.0 + coin_gain_bonus
+
+# Get momentum damage bonus based on player velocity
+func get_momentum_damage_bonus(player_velocity: Vector2) -> float:
+	if not has_momentum:
+		return 0.0
+	var speed_ratio = clampf(player_velocity.length() / 300.0, 0.0, 1.0)  # Normalized to 300 speed
+	return momentum_bonus * speed_ratio
+
+# Get melee knockback force
+func get_melee_knockback() -> float:
+	return melee_knockback
+
+# Trigger retribution explosion when player takes damage
+func trigger_retribution(player_pos: Vector2) -> void:
+	if not has_retribution:
+		return
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var explosion_radius = 100.0
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = player_pos.distance_to(enemy.global_position)
+			if dist <= explosion_radius and enemy.has_method("take_damage"):
+				enemy.take_damage(retribution_damage)
+	spawn_explosion_effect(player_pos)
+
+# Get time dilation slow factor for enemies
+func get_time_dilation_slow() -> float:
+	return time_dilation_slow
+
+# Get giant slayer damage bonus
+func get_giant_slayer_bonus(enemy_hp_percent: float) -> float:
+	if not has_giant_slayer:
+		return 0.0
+	if enemy_hp_percent > 0.8:
+		return giant_slayer_bonus
+	return 0.0
+
+# Get total crit chance including backstab
+func get_total_crit_chance() -> float:
+	var base = get_crit_chance()
+	if has_backstab:
+		base += backstab_crit_bonus
+	return base
+
+# Check if parry blocks damage
+func check_parry() -> bool:
+	if not has_parry:
+		return false
+	return randf() < parry_chance
+
+# Check if seismic slam stuns
+func check_seismic_stun() -> bool:
+	if not has_seismic_slam:
+		return false
+	return randf() < seismic_stun_chance
+
+# Apply bloodthirst attack speed boost on kill
+func apply_bloodthirst_boost(player: Node2D) -> void:
+	if not has_bloodthirst:
+		return
+	if player.has_method("apply_temporary_attack_speed_boost"):
+		player.apply_temporary_attack_speed_boost(bloodthirst_boost, 3.0)
+
+# Check if double tap triggers
+func check_double_tap() -> bool:
+	if not has_double_tap:
+		return false
+	return randf() < double_tap_chance
+
+# Get point blank damage bonus
+func get_point_blank_bonus(distance: float) -> float:
+	if not has_point_blank:
+		return 0.0
+	if distance < 100.0:  # Close range threshold
+		return point_blank_bonus
+	return 0.0
+
+# Check if blade beam should fire
+func should_fire_blade_beam() -> bool:
+	return has_blade_beam
+
+# Called when player picks up a coin
+func on_coin_pickup(player: Node2D) -> void:
+	if has_blood_money:
+		heal_player(player, blood_money_heal)
+
+# Trigger divine shield invulnerability
+func trigger_divine_shield() -> void:
+	if has_divine_shield and not divine_shield_active:
+		divine_shield_active = true
+		divine_shield_timer = divine_shield_duration
+
+# Check if player is currently invulnerable from divine shield
+func is_divine_shield_active() -> bool:
+	return divine_shield_active
+
+# Get ricochet bounce count
+func get_ricochet_bounces() -> int:
+	return ricochet_bounces
+
+# Check and trigger phoenix revive
+func try_phoenix_revive(player: Node2D) -> bool:
+	if not has_phoenix or phoenix_used:
+		return false
+	phoenix_used = true
+	if player.has_method("revive_with_percent"):
+		player.revive_with_percent(phoenix_hp_percent)
+	# Trigger explosion on revive
+	trigger_phoenix_explosion(player.global_position)
+	return true
+
+func trigger_phoenix_explosion(pos: Vector2) -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var explosion_radius = 150.0
+	var explosion_damage = 50.0
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = pos.distance_to(enemy.global_position)
+			if dist <= explosion_radius and enemy.has_method("take_damage"):
+				enemy.take_damage(explosion_damage)
+	spawn_explosion_effect(pos)
+
+# Check if projectiles should boomerang
+func should_boomerang() -> bool:
+	return has_boomerang
+
+# Called when enemy dies - handle bloodthirst
+func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
+	# Vampirism
+	if has_vampirism and randf() < vampirism_chance:
+		heal_player(player, 1.0)
+
+	# Adrenaline
+	if has_adrenaline:
+		apply_adrenaline_buff(player)
+
+	# Death Detonation
+	if has_death_explosion:
+		trigger_death_explosion(enemy)
+
+	# Bloodthirst
+	if has_bloodthirst:
+		apply_bloodthirst_boost(player)

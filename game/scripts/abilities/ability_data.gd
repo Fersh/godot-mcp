@@ -4,7 +4,8 @@ class_name AbilityData
 enum Rarity {
 	COMMON,
 	RARE,
-	LEGENDARY
+	LEGENDARY,
+	MYTHIC
 }
 
 enum Type {
@@ -59,13 +60,36 @@ enum EffectType {
 	BLEEDING,
 	DEFLECT,
 	WHIRLWIND,
+
+	# New effects
+	ARMOR,              # Flat damage reduction
+	COIN_GAIN,          # Percentage coin gain increase
+	FOCUS_REGEN,        # Regen while standing still
+	MOMENTUM,           # Damage increase while moving
+	MELEE_KNOCKBACK,    # Knockback force for melee
+	RETRIBUTION,        # Explode when taking damage
+	TIME_DILATION,      # Slow enemies permanently
+	GIANT_SLAYER,       # Bonus damage to high HP enemies
+	BACKSTAB,           # Bonus crit chance
+	PARRY,              # Chance to block damage entirely
+	SEISMIC_SLAM,       # Chance to stun enemies
+	BLOODTHIRST,        # Attack speed boost on kill
+	DOUBLE_TAP,         # Chance to fire twice
+	POINT_BLANK,        # Bonus damage at close range
+	BLADE_BEAM,         # Melee fires projectile
+	BLOOD_MONEY,        # Coins heal you
+	DIVINE_SHIELD,      # Invulnerability after taking damage
+	RICOCHET,           # Arrows bounce to nearby enemy
+	PHOENIX,            # Revive once
+	BOOMERANG,          # Projectiles return
 }
 
 # Rarity weights for random selection (out of 100)
 const RARITY_WEIGHTS = {
-	Rarity.COMMON: 60,
-	Rarity.RARE: 30,
-	Rarity.LEGENDARY: 10
+	Rarity.COMMON: 55,
+	Rarity.RARE: 28,
+	Rarity.LEGENDARY: 12,
+	Rarity.MYTHIC: 5
 }
 
 var id: String
@@ -92,6 +116,8 @@ static func get_rarity_color(rarity: Rarity) -> Color:
 			return Color(0.3, 0.5, 1.0)  # Blue
 		Rarity.LEGENDARY:
 			return Color(1.0, 0.8, 0.2)  # Gold
+		Rarity.MYTHIC:
+			return Color(1.0, 0.2, 0.3)  # Red
 	return Color.WHITE
 
 static func get_rarity_name(rarity: Rarity) -> String:
@@ -102,4 +128,6 @@ static func get_rarity_name(rarity: Rarity) -> String:
 			return "Rare"
 		Rarity.LEGENDARY:
 			return "Legendary"
+		Rarity.MYTHIC:
+			return "Mythic"
 	return "Unknown"
