@@ -15,10 +15,10 @@ func _on_ready() -> void:
 	windup_duration = 0.15 # Faster windup than orc (0.25)
 	animation_speed = 14.0 # Faster animations
 
-	# Ratfolk spritesheet: Analyzing the image shows roughly 5 rows x 13 cols
+	# Ratfolk spritesheet: 768x160 = 12 cols x 5 rows (64x32 per frame)
 	# Row 0: Idle (4 frames)
 	# Row 1: Move (8 frames)
-	# Row 2: Attack sequence (13 frames - longer animation)
+	# Row 2: Attack sequence (12 frames)
 	# Row 3: Damage/hit (4 frames)
 	# Row 4: Death (5 frames)
 	ROW_IDLE = 0
@@ -26,12 +26,12 @@ func _on_ready() -> void:
 	ROW_ATTACK = 2
 	ROW_DAMAGE = 3
 	ROW_DEATH = 4
-	COLS_PER_ROW = 13
+	COLS_PER_ROW = 12
 
 	FRAME_COUNTS = {
 		0: 4,   # IDLE
 		1: 8,   # MOVE
-		2: 13,  # ATTACK
+		2: 12,  # ATTACK
 		3: 4,   # DAMAGE
 		4: 5,   # DEATH
 	}

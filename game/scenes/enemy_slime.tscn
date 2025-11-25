@@ -15,6 +15,9 @@ shader_parameter/flash_color = Color(1, 1, 1, 1)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
 size = Vector2(28, 22)
 
+[sub_resource type="Gradient" id="Gradient_slime"]
+colors = PackedColorArray(0.2, 0.8, 0.3, 1, 0.1, 0.5, 0.15, 1)
+
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_slime"]
 gradient = SubResource("Gradient_slime")
 width = 24
@@ -22,9 +25,6 @@ height = 20
 fill = 1
 fill_from = Vector2(0.5, 0)
 fill_to = Vector2(0.5, 1)
-
-[sub_resource type="Gradient" id="Gradient_slime"]
-colors = PackedColorArray(0.2, 0.8, 0.3, 1, 0.1, 0.5, 0.15, 1)
 
 [node name="EnemySlime" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 4

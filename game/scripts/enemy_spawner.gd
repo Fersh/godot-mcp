@@ -17,14 +17,14 @@ var spawn_timer: float = 0.0
 var game_time: float = 0.0
 
 # Wave timing configuration (in seconds)
-# Phase 1: 0:00 - 1:00   - Primarily ratfolk (starter enemies)
-# Phase 2: 1:00 - 2:30   - Orcs phase in, ratfolk phase out
+# Phase 1: 0:00 - 0:30   - Primarily ratfolk (starter enemies)
+# Phase 2: 0:30 - 2:30   - Orcs phase in, ratfolk phase out
 # Phase 3: 2:30 - 4:00   - Primarily orcs, imps start appearing
 # Phase 4: 4:00 - 5:00   - Orcs + imps, slimes start appearing
 # Phase 5: 5:00+         - Mix of orcs, imps, slimes (ratfolk rare)
 
 const PHASE_RATFOLK_START: float = 0.0
-const PHASE_ORC_START: float = 60.0      # 1:00
+const PHASE_ORC_START: float = 30.0      # 0:30
 const PHASE_IMP_START: float = 150.0     # 2:30
 const PHASE_SLIME_START: float = 300.0   # 5:00
 

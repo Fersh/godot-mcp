@@ -14,7 +14,7 @@ shader_parameter/flash_intensity = 0.0
 shader_parameter/flash_color = Color(1, 1, 1, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
-size = Vector2(12, 14)
+size = Vector2(15, 18)
 
 [node name="EnemyRatfolk" type="CharacterBody2D" groups=["enemies"]]
 collision_layer = 4
@@ -26,9 +26,9 @@ death_particles_scene = ExtResource("7_death_particles")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_hit_flash")
-scale = Vector2(1.5, 1.5)
+scale = Vector2(1.875, 1.875)
 texture = ExtResource("2_texture")
-hframes = 13
+hframes = 12
 vframes = 5
 frame = 0
 
@@ -36,4 +36,4 @@ frame = 0
 shape = SubResource("RectangleShape2D_enemy")
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
-offset_y = -20.0
+offset_y = -25.0
