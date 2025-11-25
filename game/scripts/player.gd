@@ -118,7 +118,6 @@ func take_damage(amount: float) -> void:
 		emit_signal("player_died")
 		if JuiceManager:
 			JuiceManager.shake_large()
-			JuiceManager.hitstop_large()
 
 func spawn_damage_number(amount: float) -> void:
 	if damage_number_scene == null:
@@ -185,13 +184,10 @@ func _physics_process(delta: float) -> void:
 	if attack_timer >= attack_cooldown:
 		try_attack()
 
-	# Apply and decay recoil
+	# Apply recoil to actual position
 	if recoil_offset.length() > 0.1:
-		sprite.position = recoil_offset
+		position += recoil_offset * delta * 60  # Apply as movement
 		recoil_offset = recoil_offset.lerp(Vector2.ZERO, recoil_recovery * delta)
-	else:
-		sprite.position = Vector2.ZERO
-		recoil_offset = Vector2.ZERO
 
 	# Update animation
 	update_animation(delta, direction)
@@ -233,7 +229,7 @@ func spawn_arrow() -> void:
 	spawn_muzzle_flash()
 
 	# Recoil - push player back slightly
-	recoil_offset = -attack_direction * 8.0
+	recoil_offset = -attack_direction * 1.0
 
 	# Get ability modifiers
 	var extra_projectiles: int = 0

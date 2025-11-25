@@ -18,16 +18,16 @@ func _ready() -> void:
 	spawn_particles()
 
 func spawn_particles() -> void:
-	var count = randi_range(8, 15)
+	var count = randi_range(6, 12)
 	for i in count:
 		var p = BloodParticle.new()
 		p.pos = Vector2.ZERO
-		p.vel = Vector2(randf_range(-150, 150), randf_range(-200, -50))
-		p.size = randf_range(2, 5)
+		p.vel = Vector2(randf_range(-120, 120), randf_range(-180, -40))
+		p.size = float(randi_range(2, 4))  # Integer pixel sizes
 		p.color = Color(0.8, 0.1, 0.1, 1.0).lerp(Color(0.5, 0.05, 0.05, 1.0), randf())
 		p.max_lifetime = randf_range(0.8, 1.5)
 		p.lifetime = p.max_lifetime
-		p.ground_y = randf_range(10, 30)  # Random ground level relative to spawn
+		p.ground_y = float(randi_range(8, 24))  # Integer ground levels
 		particles.append(p)
 
 func _process(delta: float) -> void:
@@ -64,4 +64,7 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	for p in particles:
 		if p.lifetime > 0:
-			draw_circle(p.pos, p.size, p.color)
+			# Snap to pixel grid for pixelated look
+			var pixel_pos = Vector2(round(p.pos.x), round(p.pos.y))
+			var rect = Rect2(pixel_pos - Vector2(p.size / 2, p.size / 2), Vector2(p.size, p.size))
+			draw_rect(rect, p.color)

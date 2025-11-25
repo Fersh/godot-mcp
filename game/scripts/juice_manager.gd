@@ -86,11 +86,11 @@ func _process(delta: float) -> void:
 	# Update low HP heartbeat pulse
 	if low_hp_active and low_hp_overlay and low_hp_overlay.material:
 		# Calculate heartbeat speed based on health
-		# At 50% HP: slow pulse (1 beat per 1.5 seconds)
-		# At 10% HP: fast pulse (3 beats per second)
+		# At 50% HP: slow pulse (1 beat per 3 seconds)
+		# At 10% HP: faster pulse (1.75 beats per second)
 		var health_urgency = 1.0 - (low_hp_ratio / 0.5)  # 0 at 50%, 1 at 0%
 		health_urgency = clamp(health_urgency, 0.0, 1.0)
-		var beats_per_second = lerp(0.7, 3.5, health_urgency)
+		var beats_per_second = lerp(0.35, 1.75, health_urgency)
 
 		heartbeat_phase += delta * beats_per_second
 		if heartbeat_phase >= 1.0:
