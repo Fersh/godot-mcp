@@ -8,8 +8,21 @@ extends CharacterBody2D
 @export var max_health: float = 25.0
 @export var damage_number_scene: PackedScene
 
+# Base stats (for ability modifications)
+var base_speed: float
+var base_attack_cooldown: float
+var base_max_health: float
+
 var current_health: float
 @onready var health_bar: Node2D = $HealthBar
+
+# Ability-related stats
+var pickup_range_multiplier: float = 1.0
+var size_scale: float = 1.0
+
+# Temporary buffs
+var temp_speed_boost: float = 0.0
+var temp_speed_timer: float = 0.0
 
 var touch_start_pos: Vector2 = Vector2.ZERO
 var touch_current_pos: Vector2 = Vector2.ZERO
@@ -59,6 +72,11 @@ signal health_changed(current_health: float, max_health: float)
 signal player_died()
 
 func _ready() -> void:
+	# Store base stats for ability calculations
+	base_speed = speed
+	base_attack_cooldown = attack_cooldown
+	base_max_health = max_health
+
 	current_health = max_health
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
@@ -98,6 +116,12 @@ func _input(event: InputEvent) -> void:
 		touch_current_pos = event.position
 
 func _physics_process(delta: float) -> void:
+	# Update temporary buffs
+	if temp_speed_timer > 0:
+		temp_speed_timer -= delta
+		if temp_speed_timer <= 0:
+			temp_speed_boost = 0.0
+
 	var direction := Vector2.ZERO
 
 	# Touch/drag input for mobile
@@ -119,7 +143,9 @@ func _physics_process(delta: float) -> void:
 	if direction.length() > 0:
 		direction = direction.normalized()
 
-	velocity = direction * speed
+	# Apply speed with ability modifiers and temp boosts
+	var effective_speed = speed * (1.0 + temp_speed_boost)
+	velocity = direction * effective_speed
 	move_and_slide()
 
 	# Keep player within arena bounds (2048x2048)
@@ -169,9 +195,51 @@ func spawn_arrow() -> void:
 	if arrow_scene == null:
 		return
 
+	# Get ability modifiers
+	var extra_projectiles: int = 0
+	var spread_angle: float = 0.0
+	var has_rear_shot: bool = false
+
+	if AbilityManager:
+		extra_projectiles = AbilityManager.stat_modifiers.get("projectile_count", 0)
+		spread_angle = AbilityManager.stat_modifiers.get("projectile_spread", 0.0)
+		has_rear_shot = AbilityManager.has_rear_shot
+
+	var total_projectiles = 1 + extra_projectiles
+
+	# Calculate spread for multiple projectiles
+	if total_projectiles > 1:
+		var base_spread = spread_angle if spread_angle > 0 else 0.2  # Default small spread
+		var start_angle = -base_spread * (total_projectiles - 1) / 2.0
+
+		for i in total_projectiles:
+			var angle_offset = start_angle + i * base_spread
+			var dir = attack_direction.rotated(angle_offset)
+			spawn_single_arrow(dir)
+	else:
+		spawn_single_arrow(attack_direction)
+
+	# Rear shot ability
+	if has_rear_shot:
+		spawn_single_arrow(-attack_direction)
+
+func spawn_single_arrow(direction: Vector2) -> void:
 	var arrow = arrow_scene.instantiate()
 	arrow.global_position = global_position
-	arrow.direction = attack_direction
+	arrow.direction = direction
+
+	# Pass ability info to arrow
+	if AbilityManager:
+		arrow.pierce_count = AbilityManager.stat_modifiers.get("projectile_pierce", 0)
+		arrow.can_bounce = AbilityManager.has_rubber_walls
+		arrow.has_sniper = AbilityManager.has_sniper_damage
+		arrow.sniper_bonus = AbilityManager.sniper_bonus
+		arrow.damage_multiplier = AbilityManager.get_damage_multiplier()
+		arrow.crit_chance = AbilityManager.stat_modifiers.get("crit_chance", 0.0)
+		arrow.has_knockback = AbilityManager.has_knockback
+		arrow.knockback_force = AbilityManager.knockback_force
+		arrow.speed_multiplier = 1.0 + AbilityManager.stat_modifiers.get("projectile_speed", 0.0)
+
 	get_parent().add_child(arrow)
 
 func update_animation(delta: float, move_direction: Vector2) -> void:
@@ -224,7 +292,16 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
 
 func add_xp(amount: float) -> void:
-	current_xp += amount
+	# Apply XP multiplier from abilities
+	var xp_multiplier = 1.0
+	if AbilityManager:
+		xp_multiplier = AbilityManager.get_xp_multiplier()
+		# Check for double XP
+		if AbilityManager.should_double_xp():
+			xp_multiplier *= 2.0
+
+	var final_amount = amount * xp_multiplier
+	current_xp += final_amount
 	emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 	while current_xp >= xp_to_next_level:
@@ -238,3 +315,51 @@ func give_kill_xp() -> void:
 	# Killing enemy gives 10-20% of XP needed
 	var xp_gain = xp_to_next_level * randf_range(0.10, 0.20)
 	add_xp(xp_gain)
+
+# Ability system helper functions
+func heal(amount: float) -> void:
+	current_health = min(current_health + amount, max_health)
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+	emit_signal("health_changed", current_health, max_health)
+
+func apply_temporary_speed_boost(boost: float, duration: float) -> void:
+	temp_speed_boost = boost
+	temp_speed_timer = duration
+
+func update_ability_stats(modifiers: Dictionary) -> void:
+	# Update speed
+	var speed_mult = 1.0 + modifiers.get("move_speed", 0.0)
+	speed = base_speed * speed_mult
+
+	# Update attack cooldown (attack speed is inverse)
+	var attack_speed_mult = 1.0 + modifiers.get("attack_speed", 0.0)
+	# Check for frenzy
+	if AbilityManager and AbilityManager.has_frenzy:
+		if current_health / max_health < 0.3:
+			attack_speed_mult += AbilityManager.frenzy_boost
+	attack_cooldown = base_attack_cooldown / attack_speed_mult
+
+	# Update max HP (add flat amount)
+	var hp_change = modifiers.get("max_hp", 0.0)
+	var old_max = max_health
+	max_health = base_max_health + hp_change
+
+	# Adjust current health proportionally
+	if old_max > 0 and max_health != old_max:
+		var health_percent = current_health / old_max
+		current_health = max_health * health_percent
+		if health_bar:
+			health_bar.set_health(current_health, max_health)
+
+	# Update pickup range
+	pickup_range_multiplier = 1.0 + modifiers.get("pickup_range", 0.0)
+
+	# Update size
+	var new_size = 1.0 + modifiers.get("size", 0.0)
+	if new_size != size_scale:
+		size_scale = new_size
+		scale = Vector2(size_scale, size_scale)
+
+func get_pickup_range() -> float:
+	return 80.0 * pickup_range_multiplier  # Base pickup range * multiplier

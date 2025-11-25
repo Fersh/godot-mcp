@@ -1,13 +1,16 @@
-[gd_scene load_steps=7 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=9 format=3 uid="uid://doq6hteh263pd"]
 
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/xp_bar.tscn" id="4_xp_bar"]
 [ext_resource type="Texture2D" uid="uid://b71dg8g3gnq47" path="res://assets/arena.png" id="5_arena"]
 [ext_resource type="PackedScene" path="res://scenes/stats_display.tscn" id="6_stats"]
+[ext_resource type="PackedScene" path="res://scenes/ability_selection.tscn" id="7_ability_selection"]
 
 [node name="Main" type="Node2D"]
+script = ExtResource("1_main")
 
 [node name="Background" type="Sprite2D" parent="."]
 position = Vector2(1024, 1024)
@@ -23,3 +26,5 @@ enemy_scene = ExtResource("2_enemy")
 [node name="XPBar" parent="." instance=ExtResource("4_xp_bar")]
 
 [node name="StatsDisplay" parent="." instance=ExtResource("6_stats")]
+
+[node name="AbilitySelection" parent="." instance=ExtResource("7_ability_selection")]

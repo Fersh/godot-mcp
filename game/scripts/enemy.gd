@@ -15,6 +15,10 @@ var is_dying: bool = false
 var attack_timer: float = 0.0
 var can_attack: bool = true
 
+# Knockback
+var knockback_velocity: Vector2 = Vector2.ZERO
+var knockback_decay: float = 10.0
+
 # Animation rows (0-indexed)
 const ROW_IDLE = 0       # 4 frames
 const ROW_SLEEP = 1      # 8 frames
@@ -60,6 +64,13 @@ func _physics_process(delta: float) -> void:
 		update_death_animation(delta)
 		return
 
+	# Handle knockback decay
+	if knockback_velocity.length() > 1.0:
+		knockback_velocity = knockback_velocity.lerp(Vector2.ZERO, knockback_decay * delta)
+		velocity = knockback_velocity
+		move_and_slide()
+		return
+
 	# Handle attack cooldown
 	if not can_attack:
 		attack_timer += delta
@@ -83,6 +94,9 @@ func _physics_process(delta: float) -> void:
 			if can_attack and player.has_method("take_damage"):
 				player.take_damage(attack_damage)
 				can_attack = false
+				# Thorns damage
+				if AbilityManager and AbilityManager.has_thorns:
+					take_damage(AbilityManager.thorns_damage, false)
 	else:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)
@@ -98,8 +112,16 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	# Spawn damage number
 	spawn_damage_number(amount, is_critical)
 
+	# Check for cull the weak
+	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
+		current_health = 0
+		spawn_damage_number(999, true)  # Show execute damage
+
 	if current_health <= 0:
 		die()
+
+func apply_knockback(force: Vector2) -> void:
+	knockback_velocity = force
 
 func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
 	if damage_number_scene == null:
@@ -122,6 +144,10 @@ func die() -> void:
 	# Give player kill XP
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
 		player.give_kill_xp()
+
+	# Notify AbilityManager for on-kill effects
+	if AbilityManager and player and is_instance_valid(player):
+		AbilityManager.on_enemy_killed(self, player)
 
 	# Update stats display
 	var stats = get_node_or_null("/root/Main/StatsDisplay")

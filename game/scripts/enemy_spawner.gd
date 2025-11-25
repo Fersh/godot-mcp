@@ -1,7 +1,7 @@
 extends Node2D
 
 @export var enemy_scene: PackedScene
-@export var spawn_interval: float = 1.6  # 25% faster spawning
+@export var spawn_interval: float = 0.8  # 2x spawn rate
 @export var min_spawn_distance: float = 200.0
 
 const ARENA_SIZE = 2048

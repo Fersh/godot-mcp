@@ -24,8 +24,13 @@ func _physics_process(delta: float) -> void:
 	if player and is_instance_valid(player):
 		var distance = global_position.distance_to(player.global_position)
 
+		# Get pickup range from player (ability modified)
+		var effective_range = magnet_range
+		if player.has_method("get_pickup_range"):
+			effective_range = player.get_pickup_range()
+
 		# Start magnetizing when player is close
-		if distance < magnet_range:
+		if distance < effective_range:
 			is_magnetized = true
 
 		if is_magnetized:
