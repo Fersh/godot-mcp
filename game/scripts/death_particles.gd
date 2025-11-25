@@ -4,6 +4,7 @@ extends Node2D
 
 var particles: Array = []
 var blood_pools: Array = []  # Blood that stays on ground
+var is_crit_kill: bool = false  # Extra gore for crit kills
 
 class BloodParticle:
 	var pos: Vector2
@@ -21,8 +22,42 @@ class BloodPool:
 	var color: Color
 	var lifetime: float
 
+func set_crit_kill(is_crit: bool) -> void:
+	is_crit_kill = is_crit
+	if is_crit:
+		# Add extra particles for crit kill
+		spawn_crit_particles()
+
 func _ready() -> void:
 	spawn_particles()
+
+func spawn_crit_particles() -> void:
+	# Extra explosive particles for crit kills
+	var extra_count = randi_range(20, 35)
+	for i in extra_count:
+		var p = BloodParticle.new()
+		p.pos = Vector2.ZERO
+		# Much more explosive spread for crits
+		p.vel = Vector2(randf_range(-350, 350), randf_range(-400, -100))
+		# Bigger chunks
+		p.size = float(randi_range(3, 8))
+		# Brighter red for fresh blood
+		var blood_base = Color(0.85, 0.08, 0.08, 1.0)
+		var blood_dark = Color(0.5, 0.03, 0.03, 1.0)
+		p.color = blood_base.lerp(blood_dark, randf())
+		p.max_lifetime = randf_range(2.0, 4.0)
+		p.lifetime = p.max_lifetime
+		p.ground_y = float(randi_range(10, 45))
+		particles.append(p)
+
+	# Extra blood pools for crit
+	for i in randi_range(5, 10):
+		var pool = BloodPool.new()
+		pool.pos = Vector2(randf_range(-30, 30), randf_range(-10, 25))
+		pool.size = float(randi_range(6, 14))
+		pool.color = Color(0.55, 0.03, 0.03, 0.95)
+		pool.lifetime = randf_range(4.0, 6.0)
+		blood_pools.append(pool)
 
 func spawn_particles() -> void:
 	# More particles for gorier effect

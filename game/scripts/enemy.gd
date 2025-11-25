@@ -13,6 +13,7 @@ extends CharacterBody2D
 var player: Node2D = null
 var current_health: float
 var is_dying: bool = false
+var died_from_crit: bool = false  # Track if killing blow was a crit
 var attack_timer: float = 0.0
 var can_attack: bool = true
 
@@ -24,7 +25,7 @@ const WINDUP_DURATION: float = 0.25  # 0.25 second wind-up before damage
 # Stagger system (from melee hits)
 var is_staggered: bool = false
 var stagger_timer: float = 0.0
-const STAGGER_DURATION: float = 0.25  # 0.25 second stagger
+const STAGGER_DURATION: float = 0.35  # 0.35 second stagger
 
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
@@ -182,8 +183,10 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
 		current_health = 0
 		spawn_damage_number(999, true)  # Show execute damage
+		is_critical = true  # Cull the weak counts as crit for gore
 
 	if current_health <= 0:
+		died_from_crit = is_critical
 		die()
 
 func apply_knockback(force: Vector2) -> void:
@@ -245,6 +248,9 @@ func spawn_death_particles() -> void:
 
 	var particles = death_particles_scene.instantiate()
 	particles.global_position = global_position
+	# Pass crit info to particles for extra gore
+	if particles.has_method("set_crit_kill"):
+		particles.set_crit_kill(died_from_crit)
 	get_parent().add_child(particles)
 
 func update_death_animation(delta: float) -> void:

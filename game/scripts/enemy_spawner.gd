@@ -1,9 +1,9 @@
 extends Node2D
 
 @export var enemy_scene: PackedScene
-@export var initial_spawn_interval: float = 1.0  # Starting spawn interval
-@export var final_spawn_interval: float = 0.5  # Target spawn interval (2x faster)
-@export var ramp_up_time: float = 60.0  # Time in seconds to reach full spawn rate
+@export var initial_spawn_interval: float = 2.0  # Starting spawn interval (slower start)
+@export var final_spawn_interval: float = 0.5  # Target spawn interval (2x faster than original)
+@export var ramp_up_time: float = 90.0  # Time in seconds to reach full spawn rate
 @export var min_spawn_distance: float = 200.0
 
 const ARENA_SIZE = 1536
