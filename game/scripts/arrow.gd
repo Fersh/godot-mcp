@@ -18,6 +18,7 @@ var has_sniper: bool = false
 var sniper_bonus: float = 0.0
 var damage_multiplier: float = 1.0
 var crit_chance: float = 0.0
+var crit_multiplier: float = 2.0
 var has_knockback: bool = false
 var knockback_force: float = 0.0
 var speed_multiplier: float = 1.0
@@ -82,7 +83,7 @@ func _on_body_entered(body: Node2D) -> void:
 		# Check for crit
 		var is_crit = randf() < crit_chance
 		if is_crit:
-			final_damage *= 2.0
+			final_damage *= crit_multiplier
 
 		# Deal damage
 		body.take_damage(final_damage, is_crit)

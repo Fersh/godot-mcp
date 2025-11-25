@@ -25,6 +25,9 @@ var best_wave: int = 0
 var best_coins: int = 0
 var best_points: int = 0
 
+# Spendable currency (earned from runs, spent in shop)
+var spendable_coins: int = 0
+
 func _ready() -> void:
 	load_stats()
 
@@ -53,6 +56,13 @@ func end_run() -> void:
 	total_kills += run_kills
 	total_coins += run_coins
 	total_time_played += run_time
+
+	# Add coins earned this run to spendable currency
+	# Apply coin gain bonus from permanent upgrades
+	var coin_bonus = 1.0
+	if PermanentUpgrades:
+		coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
+	spendable_coins += int(run_coins * coin_bonus)
 
 	# Update best records
 	if run_time > best_time:
@@ -117,7 +127,8 @@ func save_stats() -> void:
 		"best_level": best_level,
 		"best_wave": best_wave,
 		"best_coins": best_coins,
-		"best_points": best_points
+		"best_points": best_points,
+		"spendable_coins": spendable_coins
 	}
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -146,6 +157,7 @@ func load_stats() -> void:
 			best_wave = data.get("best_wave", 0)
 			best_coins = data.get("best_coins", 0)
 			best_points = data.get("best_points", 0)
+			spendable_coins = data.get("spendable_coins", 0)
 
 # Format time as MM:SS
 func format_time(seconds: float) -> String:

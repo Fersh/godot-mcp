@@ -89,6 +89,9 @@ func _ready() -> void:
 	base_attack_cooldown = attack_cooldown
 	base_max_health = max_health
 
+	# Apply permanent upgrades to base stats
+	_apply_permanent_upgrades()
+
 	current_health = max_health
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
@@ -98,6 +101,31 @@ func _ready() -> void:
 		JuiceManager.register_camera(camera)
 		# Disable camera position smoothing since we do it manually
 		camera.position_smoothing_enabled = false
+
+func _apply_permanent_upgrades() -> void:
+	if not PermanentUpgrades:
+		return
+
+	var bonuses = PermanentUpgrades.get_all_bonuses()
+
+	# Apply max HP bonus
+	var hp_bonus = bonuses.get("max_hp", 0.0)
+	base_max_health = base_max_health * (1.0 + hp_bonus)
+	max_health = base_max_health
+
+	# Apply movement speed bonus
+	var speed_bonus = bonuses.get("move_speed", 0.0)
+	base_speed = base_speed * (1.0 + speed_bonus)
+	speed = base_speed
+
+	# Apply attack speed bonus
+	var attack_speed_bonus = bonuses.get("attack_speed", 0.0)
+	base_attack_cooldown = base_attack_cooldown / (1.0 + attack_speed_bonus)
+	attack_cooldown = base_attack_cooldown
+
+	# Apply pickup range bonus
+	var pickup_bonus = bonuses.get("pickup_range", 0.0)
+	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
 	current_health -= amount
@@ -231,13 +259,13 @@ func spawn_arrow() -> void:
 	# Recoil - push player back slightly
 	recoil_offset = -attack_direction * 1.0
 
-	# Get ability modifiers
+	# Get ability modifiers (includes permanent upgrades)
 	var extra_projectiles: int = 0
 	var spread_angle: float = 0.0
 	var has_rear_shot: bool = false
 
 	if AbilityManager:
-		extra_projectiles = AbilityManager.stat_modifiers.get("projectile_count", 0)
+		extra_projectiles = AbilityManager.get_total_projectile_count()
 		spread_angle = AbilityManager.stat_modifiers.get("projectile_spread", 0.0)
 		has_rear_shot = AbilityManager.has_rear_shot
 
@@ -272,17 +300,18 @@ func spawn_single_arrow(direction: Vector2) -> void:
 	arrow.global_position = global_position
 	arrow.direction = direction
 
-	# Pass ability info to arrow
+	# Pass ability info to arrow (includes permanent upgrades)
 	if AbilityManager:
 		arrow.pierce_count = AbilityManager.stat_modifiers.get("projectile_pierce", 0)
 		arrow.can_bounce = AbilityManager.has_rubber_walls
 		arrow.has_sniper = AbilityManager.has_sniper_damage
 		arrow.sniper_bonus = AbilityManager.sniper_bonus
 		arrow.damage_multiplier = AbilityManager.get_damage_multiplier()
-		arrow.crit_chance = AbilityManager.stat_modifiers.get("crit_chance", 0.0)
+		arrow.crit_chance = AbilityManager.get_crit_chance()
+		arrow.crit_multiplier = AbilityManager.get_crit_damage_multiplier()
 		arrow.has_knockback = AbilityManager.has_knockback
 		arrow.knockback_force = AbilityManager.knockback_force
-		arrow.speed_multiplier = 1.0 + AbilityManager.stat_modifiers.get("projectile_speed", 0.0)
+		arrow.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
 
 	get_parent().add_child(arrow)
 

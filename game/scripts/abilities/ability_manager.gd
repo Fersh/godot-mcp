@@ -154,12 +154,13 @@ func _process(delta: float) -> void:
 	process_periodic_effects(delta, player)
 
 func process_periodic_effects(delta: float, player: Node2D) -> void:
-	# Regeneration
-	if has_regen:
+	# Regeneration (from abilities and permanent upgrades)
+	var total_regen = get_regen_rate()
+	if total_regen > 0 or has_regen or has_permanent_regen():
 		regen_timer += delta
 		if regen_timer >= 1.0:
 			regen_timer = 0.0
-			heal_player(player, regen_rate)
+			heal_player(player, total_regen)
 
 	# Tesla Coil
 	if has_tesla_coil:
@@ -549,7 +550,13 @@ func spawn_drone() -> void:
 
 # Utility functions for other scripts
 func get_damage_multiplier() -> float:
-	return 1.0 + stat_modifiers["damage"]
+	var base = 1.0 + stat_modifiers["damage"]
+
+	# Add permanent upgrade bonus
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("damage", 0.0)
+
+	return base
 
 func get_attack_speed_multiplier() -> float:
 	var base = 1.0 + stat_modifiers["attack_speed"]
@@ -563,7 +570,13 @@ func get_attack_speed_multiplier() -> float:
 	return base
 
 func get_xp_multiplier() -> float:
-	return 1.0 + stat_modifiers["xp_gain"]
+	var base = 1.0 + stat_modifiers["xp_gain"]
+
+	# Add permanent upgrade bonus
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("xp_gain", 0.0)
+
+	return base
 
 func get_move_speed_multiplier() -> float:
 	return 1.0 + stat_modifiers["move_speed"]
@@ -577,3 +590,63 @@ func check_cull_weak(enemy: Node2D) -> bool:
 
 	var health_percent = enemy.current_health / enemy.max_health
 	return health_percent <= cull_threshold
+
+# Get total projectile count including permanent upgrades
+func get_total_projectile_count() -> int:
+	var count = stat_modifiers.get("projectile_count", 0)
+
+	if PermanentUpgrades:
+		count += PermanentUpgrades.get_all_bonuses().get("projectile_count", 0)
+
+	return count
+
+# Get total projectile speed multiplier including permanent upgrades
+func get_projectile_speed_multiplier() -> float:
+	var base = 1.0 + stat_modifiers.get("projectile_speed", 0.0)
+
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("projectile_speed", 0.0)
+
+	return base
+
+# Get total crit chance including permanent upgrades
+func get_crit_chance() -> float:
+	var base = stat_modifiers.get("crit_chance", 0.0)
+
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("luck", 0.0)
+
+	return base
+
+# Get crit damage multiplier from permanent upgrades
+func get_crit_damage_multiplier() -> float:
+	var base = 2.0  # Default crit is 2x damage
+
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("crit_damage", 0.0)
+
+	return base
+
+# Get luck multiplier for drops
+func get_luck_multiplier() -> float:
+	var base = 1.0 + stat_modifiers.get("luck", 0.0)
+
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("luck", 0.0)
+
+	return base
+
+# Get regen rate including permanent upgrades
+func get_regen_rate() -> float:
+	var base = regen_rate
+
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("hp_regen", 0.0)
+
+	return base
+
+# Check if player has permanent regen
+func has_permanent_regen() -> bool:
+	if PermanentUpgrades:
+		return PermanentUpgrades.get_all_bonuses().get("hp_regen", 0.0) > 0
+	return false

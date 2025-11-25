@@ -28,12 +28,19 @@ func _ready() -> void:
 
 		# Get updated lifetime stats
 		var lifetime = StatsManager.get_lifetime_stats()
-		lifetime_stats_label.text = "Total Runs: %d\nTotal Kills: %d\nTotal Coins: %d\nBest Time: %s\nBest Kills: %d" % [
+
+		# Calculate coins earned with bonus
+		var coin_bonus = 1.0
+		if PermanentUpgrades:
+			coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
+		var coins_earned = int(final_coins * coin_bonus)
+
+		lifetime_stats_label.text = "Total Runs: %d\nBest Time: %s\nBest Kills: %d\n\n+%d coins added to wallet!\nWallet: %d" % [
 			lifetime.total_runs,
-			lifetime.total_kills,
-			lifetime.total_coins,
 			format_time(lifetime.best_time),
-			lifetime.best_kills
+			lifetime.best_kills,
+			coins_earned,
+			StatsManager.spendable_coins
 		]
 
 	# Format the run stats
@@ -53,17 +60,9 @@ func format_time(seconds: float) -> String:
 	return "%02d:%02d" % [mins, secs]
 
 func _on_restart_pressed() -> void:
-	# Reset abilities
-	if AbilityManager:
-		AbilityManager.reset()
-
-	# Reset run stats
-	if StatsManager:
-		StatsManager.reset_run()
-
-	# Unpause and reload
+	# Unpause and go to main menu
 	get_tree().paused = false
-	get_tree().reload_current_scene()
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _input(event: InputEvent) -> void:
 	# Allow restart with spacebar or enter
