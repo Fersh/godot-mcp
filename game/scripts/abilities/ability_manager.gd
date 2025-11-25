@@ -24,6 +24,8 @@ var stat_modifiers: Dictionary = {
 	"crit_chance": 0.0,
 	"luck": 0.0,
 	"size": 0.0,
+	"melee_area": 0.0,
+	"melee_range": 0.0,
 }
 
 # Special effect flags/values
@@ -61,6 +63,14 @@ var has_rubber_walls: bool = false
 var has_rear_shot: bool = false
 var has_sniper_damage: bool = false
 var sniper_bonus: float = 0.0
+
+# Melee-specific effects
+var has_bleeding: bool = false
+var bleeding_dps: float = 0.0
+var has_deflect: bool = false
+var has_whirlwind: bool = false
+var whirlwind_cooldown: float = 3.0
+var whirlwind_timer: float = 0.0
 
 # Timers for periodic effects
 var regen_timer: float = 0.0
@@ -101,6 +111,8 @@ func reset() -> void:
 		"crit_chance": 0.0,
 		"luck": 0.0,
 		"size": 0.0,
+		"melee_area": 0.0,
+		"melee_range": 0.0,
 	}
 
 	# Reset special effect flags
@@ -138,6 +150,14 @@ func reset() -> void:
 	has_rear_shot = false
 	has_sniper_damage = false
 	sniper_bonus = 0.0
+
+	# Reset melee effects
+	has_bleeding = false
+	bleeding_dps = 0.0
+	has_deflect = false
+	has_whirlwind = false
+	whirlwind_cooldown = 3.0
+	whirlwind_timer = 0.0
 
 	# Reset timers
 	regen_timer = 0.0
@@ -336,8 +356,8 @@ func get_available_abilities() -> Array[AbilityData]:
 
 	for ability in all_abilities:
 		# Skip melee abilities for ranged characters
-		# if ability.type == AbilityData.Type.MELEE_ONLY and is_ranged_character:
-		#	continue
+		if ability.type == AbilityData.Type.MELEE_ONLY and is_ranged_character:
+			continue
 
 		# Skip ranged abilities for melee characters
 		if ability.type == AbilityData.Type.RANGED_ONLY and not is_ranged_character:
@@ -499,6 +519,20 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				has_sniper_damage = true
 				sniper_bonus += value
 
+			# Melee effects
+			AbilityData.EffectType.MELEE_AREA:
+				stat_modifiers["melee_area"] += value
+			AbilityData.EffectType.MELEE_RANGE:
+				stat_modifiers["melee_range"] += value
+			AbilityData.EffectType.BLEEDING:
+				has_bleeding = true
+				bleeding_dps += value
+			AbilityData.EffectType.DEFLECT:
+				has_deflect = true
+			AbilityData.EffectType.WHIRLWIND:
+				has_whirlwind = true
+				whirlwind_cooldown = value
+
 	# Apply stat changes to player immediately
 	apply_stats_to_player()
 
@@ -600,21 +634,29 @@ func get_total_projectile_count() -> int:
 
 	return count
 
-# Get total projectile speed multiplier including permanent upgrades
+# Get total projectile speed multiplier including permanent upgrades and character passive
 func get_projectile_speed_multiplier() -> float:
 	var base = 1.0 + stat_modifiers.get("projectile_speed", 0.0)
 
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("projectile_speed", 0.0)
 
+	# Add character passive bonus (Archer's Eagle Eye)
+	if CharacterManager:
+		base += CharacterManager.get_passive_bonuses().get("projectile_speed", 0.0)
+
 	return base
 
-# Get total crit chance including permanent upgrades
+# Get total crit chance including permanent upgrades and character passive
 func get_crit_chance() -> float:
 	var base = stat_modifiers.get("crit_chance", 0.0)
 
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("luck", 0.0)
+
+	# Add character passive bonus (Archer's Eagle Eye)
+	if CharacterManager:
+		base += CharacterManager.get_passive_bonuses().get("crit_chance", 0.0)
 
 	return base
 
@@ -650,3 +692,10 @@ func has_permanent_regen() -> bool:
 	if PermanentUpgrades:
 		return PermanentUpgrades.get_all_bonuses().get("hp_regen", 0.0) > 0
 	return false
+
+# Melee-specific getters
+func get_melee_area_multiplier() -> float:
+	return 1.0 + stat_modifiers.get("melee_area", 0.0)
+
+func get_melee_range_multiplier() -> float:
+	return 1.0 + stat_modifiers.get("melee_range", 0.0)

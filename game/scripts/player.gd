@@ -21,6 +21,7 @@ var recoil_recovery: float = 15.0
 var base_speed: float
 var base_attack_cooldown: float
 var base_max_health: float
+var base_damage: float = 1.0
 
 var current_health: float
 @onready var health_bar: Node2D = $HealthBar
@@ -40,30 +41,24 @@ var touch_start_pos: Vector2 = Vector2.ZERO
 var touch_current_pos: Vector2 = Vector2.ZERO
 var is_touching: bool = false
 
-# Animation rows (0-indexed)
-const ROW_IDLE = 0          # 4 frames
-const ROW_MOVE = 1          # 8 frames
-const ROW_SHOOT_STRAIGHT = 2 # 8 frames
-const ROW_SHOOT_UP = 3      # 8 frames
-const ROW_SHOOT_DOWN = 4    # 8 frames
-const ROW_DAMAGE = 5        # 4 frames
-const ROW_DEATH = 6         # 4 frames (death animation)
-const ROW_JUMP = 8          # 8 frames (not used)
+# Character data
+var character_data: CharacterData = null
+var is_melee: bool = false
 
-const COLS_PER_ROW = 8
+# Animation rows - dynamically set based on character
+var row_idle: int = 0
+var row_move: int = 1
+var row_attack: int = 2
+var row_attack_up: int = 3
+var row_attack_down: int = 4
+var row_damage: int = 5
+var row_death: int = 6
 
-const FRAME_COUNTS = {
-	ROW_IDLE: 4,
-	ROW_MOVE: 8,
-	ROW_SHOOT_STRAIGHT: 8,
-	ROW_SHOOT_UP: 8,
-	ROW_SHOOT_DOWN: 8,
-	ROW_DAMAGE: 4,
-	ROW_DEATH: 4,
-	ROW_JUMP: 8,
-}
+var cols_per_row: int = 8
 
-var current_row: int = ROW_IDLE
+var frame_counts: Dictionary = {}
+
+var current_row: int = 0
 var animation_frame: float = 0.0
 @onready var sprite: Sprite2D = $Sprite
 
@@ -72,6 +67,10 @@ var attack_timer: float = 0.0
 var is_attacking: bool = false
 var attack_direction: Vector2 = Vector2.RIGHT
 var facing_right: bool = true
+
+# Melee attack hitbox
+var melee_hitbox_active: bool = false
+var melee_hit_enemies: Array = []  # Track enemies hit this attack
 
 # Death state
 var is_dead: bool = false
@@ -88,13 +87,20 @@ signal health_changed(current_health: float, max_health: float)
 signal player_died()
 
 func _ready() -> void:
+	# Load character data from CharacterManager
+	_load_character_data()
+
 	# Store base stats for ability calculations
 	base_speed = speed
 	base_attack_cooldown = attack_cooldown
 	base_max_health = max_health
+	base_damage = character_data.base_damage if character_data else 1.0
 
 	# Apply permanent upgrades to base stats
 	_apply_permanent_upgrades()
+
+	# Apply character passive bonuses
+	_apply_character_passive()
 
 	current_health = max_health
 	if health_bar:
@@ -105,6 +111,90 @@ func _ready() -> void:
 		JuiceManager.register_camera(camera)
 		# Disable camera position smoothing since we do it manually
 		camera.position_smoothing_enabled = false
+
+func _load_character_data() -> void:
+	if not CharacterManager:
+		# Fallback to archer defaults
+		_setup_archer_defaults()
+		return
+
+	character_data = CharacterManager.get_selected_character()
+	if character_data == null:
+		_setup_archer_defaults()
+		return
+
+	# Apply character stats
+	speed = character_data.base_speed
+	attack_cooldown = character_data.base_attack_cooldown
+	max_health = character_data.base_health
+	fire_range = character_data.attack_range
+	is_melee = character_data.attack_type == CharacterData.AttackType.MELEE
+
+	# Setup sprite
+	if sprite and character_data.sprite_texture:
+		sprite.texture = character_data.sprite_texture
+		sprite.hframes = character_data.hframes
+		sprite.vframes = character_data.vframes
+		sprite.scale = character_data.sprite_scale
+
+	# Setup animation rows
+	row_idle = character_data.row_idle
+	row_move = character_data.row_move
+	row_attack = character_data.row_attack
+	row_attack_up = character_data.row_attack_up
+	row_attack_down = character_data.row_attack_down
+	row_damage = character_data.row_damage
+	row_death = character_data.row_death
+	cols_per_row = character_data.hframes
+
+	# Setup frame counts
+	frame_counts = {
+		row_idle: character_data.frames_idle,
+		row_move: character_data.frames_move,
+		row_attack: character_data.frames_attack,
+		row_attack_up: character_data.frames_attack_up,
+		row_attack_down: character_data.frames_attack_down,
+		row_damage: character_data.frames_damage,
+		row_death: character_data.frames_death,
+	}
+
+	current_row = row_idle
+
+func _setup_archer_defaults() -> void:
+	# Fallback archer configuration
+	is_melee = false
+	row_idle = 0
+	row_move = 1
+	row_attack = 2
+	row_attack_up = 3
+	row_attack_down = 4
+	row_damage = 5
+	row_death = 6
+	cols_per_row = 8
+
+	frame_counts = {
+		row_idle: 4,
+		row_move: 8,
+		row_attack: 8,
+		row_attack_up: 8,
+		row_attack_down: 8,
+		row_damage: 4,
+		row_death: 4,
+	}
+
+	current_row = row_idle
+
+func _apply_character_passive() -> void:
+	if not CharacterManager:
+		return
+
+	var bonuses = CharacterManager.get_passive_bonuses()
+
+	# Apply max HP bonus from passive
+	var hp_bonus = bonuses.get("max_hp", 0.0)
+	if hp_bonus > 0:
+		base_max_health = base_max_health * (1.0 + hp_bonus)
+		max_health = base_max_health
 
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
@@ -132,13 +222,24 @@ func _apply_permanent_upgrades() -> void:
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
-	current_health -= amount
+	# Apply character passive damage reduction (Knight's Iron Will)
+	var final_damage = amount
+	if CharacterManager:
+		var bonuses = CharacterManager.get_passive_bonuses()
+		var reduction = bonuses.get("damage_reduction", 0.0)
+		var threshold = bonuses.get("damage_reduction_threshold", 0.0)
+		if reduction > 0 and threshold > 0:
+			var health_percent = current_health / max_health
+			if health_percent < threshold:
+				final_damage = amount * (1.0 - reduction)
+
+	current_health -= final_damage
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
 
 	# Spawn damage number (red for player)
-	spawn_damage_number(amount)
+	spawn_damage_number(final_damage)
 
 	# Screen shake and damage flash when taking damage
 	if JuiceManager:
@@ -250,8 +351,12 @@ func try_attack() -> void:
 			facing_right = attack_direction.x > 0
 			sprite.flip_h = not facing_right
 
-		# Spawn arrow
-		spawn_arrow()
+		if is_melee:
+			# Melee attack
+			perform_melee_attack()
+		else:
+			# Ranged attack - spawn arrow
+			spawn_arrow()
 
 func find_closest_enemy() -> Node2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -333,37 +438,116 @@ func spawn_single_arrow(direction: Vector2) -> void:
 
 	get_parent().add_child(arrow)
 
+func perform_melee_attack() -> void:
+	# Reset hit tracking for this attack
+	melee_hit_enemies.clear()
+	melee_hitbox_active = true
+
+	# Spawn muzzle flash effect at attack position
+	spawn_muzzle_flash()
+
+	# Recoil - push player forward slightly for melee
+	recoil_offset = attack_direction * 0.5
+
+	# Calculate melee damage
+	var melee_damage = 10.0 * base_damage  # Base melee damage
+
+	# Apply ability modifiers
+	if AbilityManager:
+		melee_damage *= AbilityManager.get_damage_multiplier()
+
+	# Get enemies in melee range with arc check
+	var enemies = get_tree().get_nodes_in_group("enemies")
+
+	# Base melee arc (90 degrees), modified by melee_area ability
+	var melee_arc = PI / 2
+	if AbilityManager:
+		melee_arc *= AbilityManager.get_melee_area_multiplier()
+
+	# Melee range, modified by melee_range ability
+	var melee_reach = fire_range
+	if AbilityManager:
+		melee_reach *= AbilityManager.get_melee_range_multiplier()
+
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy not in melee_hit_enemies:
+			var to_enemy = enemy.global_position - global_position
+			var dist = to_enemy.length()
+
+			if dist <= melee_reach:
+				# Check if enemy is within attack arc
+				var angle_to_enemy = to_enemy.angle()
+				var attack_angle = attack_direction.angle()
+				var angle_diff = abs(angle_to_enemy - attack_angle)
+
+				# Normalize angle difference
+				if angle_diff > PI:
+					angle_diff = TAU - angle_diff
+
+				if angle_diff <= melee_arc / 2:
+					# Hit this enemy
+					melee_hit_enemies.append(enemy)
+
+					# Calculate final damage
+					var final_damage = melee_damage
+					var is_crit = false
+
+					# Crit check
+					if AbilityManager:
+						var crit_chance = AbilityManager.get_crit_chance()
+						if randf() < crit_chance:
+							is_crit = true
+							final_damage *= AbilityManager.get_crit_damage_multiplier()
+
+					# Apply damage
+					if enemy.has_method("take_damage"):
+						enemy.take_damage(final_damage, is_crit)
+
+					# Knockback
+					if AbilityManager and AbilityManager.has_knockback:
+						if enemy.has_method("apply_knockback"):
+							enemy.apply_knockback(to_enemy.normalized() * AbilityManager.knockback_force)
+
+	# Slight screen shake on melee hit
+	if melee_hit_enemies.size() > 0 and JuiceManager:
+		JuiceManager.shake_small()
+
 func update_animation(delta: float, move_direction: Vector2) -> void:
 	var prev_row = current_row
 	var target_row: int
 
 	if is_attacking:
-		# Choose shoot animation based on attack direction
-		var angle = attack_direction.angle()
-		if angle > -PI/4 and angle < PI/4:
-			# Shooting right (straight)
-			target_row = ROW_SHOOT_STRAIGHT
-		elif angle >= PI/4 and angle <= 3*PI/4:
-			# Shooting down
-			target_row = ROW_SHOOT_DOWN
-		elif angle <= -PI/4 and angle >= -3*PI/4:
-			# Shooting up
-			target_row = ROW_SHOOT_UP
+		if is_melee:
+			# Melee uses single attack animation
+			target_row = row_attack
 		else:
-			# Shooting left (straight, sprite flipped)
-			target_row = ROW_SHOOT_STRAIGHT
+			# Ranged - choose shoot animation based on attack direction
+			var angle = attack_direction.angle()
+			if angle > -PI/4 and angle < PI/4:
+				# Shooting right (straight)
+				target_row = row_attack
+			elif angle >= PI/4 and angle <= 3*PI/4:
+				# Shooting down
+				target_row = row_attack_down
+			elif angle <= -PI/4 and angle >= -3*PI/4:
+				# Shooting up
+				target_row = row_attack_up
+			else:
+				# Shooting left (straight, sprite flipped)
+				target_row = row_attack
 
 		# Check if attack animation finished
-		if animation_frame >= FRAME_COUNTS.get(target_row, 8) - 1:
+		if animation_frame >= frame_counts.get(target_row, 8) - 1:
 			is_attacking = false
+			melee_hitbox_active = false
 	elif move_direction.length() > 0:
-		target_row = ROW_MOVE
+		target_row = row_move
 		# Update facing based on movement when not attacking
 		if move_direction.x != 0:
 			facing_right = move_direction.x > 0
 			sprite.flip_h = not facing_right
 	else:
-		target_row = ROW_IDLE
+		target_row = row_idle
 
 	current_row = target_row
 
@@ -373,30 +557,31 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 
 	# Advance animation frame
 	animation_frame += animation_speed * delta
-	var max_frames = FRAME_COUNTS.get(current_row, 8)
+	var max_frames = frame_counts.get(current_row, 8)
 	if animation_frame >= max_frames:
 		animation_frame = 0.0
 		if is_attacking:
 			is_attacking = false
+			melee_hitbox_active = false
 
 	# Set the sprite frame
-	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
+	sprite.frame = current_row * cols_per_row + int(animation_frame)
 
 func update_death_animation(delta: float) -> void:
 	# Play death animation once, then hold on last frame
 	if death_animation_finished:
 		return
 
-	current_row = ROW_DEATH
+	current_row = row_death
 	animation_frame += animation_speed * delta
 
-	var max_frames = FRAME_COUNTS.get(ROW_DEATH, 4)
+	var max_frames = frame_counts.get(row_death, 4)
 	if animation_frame >= max_frames - 1:
 		animation_frame = max_frames - 1
 		death_animation_finished = true
 
 	# Set the sprite frame
-	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
+	sprite.frame = current_row * cols_per_row + int(animation_frame)
 
 func add_xp(amount: float) -> void:
 	# Apply XP multiplier from abilities

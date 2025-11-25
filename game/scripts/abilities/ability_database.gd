@@ -10,7 +10,7 @@ static func get_all_abilities() -> Array[AbilityData]:
 	abilities.append_array(get_rare_abilities())
 	abilities.append_array(get_legendary_abilities())
 	abilities.append_array(get_ranged_abilities())
-	# abilities.append_array(get_melee_abilities())  # Uncomment for melee character
+	abilities.append_array(get_melee_abilities())
 	return abilities
 
 # ============================================
@@ -314,73 +314,100 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 	]
 
 # ============================================
-# MELEE-ONLY ABILITIES (Commented out for future)
+# MELEE-ONLY ABILITIES
 # ============================================
-#static func get_melee_abilities() -> Array[AbilityData]:
-#	return [
-#		# Common
-#		AbilityData.new(
-#			"heavy_blade",
-#			"Heavy Blade",
-#			"+50% Area (Swing Size), +20% Damage",
-#			AbilityData.Rarity.COMMON,
-#			AbilityData.Type.MELEE_ONLY,
-#			[
-#				{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.5},
-#				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.2}
-#			]
-#		),
-#		AbilityData.new(
-#			"quick_slash",
-#			"Quick Slash",
-#			"+30% Attack Speed",
-#			AbilityData.Rarity.COMMON,
-#			AbilityData.Type.MELEE_ONLY,
-#			[{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.3}]
-#		),
-#		# Rare
-#		AbilityData.new(
-#			"long_reach",
-#			"Long Reach",
-#			"+100% Melee Range",
-#			AbilityData.Rarity.RARE,
-#			AbilityData.Type.MELEE_ONLY,
-#			[{effect_type = AbilityData.EffectType.MELEE_RANGE, value = 1.0}]
-#		),
-#		AbilityData.new(
-#			"crimson_edge",
-#			"Crimson Edge",
-#			"Attacks cause Bleeding (DOT)",
-#			AbilityData.Rarity.RARE,
-#			AbilityData.Type.MELEE_ONLY,
-#			[{effect_type = AbilityData.EffectType.BLEEDING, value = 3.0}]  # DPS
-#		),
-#		AbilityData.new(
-#			"deflection",
-#			"Deflection",
-#			"Destroy enemy projectiles on hit",
-#			AbilityData.Rarity.RARE,
-#			AbilityData.Type.MELEE_ONLY,
-#			[{effect_type = AbilityData.EffectType.DEFLECT, value = 1.0}]
-#		),
-#		# Legendary
-#		AbilityData.new(
-#			"whirlwind",
-#			"Whirlwind",
-#			"Spin attack every 3 seconds",
-#			AbilityData.Rarity.LEGENDARY,
-#			AbilityData.Type.MELEE_ONLY,
-#			[{effect_type = AbilityData.EffectType.WHIRLWIND, value = 3.0}]  # cooldown
-#		),
-#		AbilityData.new(
-#			"titans_grip",
-#			"Titan's Grip",
-#			"+100% Damage, -20% Move Speed",
-#			AbilityData.Rarity.LEGENDARY,
-#			AbilityData.Type.MELEE_ONLY,
-#			[
-#				{effect_type = AbilityData.EffectType.DAMAGE, value = 1.0},
-#				{effect_type = AbilityData.EffectType.MOVE_SPEED, value = -0.2}
-#			]
-#		),
-#	]
+static func get_melee_abilities() -> Array[AbilityData]:
+	return [
+		# Common
+		AbilityData.new(
+			"heavy_blade",
+			"Heavy Blade",
+			"+50% Area (Swing Size), +20% Damage",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.MELEE_ONLY,
+			[
+				{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.5},
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.2}
+			]
+		),
+		AbilityData.new(
+			"quick_slash",
+			"Quick Slash",
+			"+30% Attack Speed",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.3}]
+		),
+		AbilityData.new(
+			"iron_skin",
+			"Iron Skin",
+			"+30 Max HP, -5% Damage Taken",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.MELEE_ONLY,
+			[
+				{effect_type = AbilityData.EffectType.MAX_HP, value = 30.0},
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.0}  # Damage reduction handled separately
+			]
+		),
+		# Rare
+		AbilityData.new(
+			"long_reach",
+			"Long Reach",
+			"+50% Melee Range",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.MELEE_RANGE, value = 0.5}]
+		),
+		AbilityData.new(
+			"crimson_edge",
+			"Crimson Edge",
+			"Attacks cause Bleeding (DOT)",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.BLEEDING, value = 3.0}]
+		),
+		AbilityData.new(
+			"deflection",
+			"Deflection",
+			"Destroy enemy projectiles on hit",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.DEFLECT, value = 1.0}]
+		),
+		AbilityData.new(
+			"cleave",
+			"Cleave",
+			"+40% Melee Area, hits more enemies",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.4}]
+		),
+		# Legendary
+		AbilityData.new(
+			"whirlwind",
+			"Whirlwind",
+			"Spin attack every 3 seconds",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.WHIRLWIND, value = 3.0}]
+		),
+		AbilityData.new(
+			"titans_grip",
+			"Titan's Grip",
+			"+100% Damage, -20% Move Speed",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.MELEE_ONLY,
+			[
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 1.0},
+				{effect_type = AbilityData.EffectType.MOVE_SPEED, value = -0.2}
+			]
+		),
+		AbilityData.new(
+			"berserker_rage",
+			"Berserker Rage",
+			"+50% Damage & Attack Speed when below 30% HP",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.FRENZY, value = 0.5}]
+		),
+	]

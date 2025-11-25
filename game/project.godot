@@ -21,6 +21,7 @@ AbilityManager="*res://scripts/abilities/ability_manager.gd"
 JuiceManager="*res://scripts/juice_manager.gd"
 StatsManager="*res://scripts/stats_manager.gd"
 PermanentUpgrades="*res://scripts/permanent_upgrades.gd"
+CharacterManager="*res://scripts/character_manager.gd"
 
 [display]
 

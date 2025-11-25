@@ -14,7 +14,7 @@ enum Type {
 	ON_KILL,
 	PERIODIC,
 	RANGED_ONLY,
-	# MELEE_ONLY  # Uncomment when melee character is added
+	MELEE_ONLY
 }
 
 enum EffectType {
@@ -53,12 +53,12 @@ enum EffectType {
 	REAR_SHOT,
 	SNIPER_DAMAGE,
 
-	# Melee effects (commented for future)
-	# MELEE_AREA,
-	# MELEE_RANGE,
-	# BLEEDING,
-	# DEFLECT,
-	# WHIRLWIND,
+	# Melee effects
+	MELEE_AREA,
+	MELEE_RANGE,
+	BLEEDING,
+	DEFLECT,
+	WHIRLWIND,
 }
 
 # Rarity weights for random selection (out of 100)

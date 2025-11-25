@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://br5r5sr1wh0yd"
-path="res://.godot/imported/Ratfolk Axe Sprite Sheet.png-deb18a82cb3b739869aae80ebb4be9fa.ctex"
+path="res://.godot/imported/ratfolk.png-8eca7772485a79bd03a58ee281235ca4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Ratfolk Axe Sprite Sheet.png"
-dest_files=["res://.godot/imported/Ratfolk Axe Sprite Sheet.png-deb18a82cb3b739869aae80ebb4be9fa.ctex"]
+source_file="res://assets/ratfolk.png"
+dest_files=["res://.godot/imported/ratfolk.png-8eca7772485a79bd03a58ee281235ca4.ctex"]
 
 [params]
 

@@ -1,29 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://c3m2qv8j7e6yi"]
+[gd_scene load_steps=4 format=3 uid="uid://c3m2qv8j7e6yi"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_main_menu"]
-[ext_resource type="VideoStream" path="res://assets/menu.MP4" id="2_video"]
+[ext_resource type="FontFile" uid="uid://dxrvcd7nrpprv" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
+[ext_resource type="Texture2D" uid="uid://cmxc76b6x5gig" path="res://assets/collectables.png" id="3_collectables"]
 
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_main_menu")
 
-[node name="VideoBackground" type="VideoStreamPlayer" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-stream = ExtResource("2_video")
-autoplay = true
-loop = true
-expand = true
-
-[node name="DarkOverlay" type="ColorRect" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
+color = Color(0.067, 0.082, 0.125, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchors_preset = 15
@@ -31,118 +21,114 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 20
 
 [node name="TopSpacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 
-[node name="TitleContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="Title" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="Title" type="Label" parent="VBoxContainer/TitleContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
-theme_override_colors/font_shadow_color = Color(0.2, 0.1, 0, 0.8)
-theme_override_colors/font_outline_color = Color(0.3, 0.15, 0, 1)
+theme_override_colors/font_color = Color(0.298, 0.886, 0.404, 1)
+theme_override_colors/font_shadow_color = Color(0.15, 0.4, 0.2, 1)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 72
-text = "ROGUE
-ARENA"
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 52
+text = "PIXEL HEROES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Subtitle" type="Label" parent="VBoxContainer/TitleContainer"]
+[node name="WelcomeLabel" type="Label" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 18
-text = "Survive the Chaos"
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+text = "Welcome back, Hunter."
 horizontal_alignment = 1
-
-[node name="MiddleSpacer" type="Control" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 24
-alignment = 1
-
-[node name="PlayButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(340, 90)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 0.9, 1)
-theme_override_colors/font_focus_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 32
-text = "PLAY"
-
-[node name="ShopButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(340, 90)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 0.9, 1)
-theme_override_colors/font_focus_color = Color(1, 0.95, 0.8, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 32
-text = "SHOP"
-
-[node name="BottomSpacer" type="Control" parent="VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
 
 [node name="CoinsDisplay" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="CoinIcon" type="Label" parent="VBoxContainer/CoinsDisplay"]
+[node name="CoinLabel" type="Label" parent="VBoxContainer/CoinsDisplay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.84, 0, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 28
-text = "GOLD:"
+theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "TOTAL COINS:"
 
 [node name="CoinAmount" type="Label" parent="VBoxContainer/CoinsDisplay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
-theme_override_constants/shadow_offset_x = 2
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
 text = " 0"
 
-[node name="FooterSpacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 80)
+[node name="CoinIcon" type="TextureRect" parent="VBoxContainer/CoinsDisplay"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("3_collectables")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MiddleSpacer" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="StatsLabel" type="Label" parent="VBoxContainer"]
+[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.65, 0.5, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 14
-text = "Total Runs: 0 | Best Wave: 0"
-horizontal_alignment = 1
+theme_override_constants/separation = 16
+alignment = 1
 
-[node name="FooterSpacer2" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 40)
+[node name="PlayButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+custom_minimum_size = Vector2(320, 70)
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "PLAY RUN"
+
+[node name="GearButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+custom_minimum_size = Vector2(320, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "GEAR"
+
+[node name="ShopButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+custom_minimum_size = Vector2(320, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "SHOP"
+
+[node name="CharactersButton" type="Button" parent="VBoxContainer/ButtonContainer"]
+custom_minimum_size = Vector2(320, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "CHARACTERS"
+
+[node name="BottomSpacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
