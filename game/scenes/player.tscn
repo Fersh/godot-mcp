@@ -36,3 +36,4 @@ limit_right = 1536
 limit_bottom = 1536
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
+offset_y = -30.0

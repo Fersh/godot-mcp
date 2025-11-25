@@ -158,9 +158,13 @@ func hitstop(duration: float = 0.05) -> void:
 	hitstop_timer = duration
 	Engine.time_scale = 0.05
 
-# Short hitstop for kills (barely noticeable, 16ms - one frame at 60fps)
-func hitstop_small() -> void:
+# Micro hitstop for hits (1 frame at 60fps)
+func hitstop_micro() -> void:
 	hitstop(0.016)
+
+# Short hitstop for significant events
+func hitstop_small() -> void:
+	hitstop(0.03)
 
 # Medium hitstop for kills
 func hitstop_medium() -> void:

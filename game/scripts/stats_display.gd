@@ -19,16 +19,24 @@ func _ready() -> void:
 	player = get_tree().get_first_node_in_group("player")
 	if player:
 		player.connect("xp_changed", _on_xp_gained)
+		player.connect("level_up", _on_level_up)
 	update_display()
 
 func _process(delta: float) -> void:
 	time_survived += delta
 	update_wave_display()
+	# Update StatsManager
+	if StatsManager:
+		StatsManager.set_time(time_survived)
 
 func add_kill_points() -> void:
 	kills += 1
 	points += POINTS_PER_KILL
 	update_display()
+	# Update StatsManager
+	if StatsManager:
+		StatsManager.add_kill()
+		StatsManager.set_points(points)
 
 func get_kill_count() -> int:
 	return kills
@@ -37,6 +45,10 @@ func add_coin() -> void:
 	coins += 1
 	points += POINTS_PER_COIN
 	update_display()
+	# Update StatsManager
+	if StatsManager:
+		StatsManager.add_coin()
+		StatsManager.set_points(points)
 
 func add_xp_points(amount: float) -> void:
 	points += int(amount * POINTS_PER_XP)
@@ -45,6 +57,10 @@ func add_xp_points(amount: float) -> void:
 func _on_xp_gained(_current_xp: float, _xp_needed: float, _level: int) -> void:
 	# XP points are added via add_xp_points when coins are collected
 	pass
+
+func _on_level_up(new_level: int) -> void:
+	if StatsManager:
+		StatsManager.set_level(new_level)
 
 func update_display() -> void:
 	points_label.text = "POINTS  " + str(points)

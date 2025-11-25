@@ -135,6 +135,10 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	if sprite.material:
 		sprite.material.set_shader_parameter("flash_intensity", 1.0)
 
+	# Micro hitstop for impact feel (1 frame)
+	# if JuiceManager:
+	# 	JuiceManager.hitstop_micro()
+
 	# Check for cull the weak
 	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
 		current_health = 0
