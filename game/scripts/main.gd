@@ -4,9 +4,9 @@ extends Node2D
 @onready var ability_selection: CanvasLayer = $AbilitySelection
 @onready var item_pickup_ui: CanvasLayer = $ItemPickupUI
 
-# Active ability UI components
-var active_ability_bar: ActiveAbilityBar = null
-var active_ability_selection_ui: ActiveAbilitySelectionUI = null
+# Active ability UI components (untyped to allow script assignment)
+var active_ability_bar = null
+var active_ability_selection_ui = null
 
 var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
 var game_time: float = 0.0
@@ -40,6 +40,10 @@ func _ready() -> void:
 
 	# Setup active ability system
 	_setup_active_ability_system()
+
+	# Show level 1 active ability selection after a short delay
+	# (allows UI to initialize first)
+	get_tree().create_timer(0.1).timeout.connect(_show_initial_ability_selection)
 
 func _process(delta: float) -> void:
 	game_time += delta
@@ -140,6 +144,10 @@ func _setup_active_ability_system() -> void:
 		active_ability_selection_ui.set_script(selection_script)
 		active_ability_selection_ui.name = "ActiveAbilitySelectionUI"
 		add_child(active_ability_selection_ui)
+
+func _show_initial_ability_selection() -> void:
+	"""Show the level 1 active ability selection at game start."""
+	_show_active_ability_selection(1)
 
 func _show_active_ability_selection(level: int) -> void:
 	"""Show the active ability selection UI for the given level."""

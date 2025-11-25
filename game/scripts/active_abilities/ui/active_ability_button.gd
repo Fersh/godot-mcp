@@ -149,6 +149,7 @@ func _load_icon() -> void:
 	var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
 	if ResourceLoader.exists(icon_path):
 		icon_texture.texture = load(icon_path)
+		cooldown_label.visible = false
 	else:
 		# Fallback: use first letter as placeholder
 		icon_texture.texture = null
@@ -160,6 +161,7 @@ func _load_dodge_icon() -> void:
 	var icon_path = "res://assets/icons/abilities/dodge.png"
 	if ResourceLoader.exists(icon_path):
 		icon_texture.texture = load(icon_path)
+		cooldown_label.visible = false
 	else:
 		icon_texture.texture = null
 		cooldown_label.text = "D"
