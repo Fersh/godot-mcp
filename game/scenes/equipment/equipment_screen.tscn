@@ -76,14 +76,18 @@ horizontal_alignment = 1
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/InventorySection"]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_horizontal = 4
 horizontal_scroll_mode = 0
 
-[node name="InventoryGrid" type="GridContainer" parent="Panel/VBoxContainer/InventorySection/ScrollContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="Panel/VBoxContainer/InventorySection/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="InventoryGrid" type="GridContainer" parent="Panel/VBoxContainer/InventorySection/ScrollContainer/CenterContainer"]
+layout_mode = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
-columns = 10
+columns = 8
 
 [node name="PopupPanel" type="PanelContainer" parent="."]
 visible = false

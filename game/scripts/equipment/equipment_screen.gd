@@ -41,7 +41,7 @@ var pixel_font: Font = null
 @onready var character_tabs: HBoxContainer = $Panel/VBoxContainer/CharacterTabs
 @onready var equipment_container: GridContainer = $Panel/VBoxContainer/EquipmentRow/EquipmentContainer
 @onready var stats_container: VBoxContainer = $Panel/VBoxContainer/EquipmentRow/StatsContainer
-@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/InventorySection/ScrollContainer/InventoryGrid
+@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/InventorySection/ScrollContainer/CenterContainer/InventoryGrid
 @onready var popup_panel: PanelContainer = $PopupPanel
 @onready var comparison_panel: PanelContainer = $ComparisonPanel
 
@@ -348,20 +348,41 @@ func _refresh_inventory() -> void:
 	# Get all inventory items
 	var items = EquipmentManager.inventory
 
-	# Create item cards
-	for item in items:
-		var card = _create_inventory_card(item)
-		inventory_grid.add_child(card)
+	# Create 40 slots (8 columns x 5 rows)
+	var total_slots = 40
 
-	# If no items, show placeholder
-	if items.size() == 0:
-		var empty = Label.new()
-		empty.text = "No items in inventory"
-		if pixel_font:
-			empty.add_theme_font_override("font", pixel_font)
-		empty.add_theme_font_size_override("font_size", 12)
-		empty.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-		inventory_grid.add_child(empty)
+	for i in range(total_slots):
+		if i < items.size():
+			# Create item card
+			var card = _create_inventory_card(items[i])
+			inventory_grid.add_child(card)
+		else:
+			# Create empty slot
+			var empty_slot = _create_empty_slot()
+			inventory_grid.add_child(empty_slot)
+
+func _create_empty_slot() -> Button:
+	var button = Button.new()
+	button.custom_minimum_size = Vector2(80, 80)
+	button.disabled = true
+
+	# Style - dark empty slot
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.05, 0.08, 1.0)
+	style.border_color = Color(0.2, 0.18, 0.15, 1.0)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 3
+	style.corner_radius_top_left = 2
+	style.corner_radius_top_right = 2
+	style.corner_radius_bottom_left = 2
+	style.corner_radius_bottom_right = 2
+
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("disabled", style)
+
+	return button
 
 func _create_inventory_card(item: ItemData) -> Button:
 	var button = Button.new()
