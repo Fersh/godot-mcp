@@ -18,6 +18,12 @@ var selected_index: int = 0
 var animation_timer: float = 0.0
 var characters_list: Array = []
 
+# Animation state
+var is_playing_attack: bool = false
+var attack_display_timer: float = 0.0
+const IDLE_DURATION: float = 4.0  # Seconds of idle before attack
+const ATTACK_ANIM_SPEED: float = 12.0
+
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	select_button.pressed.connect(_on_select_pressed)
@@ -30,13 +36,34 @@ func _ready() -> void:
 	_select_current_character()
 
 func _process(delta: float) -> void:
-	# Update idle animation for preview sprite
+	# Update animation for preview sprite
 	if preview_sprite and selected_index < characters_list.size():
 		var char_data: CharacterData = characters_list[selected_index]
-		animation_timer += delta * 8.0
-		var frame_count = char_data.frames_idle
-		var current_frame = int(animation_timer) % frame_count
-		preview_sprite.frame = char_data.row_idle * char_data.hframes + current_frame
+
+		if is_playing_attack:
+			# Playing attack animation
+			animation_timer += delta * ATTACK_ANIM_SPEED
+			var frame_count = char_data.frames_attack
+			var current_frame = int(animation_timer) % frame_count
+			preview_sprite.frame = char_data.row_attack * char_data.hframes + current_frame
+
+			# Check if attack animation completed
+			if animation_timer >= frame_count:
+				is_playing_attack = false
+				animation_timer = 0.0
+				attack_display_timer = 0.0
+		else:
+			# Playing idle animation
+			animation_timer += delta * 8.0
+			var frame_count = char_data.frames_idle
+			var current_frame = int(animation_timer) % frame_count
+			preview_sprite.frame = char_data.row_idle * char_data.hframes + current_frame
+
+			# Check if it's time to play attack
+			attack_display_timer += delta
+			if attack_display_timer >= IDLE_DURATION:
+				is_playing_attack = true
+				animation_timer = 0.0
 
 func _setup_preview_panel() -> void:
 	# Style the preview panel
@@ -53,17 +80,16 @@ func _setup_preview_panel() -> void:
 	style.corner_radius_bottom_right = 16
 	preview_panel.add_theme_stylebox_override("panel", style)
 
-	# Create internal layout
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 40)
-	margin.add_theme_constant_override("margin_right", 40)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	preview_panel.add_child(margin)
+	# Create internal layout - use CenterContainer to center everything horizontally
+	var outer_center = CenterContainer.new()
+	outer_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer_center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	preview_panel.add_child(outer_center)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
-	margin.add_child(vbox)
+	vbox.add_theme_constant_override("separation", 0)  # We'll add manual spacers
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	outer_center.add_child(vbox)
 
 	# Character name at top
 	preview_name_label = Label.new()
@@ -72,26 +98,47 @@ func _setup_preview_panel() -> void:
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
 	vbox.add_child(preview_name_label)
 
-	# Sprite preview in center
+	# Spacer after name
+	var spacer1 = Control.new()
+	spacer1.custom_minimum_size = Vector2(0, 15)
+	vbox.add_child(spacer1)
+
+	# Sprite preview - centered
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(0, 250)
+	sprite_center.custom_minimum_size = Vector2(400, 220)
 	vbox.add_child(sprite_center)
 
 	preview_sprite = Sprite2D.new()
 	sprite_center.add_child(preview_sprite)
 
-	# Description
+	# Spacer after sprite
+	var spacer2 = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 25)
+	vbox.add_child(spacer2)
+
+	# Description - centered
 	preview_desc_label = Label.new()
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	preview_desc_label.custom_minimum_size = Vector2(700, 0)
 	preview_desc_label.add_theme_font_size_override("font_size", 18)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
 	vbox.add_child(preview_desc_label)
 
+	# Spacer after description
+	var spacer3 = Control.new()
+	spacer3.custom_minimum_size = Vector2(0, 30)
+	vbox.add_child(spacer3)
+
 	# Stats section
 	preview_stats_container = VBoxContainer.new()
-	preview_stats_container.add_theme_constant_override("separation", 10)
+	preview_stats_container.add_theme_constant_override("separation", 8)
 	vbox.add_child(preview_stats_container)
+
+	# Spacer after stats
+	var spacer4 = Control.new()
+	spacer4.custom_minimum_size = Vector2(0, 30)
+	vbox.add_child(spacer4)
 
 	# Passive section
 	preview_passive_container = VBoxContainer.new()
@@ -154,6 +201,8 @@ func _select_current_character() -> void:
 func _set_selected(index: int) -> void:
 	selected_index = index
 	animation_timer = 0.0
+	attack_display_timer = 0.0
+	is_playing_attack = false
 
 	# Update selector button highlights
 	for i in selector_buttons.size():
@@ -214,19 +263,19 @@ func _update_preview() -> void:
 	stats_title.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
 	preview_stats_container.add_child(stats_title)
 
-	var stats_grid = GridContainer.new()
-	stats_grid.columns = 2
-	stats_grid.add_theme_constant_override("h_separation", 40)
-	stats_grid.add_theme_constant_override("v_separation", 8)
-	preview_stats_container.add_child(stats_grid)
+	# Fixed width container for stats to keep alignment consistent
+	var stats_box = VBoxContainer.new()
+	stats_box.custom_minimum_size = Vector2(350, 0)
+	stats_box.add_theme_constant_override("separation", 6)
+	preview_stats_container.add_child(stats_box)
 
-	_add_stat_to_grid(stats_grid, "Health", "%.0f" % char_data.base_health, _get_stat_color(char_data.base_health, 25, 50))
-	_add_stat_to_grid(stats_grid, "Speed", "%.0f" % char_data.base_speed, _get_stat_color(char_data.base_speed, 100, 200))
-	_add_stat_to_grid(stats_grid, "Attack Speed", "%.2f/s" % (1.0 / char_data.base_attack_cooldown), _get_stat_color(1.0 / char_data.base_attack_cooldown, 0.8, 1.5))
-	_add_stat_to_grid(stats_grid, "Damage", "x%.1f" % char_data.base_damage, _get_stat_color(char_data.base_damage, 0.8, 1.8))
+	_add_stat_row_to_container(stats_box, "Health", "%.0f" % char_data.base_health, _get_stat_color(char_data.base_health, 25, 50))
+	_add_stat_row_to_container(stats_box, "Speed", "%.0f" % char_data.base_speed, _get_stat_color(char_data.base_speed, 100, 200))
+	_add_stat_row_to_container(stats_box, "Attack Speed", "%.2f/s" % (1.0 / char_data.base_attack_cooldown), _get_stat_color(1.0 / char_data.base_attack_cooldown, 0.8, 1.5))
+	_add_stat_row_to_container(stats_box, "Damage", "x%.1f" % char_data.base_damage, _get_stat_color(char_data.base_damage, 0.8, 1.8))
 
 	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
-	_add_stat_to_grid(stats_grid, "Type", attack_type_text, Color(0.9, 0.9, 0.9, 1))
+	_add_stat_row_to_container(stats_box, "Type", attack_type_text, Color(0.9, 0.9, 0.9, 1))
 
 	# Update passive
 	for child in preview_passive_container.get_children():
@@ -246,18 +295,23 @@ func _update_preview() -> void:
 	passive_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	preview_passive_container.add_child(passive_desc)
 
-func _add_stat_to_grid(grid: GridContainer, stat_name: String, stat_value: String, color: Color) -> void:
+func _add_stat_row_to_container(container: VBoxContainer, stat_name: String, stat_value: String, color: Color) -> void:
+	var hbox = HBoxContainer.new()
+	container.add_child(hbox)
+
 	var name_label = Label.new()
 	name_label.text = stat_name + ":"
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
-	grid.add_child(name_label)
+	hbox.add_child(name_label)
 
 	var value_label = Label.new()
 	value_label.text = stat_value
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.add_theme_font_size_override("font_size", 16)
 	value_label.add_theme_color_override("font_color", color)
-	grid.add_child(value_label)
+	hbox.add_child(value_label)
 
 func _get_stat_color(value: float, low: float, high: float) -> Color:
 	var t = clamp((value - low) / (high - low), 0.0, 1.0)
