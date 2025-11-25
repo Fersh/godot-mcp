@@ -312,8 +312,8 @@ func add_xp(amount: float) -> void:
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 func give_kill_xp() -> void:
-	# Killing enemy gives 10-20% of XP needed
-	var xp_gain = xp_to_next_level * randf_range(0.10, 0.20)
+	# Killing enemy gives 5-10% of XP needed (halved)
+	var xp_gain = xp_to_next_level * randf_range(0.05, 0.10)
 	add_xp(xp_gain)
 
 # Ability system helper functions

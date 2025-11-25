@@ -1,6 +1,6 @@
 extends Area2D
 
-@export var xp_value: float = 1.0
+@export var xp_value: float = 0.5  # Halved XP gain
 @export var bob_speed: float = 3.0
 @export var bob_height: float = 5.0
 @export var magnet_range: float = 80.0

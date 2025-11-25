@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/damage_number.gd" id="1_script"]
-[ext_resource type="FontFile" path="res://assets/fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="2_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf" id="2_font"]
 
 [node name="DamageNumber" type="Node2D"]
 script = ExtResource("1_script")
@@ -13,9 +13,9 @@ offset_right = 50.0
 offset_bottom = 15.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 5
+theme_override_constants/outline_size = 8
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 26
 text = "10"
 horizontal_alignment = 1
 vertical_alignment = 1

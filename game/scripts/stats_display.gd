@@ -7,6 +7,7 @@ extends CanvasLayer
 var player: Node2D = null
 var points: int = 0
 var coins: int = 0
+var kills: int = 0
 var time_survived: float = 0.0
 
 const POINTS_PER_KILL = 100
@@ -25,8 +26,12 @@ func _process(delta: float) -> void:
 	update_wave_display()
 
 func add_kill_points() -> void:
+	kills += 1
 	points += POINTS_PER_KILL
 	update_display()
+
+func get_kill_count() -> int:
+	return kills
 
 func add_coin() -> void:
 	coins += 1

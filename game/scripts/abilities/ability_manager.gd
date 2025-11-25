@@ -82,6 +82,70 @@ var is_ranged_character: bool = true
 func _ready() -> void:
 	all_abilities = AbilityDatabase.get_all_abilities()
 
+func reset() -> void:
+	# Reset all acquired abilities
+	acquired_abilities.clear()
+
+	# Reset stat modifiers
+	stat_modifiers = {
+		"attack_speed": 0.0,
+		"damage": 0.0,
+		"max_hp": 0.0,
+		"xp_gain": 0.0,
+		"move_speed": 0.0,
+		"pickup_range": 0.0,
+		"projectile_speed": 0.0,
+		"projectile_count": 0,
+		"projectile_pierce": 0,
+		"projectile_spread": 0.0,
+		"crit_chance": 0.0,
+		"luck": 0.0,
+		"size": 0.0,
+	}
+
+	# Reset special effect flags
+	has_regen = false
+	regen_rate = 0.0
+	has_thorns = false
+	thorns_damage = 0.0
+	has_orbital = false
+	orbital_count = 0
+	has_tesla_coil = false
+	tesla_damage = 0.0
+	has_cull_weak = false
+	cull_threshold = 0.0
+	has_vampirism = false
+	vampirism_chance = 0.0
+	has_knockback = false
+	knockback_force = 0.0
+	has_ring_of_fire = false
+	ring_projectile_count = 0
+	has_toxic_cloud = false
+	toxic_dps = 0.0
+	has_death_explosion = false
+	explosion_damage = 0.0
+	has_lightning_strike = false
+	lightning_damage = 0.0
+	has_drone = false
+	drone_count = 0
+	has_adrenaline = false
+	adrenaline_boost = 0.0
+	has_frenzy = false
+	frenzy_boost = 0.0
+	has_double_xp_chance = false
+	double_xp_chance = 0.0
+	has_rubber_walls = false
+	has_rear_shot = false
+	has_sniper_damage = false
+	sniper_bonus = 0.0
+
+	# Reset timers
+	regen_timer = 0.0
+	tesla_timer = 0.0
+	ring_of_fire_timer = 0.0
+	lightning_timer = 0.0
+	toxic_timer = 0.0
+
 func _process(delta: float) -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player == null:

@@ -40,13 +40,13 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 	if is_player_damage:
 		# Player taking damage - red
 		label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1))
-		label.add_theme_font_size_override("font_size", 26)
+		label.add_theme_font_size_override("font_size", 32)
 	elif is_critical:
-		# Critical hit - bigger red
-		label.add_theme_color_override("font_color", Color(1.0, 0.1, 0.1, 1))
-		label.add_theme_font_size_override("font_size", 36)
+		# Critical hit - bigger gold/yellow
+		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
+		label.add_theme_font_size_override("font_size", 42)
 		scale = Vector2(1.2, 1.2)
 	else:
 		# Normal enemy hit - white
 		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
-		label.add_theme_font_size_override("font_size", 22)
+		label.add_theme_font_size_override("font_size", 26)
