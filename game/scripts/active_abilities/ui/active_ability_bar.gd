@@ -5,10 +5,10 @@ class_name ActiveAbilityBar
 # [Ability 1] [Ability 2]
 # [Dodge]     [Ability 3]
 
-const BUTTON_SIZE := Vector2(80, 80)
-const BUTTON_SPACING := 10
-const MARGIN_RIGHT := 20
-const MARGIN_BOTTOM := 20
+const BUTTON_SIZE := Vector2(160, 160)  # Doubled
+const BUTTON_SPACING := 15
+const MARGIN_RIGHT := 30
+const MARGIN_BOTTOM := 30
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null

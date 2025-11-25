@@ -23,6 +23,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_ground_slam(ability, player)
 		"spinning_attack":
 			_execute_spinning_attack(ability, player)
+		"dash_strike":
+			_execute_dash_strike(ability, player)
 
 		# Melee Rare
 		"whirlwind":
@@ -33,6 +35,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_savage_leap(ability, player)
 		"blade_rush":
 			_execute_blade_rush(ability, player)
+		"battle_cry":
+			_execute_battle_cry(ability, player)
 
 		# Melee Legendary
 		"earthquake":
@@ -41,6 +45,10 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_bladestorm(ability, player)
 		"omnislash":
 			_execute_omnislash(ability, player)
+		"avatar_of_war":
+			_execute_avatar_of_war(ability, player)
+		"divine_shield":
+			_execute_divine_shield(ability, player)
 
 		# Ranged Common
 		"power_shot":
@@ -51,6 +59,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_multi_shot(ability, player)
 		"quick_roll":
 			_execute_quick_roll(ability, player)
+		"throw_net":
+			_execute_throw_net(ability, player)
 
 		# Ranged Rare
 		"rain_of_arrows":
@@ -61,6 +71,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_cluster_bomb(ability, player)
 		"fan_of_knives":
 			_execute_fan_of_knives(ability, player)
+		"sentry_turret":
+			_execute_sentry_turret(ability, player)
 
 		# Ranged Legendary
 		"arrow_storm":
@@ -69,6 +81,10 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_ballista_strike(ability, player)
 		"sentry_network":
 			_execute_sentry_network(ability, player)
+		"rain_of_vengeance":
+			_execute_rain_of_vengeance(ability, player)
+		"explosive_decoy":
+			_execute_explosive_decoy(ability, player)
 
 		# Global Common
 		"fireball":
@@ -91,6 +107,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_totem_of_frost(ability, player)
 		"shadowstep":
 			_execute_shadowstep(ability, player)
+		"time_slow":
+			_execute_time_slow(ability, player)
 
 		# Global Legendary
 		"black_hole":
@@ -99,6 +117,10 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_time_stop(ability, player)
 		"thunderstorm":
 			_execute_thunderstorm(ability, player)
+		"summon_golem":
+			_execute_summon_golem(ability, player)
+		"army_of_the_dead":
+			_execute_army_of_the_dead(ability, player)
 
 		_:
 			push_warning("Unknown ability: " + ability.id)
@@ -298,6 +320,27 @@ func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> voi
 	_play_sound("swing")
 	_screen_shake("small")
 
+func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
+	var direction = _get_attack_direction(player)
+	var damage = _get_damage(ability)
+	var start_pos = player.global_position
+	var end_pos = start_pos + direction * ability.range_distance
+
+	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
+	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+
+	var tween = create_tween()
+	tween.tween_property(player, "global_position", end_pos, 0.15)
+	tween.tween_callback(func():
+		var enemies = _get_enemies_in_arc(end_pos, direction, 80, PI * 0.6)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+			_apply_knockback_to_enemy(enemy, direction, ability.knockback_force)
+	)
+
+	_spawn_effect("dash_strike", start_pos)
+	_play_sound("dash")
+
 # ============================================
 # MELEE ABILITIES - RARE
 # ============================================
@@ -383,6 +426,20 @@ func _closest_point_on_line(a: Vector2, b: Vector2, p: Vector2) -> Vector2:
 	var t = clamp((p - a).dot(ab) / ab.dot(ab), 0.0, 1.0)
 	return a + ab * t
 
+func _execute_battle_cry(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Buff player with damage boost
+	if player.has_method("apply_damage_boost"):
+		player.apply_damage_boost(1.3, ability.duration)  # +30% damage
+
+	# Frighten nearby weak enemies (slow them)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	for enemy in enemies:
+		_apply_slow_to_enemy(enemy, 0.5, 2.0)
+
+	_spawn_effect("battle_cry", player.global_position)
+	_play_sound("swing")
+	_screen_shake("small")
+
 # ============================================
 # MELEE ABILITIES - LEGENDARY
 # ============================================
@@ -456,6 +513,38 @@ func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_play_sound("omnislash")
 
+func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Transform: +50% damage, -30% damage taken
+	if player.has_method("apply_damage_boost"):
+		player.apply_damage_boost(1.5, ability.duration)
+
+	# Visual effect - make player glow red
+	if player.has_node("Sprite2D"):
+		var sprite = player.get_node("Sprite2D")
+		sprite.modulate = Color(1.5, 0.8, 0.8)
+		get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(sprite):
+				sprite.modulate = Color.WHITE
+		)
+
+	_spawn_effect("avatar_of_war", player.global_position, player)
+	_play_sound("buff")
+	_screen_shake("medium")
+
+func _execute_divine_shield(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Make player invulnerable
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(true)
+
+	# End after duration
+	get_tree().create_timer(ability.invulnerability_duration).timeout.connect(func():
+		if player.has_method("set_invulnerable"):
+			player.set_invulnerable(false)
+	)
+
+	_spawn_effect("divine_shield", player.global_position, player)
+	_play_sound("buff")
+
 # ============================================
 # RANGED ABILITIES - COMMON
 # ============================================
@@ -511,6 +600,26 @@ func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_play_sound("dodge")
 
+func _execute_throw_net(ability: ActiveAbilityData, player: Node2D) -> void:
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if not target:
+		# Target cluster center if no single target
+		var cluster_center = _get_enemy_cluster_center(player.global_position, ability.range_distance)
+		_spawn_net_at(cluster_center, ability)
+	else:
+		_spawn_net_at(target.global_position, ability)
+
+	_play_sound("throw")
+
+func _spawn_net_at(position: Vector2, ability: ActiveAbilityData) -> void:
+	# Net roots/slows enemies in area
+	var enemies = _get_enemies_in_radius(position, ability.radius)
+
+	for enemy in enemies:
+		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("throw_net", position)
+
 # ============================================
 # RANGED ABILITIES - RARE
 # ============================================
@@ -563,6 +672,35 @@ func _execute_fan_of_knives(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_play_sound("throw")
 
+func _execute_sentry_turret(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Spawn a single turret at player position
+	var turret_pos = player.global_position
+	turret_pos.x = clamp(turret_pos.x, 40, 1536 - 40)
+	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
+
+	var turret = _spawn_effect("sentry_turret", turret_pos)
+	if turret and turret.has_method("setup"):
+		turret.setup(ability.duration, _get_damage(ability))
+	else:
+		# Fallback: manually implement turret shooting
+		_start_turret_shooting(turret_pos, ability)
+
+	_play_sound("deploy")
+
+func _start_turret_shooting(position: Vector2, ability: ActiveAbilityData) -> void:
+	"""Manual turret shooting if effect doesn't have setup."""
+	var shoot_interval = 0.5
+	var shots = int(ability.duration / shoot_interval)
+	var damage = _get_damage(ability)
+
+	for i in range(shots):
+		get_tree().create_timer(shoot_interval * i).timeout.connect(func():
+			var target = _get_nearest_enemy(position, 300.0)
+			if target and is_instance_valid(target):
+				_deal_damage_to_enemy(target, damage / shots)
+				_spawn_effect("turret_shot", position)
+		)
+
 # ============================================
 # RANGED ABILITIES - LEGENDARY
 # ============================================
@@ -613,6 +751,72 @@ func _execute_sentry_network(ability: ActiveAbilityData, player: Node2D) -> void
 		var turret = _spawn_effect("sentry_turret", pos)
 		if turret and turret.has_method("setup"):
 			turret.setup(ability.duration, _get_damage(ability))
+
+	_play_sound("deploy")
+
+func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Massive arrow storm covering most of the screen
+	var damage = _get_damage(ability)
+
+	# Create waves of arrows raining down
+	var waves = 10
+	var arrows_per_wave = 15
+
+	for wave in range(waves):
+		get_tree().create_timer(ability.duration * wave / waves).timeout.connect(func():
+			for i in range(arrows_per_wave):
+				# Random position in wide area around player
+				var random_offset = Vector2(
+					randf_range(-ability.radius, ability.radius),
+					randf_range(-ability.radius, ability.radius)
+				)
+				var arrow_pos = player.global_position + random_offset
+
+				# Clamp to screen
+				arrow_pos.x = clamp(arrow_pos.x, 40, 1536 - 40)
+				arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
+
+				# Hit enemies at this position
+				var enemies = _get_enemies_in_radius(arrow_pos, 40)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage / (waves * 2))
+
+				# Spawn arrow impact effect
+				_spawn_effect("arrow_impact", arrow_pos)
+		)
+
+	_play_sound("arrow_storm")
+	_screen_shake("medium")
+
+func _execute_explosive_decoy(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Spawn a decoy that attracts enemies then explodes
+	var decoy_pos = player.global_position
+
+	# Spawn decoy visual
+	var decoy = _spawn_effect("explosive_decoy", decoy_pos)
+
+	# Make player briefly invisible/stealthed
+	if player.has_node("Sprite2D"):
+		var sprite = player.get_node("Sprite2D")
+		sprite.modulate.a = 0.3
+
+		get_tree().create_timer(2.0).timeout.connect(func():
+			if is_instance_valid(sprite):
+				sprite.modulate.a = 1.0
+		)
+
+	# After delay, decoy explodes
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		var damage = _get_damage(ability)
+		var enemies = _get_enemies_in_radius(decoy_pos, ability.radius)
+
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		_spawn_effect("explosion", decoy_pos)
+		_screen_shake("large")
+		_play_sound("explosion")
+	)
 
 	_play_sound("deploy")
 
@@ -757,6 +961,17 @@ func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("shadowstep", target_pos)
 	_play_sound("shadowstep")
 
+func _execute_time_slow(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Slow all enemies in radius significantly
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+
+	# Visual effect - tint screen/area blue briefly
+	_spawn_effect("time_slow", player.global_position)
+	_play_sound("time_stop")
+
 # ============================================
 # GLOBAL ABILITIES - LEGENDARY
 # ============================================
@@ -826,6 +1041,85 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_play_sound("thunder")
 	_screen_shake("medium")
+
+func _execute_summon_golem(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Spawn a golem ally that fights for the player
+	var golem_pos = player.global_position + Vector2(60, 0)
+	golem_pos.x = clamp(golem_pos.x, 40, 1536 - 40)
+	golem_pos.y = clamp(golem_pos.y, 40, 1382 - 40)
+
+	var golem = _spawn_effect("summon_golem", golem_pos)
+	if golem and golem.has_method("setup"):
+		golem.setup(ability.duration, _get_damage(ability))
+	else:
+		# Fallback: manually implement golem attacking
+		_start_golem_attacks(golem_pos, ability, player)
+
+	_spawn_effect("summon_burst", golem_pos)
+	_play_sound("summon")
+	_screen_shake("small")
+
+func _start_golem_attacks(position: Vector2, ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Manual golem AI if effect doesn't have setup."""
+	var attack_interval = 1.0
+	var attacks = int(ability.duration / attack_interval)
+	var damage = _get_damage(ability)
+	var golem_pos = position
+
+	for i in range(attacks):
+		get_tree().create_timer(attack_interval * i).timeout.connect(func():
+			# Golem follows player loosely
+			if is_instance_valid(player):
+				golem_pos = golem_pos.lerp(player.global_position + Vector2(60, 0), 0.3)
+
+			# Attack nearest enemy
+			var target = _get_nearest_enemy(golem_pos, 150.0)
+			if target and is_instance_valid(target):
+				_deal_damage_to_enemy(target, damage / attacks)
+				_spawn_effect("golem_slam", target.global_position)
+		)
+
+func _execute_army_of_the_dead(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Summon multiple skeleton warriors
+	var skeleton_count = 5
+	var damage = _get_damage(ability)
+
+	for i in range(skeleton_count):
+		var angle = TAU * i / skeleton_count
+		var offset = Vector2(cos(angle), sin(angle)) * 80
+		var spawn_pos = player.global_position + offset
+
+		spawn_pos.x = clamp(spawn_pos.x, 40, 1536 - 40)
+		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+
+		var skeleton = _spawn_effect("skeleton_warrior", spawn_pos)
+		if skeleton and skeleton.has_method("setup"):
+			skeleton.setup(ability.duration, damage / skeleton_count)
+		else:
+			# Fallback: manual skeleton attacks
+			_start_skeleton_attacks(spawn_pos, ability, player, i)
+
+	_spawn_effect("dark_summon", player.global_position)
+	_play_sound("summon")
+	_screen_shake("medium")
+
+func _start_skeleton_attacks(position: Vector2, ability: ActiveAbilityData, player: Node2D, index: int) -> void:
+	"""Manual skeleton AI if effect doesn't have setup."""
+	var attack_interval = 0.8
+	var attacks = int(ability.duration / attack_interval)
+	var damage = _get_damage(ability) / 5.0  # Split among 5 skeletons
+	var skeleton_pos = position
+
+	for i in range(attacks):
+		get_tree().create_timer(attack_interval * i + index * 0.1).timeout.connect(func():
+			# Find nearest enemy
+			var target = _get_nearest_enemy(skeleton_pos, 200.0)
+			if target and is_instance_valid(target):
+				# Move toward and attack
+				skeleton_pos = skeleton_pos.lerp(target.global_position, 0.4)
+				_deal_damage_to_enemy(target, damage / attacks)
+				_spawn_effect("skeleton_attack", target.global_position)
+		)
 
 # ============================================
 # PROJECTILE SPAWNING

@@ -34,32 +34,28 @@ func _ready() -> void:
 	_create_ui()
 
 func _create_ui() -> void:
-	# Background overlay
-	var overlay = ColorRect.new()
-	overlay.name = "Overlay"
-	overlay.color = Color(0, 0, 0, 0.7)
-	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-	add_child(overlay)
-
-	# Main panel
+	# Full-screen panel (same as passive ability selection)
 	panel = PanelContainer.new()
 	panel.name = "Panel"
-	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(900, 400)
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.anchor_right = 1.0
+	panel.anchor_bottom = 1.0
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	# Style the panel
+	# Style the panel with dark semi-transparent background
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.1, 0.1, 0.15, 0.95)
-	panel_style.set_border_width_all(3)
-	panel_style.border_color = Color(0.4, 0.6, 1.0)
-	panel_style.set_corner_radius_all(12)
+	panel_style.bg_color = Color(0, 0, 0, 0.85)
+	panel_style.set_corner_radius_all(20)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 
-	# Content VBox
+	# Content VBox - centered
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
+	vbox.name = "VBoxContainer"
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.add_theme_constant_override("separation", 30)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	panel.add_child(vbox)
 
 	# Title
@@ -67,8 +63,8 @@ func _create_ui() -> void:
 	title_label.name = "TitleLabel"
 	title_label.text = "NEW ABILITY!"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 28)
-	title_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+	title_label.add_theme_font_size_override("font_size", 32)
+	title_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title_label)
@@ -84,15 +80,13 @@ func _create_ui() -> void:
 		subtitle_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(subtitle_label)
 
-	# Choices container
+	# Choices container - centered horizontally
 	choices_container = HBoxContainer.new()
 	choices_container.name = "ChoicesContainer"
 	choices_container.add_theme_constant_override("separation", 20)
 	choices_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	choices_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(choices_container)
-
-	# Center the panel
-	panel.position = -panel.custom_minimum_size / 2
 
 func _process(delta: float) -> void:
 	if not is_rolling:
@@ -368,13 +362,13 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
-			KEY_1:
+			KEY_1, KEY_J, KEY_Q:
 				if current_choices.size() > 0:
 					_on_ability_selected(0)
-			KEY_2:
+			KEY_2, KEY_K, KEY_W:
 				if current_choices.size() > 1:
 					_on_ability_selected(1)
-			KEY_3:
+			KEY_3, KEY_L, KEY_E:
 				if current_choices.size() > 2:
 					_on_ability_selected(2)
 
