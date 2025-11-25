@@ -8,6 +8,7 @@ extends CharacterBody2D
 @export var attack_cooldown: float = 0.8  # Time between attacks
 @export var gold_coin_scene: PackedScene
 @export var damage_number_scene: PackedScene
+@export var death_particles_scene: PackedScene
 
 var player: Node2D = null
 var current_health: float
@@ -18,6 +19,10 @@ var can_attack: bool = true
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
+
+# Hit flash
+var flash_timer: float = 0.0
+var flash_duration: float = 0.1
 
 # Animation rows (0-indexed)
 const ROW_IDLE = 0       # 4 frames
@@ -63,6 +68,15 @@ func _physics_process(delta: float) -> void:
 	if is_dying:
 		update_death_animation(delta)
 		return
+
+	# Handle hit flash
+	if flash_timer > 0:
+		flash_timer -= delta
+		var flash_intensity = flash_timer / flash_duration
+		if sprite.material:
+			sprite.material.set_shader_parameter("flash_intensity", flash_intensity)
+		if flash_timer <= 0 and sprite.material:
+			sprite.material.set_shader_parameter("flash_intensity", 0.0)
 
 	# Handle knockback decay
 	if knockback_velocity.length() > 1.0:
@@ -112,6 +126,15 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	# Spawn damage number
 	spawn_damage_number(amount, is_critical)
 
+	# Hit flash effect
+	flash_timer = flash_duration
+	if sprite.material:
+		sprite.material.set_shader_parameter("flash_intensity", 1.0)
+
+	# Small screen shake on hit
+	if JuiceManager:
+		JuiceManager.shake_small()
+
 	# Check for cull the weak
 	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
 		current_health = 0
@@ -141,6 +164,14 @@ func die() -> void:
 	# Remove from enemies group so player stops targeting
 	remove_from_group("enemies")
 
+	# Spawn death particles
+	spawn_death_particles()
+
+	# Juice effects on kill
+	if JuiceManager:
+		JuiceManager.shake_medium()
+		JuiceManager.hitstop_small()
+
 	# Give player kill XP
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
 		player.give_kill_xp()
@@ -153,6 +184,14 @@ func die() -> void:
 	var stats = get_node_or_null("/root/Main/StatsDisplay")
 	if stats and stats.has_method("add_kill_points"):
 		stats.add_kill_points()
+
+func spawn_death_particles() -> void:
+	if death_particles_scene == null:
+		return
+
+	var particles = death_particles_scene.instantiate()
+	particles.global_position = global_position
+	get_parent().add_child(particles)
 
 func update_death_animation(delta: float) -> void:
 	animation_frame += animation_speed * delta

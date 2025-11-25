@@ -7,6 +7,15 @@ extends CharacterBody2D
 @export var arrow_scene: PackedScene
 @export var max_health: float = 25.0
 @export var damage_number_scene: PackedScene
+@export var muzzle_flash_scene: PackedScene
+
+# Camera
+@onready var camera: Camera2D = $Camera2D
+var camera_lerp_speed: float = 8.0
+
+# Recoil
+var recoil_offset: Vector2 = Vector2.ZERO
+var recoil_recovery: float = 15.0
 
 # Base stats (for ability modifications)
 var base_speed: float
@@ -81,6 +90,12 @@ func _ready() -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
+	# Register camera with JuiceManager for screen shake
+	if camera and JuiceManager:
+		JuiceManager.register_camera(camera)
+		# Disable camera position smoothing since we do it manually
+		camera.position_smoothing_enabled = false
+
 func take_damage(amount: float) -> void:
 	current_health -= amount
 	if health_bar:
@@ -90,9 +105,15 @@ func take_damage(amount: float) -> void:
 	# Spawn damage number (red for player)
 	spawn_damage_number(amount)
 
+	# Screen shake when taking damage
+	if JuiceManager:
+		JuiceManager.shake_medium()
+
 	if current_health <= 0:
 		emit_signal("player_died")
-		# TODO: Handle player death
+		if JuiceManager:
+			JuiceManager.shake_large()
+			JuiceManager.hitstop_large()
 
 func spawn_damage_number(amount: float) -> void:
 	if damage_number_scene == null:
@@ -159,6 +180,14 @@ func _physics_process(delta: float) -> void:
 	if attack_timer >= attack_cooldown:
 		try_attack()
 
+	# Apply and decay recoil
+	if recoil_offset.length() > 0.1:
+		sprite.position = recoil_offset
+		recoil_offset = recoil_offset.lerp(Vector2.ZERO, recoil_recovery * delta)
+	else:
+		sprite.position = Vector2.ZERO
+		recoil_offset = Vector2.ZERO
+
 	# Update animation
 	update_animation(delta, direction)
 
@@ -195,6 +224,12 @@ func spawn_arrow() -> void:
 	if arrow_scene == null:
 		return
 
+	# Muzzle flash
+	spawn_muzzle_flash()
+
+	# Recoil - push player back slightly
+	recoil_offset = -attack_direction * 8.0
+
 	# Get ability modifiers
 	var extra_projectiles: int = 0
 	var spread_angle: float = 0.0
@@ -222,6 +257,14 @@ func spawn_arrow() -> void:
 	# Rear shot ability
 	if has_rear_shot:
 		spawn_single_arrow(-attack_direction)
+
+func spawn_muzzle_flash() -> void:
+	if muzzle_flash_scene == null:
+		return
+
+	var flash = muzzle_flash_scene.instantiate()
+	flash.global_position = global_position + attack_direction * 20
+	get_parent().add_child(flash)
 
 func spawn_single_arrow(direction: Vector2) -> void:
 	var arrow = arrow_scene.instantiate()
