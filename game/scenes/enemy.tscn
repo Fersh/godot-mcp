@@ -1,13 +1,18 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/orc_peon.png" id="2_texture"]
+[ext_resource type="PackedScene" path="res://scenes/gold_coin.tscn" id="3_coin"]
+[ext_resource type="PackedScene" path="res://scenes/health_bar.tscn" id="4_health_bar"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
 size = Vector2(20, 24)
 
 [node name="Enemy" type="CharacterBody2D" groups=["enemies"]]
+collision_layer = 4
+collision_mask = 1
 script = ExtResource("1_script")
+gold_coin_scene = ExtResource("3_coin")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(2.0, 2.0)
@@ -18,3 +23,5 @@ frame = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_enemy")
+
+[node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]

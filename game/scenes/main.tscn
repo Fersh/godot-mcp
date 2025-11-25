@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
+[ext_resource type="PackedScene" path="res://scenes/xp_bar.tscn" id="4_xp_bar"]
 
 [node name="Main" type="Node2D"]
 
@@ -18,3 +19,5 @@ position = Vector2(540, 960)
 script = ExtResource("3_spawner")
 enemy_scene = ExtResource("2_enemy")
 spawn_interval = 2.0
+
+[node name="XPBar" parent="." instance=ExtResource("4_xp_bar")]
