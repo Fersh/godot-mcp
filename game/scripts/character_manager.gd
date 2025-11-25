@@ -96,7 +96,9 @@ func get_passive_bonuses() -> Dictionary:
 		"projectile_speed": 0.0,
 		"max_hp": 0.0,
 		"damage_reduction": 0.0,
-		"damage_reduction_threshold": 0.0  # HP percentage threshold for damage reduction
+		"damage_reduction_threshold": 0.0,  # HP percentage threshold for damage reduction
+		"block_chance": 0.0,
+		"dodge_chance": 0.0
 	}
 
 	if selected_character == null:
@@ -114,3 +116,20 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["damage_reduction_threshold"] = 0.50
 
 	return bonuses
+
+# Get the selected character's base combat stats
+func get_base_combat_stats() -> Dictionary:
+	var stats = {
+		"crit_rate": 0.0,
+		"block_rate": 0.0,
+		"dodge_rate": 0.0
+	}
+
+	if selected_character == null:
+		return stats
+
+	stats["crit_rate"] = selected_character.base_crit_rate
+	stats["block_rate"] = selected_character.base_block_rate
+	stats["dodge_rate"] = selected_character.base_dodge_rate
+
+	return stats

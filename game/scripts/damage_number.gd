@@ -56,3 +56,16 @@ func set_heal(amount: float) -> void:
 	# Healing - green
 	label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3, 1))
 	label.add_theme_font_size_override("font_size", 28)
+
+func set_blocked(amount: float) -> void:
+	label.text = str(int(amount)) + " BLOCKED"
+	# Blocked - light blue/steel color
+	label.add_theme_color_override("font_color", Color(0.5, 0.7, 1.0, 1))
+	label.add_theme_font_size_override("font_size", 26)
+
+func set_dodge() -> void:
+	label.text = "DODGE!"
+	# Dodge - cyan/teal color
+	label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.9, 1))
+	label.add_theme_font_size_override("font_size", 28)
+	scale = Vector2(1.1, 1.1)

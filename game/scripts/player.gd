@@ -223,6 +223,21 @@ func _apply_permanent_upgrades() -> void:
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
+	# Check for dodge first
+	if AbilityManager:
+		var dodge_chance = AbilityManager.get_dodge_chance()
+		if randf() < dodge_chance:
+			# Dodged the attack!
+			spawn_dodge_text()
+			return
+
+	# Check for block
+	var was_blocked = false
+	if AbilityManager:
+		var block_chance = AbilityManager.get_block_chance()
+		if randf() < block_chance:
+			was_blocked = true
+
 	# Apply character passive damage reduction (Knight's Iron Will)
 	var final_damage = amount
 	if CharacterManager:
@@ -234,6 +249,10 @@ func take_damage(amount: float) -> void:
 			if health_percent < threshold:
 				final_damage = amount * (1.0 - reduction)
 
+	# Block reduces damage by 50%
+	if was_blocked:
+		final_damage *= 0.5
+
 	current_health -= final_damage
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
@@ -243,12 +262,18 @@ func take_damage(amount: float) -> void:
 	if SoundManager:
 		SoundManager.play_player_hurt()
 
-	# Spawn damage number (red for player)
-	spawn_damage_number(final_damage)
+	# Spawn damage number (red for player, show blocked if applicable)
+	if was_blocked:
+		spawn_blocked_damage_number(final_damage)
+	else:
+		spawn_damage_number(final_damage)
 
 	# Screen shake and damage flash when taking damage
 	if JuiceManager:
-		JuiceManager.shake_medium()
+		if was_blocked:
+			JuiceManager.shake_small()  # Less shake when blocked
+		else:
+			JuiceManager.shake_medium()
 		JuiceManager.damage_flash()
 		JuiceManager.update_player_health(current_health / max_health)
 
@@ -270,6 +295,31 @@ func spawn_damage_number(amount: float) -> void:
 	dmg_num.global_position = global_position + Vector2(0, -40)
 	get_parent().add_child(dmg_num)
 	dmg_num.set_damage(amount, false, true)  # is_player_damage = true
+
+func spawn_blocked_damage_number(amount: float) -> void:
+	if damage_number_scene == null:
+		return
+
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -40)
+	get_parent().add_child(dmg_num)
+	if dmg_num.has_method("set_blocked"):
+		dmg_num.set_blocked(amount)
+	else:
+		dmg_num.set_damage(amount, false, true)
+
+func spawn_dodge_text() -> void:
+	if damage_number_scene == null:
+		return
+
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -40)
+	get_parent().add_child(dmg_num)
+	if dmg_num.has_method("set_dodge"):
+		dmg_num.set_dodge()
+	else:
+		# Fallback - just show 0 damage
+		dmg_num.set_damage(0, false, true)
 
 func _input(event: InputEvent) -> void:
 	# Ignore input when dead

@@ -83,6 +83,12 @@ func _init_upgrade_definitions() -> void:
 	_add_upgrade("precision_core", "Precision Core", "Increase critical hit damage", "crit_damage",
 		Category.COMBAT, 250, 1.5, 5, 0.20, "crit_damage", "+%d%% crit damage")
 
+	_add_upgrade("keen_eye", "Keen Eye", "Increase critical hit chance", "crit_chance",
+		Category.COMBAT, 200, 1.5, 5, 0.02, "crit_chance", "+%d%% crit chance")
+
+	_add_upgrade("shield_mastery", "Shield Mastery", "Chance to block incoming attacks", "block",
+		Category.SURVIVAL, 250, 1.6, 5, 0.02, "block_chance", "+%d%% block")
+
 	# Survival Upgrades
 	_add_upgrade("core_integrity", "Core Integrity", "Increase maximum health", "health",
 		Category.SURVIVAL, 100, 1.4, 5, 0.10, "max_hp", "+%d%% max HP")
@@ -256,6 +262,8 @@ func get_all_bonuses() -> Dictionary:
 		"projectile_count": 0,
 		"enemy_health_reduction": 0.0,
 		"crit_damage": 0.0,
+		"crit_chance": 0.0,
+		"block_chance": 0.0,
 		"max_hp": 0.0,
 		"hp_regen": 0.0,
 		"move_speed": 0.0,

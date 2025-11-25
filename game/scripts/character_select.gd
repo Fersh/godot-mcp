@@ -277,6 +277,11 @@ func _update_preview() -> void:
 	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
 	_add_stat_row_to_container(stats_box, "Type", attack_type_text, Color(0.9, 0.9, 0.9, 1))
 
+	# Combat stats
+	_add_stat_row_to_container(stats_box, "Crit Rate", "%d%%" % int(char_data.base_crit_rate * 100), _get_stat_color(char_data.base_crit_rate, 0.0, 0.15))
+	_add_stat_row_to_container(stats_box, "Block Rate", "%d%%" % int(char_data.base_block_rate * 100), _get_stat_color(char_data.base_block_rate, 0.0, 0.10))
+	_add_stat_row_to_container(stats_box, "Dodge Rate", "%d%%" % int(char_data.base_dodge_rate * 100), _get_stat_color(char_data.base_dodge_rate, 0.0, 0.15))
+
 	# Update passive
 	for child in preview_passive_container.get_children():
 		child.queue_free()

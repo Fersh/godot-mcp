@@ -25,6 +25,11 @@ enum AttackType {
 @export var base_damage: float = 1.0
 @export var attack_range: float = 440.0  # For ranged, this is fire range. For melee, this is melee reach.
 
+# Combat stats
+@export var base_crit_rate: float = 0.0  # Base crit chance
+@export var base_block_rate: float = 0.0  # Chance to block incoming damage
+@export var base_dodge_rate: float = 0.0  # Chance to dodge attacks entirely
+
 # Spritesheet configuration
 @export_group("Sprite")
 @export var sprite_texture: Texture2D
@@ -77,6 +82,11 @@ static func create_archer() -> CharacterData:
 	data.base_damage = 1.0
 	data.attack_range = 440.0
 
+	# Combat stats - Ranger has higher crit and dodge
+	data.base_crit_rate = 0.08  # 8% base crit
+	data.base_block_rate = 0.0  # 0% block
+	data.base_dodge_rate = 0.10  # 10% dodge
+
 	# Sprite config (archer is 32x32 per frame)
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 8
@@ -121,6 +131,11 @@ static func create_knight() -> CharacterData:
 	data.base_attack_cooldown = 1.1  # 10% slower attack speed (was 1.0)
 	data.base_damage = 1.5
 	data.attack_range = 54.0  # Melee reach (reduced 10% from 60)
+
+	# Combat stats - Knight has crit, block, and some dodge
+	data.base_crit_rate = 0.05  # 5% base crit
+	data.base_block_rate = 0.05  # 5% block
+	data.base_dodge_rate = 0.05  # 5% dodge
 
 	# Sprite config (knight is 128x64 per frame based on user specification)
 	# Ranger is 32x32 at 1.875 scale = 60px. Knight should be 10% bigger = ~2.06 uniform scale

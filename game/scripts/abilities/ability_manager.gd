@@ -682,12 +682,46 @@ func get_projectile_speed_multiplier() -> float:
 func get_crit_chance() -> float:
 	var base = stat_modifiers.get("crit_chance", 0.0)
 
+	# Add character base crit rate
+	if CharacterManager:
+		base += CharacterManager.get_base_combat_stats().get("crit_rate", 0.0)
+
+	# Add permanent upgrade crit chance
 	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("crit_chance", 0.0)
 		base += PermanentUpgrades.get_all_bonuses().get("luck", 0.0)
 
 	# Add character passive bonus (Archer's Eagle Eye)
 	if CharacterManager:
 		base += CharacterManager.get_passive_bonuses().get("crit_chance", 0.0)
+
+	return base
+
+# Get total block chance including character base, permanent upgrades
+func get_block_chance() -> float:
+	var base = 0.0
+
+	# Add character base block rate
+	if CharacterManager:
+		base += CharacterManager.get_base_combat_stats().get("block_rate", 0.0)
+
+	# Add permanent upgrade block chance
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("block_chance", 0.0)
+
+	return base
+
+# Get total dodge chance including character base, permanent upgrades
+func get_dodge_chance() -> float:
+	var base = 0.0
+
+	# Add character base dodge rate
+	if CharacterManager:
+		base += CharacterManager.get_base_combat_stats().get("dodge_rate", 0.0)
+
+	# Add permanent upgrade dodge chance
+	if PermanentUpgrades:
+		base += PermanentUpgrades.get_all_bonuses().get("dodge_chance", 0.0)
 
 	return base
 
