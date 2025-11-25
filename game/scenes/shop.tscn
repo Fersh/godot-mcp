@@ -11,7 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.05, 0.08, 1)
+color = Color(0.06, 0.05, 0.04, 1)
 
 [node name="MainContainer" type="VBoxContainer" parent="."]
 anchors_preset = 15
@@ -29,15 +29,22 @@ theme_override_constants/separation = 20
 custom_minimum_size = Vector2(100, 60)
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
 text = "< Back"
 
 [node name="Title" type="Label" parent="MainContainer/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.84, 0, 1)
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0.2, 0.1, 0, 0.8)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 36
-text = "SHOP"
+text = "UPGRADES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -49,26 +56,26 @@ alignment = 2
 [node name="CoinIcon" type="Label" parent="MainContainer/Header/CoinsContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
-theme_override_font_sizes/font_size = 24
-text = "coins"
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
+text = "GOLD:"
 vertical_alignment = 1
 
 [node name="CoinAmount" type="Label" parent="MainContainer/Header/CoinsContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
 text = " 0"
 vertical_alignment = 1
 
 [node name="HeaderSpacer" type="Control" parent="MainContainer/Header"]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
-
-[node name="CategoryTabs" type="HBoxContainer" parent="MainContainer"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_constants/separation = 5
-alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer"]
 layout_mode = 2
@@ -79,18 +86,18 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
 columns = 4
 
 [node name="FooterTooltip" type="PanelContainer" parent="MainContainer"]
 visible = false
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 260)
 layout_mode = 2
 
 [node name="TooltipContent" type="VBoxContainer" parent="MainContainer/FooterTooltip"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="TopRow" type="HBoxContainer" parent="MainContainer/FooterTooltip/TooltipContent"]
 layout_mode = 2
@@ -98,27 +105,30 @@ layout_mode = 2
 [node name="UpgradeName" type="Label" parent="MainContainer/FooterTooltip/TooltipContent/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0, 1, 0.8, 1)
-theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 26
 text = "Upgrade Name"
 
 [node name="RankLabel" type="Label" parent="MainContainer/FooterTooltip/TooltipContent/TopRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.75, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.7, 0.65, 0.5, 1)
+theme_override_font_sizes/font_size = 20
 text = "Rank 0/5"
 
 [node name="Description" type="Label" parent="MainContainer/FooterTooltip/TooltipContent"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.8, 0.7, 1)
+theme_override_font_sizes/font_size = 18
 text = "Upgrade description goes here"
 autowrap_mode = 2
 
 [node name="BenefitLabel" type="Label" parent="MainContainer/FooterTooltip/TooltipContent"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 1, 0.5, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.5, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 18
 text = "Current: +0% | Next: +10%"
 
 [node name="Spacer" type="Control" parent="MainContainer/FooterTooltip/TooltipContent"]
@@ -133,21 +143,31 @@ alignment = 1
 [node name="CostLabel" type="Label" parent="MainContainer/FooterTooltip/TooltipContent/BottomRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
 text = "Cost: 100"
 vertical_alignment = 1
 
 [node name="UpgradeButton" type="Button" parent="MainContainer/FooterTooltip/TooltipContent/BottomRow"]
-custom_minimum_size = Vector2(200, 60)
+custom_minimum_size = Vector2(180, 55)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 22
 text = "UPGRADE"
 
 [node name="RefundButton" type="Button" parent="MainContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.8, 0.5, 0.4, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 16
 text = "Refund All Upgrades"
 
 [node name="ConfirmDialog" type="ConfirmationDialog" parent="."]

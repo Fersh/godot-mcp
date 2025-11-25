@@ -4,47 +4,74 @@ extends CanvasLayer
 @onready var shop_button: Button = $VBoxContainer/ButtonContainer/ShopButton
 @onready var coin_amount: Label = $VBoxContainer/CoinsDisplay/CoinAmount
 @onready var stats_label: Label = $VBoxContainer/StatsLabel
+@onready var video_player: VideoStreamPlayer = $VideoBackground
 
 func _ready() -> void:
 	# Connect button signals
 	play_button.pressed.connect(_on_play_pressed)
 	shop_button.pressed.connect(_on_shop_pressed)
 
-	# Style buttons
-	_style_button(play_button, Color(0, 1, 0.8, 1), Color(0, 0.8, 0.64, 1))
-	_style_button(shop_button, Color(1, 0.84, 0, 1), Color(0.8, 0.67, 0, 1))
+	# Style buttons with medieval/pixel fantasy look
+	_style_medieval_button(play_button, Color(0.2, 0.5, 0.3, 1))  # Green tint for Play
+	_style_medieval_button(shop_button, Color(0.5, 0.35, 0.15, 1))  # Brown/gold tint for Shop
+
+	# Ensure video loops
+	if video_player:
+		video_player.finished.connect(_on_video_finished)
 
 	# Update displays
 	_update_coin_display()
 	_update_stats_display()
 
-func _style_button(button: Button, normal_color: Color, hover_color: Color) -> void:
+func _on_video_finished() -> void:
+	# Restart video when it finishes
+	if video_player:
+		video_player.play()
+
+func _style_medieval_button(button: Button, tint: Color) -> void:
+	# Medieval/fantasy pixel style - dark with ornate border
 	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = normal_color
-	style_normal.corner_radius_top_left = 12
-	style_normal.corner_radius_top_right = 12
-	style_normal.corner_radius_bottom_left = 12
-	style_normal.corner_radius_bottom_right = 12
+	style_normal.bg_color = Color(0.08, 0.06, 0.04, 0.95)
+	style_normal.border_width_left = 4
+	style_normal.border_width_right = 4
+	style_normal.border_width_top = 4
 	style_normal.border_width_bottom = 6
-	style_normal.border_color = normal_color.darkened(0.3)
+	style_normal.border_color = Color(0.6, 0.5, 0.3, 1)  # Gold/bronze border
+	style_normal.corner_radius_top_left = 4
+	style_normal.corner_radius_top_right = 4
+	style_normal.corner_radius_bottom_left = 4
+	style_normal.corner_radius_bottom_right = 4
+	# Inner shadow effect
+	style_normal.shadow_color = tint * 0.5
+	style_normal.shadow_size = 8
+	style_normal.shadow_offset = Vector2(0, 0)
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = hover_color
-	style_hover.corner_radius_top_left = 12
-	style_hover.corner_radius_top_right = 12
-	style_hover.corner_radius_bottom_left = 12
-	style_hover.corner_radius_bottom_right = 12
+	style_hover.bg_color = Color(0.12, 0.1, 0.06, 0.98)
+	style_hover.border_width_left = 4
+	style_hover.border_width_right = 4
+	style_hover.border_width_top = 4
 	style_hover.border_width_bottom = 6
-	style_hover.border_color = hover_color.darkened(0.3)
+	style_hover.border_color = Color(0.85, 0.7, 0.4, 1)  # Brighter gold on hover
+	style_hover.corner_radius_top_left = 4
+	style_hover.corner_radius_top_right = 4
+	style_hover.corner_radius_bottom_left = 4
+	style_hover.corner_radius_bottom_right = 4
+	style_hover.shadow_color = tint * 0.7
+	style_hover.shadow_size = 12
+	style_hover.shadow_offset = Vector2(0, 0)
 
 	var style_pressed = StyleBoxFlat.new()
-	style_pressed.bg_color = normal_color.darkened(0.1)
-	style_pressed.corner_radius_top_left = 12
-	style_pressed.corner_radius_top_right = 12
-	style_pressed.corner_radius_bottom_left = 12
-	style_pressed.corner_radius_bottom_right = 12
-	style_pressed.border_width_top = 4
-	style_pressed.border_color = normal_color.darkened(0.4)
+	style_pressed.bg_color = Color(0.06, 0.04, 0.02, 0.98)
+	style_pressed.border_width_left = 4
+	style_pressed.border_width_right = 4
+	style_pressed.border_width_top = 6
+	style_pressed.border_width_bottom = 4
+	style_pressed.border_color = Color(0.5, 0.4, 0.25, 1)
+	style_pressed.corner_radius_top_left = 4
+	style_pressed.corner_radius_top_right = 4
+	style_pressed.corner_radius_bottom_left = 4
+	style_pressed.corner_radius_bottom_right = 4
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)

@@ -45,9 +45,9 @@ const ROW_IDLE = 0          # 4 frames
 const ROW_MOVE = 1          # 8 frames
 const ROW_SHOOT_STRAIGHT = 2 # 8 frames
 const ROW_SHOOT_UP = 3      # 8 frames
-const ROW_SHOOT_DOWN = 4    # 8 frames
+const ROW_DEATH = 4         # 4 frames (death animation)
 const ROW_DAMAGE = 5        # 4 frames
-const ROW_DEATH = 6         # 4 frames
+const ROW_SHOOT_DOWN = 6    # 8 frames
 const ROW_JUMP = 7          # 8 frames
 
 const COLS_PER_ROW = 8
@@ -72,6 +72,10 @@ var attack_timer: float = 0.0
 var is_attacking: bool = false
 var attack_direction: Vector2 = Vector2.RIGHT
 var facing_right: bool = true
+
+# Death state
+var is_dead: bool = false
+var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
@@ -142,7 +146,12 @@ func take_damage(amount: float) -> void:
 		JuiceManager.damage_flash()
 		JuiceManager.update_player_health(current_health / max_health)
 
-	if current_health <= 0:
+	if current_health <= 0 and not is_dead:
+		current_health = 0
+		is_dead = true
+		death_animation_finished = false
+		animation_frame = 0.0
+		current_row = ROW_DEATH
 		emit_signal("player_died")
 		if JuiceManager:
 			JuiceManager.shake_large()
@@ -157,6 +166,10 @@ func spawn_damage_number(amount: float) -> void:
 	dmg_num.set_damage(amount, false, true)  # is_player_damage = true
 
 func _input(event: InputEvent) -> void:
+	# Ignore input when dead
+	if is_dead:
+		return
+
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			is_touching = true
@@ -169,6 +182,11 @@ func _input(event: InputEvent) -> void:
 		touch_current_pos = event.position
 
 func _physics_process(delta: float) -> void:
+	# If dead, only update death animation
+	if is_dead:
+		update_death_animation(delta)
+		return
+
 	# Update temporary buffs
 	if temp_speed_timer > 0:
 		temp_speed_timer -= delta
@@ -360,6 +378,22 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 		animation_frame = 0.0
 		if is_attacking:
 			is_attacking = false
+
+	# Set the sprite frame
+	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
+
+func update_death_animation(delta: float) -> void:
+	# Play death animation once, then hold on last frame
+	if death_animation_finished:
+		return
+
+	current_row = ROW_DEATH
+	animation_frame += animation_speed * delta
+
+	var max_frames = FRAME_COUNTS.get(ROW_DEATH, 4)
+	if animation_frame >= max_frames - 1:
+		animation_frame = max_frames - 1
+		death_animation_finished = true
 
 	# Set the sprite frame
 	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
