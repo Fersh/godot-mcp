@@ -12,6 +12,8 @@ var kill_count: int = 0
 var nearby_item: Node2D = null
 
 func _ready() -> void:
+	add_to_group("main")
+
 	# Connect player signals
 	if player:
 		player.level_up.connect(_on_player_level_up)
