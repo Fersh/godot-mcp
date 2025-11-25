@@ -173,41 +173,40 @@ func _populate_all_upgrades() -> void:
 
 func _create_upgrade_tile(upgrade) -> Button:
 	var tile = Button.new()
-	tile.custom_minimum_size = Vector2(180, 100)
+	tile.custom_minimum_size = Vector2(240, 120)
+
+	# Margin container to add internal padding
+	var margin = MarginContainer.new()
+	margin.name = "MarginContainer"
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Create container for tile content
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBoxContainer"
-	vbox.anchors_preset = Control.PRESET_FULL_RECT
 	vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 0)
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Top spacer
-	var top_spacer = Control.new()
-	top_spacer.custom_minimum_size = Vector2(0, 8)
-	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(top_spacer)
-
-	# Name container for centering
-	var name_container = CenterContainer.new()
-	name_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
+	# Name label - centered via horizontal alignment
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = upgrade.name
 	name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 9)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85, 1))
 	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	name_label.add_theme_constant_override("shadow_offset_x", 1)
 	name_label.add_theme_constant_override("shadow_offset_y", 1)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_container.add_child(name_label)
-	vbox.add_child(name_container)
+	vbox.add_child(name_label)
 
 	# Expanding spacer to push squares to bottom
 	var middle_spacer = Control.new()
@@ -215,16 +214,13 @@ func _create_upgrade_tile(upgrade) -> Button:
 	middle_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(middle_spacer)
 
-	# Rank squares in a centered container
+	# Rank squares - HBox with center alignment, full width
 	var rank = PermanentUpgrades.get_rank(upgrade.id)
-	var squares_center = CenterContainer.new()
-	squares_center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	squares_center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 	var rank_container = HBoxContainer.new()
 	rank_container.name = "RankContainer"
 	rank_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	rank_container.add_theme_constant_override("separation", 4)
+	rank_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rank_container.add_theme_constant_override("separation", 5)
 	rank_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Create squares for each rank
@@ -232,7 +228,7 @@ func _create_upgrade_tile(upgrade) -> Button:
 	for i in range(upgrade.max_rank):
 		var square = ColorRect.new()
 		square.name = "Square%d" % i
-		square.custom_minimum_size = Vector2(10, 10)
+		square.custom_minimum_size = Vector2(12, 12)
 		square.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		if i < rank:
@@ -244,16 +240,10 @@ func _create_upgrade_tile(upgrade) -> Button:
 
 		rank_container.add_child(square)
 
-	squares_center.add_child(rank_container)
-	vbox.add_child(squares_center)
+	vbox.add_child(rank_container)
 
-	# Bottom spacer
-	var bottom_spacer = Control.new()
-	bottom_spacer.custom_minimum_size = Vector2(0, 8)
-	bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(bottom_spacer)
-
-	tile.add_child(vbox)
+	margin.add_child(vbox)
+	tile.add_child(margin)
 
 	# Style tile based on affordability
 	var cost = PermanentUpgrades.get_upgrade_cost(upgrade.id)
