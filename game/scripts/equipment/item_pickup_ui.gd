@@ -90,7 +90,7 @@ func _style_rpg_button(button: Button, base_color: Color) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 14)
+	button.add_theme_font_size_override("font_size", 32)
 	button.add_theme_color_override("font_color", COLOR_TEXT)
 	button.add_theme_color_override("font_hover_color", Color(1, 1, 0.9))
 	button.add_theme_color_override("font_pressed_color", COLOR_TEXT)
@@ -177,7 +177,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	header_label.text = "* NEW ITEM *" if is_new else "- EQUIPPED -"
 	if pixel_font:
 		header_label.add_theme_font_override("font", pixel_font)
-	header_label.add_theme_font_size_override("font_size", 10)
+	header_label.add_theme_font_size_override("font_size", 22)
 	header_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(header_label)
@@ -208,7 +208,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 32)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -219,7 +219,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	info_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
 	if pixel_font:
 		info_label.add_theme_font_override("font", pixel_font)
-	info_label.add_theme_font_size_override("font_size", 9)
+	info_label.add_theme_font_size_override("font_size", 20)
 	info_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
 	info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(info_label)
@@ -259,7 +259,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 		desc_label.text = "\"%s\"" % item.description
 		if pixel_font:
 			desc_label.add_theme_font_override("font", pixel_font)
-		desc_label.add_theme_font_size_override("font_size", 9)
+		desc_label.add_theme_font_size_override("font_size", 20)
 		desc_label.add_theme_color_override("font_color", Color(0.8, 0.75, 0.5))
 		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -294,7 +294,7 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 	stat_label.text = stat_line
 	if pixel_font:
 		stat_label.add_theme_font_override("font", pixel_font)
-	stat_label.add_theme_font_size_override("font_size", 11)
+	stat_label.add_theme_font_size_override("font_size", 24)
 	stat_label.add_theme_color_override("font_color", COLOR_TEXT)
 	row.add_child(stat_label)
 
@@ -303,7 +303,7 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 		arrow_label.text = arrow_text
 		if pixel_font:
 			arrow_label.add_theme_font_override("font", pixel_font)
-		arrow_label.add_theme_font_size_override("font_size", 11)
+		arrow_label.add_theme_font_size_override("font_size", 24)
 		arrow_label.add_theme_color_override("font_color", arrow_color)
 		row.add_child(arrow_label)
 

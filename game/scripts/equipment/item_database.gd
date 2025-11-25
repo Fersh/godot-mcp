@@ -151,94 +151,94 @@ const BASE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_3.png"
 	},
 
-	# HELMETS
+	# HELMETS - Using wands as helmet icons (magical headgear)
 	"helm_basic": {
 		"display_name": "Helm",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.05},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon1.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_1.png"
 	},
 	"cap_basic": {
 		"display_name": "Cap",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.03},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon2.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_2.png"
 	},
 	"hood_basic": {
 		"display_name": "Hood",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.03},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon3.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_3.png"
 	},
 	"crown_basic": {
 		"display_name": "Crown",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.05},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon4.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
 	},
 
-	# CHEST
+	# CHEST - Using shields as chest armor icons
 	"armor_basic": {
 		"display_name": "Armor",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.08},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon5.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
 	},
 	"robe_basic": {
 		"display_name": "Robe",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.03, "move_speed": 0.03},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon6.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
 	},
 	"vest_basic": {
 		"display_name": "Vest",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.04},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon7.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_3.png"
 	},
 	"plate_basic": {
 		"display_name": "Plate",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.10, "move_speed": -0.03},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon8.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
 	},
 
-	# BOOTS
+	# BOOTS - Using staves as boot icons (magical footwear)
 	"boots_basic": {
 		"display_name": "Boots",
 		"slot": ItemData.Slot.BOOTS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.05},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon9.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
 	},
 	"sandals_basic": {
 		"display_name": "Sandals",
 		"slot": ItemData.Slot.BOOTS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.08, "max_hp": -0.03},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon10.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
 	},
 	"greaves_basic": {
 		"display_name": "Greaves",
 		"slot": ItemData.Slot.BOOTS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.05, "move_speed": 0.02},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon11.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
 	},
 	"slippers_basic": {
 		"display_name": "Slippers",
 		"slot": ItemData.Slot.BOOTS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.05},
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon12.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
 	},
 
 	# RINGS
@@ -376,7 +376,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.20, "crit_chance": 0.05},
 		"grants_equipment_ability": "eureka",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon13.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_5.png"
 	},
 	"tin_foil_hat": {
 		"display_name": "Tin Foil Hat",
@@ -385,7 +385,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.10, "max_hp": 0.05},
 		"grants_equipment_ability": "paranoia",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon14.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_1.png"
 	},
 	"bucket_helm": {
 		"display_name": "Bucket",
@@ -394,7 +394,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.15, "damage_reduction": 0.05},
 		"grants_equipment_ability": "tunnel_vision",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon15.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_2.png"
 	},
 
 	# Chest
@@ -405,7 +405,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "damage_reduction": 0.08},
 		"grants_equipment_ability": "dad_reflexes",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon16.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
 	},
 	"hoodie_of_gaming": {
 		"display_name": "Gamer Hoodie",
@@ -414,7 +414,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"attack_speed": 0.10, "crit_chance": 0.08},
 		"grants_equipment_ability": "gamer_mode",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon17.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
 	},
 	"plot_armor_vest": {
 		"display_name": "Plot Armor",
@@ -423,7 +423,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.10, "dodge_chance": 0.08},
 		"grants_equipment_ability": "plot_convenience",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon18.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_3.png"
 	},
 
 	# Boots
@@ -434,7 +434,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.15, "dodge_chance": 0.05},
 		"grants_equipment_ability": "low_gravity",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon19.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_5.png"
 	},
 	"crocs_of_power": {
 		"display_name": "Tactical Crocs",
@@ -443,7 +443,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.12, "damage": 0.05},
 		"grants_equipment_ability": "sport_mode",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon20.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
 	},
 	"heelies": {
 		"display_name": "Heely Wheelers",
@@ -452,7 +452,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.20},
 		"grants_equipment_ability": "momentum",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon21.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
 	},
 
 	# Rings
@@ -596,7 +596,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.30, "crit_chance": 0.15, "damage": 0.10},
 		"grants_equipment_ability": "big_brain_plays",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon22.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_3.png"
 	},
 	"anime_protagonist_hair": {
 		"display_name": "Protagonist Hair",
@@ -606,7 +606,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.20, "max_hp": 0.15, "crit_chance": 0.10},
 		"grants_ability": "frenzy",
 		"grants_equipment_ability": "power_of_friendship",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon23.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
 	},
 
 	# Chest
@@ -617,7 +617,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.25, "damage": 0.15, "attack_speed": 0.10},
 		"grants_equipment_ability": "gaming_posture",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon24.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
 	},
 	"mithril_hoodie": {
 		"display_name": "Mithril Hoodie",
@@ -627,7 +627,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"max_hp": 0.20, "dodge_chance": 0.15, "move_speed": 0.10},
 		"grants_ability": "deflect",
 		"grants_equipment_ability": "ethereal",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon25.png"
+		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
 	},
 
 	# Boots
@@ -639,7 +639,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"move_speed": 0.30, "attack_speed": 0.15},
 		"grants_ability": "adrenaline",
 		"grants_equipment_ability": "spin_dash",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon26.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
 	},
 	"rocket_boots": {
 		"display_name": "Rocket Boots",
@@ -648,7 +648,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.25, "damage": 0.10},
 		"grants_equipment_ability": "rocket_jump",
-		"icon_path": "res://assets/sprites/items/runes/Transperent/runes/Icon27.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
 	},
 
 	# Rings
