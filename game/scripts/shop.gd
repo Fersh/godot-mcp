@@ -170,68 +170,89 @@ func _populate_all_upgrades() -> void:
 
 func _create_upgrade_tile(upgrade) -> Button:
 	var tile = Button.new()
-	tile.custom_minimum_size = Vector2(250, 180)  # Square tiles
+	tile.custom_minimum_size = Vector2(220, 140)
 
 	# Create container for tile content
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBoxContainer"
 	vbox.anchors_preset = Control.PRESET_FULL_RECT
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.add_theme_constant_override("separation", 8)
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Category indicator (small colored bar at top)
 	var category_bar = ColorRect.new()
-	category_bar.custom_minimum_size = Vector2(0, 4)
+	category_bar.name = "CategoryBar"
+	category_bar.custom_minimum_size = Vector2(0, 3)
 	category_bar.color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
 	category_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(category_bar)
 
-	# Icon/symbol
-	var icon_label = Label.new()
-	icon_label.text = _get_upgrade_icon(upgrade.id)
-	icon_label.add_theme_font_size_override("font_size", 36)
-	icon_label.add_theme_color_override("font_color", Color(1, 0.95, 0.8, 1))
-	icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	icon_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(icon_label)
+	# Spacer
+	var top_spacer = Control.new()
+	top_spacer.custom_minimum_size = Vector2(0, 4)
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(top_spacer)
 
-	# Name
+	# Name (prominent)
 	var name_label = Label.new()
+	name_label.name = "NameLabel"
 	name_label.text = upgrade.name
-	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7, 1))
+	name_label.add_theme_font_size_override("font_size", 15)
+	name_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85, 1))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
 
-	# Rank display
+	# Rank squares container
 	var rank = PermanentUpgrades.get_rank(upgrade.id)
-	var rank_display = Label.new()
-	rank_display.name = "RankDisplay"
-	rank_display.text = "%d/%d" % [rank, upgrade.max_rank]
-	rank_display.add_theme_font_size_override("font_size", 12)
-	rank_display.add_theme_color_override("font_color", Color(0.6, 0.55, 0.45, 1))
-	rank_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rank_display.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(rank_display)
+	var rank_container = HBoxContainer.new()
+	rank_container.name = "RankContainer"
+	rank_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	rank_container.add_theme_constant_override("separation", 4)
+	rank_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Progress bar
-	var progress = ProgressBar.new()
-	progress.name = "ProgressBar"
-	progress.custom_minimum_size = Vector2(0, 6)
-	progress.max_value = upgrade.max_rank
-	progress.value = rank
-	progress.show_percentage = false
-	progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_style_progress_bar(progress, upgrade.category)
-	vbox.add_child(progress)
+	# Create squares for each rank
+	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
+	for i in range(upgrade.max_rank):
+		var square = ColorRect.new()
+		square.name = "Square%d" % i
+		square.custom_minimum_size = Vector2(12, 12)
+		square.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		if i < rank:
+			# Filled square
+			square.color = category_color
+		else:
+			# Empty square (outline effect via darker color)
+			square.color = Color(0.2, 0.18, 0.15, 1)
+
+		rank_container.add_child(square)
+
+	vbox.add_child(rank_container)
+
+	# Cost label
+	var cost = PermanentUpgrades.get_upgrade_cost(upgrade.id)
+	var cost_label = Label.new()
+	cost_label.name = "CostLabel"
+	if rank >= upgrade.max_rank:
+		cost_label.text = "MAX"
+		cost_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.4, 1))
+	else:
+		cost_label.text = "%d gold" % cost
+		cost_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 0.9))
+	cost_label.add_theme_font_size_override("font_size", 12)
+	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(cost_label)
 
 	tile.add_child(vbox)
 
-	# Style tile
-	_style_upgrade_tile(tile, upgrade, rank >= upgrade.max_rank)
+	# Style tile based on affordability
+	var is_maxed = rank >= upgrade.max_rank
+	var can_afford = StatsManager.spendable_coins >= cost
+	_style_upgrade_tile(tile, upgrade, is_maxed, can_afford)
 
 	# Connect signal
 	tile.pressed.connect(_on_tile_pressed.bind(upgrade.id))

@@ -2,7 +2,8 @@ extends CanvasLayer
 
 @onready var stats_label: Label = $Panel/VBoxContainer/StatsLabel
 @onready var lifetime_stats_label: Label = $Panel/VBoxContainer/LifetimeStatsLabel
-@onready var restart_button: Button = $Panel/VBoxContainer/RestartButton
+@onready var play_again_button: Button = $Panel/VBoxContainer/ButtonContainer/PlayAgainButton
+@onready var main_menu_button: Button = $Panel/VBoxContainer/ButtonContainer/MainMenuButton
 
 var final_level: int = 1
 var final_time: float = 0.0
@@ -12,7 +13,8 @@ var final_points: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	restart_button.pressed.connect(_on_restart_pressed)
+	play_again_button.pressed.connect(_on_play_again_pressed)
+	main_menu_button.pressed.connect(_on_main_menu_pressed)
 
 	# Get stats from StatsManager
 	if StatsManager:
@@ -59,13 +61,23 @@ func format_time(seconds: float) -> String:
 	var secs = int(seconds) % 60
 	return "%02d:%02d" % [mins, secs]
 
-func _on_restart_pressed() -> void:
+func _on_play_again_pressed() -> void:
+	# Reset run stats and abilities, then restart game
+	if StatsManager:
+		StatsManager.reset_run()
+	if AbilityManager:
+		AbilityManager.reset()
+
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func _on_main_menu_pressed() -> void:
 	# Unpause and go to main menu
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _input(event: InputEvent) -> void:
-	# Allow restart with spacebar or enter
+	# Allow play again with spacebar or enter
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
-			_on_restart_pressed()
+			_on_play_again_pressed()
