@@ -1,0 +1,132 @@
+[gd_scene load_steps=2 format=3 uid="uid://c1equipment_screen"]
+
+[ext_resource type="Script" path="res://scripts/equipment/equipment_screen.gd" id="1_script"]
+
+[node name="EquipmentScreen" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="Panel"]
+layout_mode = 2
+color = Color(0.08, 0.08, 0.1, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeaderContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BackButton" type="Button" parent="Panel/VBoxContainer/HeaderContainer"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+text = "< Back"
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 36
+text = "EQUIPMENT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CharacterTabs" type="HBoxContainer" parent="Panel/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ContentContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="EquipmentPanel" type="PanelContainer" parent="Panel/VBoxContainer/ContentContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+
+[node name="EquipmentBG" type="ColorRect" parent="Panel/VBoxContainer/ContentContainer/EquipmentPanel"]
+layout_mode = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/EquipmentPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/ContentContainer/EquipmentPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Equipped Items"
+horizontal_alignment = 1
+
+[node name="EquipmentSlots" type="GridContainer" parent="Panel/VBoxContainer/ContentContainer/EquipmentPanel"]
+layout_mode = 2
+columns = 3
+
+[node name="InventoryPanel" type="PanelContainer" parent="Panel/VBoxContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="InventoryBG" type="ColorRect" parent="Panel/VBoxContainer/ContentContainer/InventoryPanel"]
+layout_mode = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/InventoryPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/ContentContainer/InventoryPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Inventory"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/ContentContainer/InventoryPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="InventoryGrid" type="GridContainer" parent="Panel/VBoxContainer/ContentContainer/InventoryPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 6
+
+[node name="DetailsPanel" type="PanelContainer" parent="Panel/VBoxContainer/ContentContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="DetailsBG" type="ColorRect" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel"]
+layout_mode = 2
+color = Color(0.1, 0.1, 0.12, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Item Details"
+horizontal_alignment = 1
+
+[node name="ItemDetails" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="EquipButton" type="Button" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Equip"
+
+[node name="UnequipButton" type="Button" parent="Panel/VBoxContainer/ContentContainer/DetailsPanel"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "Unequip"

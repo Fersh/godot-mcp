@@ -12,9 +12,12 @@ extends CharacterBody2D
 @export var gold_coin_scene: PackedScene
 @export var damage_number_scene: PackedScene
 @export var death_particles_scene: PackedScene
+@export var dropped_item_scene: PackedScene
 
 # Enemy type identifier
 @export var enemy_type: String = "base"
+# Enemy rarity for drop calculations (normal, elite, boss)
+@export var enemy_rarity: String = "normal"
 
 var player: Node2D = null
 var current_health: float
@@ -279,6 +282,27 @@ func spawn_gold_coin() -> void:
 	var coin = gold_coin_scene.instantiate()
 	coin.global_position = global_position
 	get_parent().add_child(coin)
+
+	# Try to drop an item
+	try_drop_item()
+
+func try_drop_item() -> void:
+	if dropped_item_scene == null:
+		return
+
+	if EquipmentManager == null:
+		return
+
+	# Check if we should drop an item
+	if not EquipmentManager.should_drop_item(enemy_rarity):
+		return
+
+	# Generate and spawn the item
+	var item = EquipmentManager.generate_item(enemy_rarity)
+	var dropped = dropped_item_scene.instantiate()
+	dropped.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+	dropped.setup(item)
+	get_parent().add_child(dropped)
 
 func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 	if current_row != new_row:

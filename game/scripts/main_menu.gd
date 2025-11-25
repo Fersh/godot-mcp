@@ -74,8 +74,7 @@ func _on_play_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/character_select.tscn")
 
 func _on_gear_pressed() -> void:
-	# TODO: Implement gear screen
-	pass
+	get_tree().change_scene_to_file("res://scenes/equipment/equipment_screen.tscn")
 
 func _on_shop_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/shop.tscn")

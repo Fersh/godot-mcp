@@ -621,6 +621,9 @@ func get_damage_multiplier() -> float:
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("damage", 0.0)
 
+	# Add equipment bonus
+	base += _get_equipment_stat("damage")
+
 	return base
 
 func get_attack_speed_multiplier() -> float:
@@ -632,6 +635,9 @@ func get_attack_speed_multiplier() -> float:
 		if player and player.current_health / player.max_health < 0.3:
 			base += frenzy_boost
 
+	# Add equipment bonus
+	base += _get_equipment_stat("attack_speed")
+
 	return base
 
 func get_xp_multiplier() -> float:
@@ -641,10 +647,18 @@ func get_xp_multiplier() -> float:
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("xp_gain", 0.0)
 
+	# Add equipment bonus
+	base += _get_equipment_stat("xp_gain")
+
 	return base
 
 func get_move_speed_multiplier() -> float:
-	return 1.0 + stat_modifiers["move_speed"]
+	var base = 1.0 + stat_modifiers["move_speed"]
+
+	# Add equipment bonus
+	base += _get_equipment_stat("move_speed")
+
+	return base
 
 func should_double_xp() -> bool:
 	return has_double_xp_chance and randf() < double_xp_chance
@@ -695,6 +709,9 @@ func get_crit_chance() -> float:
 	if CharacterManager:
 		base += CharacterManager.get_passive_bonuses().get("crit_chance", 0.0)
 
+	# Add equipment bonus
+	base += _get_equipment_stat("crit_chance")
+
 	return base
 
 # Get total block chance including character base, permanent upgrades
@@ -709,6 +726,9 @@ func get_block_chance() -> float:
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("block_chance", 0.0)
 
+	# Add equipment bonus
+	base += _get_equipment_stat("block_chance")
+
 	return base
 
 # Get total dodge chance including character base, permanent upgrades
@@ -722,6 +742,9 @@ func get_dodge_chance() -> float:
 	# Add permanent upgrade dodge chance
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("dodge_chance", 0.0)
+
+	# Add equipment bonus
+	base += _get_equipment_stat("dodge_chance")
 
 	return base
 
@@ -760,7 +783,50 @@ func has_permanent_regen() -> bool:
 
 # Melee-specific getters
 func get_melee_area_multiplier() -> float:
-	return 1.0 + stat_modifiers.get("melee_area", 0.0)
+	return 1.0 + stat_modifiers.get("melee_area", 0.0) + _get_equipment_stat("melee_area")
 
 func get_melee_range_multiplier() -> float:
-	return 1.0 + stat_modifiers.get("melee_range", 0.0)
+	return 1.0 + stat_modifiers.get("melee_range", 0.0) + _get_equipment_stat("melee_range")
+
+# Get max HP bonus from equipment
+func get_equipment_max_hp_bonus() -> float:
+	return _get_equipment_stat("max_hp")
+
+# Get damage reduction from equipment
+func get_equipment_damage_reduction() -> float:
+	return _get_equipment_stat("damage_reduction")
+
+# Helper to get equipment stat for current character
+func _get_equipment_stat(stat: String) -> float:
+	if not EquipmentManager:
+		return 0.0
+	if not CharacterManager:
+		return 0.0
+
+	var character_id = CharacterManager.selected_character_id
+	var equipment_stats = EquipmentManager.get_equipment_stats(character_id)
+	return equipment_stats.get(stat, 0.0)
+
+# Apply equipment abilities at start of run
+func apply_equipment_abilities() -> void:
+	if not EquipmentManager or not CharacterManager:
+		return
+
+	var character_id = CharacterManager.selected_character_id
+	var abilities = EquipmentManager.get_equipment_abilities(character_id)
+
+	for ability_id in abilities:
+		# Find ability in database and apply its effects
+		for ability in all_abilities:
+			if ability.id == ability_id:
+				apply_ability_effects(ability)
+				break
+
+# Check if player has a specific equipment-exclusive ability
+func has_equipment_ability(ability_id: String) -> bool:
+	if not EquipmentManager or not CharacterManager:
+		return false
+
+	var character_id = CharacterManager.selected_character_id
+	var abilities = EquipmentManager.get_equipment_exclusive_abilities(character_id)
+	return ability_id in abilities

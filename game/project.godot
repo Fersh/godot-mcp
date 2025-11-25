@@ -23,6 +23,7 @@ StatsManager="*res://scripts/stats_manager.gd"
 PermanentUpgrades="*res://scripts/permanent_upgrades.gd"
 CharacterManager="*res://scripts/character_manager.gd"
 SoundManager="*res://scripts/sound_manager.gd"
+EquipmentManager="*res://scripts/equipment/equipment_manager.gd"
 
 [display]
 

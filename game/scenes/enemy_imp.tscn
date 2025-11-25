@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_imp.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/imp.png" id="2_texture"]
@@ -8,6 +8,7 @@
 [ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="6_hit_flash"]
 [ext_resource type="PackedScene" path="res://scenes/death_particles.tscn" id="7_death_particles"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_projectile.tscn" id="8_projectile"]
+[ext_resource type="PackedScene" path="res://scenes/equipment/dropped_item.tscn" id="9_dropped_item"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hit_flash"]
 shader = ExtResource("6_hit_flash")
@@ -24,6 +25,7 @@ script = ExtResource("1_script")
 gold_coin_scene = ExtResource("3_coin")
 damage_number_scene = ExtResource("5_damage_number")
 death_particles_scene = ExtResource("7_death_particles")
+dropped_item_scene = ExtResource("9_dropped_item")
 projectile_scene = ExtResource("8_projectile")
 
 [node name="Sprite" type="Sprite2D" parent="."]

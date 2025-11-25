@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=3 uid="uid://c1item_pickup_ui"]
+
+[ext_resource type="Script" path="res://scripts/equipment/item_pickup_ui.gd" id="1_script"]
+
+[node name="ItemPickupUI" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.7)
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -300.0
+offset_right = 450.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="ItemDisplay" type="VBoxContainer" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="ButtonContainer" type="HBoxContainer" parent="Panel/HBoxContainer/ItemDisplay"]
+layout_mode = 2
+size_flags_vertical = 10
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="EquipButton" type="Button" parent="Panel/HBoxContainer/ItemDisplay/ButtonContainer"]
+custom_minimum_size = Vector2(140, 50)
+layout_mode = 2
+text = "Equip [E]"
+
+[node name="PickupButton" type="Button" parent="Panel/HBoxContainer/ItemDisplay/ButtonContainer"]
+custom_minimum_size = Vector2(140, 50)
+layout_mode = 2
+text = "Pickup [P]"
+
+[node name="VSeparator" type="VSeparator" parent="Panel/HBoxContainer"]
+layout_mode = 2
+
+[node name="ComparisonDisplay" type="VBoxContainer" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12

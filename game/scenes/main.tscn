@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=14 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy_ratfolk.tscn" id="9_ratfolk"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_imp.tscn" id="10_imp"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_slime.tscn" id="11_slime"]
+[ext_resource type="PackedScene" path="res://scenes/equipment/item_pickup_ui.tscn" id="12_item_pickup"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -39,3 +40,5 @@ slime_scene = ExtResource("11_slime")
 [node name="AbilitySelection" parent="." instance=ExtResource("7_ability_selection")]
 
 [node name="JuiceOverlay" parent="." instance=ExtResource("8_juice")]
+
+[node name="ItemPickupUI" parent="." instance=ExtResource("12_item_pickup")]
