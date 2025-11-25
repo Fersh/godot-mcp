@@ -35,9 +35,7 @@ func _physics_process(delta: float) -> void:
 
 			# Collect when very close
 			if distance < collect_distance:
-				if player.has_method("add_xp"):
-					player.add_xp(xp_value)
-				queue_free()
+				collect_coin()
 				return
 
 	# Only bob if not magnetized
@@ -46,6 +44,18 @@ func _physics_process(delta: float) -> void:
 		position.y = initial_y + sin(time) * bob_height
 
 func _on_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player") and body.has_method("add_xp"):
-		body.add_xp(xp_value)
-		queue_free()
+	if body.is_in_group("player"):
+		collect_coin()
+
+func collect_coin() -> void:
+	if player and player.has_method("add_xp"):
+		player.add_xp(xp_value)
+
+	# Update stats display
+	var stats = get_tree().get_first_node_in_group("stats_display")
+	if stats == null:
+		stats = get_node_or_null("/root/Main/StatsDisplay")
+	if stats and stats.has_method("add_coin"):
+		stats.add_coin()
+
+	queue_free()

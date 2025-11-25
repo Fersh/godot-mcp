@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/orc_peon.png" id="2_texture"]
 [ext_resource type="PackedScene" path="res://scenes/gold_coin.tscn" id="3_coin"]
 [ext_resource type="PackedScene" path="res://scenes/health_bar.tscn" id="4_health_bar"]
+[ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="5_damage_number"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
 size = Vector2(20, 24)
@@ -13,6 +14,7 @@ collision_layer = 4
 collision_mask = 1
 script = ExtResource("1_script")
 gold_coin_scene = ExtResource("3_coin")
+damage_number_scene = ExtResource("5_damage_number")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 scale = Vector2(2.0, 2.0)

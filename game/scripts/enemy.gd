@@ -7,6 +7,7 @@ extends CharacterBody2D
 @export var attack_damage: float = 5.0
 @export var attack_cooldown: float = 0.8  # Time between attacks
 @export var gold_coin_scene: PackedScene
+@export var damage_number_scene: PackedScene
 
 var player: Node2D = null
 var current_health: float
@@ -86,7 +87,7 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, is_critical: bool = false) -> void:
 	if is_dying:
 		return
 
@@ -94,8 +95,20 @@ func take_damage(amount: float) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
+	# Spawn damage number
+	spawn_damage_number(amount, is_critical)
+
 	if current_health <= 0:
 		die()
+
+func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
+	if damage_number_scene == null:
+		return
+
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -30)
+	get_parent().add_child(dmg_num)
+	dmg_num.set_damage(amount, is_critical, false)
 
 func die() -> void:
 	is_dying = true
@@ -109,6 +122,11 @@ func die() -> void:
 	# Give player kill XP
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
 		player.give_kill_xp()
+
+	# Update stats display
+	var stats = get_node_or_null("/root/Main/StatsDisplay")
+	if stats and stats.has_method("add_kill_points"):
+		stats.add_kill_points()
 
 func update_death_animation(delta: float) -> void:
 	animation_frame += animation_speed * delta

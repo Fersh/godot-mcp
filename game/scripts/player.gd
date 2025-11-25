@@ -6,6 +6,7 @@ extends CharacterBody2D
 @export var fire_range: float = 440.0  # 55 frames * 8 pixels/frame
 @export var arrow_scene: PackedScene
 @export var max_health: float = 25.0
+@export var damage_number_scene: PackedScene
 
 var current_health: float
 @onready var health_bar: Node2D = $HealthBar
@@ -68,9 +69,21 @@ func take_damage(amount: float) -> void:
 		health_bar.set_health(current_health, max_health)
 	emit_signal("health_changed", current_health, max_health)
 
+	# Spawn damage number (red for player)
+	spawn_damage_number(amount)
+
 	if current_health <= 0:
 		emit_signal("player_died")
 		# TODO: Handle player death
+
+func spawn_damage_number(amount: float) -> void:
+	if damage_number_scene == null:
+		return
+
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -40)
+	get_parent().add_child(dmg_num)
+	dmg_num.set_damage(amount, false, true)  # is_player_damage = true
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
