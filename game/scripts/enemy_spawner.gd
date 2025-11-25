@@ -1,16 +1,25 @@
 extends Node2D
 
 @export var enemy_scene: PackedScene
-@export var spawn_interval: float = 1.0  # Reduced spawn rate (25% slower)
+@export var initial_spawn_interval: float = 1.0  # Starting spawn interval
+@export var final_spawn_interval: float = 0.5  # Target spawn interval (2x faster)
+@export var ramp_up_time: float = 60.0  # Time in seconds to reach full spawn rate
 @export var min_spawn_distance: float = 200.0
 
 const ARENA_SIZE = 1536
 
 var spawn_timer: float = 0.0
+var game_time: float = 0.0
 
 func _process(delta: float) -> void:
+	game_time += delta
 	spawn_timer += delta
-	if spawn_timer >= spawn_interval:
+
+	# Calculate current spawn interval (scales from initial to final over ramp_up_time)
+	var ramp_progress = clamp(game_time / ramp_up_time, 0.0, 1.0)
+	var current_interval = lerp(initial_spawn_interval, final_spawn_interval, ramp_progress)
+
+	if spawn_timer >= current_interval:
 		spawn_timer = 0.0
 		spawn_enemy()
 

@@ -118,9 +118,9 @@ static func create_knight() -> CharacterData:
 	# Slower, tankier, higher damage
 	data.base_health = 40.0
 	data.base_speed = 140.0
-	data.base_attack_cooldown = 1.0
+	data.base_attack_cooldown = 1.1  # 10% slower attack speed (was 1.0)
 	data.base_damage = 1.5
-	data.attack_range = 60.0  # Melee reach (reduced by 25% from 80)
+	data.attack_range = 54.0  # Melee reach (reduced 10% from 60)
 
 	# Sprite config (knight is 128x64 per frame based on user specification)
 	# Ranger is 32x32 at 1.875 scale = 60px. Knight should be 10% bigger = ~2.06 uniform scale

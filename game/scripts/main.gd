@@ -13,6 +13,10 @@ func _ready() -> void:
 		player.level_up.connect(_on_player_level_up)
 		player.player_died.connect(_on_player_died)
 
+	# Start background music
+	if SoundManager:
+		SoundManager.play_music()
+
 func _process(delta: float) -> void:
 	game_time += delta
 

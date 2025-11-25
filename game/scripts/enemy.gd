@@ -19,12 +19,12 @@ var can_attack: bool = true
 # Attack wind-up system
 var is_winding_up: bool = false
 var windup_timer: float = 0.0
-const WINDUP_DURATION: float = 0.5  # 0.5 second wind-up before damage
+const WINDUP_DURATION: float = 0.25  # 0.25 second wind-up before damage
 
 # Stagger system (from melee hits)
 var is_staggered: bool = false
 var stagger_timer: float = 0.0
-const STAGGER_DURATION: float = 0.5  # 0.5 second stagger
+const STAGGER_DURATION: float = 0.25  # 0.25 second stagger
 
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
@@ -125,8 +125,8 @@ func _physics_process(delta: float) -> void:
 			# Now actually deal damage after wind-up completes - but only if still in range
 			if player and is_instance_valid(player) and player.has_method("take_damage"):
 				var dist_to_player = global_position.distance_to(player.global_position)
-				# Only deal damage if player is still within attack range (with small buffer)
-				if dist_to_player <= attack_range * 1.2:
+				# Only deal damage if player is still within attack range (with generous buffer)
+				if dist_to_player <= attack_range * 1.5:
 					player.take_damage(attack_damage)
 					# Thorns damage
 					if AbilityManager and AbilityManager.has_thorns:

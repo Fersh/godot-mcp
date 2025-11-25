@@ -22,9 +22,14 @@ var block_sound: AudioStream
 var audio_players: Array[AudioStreamPlayer] = []
 const POOL_SIZE: int = 16
 
+# Music player (separate from SFX pool)
+var music_player: AudioStreamPlayer
+var music1: AudioStream
+
 func _ready() -> void:
 	_load_sounds()
 	_create_audio_pool()
+	_setup_music_player()
 
 func _load_sounds() -> void:
 	# Load swing sounds (swing, swing2-5)
@@ -62,6 +67,15 @@ func _create_audio_pool() -> void:
 		player.bus = "Master"
 		add_child(player)
 		audio_players.append(player)
+
+func _setup_music_player() -> void:
+	music_player = AudioStreamPlayer.new()
+	music_player.bus = "Master"
+	music_player.volume_db = -10.0  # Background music quieter than SFX
+	add_child(music_player)
+
+	# Load music
+	music1 = load("res://assets/sounds/music1.mp3")
 
 func _get_available_player() -> AudioStreamPlayer:
 	for player in audio_players:
@@ -132,3 +146,17 @@ func play_ding() -> void:
 func play_block() -> void:
 	# Attack blocked
 	_play_sound(block_sound, -3.0, 0.1)
+
+# Music controls
+func play_music() -> void:
+	if music_player and music1:
+		music_player.stream = music1
+		music_player.play()
+
+func stop_music() -> void:
+	if music_player:
+		music_player.stop()
+
+func set_music_volume(volume_db: float) -> void:
+	if music_player:
+		music_player.volume_db = volume_db

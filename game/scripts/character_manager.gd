@@ -24,8 +24,8 @@ func _ready() -> void:
 
 func _init_characters() -> void:
 	# Load textures
-	archer_texture = load("res://assets/archer.png")
-	knight_texture = load("res://assets/knightred.png")
+	archer_texture = load("res://assets/sprites/archer.png")
+	knight_texture = load("res://assets/sprites/knightred.png")
 
 	# Create archer
 	var archer = CharacterData.create_archer()
