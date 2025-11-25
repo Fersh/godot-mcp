@@ -26,3 +26,6 @@ Thumbs.db
 
 # Coverage directory
 coverage/
+
+# Godot generated files
+.godot/
