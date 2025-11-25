@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=13 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -9,6 +9,9 @@
 [ext_resource type="PackedScene" path="res://scenes/stats_display.tscn" id="6_stats"]
 [ext_resource type="PackedScene" path="res://scenes/ability_selection.tscn" id="7_ability_selection"]
 [ext_resource type="PackedScene" path="res://scenes/juice_overlay.tscn" id="8_juice"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_ratfolk.tscn" id="9_ratfolk"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_imp.tscn" id="10_imp"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_slime.tscn" id="11_slime"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -24,6 +27,9 @@ position = Vector2(768, 768)
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("3_spawner")
 enemy_scene = ExtResource("2_enemy")
+ratfolk_scene = ExtResource("9_ratfolk")
+imp_scene = ExtResource("10_imp")
+slime_scene = ExtResource("11_slime")
 
 [node name="XPBar" parent="." instance=ExtResource("4_xp_bar")]
 
