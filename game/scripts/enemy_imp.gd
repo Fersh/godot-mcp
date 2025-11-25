@@ -5,7 +5,7 @@ extends EnemyBase
 
 @export var projectile_scene: PackedScene
 @export var preferred_range: float = 200.0  # Distance to maintain from player
-@export var projectile_speed: float = 250.0
+@export var projectile_speed: float = 150.0
 
 func _on_ready() -> void:
 	enemy_type = "imp"

@@ -480,7 +480,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.add_theme_font_size_override("font_size", 32)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(name_label)
@@ -490,7 +490,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
 	if pixel_font:
 		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 18)
+	equipped_label.add_theme_font_size_override("font_size", 24)
 	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(equipped_label)
@@ -570,7 +570,7 @@ func _show_comparison(item: ItemData) -> void:
 	vs_label.text = "VS"
 	if pixel_font:
 		vs_label.add_theme_font_override("font", pixel_font)
-	vs_label.add_theme_font_size_override("font_size", 28)
+	vs_label.add_theme_font_size_override("font_size", 36)
 	vs_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	vs_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	main_hbox.add_child(vs_label)
@@ -585,7 +585,7 @@ func _show_comparison(item: ItemData) -> void:
 		empty_label.text = "Empty Slot"
 		if pixel_font:
 			empty_label.add_theme_font_override("font", pixel_font)
-		empty_label.add_theme_font_size_override("font_size", 20)
+		empty_label.add_theme_font_size_override("font_size", 28)
 		empty_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_card.add_child(empty_label)
@@ -654,14 +654,14 @@ func _show_comparison(item: ItemData) -> void:
 func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dictionary) -> Control:
 	var card = VBoxContainer.new()
 	card.add_theme_constant_override("separation", 8)
-	card.custom_minimum_size = Vector2(240, 0)
+	card.custom_minimum_size = Vector2(300, 0)
 
 	# Header
 	var header = Label.new()
 	header.text = "* NEW *" if show_arrows else "- EQUIPPED -"
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
-	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_font_size_override("font_size", 22)
 	header.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(header)
@@ -684,7 +684,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -695,7 +695,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	rarity_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
-	rarity_label.add_theme_font_size_override("font_size", 14)
+	rarity_label.add_theme_font_size_override("font_size", 20)
 	rarity_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(rarity_label)
@@ -721,7 +721,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		stat_label.text = line
 		if pixel_font:
 			stat_label.add_theme_font_override("font", pixel_font)
-		stat_label.add_theme_font_size_override("font_size", 18)
+		stat_label.add_theme_font_size_override("font_size", 24)
 		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
 		row.add_child(stat_label)
 
@@ -736,7 +736,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 						arrow.text = " ^" if diff > 0 else " v"
 						if pixel_font:
 							arrow.add_theme_font_override("font", pixel_font)
-						arrow.add_theme_font_size_override("font_size", 18)
+						arrow.add_theme_font_size_override("font_size", 24)
 						arrow.add_theme_color_override("font_color", COLOR_STAT_UP if diff > 0 else COLOR_STAT_DOWN)
 						row.add_child(arrow)
 					break
@@ -749,7 +749,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		desc.text = "\"%s\"" % item.description
 		if pixel_font:
 			desc.add_theme_font_override("font", pixel_font)
-		desc.add_theme_font_size_override("font_size", 14)
+		desc.add_theme_font_size_override("font_size", 20)
 		desc.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

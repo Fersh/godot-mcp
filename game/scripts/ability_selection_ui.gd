@@ -20,9 +20,16 @@ var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
+var pixel_font: Font = null
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Process even when paused
+	pixel_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
+
+	# Apply pixel font to title
+	if pixel_font and title_label:
+		title_label.add_theme_font_override("font", pixel_font)
 
 func _process(delta: float) -> void:
 	if not is_rolling:
@@ -110,16 +117,20 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
 	rarity_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 14)
+	rarity_label.add_theme_font_size_override("font_size", 18)
+	if pixel_font:
+		rarity_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(rarity_label)
 
 	# Ability name
 	var name_label = Label.new()
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if pixel_font:
+		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
 	# Separator
@@ -132,10 +143,12 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 16)
+	desc_label.add_theme_font_size_override("font_size", 22)
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	if pixel_font:
+		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
 	# Spacer
@@ -147,8 +160,10 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var hint_label = Label.new()
 	hint_label.text = "[Click to Select]"
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 12)
+	hint_label.add_theme_font_size_override("font_size", 16)
 	hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+	if pixel_font:
+		hint_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(hint_label)
 
 	# Add margin container

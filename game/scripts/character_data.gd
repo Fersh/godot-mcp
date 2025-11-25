@@ -78,7 +78,7 @@ static func create_archer() -> CharacterData:
 	# Balanced damage, faster, less health
 	data.base_health = 25.0
 	data.base_speed = 180.0
-	data.base_attack_cooldown = 0.79
+	data.base_attack_cooldown = 1.07
 	data.base_damage = 1.0
 	data.attack_range = 440.0
 
