@@ -847,6 +847,10 @@ func perform_melee_attack() -> void:
 					# Apply elemental effects
 					_apply_elemental_effects_to_enemy(enemy)
 
+					# Adrenaline Rush - chance to dash on hit
+					if AbilityManager:
+						AbilityManager.check_adrenaline_dash_on_hit(self)
+
 	# Slight screen shake on melee hit
 	if melee_hit_enemies.size() > 0 and JuiceManager:
 		JuiceManager.shake_small()

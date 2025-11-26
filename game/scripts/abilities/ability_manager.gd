@@ -156,6 +156,7 @@ var horde_breaker_bonus: float = 0.0
 var has_arcane_absorption: bool = false
 var arcane_absorption_value: float = 0.0
 var has_adrenaline_rush: bool = false
+var adrenaline_rush_chance: float = 0.35
 var has_phalanx: bool = false
 var phalanx_chance: float = 0.0
 var has_homing: bool = false
@@ -424,6 +425,7 @@ func reset() -> void:
 	has_arcane_absorption = false
 	arcane_absorption_value = 0.0
 	has_adrenaline_rush = false
+	adrenaline_rush_chance = 0.0
 	has_phalanx = false
 	phalanx_chance = 0.0
 	has_homing = false
@@ -1133,6 +1135,7 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				arcane_absorption_value += value
 			AbilityData.EffectType.ADRENALINE_RUSH:
 				has_adrenaline_rush = true
+				adrenaline_rush_chance = value
 			AbilityData.EffectType.PHALANX:
 				has_phalanx = true
 				phalanx_chance += value
@@ -1704,10 +1707,6 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	if has_chain_reaction:
 		spread_status_effects(enemy)
 
-	# Adrenaline Rush (melee dash on kill)
-	if has_adrenaline_rush:
-		trigger_adrenaline_dash(player, enemy.global_position)
-
 	# Kill Streak Effects
 	if has_rampage:
 		rampage_stacks = mini(rampage_stacks + 1, RAMPAGE_MAX_STACKS)
@@ -2005,7 +2004,15 @@ func spread_status_effects(dead_enemy: Node2D) -> void:
 				enemy.apply_poison(50.0, 5.0)
 			spread_count += 1
 
-func trigger_adrenaline_dash(player: Node2D, target_pos: Vector2) -> void:
+func check_adrenaline_dash_on_hit(player: Node2D) -> void:
+	"""Called when player hits an enemy - 35% chance to dash to nearest enemy."""
+	if not has_adrenaline_rush:
+		return
+	if randf() > adrenaline_rush_chance:
+		return
+	trigger_adrenaline_dash(player)
+
+func trigger_adrenaline_dash(player: Node2D) -> void:
 	if not has_adrenaline_rush:
 		return
 	# Find nearest enemy to dash toward

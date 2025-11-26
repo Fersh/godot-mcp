@@ -80,10 +80,10 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"adrenaline_rush",
 			"Adrenaline Rush",
-			"Dash forward on kill",
+			"35% chance to dash on hit",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.MELEE_ONLY,
-			[{effect_type = AbilityData.EffectType.ADRENALINE_RUSH, value = 1.0}]
+			[{effect_type = AbilityData.EffectType.ADRENALINE_RUSH, value = 0.35}]
 		),
 
 		# Phalanx (Melee)

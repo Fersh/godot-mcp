@@ -95,6 +95,12 @@ func _on_body_entered(body: Node2D) -> void:
 		# Apply elemental effects
 		_apply_elemental_effects(body)
 
+		# Adrenaline Rush - chance to dash on hit
+		if AbilityManager:
+			var player = get_tree().get_first_node_in_group("player")
+			if player:
+				AbilityManager.check_adrenaline_dash_on_hit(player)
+
 		# Apply knockback
 		if has_knockback and body.has_method("apply_knockback"):
 			body.apply_knockback(direction * knockback_force)
