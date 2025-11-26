@@ -162,6 +162,11 @@ func _create_selector_buttons() -> void:
 		selector_container.add_child(btn)
 		selector_buttons.append(btn)
 
+	# Add 3 grayed out "coming soon" placeholder squares
+	for i in range(3):
+		var placeholder = _create_placeholder_button()
+		selector_container.add_child(placeholder)
+
 func _create_selector_button(char_data: CharacterData, index: int) -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(50, 50)  # Small square
@@ -206,6 +211,37 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	button.anchors_preset = Control.PRESET_FULL_RECT
 	button.pressed.connect(_on_selector_pressed.bind(index))
 	panel.add_child(button)
+
+	return panel
+
+func _create_placeholder_button() -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(50, 50)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.08, 0.1, 0.7)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.2, 0.2, 0.25, 0.5)
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	panel.add_theme_stylebox_override("panel", style)
+
+	# Add a "?" label in the center
+	var center = CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(center)
+
+	var label = Label.new()
+	label.text = "?"
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.35, 0.6))
+	center.add_child(label)
 
 	return panel
 
@@ -256,6 +292,24 @@ func _update_preview() -> void:
 
 	# Update name
 	preview_name_label.text = char_data.display_name
+
+	# Update class label (below name)
+	if not has_node("ClassLabel"):
+		# Find the vbox that contains preview_name_label and add class label after it
+		var parent = preview_name_label.get_parent()
+		var class_label = Label.new()
+		class_label.name = "ClassLabel"
+		class_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		class_label.add_theme_font_size_override("font_size", 14)
+		class_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
+		# Insert after preview_name_label
+		var name_idx = preview_name_label.get_index()
+		parent.add_child(class_label)
+		parent.move_child(class_label, name_idx + 1)
+
+	var class_label = preview_name_label.get_parent().get_node("ClassLabel")
+	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
+	class_label.text = attack_type_text
 
 	# Update sprite
 	preview_sprite.texture = char_data.sprite_texture
