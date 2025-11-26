@@ -9,7 +9,13 @@ var time: float = 0.0
 
 @onready var label: Label = $Label
 
+var pixel_font: Font
+
 func _ready() -> void:
+	# Load pixel font
+	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+	if pixel_font and label:
+		label.add_theme_font_override("font", pixel_font)
 	# Random horizontal spread
 	velocity = Vector2(randf_range(-spread, spread), -rise_speed)
 

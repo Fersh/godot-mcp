@@ -1177,6 +1177,19 @@ func get_elemental_tint() -> Color:
 
 	var colors: Array[Color] = []
 
+	# Check for chaotic strikes - random element each attack
+	if AbilityManager.has_chaotic_strikes:
+		var chaos_element = AbilityManager.get_chaotic_element()
+		match chaos_element:
+			"fire":
+				return Color.WHITE.lerp(Color(1.0, 0.4, 0.2), 0.6)  # Fire - Orange/Red
+			"ice":
+				return Color.WHITE.lerp(Color(0.4, 0.7, 1.0), 0.6)  # Ice - Blue/Cyan
+			"lightning":
+				return Color.WHITE.lerp(Color(1.0, 0.9, 0.4), 0.6)  # Lightning - Yellow
+			_:
+				return Color.WHITE
+
 	# Check each elemental effect and add its color
 	if AbilityManager.has_ignite:
 		colors.append(Color(1.0, 0.4, 0.2))  # Fire - Orange/Red
