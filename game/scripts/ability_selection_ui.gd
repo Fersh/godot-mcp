@@ -226,7 +226,10 @@ func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 			style.border_color = Color(0.3, 0.5, 1.0)
 		AbilityData.Rarity.LEGENDARY:
 			style.bg_color = Color(0.2, 0.15, 0.1, 0.95)
-			style.border_color = AbilityData.get_rarity_color(rarity)  # Match tag color
+			style.border_color = AbilityData.get_rarity_color(rarity)
+		AbilityData.Rarity.MYTHIC:
+			style.bg_color = Color(0.18, 0.08, 0.1, 0.95)  # Dark red-tinted background
+			style.border_color = AbilityData.get_rarity_color(rarity)  # Red mythic border
 
 	style.set_border_width_all(3)
 	style.set_corner_radius_all(12)

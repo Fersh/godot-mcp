@@ -913,6 +913,27 @@ func _spawn_dash_smoke() -> void:
 			smoke.set_direction(dir)
 		get_parent().add_child(smoke)
 
+func dash_toward(target_pos: Vector2) -> void:
+	"""Dash toward a target position (used by Adrenaline Rush)."""
+	var direction = (target_pos - global_position).normalized()
+	var dash_distance = 80.0
+
+	# Move player toward target
+	global_position += direction * dash_distance
+
+	# Update facing direction
+	if direction.x > 0:
+		facing_right = true
+	elif direction.x < 0:
+		facing_right = false
+
+	# Spawn visual effect
+	_spawn_dash_smoke()
+
+	# Play sound
+	if SoundManager:
+		SoundManager.play_dash()
+
 func _update_active_ability_timers(delta: float) -> void:
 	"""Update timers for active ability effects."""
 	# Update invulnerability timer

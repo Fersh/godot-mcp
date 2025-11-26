@@ -14,6 +14,8 @@ func _ready() -> void:
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(effect_scale, effect_scale)
+	sprite.centered = true
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
@@ -45,8 +47,9 @@ func _setup_sprite() -> void:
 	sprite.animation_finished.connect(_on_animation_finished)
 	sprite.play("default")
 
-	# Rotate to face direction
+	# Rotate to face direction and offset sprite forward
 	rotation = direction.angle()
+	sprite.position = Vector2(30, 0)  # Offset forward in local space
 
 func _on_animation_finished() -> void:
 	queue_free()
