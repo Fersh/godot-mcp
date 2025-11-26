@@ -10,10 +10,10 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ceremonial_dagger",
 			"Ceremonial Dagger",
-			"Kills fire 4 homing daggers at enemies",
+			"Kills fire 2 homing daggers at enemies",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.ON_KILL,
-			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 4.0}]
+			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 2.0}]
 		),
 
 		# Missile Barrage

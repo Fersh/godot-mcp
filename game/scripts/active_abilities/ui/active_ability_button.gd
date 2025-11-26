@@ -254,7 +254,7 @@ func update_cooldown(percent: float) -> void:
 		# Show remaining time
 		var remaining = _get_remaining_cooldown()
 		if remaining > 0:
-			cooldown_label.text = str(ceil(remaining))
+			cooldown_label.text = str(int(ceil(remaining)))
 			cooldown_label.visible = true
 			cooldown_label.add_theme_color_override("font_color", Color.WHITE)
 

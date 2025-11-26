@@ -3,7 +3,7 @@ extends Node2D
 # Homing projectile for Ceremonial Dagger and Missile Barrage abilities
 
 var target: Node2D = null
-var damage: float = 20.0
+var damage: float = 10.0
 var source: Node2D = null
 var speed: float = 400.0
 var turn_speed: float = 8.0
