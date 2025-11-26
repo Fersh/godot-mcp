@@ -90,7 +90,7 @@ theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
 theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
-text = "SHOP"
+text = "UPGRADE"
 
 [node name="GearButton" type="Button" parent="ButtonContainer"]
 custom_minimum_size = Vector2(320, 70)

@@ -732,9 +732,10 @@ func add_xp(amount: float) -> void:
 		emit_signal("level_up", current_level)
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
-func give_kill_xp() -> void:
-	# Killing enemy gives flat XP (40-80), so higher levels require more kills
-	var xp_gain = randf_range(40.0, 80.0)
+func give_kill_xp(enemy_max_hp: float = 100.0) -> void:
+	# XP based on enemy HP: 10-30 scaled by HP (100 HP = base, higher HP = more XP)
+	var hp_factor = clamp(enemy_max_hp / 100.0, 0.5, 3.0)
+	var xp_gain = randf_range(10.0, 30.0) * hp_factor
 	add_xp(xp_gain)
 
 # Ability system helper functions

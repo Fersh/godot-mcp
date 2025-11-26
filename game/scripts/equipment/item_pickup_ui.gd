@@ -171,6 +171,7 @@ func _build_comparison_display(equipped: ItemData, max_stats: int) -> void:
 func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max_stats: int) -> Control:
 	var card = VBoxContainer.new()
 	card.add_theme_constant_override("separation", 4)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	# Header with "NEW!" or "EQUIPPED" - pixel style
 	var header_label = Label.new()

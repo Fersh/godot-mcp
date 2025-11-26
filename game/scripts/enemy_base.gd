@@ -312,7 +312,7 @@ func die() -> void:
 	spawn_death_particles()
 
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
-		player.give_kill_xp()
+		player.give_kill_xp(max_health)
 
 	if AbilityManager and player and is_instance_valid(player):
 		AbilityManager.on_enemy_killed(self, player)
