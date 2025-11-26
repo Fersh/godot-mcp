@@ -37,6 +37,9 @@ var player: Node2D = null
 var acquired_ability_ids: Array[String] = []
 
 func _ready() -> void:
+	# Add to group so AbilityManager can find us for cooldown reduction
+	add_to_group("active_ability_manager")
+
 	# Initialize slots
 	ability_slots.resize(MAX_ABILITY_SLOTS)
 	cooldown_timers.resize(MAX_ABILITY_SLOTS)

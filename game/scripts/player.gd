@@ -248,8 +248,17 @@ func take_damage(amount: float) -> void:
 		if randf() < block_chance:
 			was_blocked = true
 
+	# Transcendence shields absorb damage first
+	var damage_after_shields = amount
+	if AbilityManager:
+		damage_after_shields = AbilityManager.damage_transcendence_shields(amount)
+		if damage_after_shields <= 0:
+			# All damage absorbed by shields
+			spawn_shield_text()
+			return
+
 	# Calculate total damage reduction
-	var final_damage = amount
+	var final_damage = damage_after_shields
 	var total_reduction = 0.0
 
 	# Add permanent upgrade damage reduction
@@ -296,6 +305,10 @@ func take_damage(amount: float) -> void:
 		spawn_blocked_damage_number(final_damage)
 	else:
 		spawn_damage_number(final_damage)
+
+	# Trigger Retribution explosion when taking damage
+	if AbilityManager:
+		AbilityManager.trigger_retribution(global_position)
 
 	# Screen shake and damage flash when taking damage
 	if JuiceManager:
@@ -354,6 +367,19 @@ func spawn_dodge_text() -> void:
 		dmg_num.set_dodge()
 	else:
 		# Fallback - just show 0 damage
+		dmg_num.set_damage(0, false, true)
+
+func spawn_shield_text() -> void:
+	if damage_number_scene == null:
+		return
+
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -40)
+	get_parent().add_child(dmg_num)
+	if dmg_num.has_method("set_shield"):
+		dmg_num.set_shield()
+	else:
+		# Fallback - just show 0 damage with shield color
 		dmg_num.set_damage(0, false, true)
 
 func register_joystick(js: Control) -> void:

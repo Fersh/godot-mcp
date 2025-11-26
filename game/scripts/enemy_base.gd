@@ -163,7 +163,7 @@ func start_attack() -> void:
 func _on_attack_complete() -> void:
 	if player and is_instance_valid(player) and player.has_method("take_damage"):
 		var dist_to_player = global_position.distance_to(player.global_position)
-		if dist_to_player <= attack_range * 1.25:  # Forgiving for player escape
+		if dist_to_player <= attack_range * 1.0:  # Exact range check
 			player.take_damage(attack_damage)
 			if AbilityManager and AbilityManager.has_thorns:
 				take_damage(AbilityManager.thorns_damage, false)
