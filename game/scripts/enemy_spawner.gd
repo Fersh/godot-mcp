@@ -14,6 +14,11 @@ extends Node2D
 const ARENA_WIDTH = 1536
 const ARENA_HEIGHT = 1382
 
+# Spawn scaling - increases enemy count over time
+const SCALING_START_TIME: float = 150.0  # 2.5 minutes
+const SCALING_INTERVAL: float = 150.0    # Every 2.5 minutes after that
+const SCALING_BONUS: float = 0.10        # 10% more spawns per interval
+
 var spawn_timer: float = 0.0
 var game_time: float = 0.0
 
@@ -50,9 +55,35 @@ func spawn_enemy() -> void:
 	if scene == null:
 		return
 
-	var enemy = scene.instantiate()
-	enemy.global_position = get_spawn_position()
-	get_parent().add_child(enemy)
+	# Calculate how many enemies to spawn based on time scaling
+	var spawn_count = get_spawn_count()
+
+	for i in range(spawn_count):
+		var enemy = scene.instantiate()
+		enemy.global_position = get_spawn_position()
+		get_parent().add_child(enemy)
+
+		# Vary enemy type for additional spawns
+		if i > 0:
+			enemy_type = select_enemy_type()
+			scene = get_scene_for_type(enemy_type)
+			if scene == null:
+				continue
+
+func get_spawn_count() -> int:
+	"""Calculate how many enemies to spawn based on time scaling."""
+	if game_time < SCALING_START_TIME:
+		return 1
+
+	# Calculate scaling tiers (every 2.5 mins after the first 2.5 mins)
+	var scaling_tiers = int((game_time - SCALING_START_TIME) / SCALING_INTERVAL) + 1
+	var total_bonus = scaling_tiers * SCALING_BONUS
+
+	# Use random chance for extra spawns based on bonus percentage
+	# e.g., 10% bonus = 10% chance for 2 enemies, 20% = 20% chance, etc.
+	if randf() < total_bonus:
+		return 2
+	return 1
 
 func select_enemy_type() -> String:
 	# Calculate spawn weights for each enemy type based on game time

@@ -68,10 +68,17 @@ func _create_ui() -> void:
 	btn1.position = Vector2(ability1_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, 0)
 	ability_buttons.append(btn1)
 
-	# Top-left: Ability 3
+	# Ability 3 - positioned between dodge and ability 2, closer to ability 1
 	var btn2 = _create_ability_button(2, BUTTON_SIZE)
-	btn2.position = Vector2(0, 0)
+	# Move right and down to be almost between dodge area and top-left corner
+	btn2.position = Vector2(60, 70)
 	ability_buttons.append(btn2)
+
+	# Apply 20% transparency to all ability buttons
+	btn0.modulate.a = 0.8
+	btn1.modulate.a = 0.8
+	btn2.modulate.a = 0.8
+	dodge_button.modulate.a = 0.8
 
 func _create_ability_button(slot: int, size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
@@ -127,7 +134,7 @@ func _animate_button_appear(button: ActiveAbilityButton) -> void:
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
 	tween.tween_property(button, "scale", Vector2.ONE, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(button, "modulate:a", 1.0, 0.2)
+	tween.tween_property(button, "modulate:a", 0.8, 0.2)  # Animate to 80% opacity
 
 func update_position() -> void:
 	"""Update position when viewport resizes."""

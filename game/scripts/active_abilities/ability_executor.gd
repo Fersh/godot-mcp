@@ -844,6 +844,8 @@ func _execute_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
 		_start_periodic_damage(player, ability)
 
 	_play_sound("bladestorm")
+	_screen_shake("large")
+	_impact_pause()
 
 func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -886,6 +888,8 @@ func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 	)
 
 	_play_sound("omnislash")
+	_screen_shake("large")
+	_impact_pause()
 
 func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Transform: +50% damage, -30% damage taken
@@ -903,7 +907,8 @@ func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("avatar_of_war", player.global_position, player)
 	_play_sound("buff")
-	_screen_shake("medium")
+	_screen_shake("large")
+	_impact_pause()
 
 func _execute_divine_shield(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Make player invulnerable
@@ -912,6 +917,8 @@ func _execute_divine_shield(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("divine_shield", player.global_position, player)
 	_play_sound("buff")
+	_screen_shake("large")
+	_impact_pause()
 
 # ============================================
 # RANGED ABILITIES - COMMON
@@ -1413,6 +1420,8 @@ func _execute_time_stop(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("time_stop", player.global_position)
 	_play_sound("time_stop")
+	_screen_shake("large")
+	_impact_pause()
 
 func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
@@ -1434,7 +1443,8 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 		)
 
 	_play_sound("thunder")
-	_screen_shake("medium")
+	_screen_shake("large")
+	_impact_pause()
 
 func _execute_summon_golem(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a golem ally that fights for the player
