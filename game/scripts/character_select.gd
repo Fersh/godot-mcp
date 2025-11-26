@@ -91,18 +91,6 @@ func _setup_preview_panel() -> void:
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	outer_center.add_child(vbox)
 
-	# Character name at top
-	preview_name_label = Label.new()
-	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	preview_name_label.add_theme_font_size_override("font_size", 24)
-	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
-	vbox.add_child(preview_name_label)
-
-	# Spacer after name
-	var spacer1 = Control.new()
-	spacer1.custom_minimum_size = Vector2(0, 4)
-	vbox.add_child(spacer1)
-
 	# Sprite preview - centered using SubViewportContainer for proper centering
 	var sprite_center = CenterContainer.new()
 	sprite_center.custom_minimum_size = Vector2(300, 120)
@@ -120,15 +108,27 @@ func _setup_preview_panel() -> void:
 	sprite_holder.add_child(preview_sprite)
 
 	# Spacer after sprite
+	var spacer1 = Control.new()
+	spacer1.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(spacer1)
+
+	# Character name below sprite
+	preview_name_label = Label.new()
+	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_name_label.add_theme_font_size_override("font_size", 24)
+	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
+	vbox.add_child(preview_name_label)
+
+	# Spacer after name
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer2)
 
-	# Description - centered
+	# Description - centered (above stats)
 	preview_desc_label = Label.new()
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	preview_desc_label.custom_minimum_size = Vector2(500, 0)
+	preview_desc_label.custom_minimum_size = Vector2(400, 0)
 	preview_desc_label.add_theme_font_size_override("font_size", 12)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
 	vbox.add_child(preview_desc_label)
@@ -138,7 +138,7 @@ func _setup_preview_panel() -> void:
 	spacer3.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer3)
 
-	# Stats section
+	# Stats section (below description)
 	preview_stats_container = VBoxContainer.new()
 	preview_stats_container.add_theme_constant_override("separation", 4)
 	vbox.add_child(preview_stats_container)
@@ -180,17 +180,25 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	style.corner_radius_bottom_right = 6
 	panel.add_theme_stylebox_override("panel", style)
 
-	# Add character sprite preview in the square
+	# Add character sprite preview in the square - use Control holder to center properly
 	var center = CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	panel.add_child(center)
+
+	var sprite_holder = Control.new()
+	sprite_holder.custom_minimum_size = Vector2(46, 46)
+	center.add_child(sprite_holder)
 
 	var sprite = Sprite2D.new()
 	sprite.texture = char_data.sprite_texture
 	sprite.hframes = char_data.hframes
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
-	sprite.scale = Vector2(1.5, 1.5) if char_data.id == "knight" else Vector2(2.0, 2.0)
-	center.add_child(sprite)
+	sprite.scale = Vector2(1.5, 1.5) if char_data.id == "knight" else Vector2(1.3, 1.3)
+	sprite.centered = true
+	sprite.position = Vector2(23, 23)  # Center within the holder
+	sprite_holder.add_child(sprite)
 
 	# Clickable button overlay
 	var button = Button.new()
@@ -258,7 +266,7 @@ func _update_preview() -> void:
 	if char_data.id == "knight":
 		preview_sprite.scale = Vector2(3.0, 3.0)
 	else:
-		preview_sprite.scale = Vector2(5.0, 5.0)
+		preview_sprite.scale = Vector2(2.55, 2.55)  # ~15% smaller than knight
 
 	# Update description
 	preview_desc_label.text = char_data.description
@@ -276,8 +284,8 @@ func _update_preview() -> void:
 
 	# Fixed width container for stats to keep alignment consistent
 	var stats_box = VBoxContainer.new()
-	stats_box.custom_minimum_size = Vector2(280, 0)
-	stats_box.add_theme_constant_override("separation", 3)
+	stats_box.custom_minimum_size = Vector2(180, 0)
+	stats_box.add_theme_constant_override("separation", 2)
 	preview_stats_container.add_child(stats_box)
 
 	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
