@@ -283,6 +283,9 @@ func take_damage(amount: float) -> void:
 
 	if current_health <= 0 and not is_dead:
 		current_health = 0
+		# Check for phoenix revive before dying
+		if AbilityManager and AbilityManager.try_phoenix_revive(self):
+			return  # Phoenix triggered, don't die
 		is_dead = true
 		death_animation_finished = false
 		animation_frame = 0.0
@@ -737,6 +740,29 @@ func heal(amount: float, _play_sound: bool = true) -> void:
 		var display_amount = floor(accumulated_heal)
 		spawn_heal_number(display_amount)
 		accumulated_heal -= display_amount
+
+func revive_with_percent(hp_percent: float) -> void:
+	"""Revive player with a percentage of max health (phoenix ability)."""
+	current_health = max_health * hp_percent
+	is_dead = false
+	death_animation_finished = false
+	animation_frame = 0.0
+	current_row = row_idle
+
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+	emit_signal("health_changed", current_health, max_health)
+
+	# Visual feedback
+	if JuiceManager:
+		JuiceManager.update_player_health(current_health / max_health)
+		JuiceManager.shake_large()
+
+	# Brief invulnerability after revive
+	set_invulnerable(true)
+	get_tree().create_timer(1.5).timeout.connect(func():
+		set_invulnerable(false)
+	)
 
 func spawn_heal_number(amount: float) -> void:
 	if damage_number_scene == null:

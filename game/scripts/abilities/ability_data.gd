@@ -82,6 +82,61 @@ enum EffectType {
 	RICOCHET,           # Arrows bounce to nearby enemy
 	PHOENIX,            # Revive once
 	BOOMERANG,          # Projectiles return
+
+	# Elemental On-Hit Effects
+	IGNITE,             # Chance to burn enemies
+	FROSTBITE,          # Chance to freeze/chill enemies
+	TOXIC_TIP,          # Chance to poison enemies
+	LIGHTNING_PROC,     # Chance to call lightning on hit
+	CHAOTIC_STRIKES,    # Random elemental damage
+	STATIC_CHARGE,      # Periodic stun
+
+	# Combat Mechanics
+	BERSERKER_FURY,     # Stacking damage when hit
+	COMBAT_MOMENTUM,    # Stacking damage on same target
+	EXECUTIONER,        # Bonus damage to low HP enemies
+	OVERHEAL_SHIELD,    # Excess healing becomes shield
+	ARCANE_ABSORPTION,  # Cooldown reduction on kill
+	VENGEANCE,          # Big damage after being hit
+	MIRROR_IMAGE,       # Spawn decoy when hit
+	HORDE_BREAKER,      # Damage scales with nearby enemies
+	BATTLE_MEDIC,       # Health pickup triggers heal nova
+	LAST_RESORT,        # Huge damage at 1 HP
+
+	# Trade-off & Conditional
+	FLEET_FOOTED,       # Speed for armor trade
+	WARMUP,             # Timed early game buff
+	PRACTICED_STANCE,   # Damage while stationary
+	GUARDIAN_HEART,     # Increased healing received
+	EARLY_BIRD,         # XP boost early, penalty late
+
+	# Advanced Mechanics
+	ADRENALINE_RUSH,    # Dash on kill (melee)
+	PHALANX,            # Block frontal projectiles
+	HOMING,             # Mild homing projectiles
+
+	# Legendary Effects
+	CEREMONIAL_DAGGER,  # Homing daggers on kill
+	MISSILE_BARRAGE,    # Random homing missiles
+	SOUL_REAPER,        # Heal + stacking damage on kill
+	SUMMONER,           # Periodic minion summon
+	THUNDERSHOCK,       # Lightning revenge
+	MIRROR_SHIELD,      # Reflect projectiles
+	MIND_CONTROL,       # Chance to charm
+	BLOOD_DEBT,         # Damage boost, self-damage
+	CHRONO_TRIGGER,     # Periodic freeze all
+	CHAIN_REACTION,     # Status spread on death
+	UNLIMITED_POWER,    # Permanent stacking damage
+	WIND_DANCER,        # No dodge cooldown
+	EMPATHIC_BOND,      # Double aura effects
+	FORTUNE_FAVOR,      # Loot tier upgrade
+
+	# Mythic Effects
+	IMMORTAL_OATH,      # Death immunity window
+	ALL_FOR_ONE,        # All actives, longer cooldowns
+	TRANSCENDENCE,      # HP to shields conversion
+	SYMBIOSIS,          # Double passive choices
+	PANDEMONIUM,        # Double spawns, double damage
 }
 
 # Rarity weights for random selection (out of 100)

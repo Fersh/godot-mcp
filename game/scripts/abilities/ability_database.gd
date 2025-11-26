@@ -3,15 +3,36 @@ class_name AbilityDatabase
 
 # All abilities organized by category
 # Effects use: {effect_type: AbilityData.EffectType, value: float}
+#
+# Modular ability files are loaded from:
+# - passives/elemental_passives.gd (on-hit elemental effects)
+# - passives/combat_passives.gd (combat mechanics & procs)
+# - passives/defensive_passives.gd (shields, healing, mitigation)
+# - passives/conditional_passives.gd (trade-offs & situational)
+# - passives/legendary_passives.gd (game-changing effects)
+# - passives/mythic_passives.gd (ultra-rare abilities)
 
 static func get_all_abilities() -> Array[AbilityData]:
 	var abilities: Array[AbilityData] = []
+	# Core abilities
 	abilities.append_array(get_common_abilities())
 	abilities.append_array(get_rare_abilities())
 	abilities.append_array(get_legendary_abilities())
 	abilities.append_array(get_mythic_abilities())
 	abilities.append_array(get_ranged_abilities())
 	abilities.append_array(get_melee_abilities())
+	# Extended modular abilities
+	abilities.append_array(get_extended_abilities())
+	return abilities
+
+static func get_extended_abilities() -> Array[AbilityData]:
+	var abilities: Array[AbilityData] = []
+	abilities.append_array(ElementalPassives.get_abilities())
+	abilities.append_array(CombatPassives.get_abilities())
+	abilities.append_array(DefensivePassives.get_abilities())
+	abilities.append_array(ConditionalPassives.get_abilities())
+	abilities.append_array(LegendaryPassives.get_abilities())
+	abilities.append_array(MythicPassives.get_abilities())
 	return abilities
 
 # ============================================

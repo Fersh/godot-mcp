@@ -1,24 +1,40 @@
 extends Node2D
 
-var radius: float = 80.0
-var duration: float = 0.3
-var timer: float = 0.0
+# Animated pixel explosion effect using FireBomb sprites
+
+var sprite: AnimatedSprite2D
+var scale_multiplier: float = 1.5  # Scale up the 64x64 sprite
 
 func _ready() -> void:
-	queue_redraw()
+	_create_animated_sprite()
 
-func _process(delta: float) -> void:
-	timer += delta
-	if timer >= duration:
-		queue_free()
-	else:
-		queue_redraw()
+func _create_animated_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(scale_multiplier, scale_multiplier)
+	add_child(sprite)
 
-func _draw() -> void:
-	var progress = timer / duration
-	var alpha = 1.0 - progress
-	var current_radius = radius * (0.5 + progress * 0.5)
+	# Create SpriteFrames resource
+	var frames = SpriteFrames.new()
+	frames.add_animation("explode")
+	frames.set_animation_speed("explode", 20.0)  # 20 FPS for snappy explosion
+	frames.set_animation_loop("explode", false)
 
-	# Orange/red explosion
-	draw_circle(Vector2.ZERO, current_radius, Color(1.0, 0.5, 0.2, alpha * 0.6))
-	draw_circle(Vector2.ZERO, current_radius * 0.6, Color(1.0, 0.8, 0.3, alpha * 0.8))
+	# Load all 15 FireBomb frames
+	for i in range(1, 16):
+		var path = "res://assets/sprites/effects/FireBomb/Fire-bomb%d.png" % i
+		if ResourceLoader.exists(path):
+			var texture = load(path)
+			frames.add_frame("explode", texture)
+
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("explode")
+
+func _on_animation_finished() -> void:
+	queue_free()
+
+# Allow setting custom scale for different explosion sizes
+func set_explosion_scale(new_scale: float) -> void:
+	scale_multiplier = new_scale
+	if sprite:
+		sprite.scale = Vector2(scale_multiplier, scale_multiplier)

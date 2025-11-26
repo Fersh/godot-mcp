@@ -112,6 +112,128 @@ var phoenix_hp_percent: float = 0.0
 var phoenix_used: bool = false
 var has_boomerang: bool = false
 
+# ============================================
+# EXTENDED ABILITY EFFECTS (from modular files)
+# ============================================
+
+# Elemental on-hit effects
+var has_ignite: bool = false
+var ignite_chance: float = 0.0
+var has_frostbite: bool = false
+var frostbite_chance: float = 0.0
+var has_toxic_tip: bool = false
+var toxic_tip_chance: float = 0.0
+var has_lightning_proc: bool = false
+var lightning_proc_chance: float = 0.0
+var has_chaotic_strikes: bool = false
+var chaotic_bonus: float = 0.0
+var has_static_charge: bool = false
+var static_charge_interval: float = 5.0
+var static_charge_timer: float = 0.0
+var static_charge_ready: bool = false
+var has_chain_reaction: bool = false
+var chain_reaction_count: int = 0
+
+# Combat mechanics
+var has_berserker_fury: bool = false
+var berserker_fury_bonus: float = 0.0
+var berserker_fury_stacks: int = 0
+var berserker_fury_timer: float = 0.0
+var has_combat_momentum: bool = false
+var combat_momentum_bonus: float = 0.0
+var combat_momentum_target: Node2D = null
+var combat_momentum_stacks: int = 0
+var has_executioner: bool = false
+var executioner_bonus: float = 0.0
+var has_vengeance: bool = false
+var vengeance_bonus: float = 0.0
+var vengeance_active: bool = false
+var vengeance_timer: float = 0.0
+var has_last_resort: bool = false
+var last_resort_bonus: float = 0.0
+var has_horde_breaker: bool = false
+var horde_breaker_bonus: float = 0.0
+var has_arcane_absorption: bool = false
+var arcane_absorption_value: float = 0.0
+var has_adrenaline_rush: bool = false
+var has_phalanx: bool = false
+var phalanx_chance: float = 0.0
+var has_homing: bool = false
+
+# Defensive effects
+var has_guardian_heart: bool = false
+var guardian_heart_bonus: float = 0.0
+var has_overheal_shield: bool = false
+var overheal_shield_max: float = 0.0
+var current_overheal_shield: float = 0.0
+var has_mirror_image: bool = false
+var mirror_image_chance: float = 0.0
+var has_battle_medic: bool = false
+var battle_medic_heal: float = 0.0
+var has_mirror_shield: bool = false
+var mirror_shield_interval: float = 5.0
+var mirror_shield_timer: float = 0.0
+var mirror_shield_ready: bool = false
+var has_thundershock: bool = false
+var thundershock_damage: float = 0.0
+
+# Conditional effects
+var has_warmup: bool = false
+var warmup_bonus: float = 0.0
+var warmup_active: bool = true
+var has_practiced_stance: bool = false
+var practiced_stance_bonus: float = 0.0
+var has_early_bird: bool = false
+var early_bird_bonus: float = 0.0
+
+# Legendary effects
+var has_ceremonial_dagger: bool = false
+var ceremonial_dagger_count: int = 0
+var has_missile_barrage: bool = false
+var missile_barrage_chance: float = 0.0
+var has_soul_reaper: bool = false
+var soul_reaper_heal: float = 0.0
+var soul_reaper_stacks: int = 0
+var soul_reaper_timer: float = 0.0
+var has_summoner: bool = false
+var summoner_interval: float = 10.0
+var summoner_timer: float = 0.0
+var skeleton_count: int = 0
+const MAX_SKELETONS: int = 3
+var has_mind_control: bool = false
+var mind_control_chance: float = 0.0
+var has_blood_debt: bool = false
+var blood_debt_bonus: float = 0.0
+var has_chrono_trigger: bool = false
+var chrono_trigger_interval: float = 10.0
+var chrono_trigger_timer: float = 0.0
+var has_unlimited_power: bool = false
+var unlimited_power_bonus: float = 0.0
+var unlimited_power_stacks: int = 0
+var has_wind_dancer: bool = false
+var has_empathic_bond: bool = false
+var empathic_bond_multiplier: float = 1.0
+var has_fortune_favor: bool = false
+
+# Mythic effects
+var has_immortal_oath: bool = false
+var immortal_oath_duration: float = 3.0
+var immortal_oath_active: bool = false
+var immortal_oath_timer: float = 0.0
+var immortal_oath_used: bool = false
+var has_all_for_one: bool = false
+var all_for_one_multiplier: float = 2.0
+var has_transcendence: bool = false
+var transcendence_shields: float = 0.0
+var transcendence_max: float = 0.0
+var has_symbiosis: bool = false
+var has_pandemonium: bool = false
+var pandemonium_multiplier: float = 2.0
+
+# Run tracking
+var run_start_time: float = 0.0
+var run_duration_for_warmup: float = 120.0  # 2 minutes
+
 # Timers for periodic effects
 var regen_timer: float = 0.0
 var tesla_timer: float = 0.0
@@ -239,6 +361,110 @@ func reset() -> void:
 	phoenix_used = false
 	has_boomerang = false
 
+	# Reset extended ability effects
+	has_ignite = false
+	ignite_chance = 0.0
+	has_frostbite = false
+	frostbite_chance = 0.0
+	has_toxic_tip = false
+	toxic_tip_chance = 0.0
+	has_lightning_proc = false
+	lightning_proc_chance = 0.0
+	has_chaotic_strikes = false
+	chaotic_bonus = 0.0
+	has_static_charge = false
+	static_charge_timer = 0.0
+	static_charge_ready = false
+	has_chain_reaction = false
+	chain_reaction_count = 0
+
+	has_berserker_fury = false
+	berserker_fury_bonus = 0.0
+	berserker_fury_stacks = 0
+	berserker_fury_timer = 0.0
+	has_combat_momentum = false
+	combat_momentum_bonus = 0.0
+	combat_momentum_target = null
+	combat_momentum_stacks = 0
+	has_executioner = false
+	executioner_bonus = 0.0
+	has_vengeance = false
+	vengeance_bonus = 0.0
+	vengeance_active = false
+	vengeance_timer = 0.0
+	has_last_resort = false
+	last_resort_bonus = 0.0
+	has_horde_breaker = false
+	horde_breaker_bonus = 0.0
+	has_arcane_absorption = false
+	arcane_absorption_value = 0.0
+	has_adrenaline_rush = false
+	has_phalanx = false
+	phalanx_chance = 0.0
+	has_homing = false
+
+	has_guardian_heart = false
+	guardian_heart_bonus = 0.0
+	has_overheal_shield = false
+	overheal_shield_max = 0.0
+	current_overheal_shield = 0.0
+	has_mirror_image = false
+	mirror_image_chance = 0.0
+	has_battle_medic = false
+	battle_medic_heal = 0.0
+	has_mirror_shield = false
+	mirror_shield_timer = 0.0
+	mirror_shield_ready = false
+	has_thundershock = false
+	thundershock_damage = 0.0
+
+	has_warmup = false
+	warmup_bonus = 0.0
+	warmup_active = true
+	has_practiced_stance = false
+	practiced_stance_bonus = 0.0
+	has_early_bird = false
+	early_bird_bonus = 0.0
+
+	has_ceremonial_dagger = false
+	ceremonial_dagger_count = 0
+	has_missile_barrage = false
+	missile_barrage_chance = 0.0
+	has_soul_reaper = false
+	soul_reaper_heal = 0.0
+	soul_reaper_stacks = 0
+	soul_reaper_timer = 0.0
+	has_summoner = false
+	summoner_timer = 0.0
+	skeleton_count = 0
+	has_mind_control = false
+	mind_control_chance = 0.0
+	has_blood_debt = false
+	blood_debt_bonus = 0.0
+	has_chrono_trigger = false
+	chrono_trigger_timer = 0.0
+	has_unlimited_power = false
+	unlimited_power_bonus = 0.0
+	unlimited_power_stacks = 0
+	has_wind_dancer = false
+	has_empathic_bond = false
+	empathic_bond_multiplier = 1.0
+	has_fortune_favor = false
+
+	has_immortal_oath = false
+	immortal_oath_active = false
+	immortal_oath_timer = 0.0
+	immortal_oath_used = false
+	has_all_for_one = false
+	has_transcendence = false
+	transcendence_shields = 0.0
+	transcendence_max = 0.0
+	has_symbiosis = false
+	has_pandemonium = false
+	pandemonium_multiplier = 2.0
+
+	run_start_time = 0.0
+
 	# Reset timers
 	regen_timer = 0.0
 	tesla_timer = 0.0
@@ -301,6 +527,76 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 		if toxic_timer >= TOXIC_INTERVAL:
 			toxic_timer = 0.0
 			apply_toxic_damage(player)
+
+	# ============================================
+	# EXTENDED PERIODIC EFFECTS
+	# ============================================
+
+	# Static Charge timer (recharges stun)
+	if has_static_charge:
+		static_charge_timer += delta
+		if static_charge_timer >= static_charge_interval:
+			static_charge_timer = 0.0
+			static_charge_ready = true
+
+	# Berserker Fury decay
+	if has_berserker_fury and berserker_fury_stacks > 0:
+		berserker_fury_timer -= delta
+		if berserker_fury_timer <= 0:
+			berserker_fury_stacks = 0
+
+	# Vengeance window
+	if vengeance_active:
+		vengeance_timer -= delta
+		if vengeance_timer <= 0:
+			vengeance_active = false
+
+	# Soul Reaper stack decay
+	if has_soul_reaper and soul_reaper_stacks > 0:
+		soul_reaper_timer -= delta
+		if soul_reaper_timer <= 0:
+			soul_reaper_stacks = 0
+
+	# Warmup check (expires after 2 minutes)
+	if has_warmup and warmup_active:
+		var current_time = Time.get_ticks_msec() / 1000.0
+		if current_time - run_start_time > run_duration_for_warmup:
+			warmup_active = false
+
+	# Summoner's Aid - spawn skeletons periodically
+	if has_summoner:
+		summoner_timer += delta
+		if summoner_timer >= summoner_interval and skeleton_count < MAX_SKELETONS:
+			summoner_timer = 0.0
+			spawn_skeleton(player)
+
+	# Chrono Trigger - periodic freeze
+	if has_chrono_trigger:
+		chrono_trigger_timer += delta
+		if chrono_trigger_timer >= chrono_trigger_interval:
+			chrono_trigger_timer = 0.0
+			trigger_chrono_freeze()
+
+	# Mirror Shield recharge
+	if has_mirror_shield:
+		mirror_shield_timer += delta
+		if mirror_shield_timer >= mirror_shield_interval:
+			mirror_shield_timer = 0.0
+			mirror_shield_ready = true
+
+	# Immortal Oath timer
+	if immortal_oath_active:
+		immortal_oath_timer -= delta
+		if immortal_oath_timer <= 0:
+			immortal_oath_active = false
+			# If player didn't heal above 1 HP, they die
+			if player.has_method("get_health") and player.get_health() <= 1:
+				if player.has_method("force_death"):
+					player.force_death()
+
+	# Transcendence shield regen
+	if has_transcendence and transcendence_shields < transcendence_max:
+		transcendence_shields = minf(transcendence_shields + delta * 5.0, transcendence_max)
 
 func heal_player(player: Node2D, amount: float, play_sound: bool = false) -> void:
 	if player.has_method("heal"):
@@ -698,6 +994,145 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				phoenix_hp_percent = value
 			AbilityData.EffectType.BOOMERANG:
 				has_boomerang = true
+
+			# ============================================
+			# EXTENDED ABILITY EFFECTS (from modular files)
+			# ============================================
+
+			# Elemental on-hit effects
+			AbilityData.EffectType.IGNITE:
+				has_ignite = true
+				ignite_chance += value
+			AbilityData.EffectType.FROSTBITE:
+				has_frostbite = true
+				frostbite_chance += value
+			AbilityData.EffectType.TOXIC_TIP:
+				has_toxic_tip = true
+				toxic_tip_chance += value
+			AbilityData.EffectType.LIGHTNING_PROC:
+				has_lightning_proc = true
+				lightning_proc_chance += value
+			AbilityData.EffectType.CHAOTIC_STRIKES:
+				has_chaotic_strikes = true
+				chaotic_bonus += value
+			AbilityData.EffectType.STATIC_CHARGE:
+				has_static_charge = true
+				static_charge_interval = value
+			AbilityData.EffectType.CHAIN_REACTION:
+				has_chain_reaction = true
+				chain_reaction_count = int(value)
+
+			# Combat mechanics
+			AbilityData.EffectType.BERSERKER_FURY:
+				has_berserker_fury = true
+				berserker_fury_bonus += value
+			AbilityData.EffectType.COMBAT_MOMENTUM:
+				has_combat_momentum = true
+				combat_momentum_bonus += value
+			AbilityData.EffectType.EXECUTIONER:
+				has_executioner = true
+				executioner_bonus += value
+			AbilityData.EffectType.VENGEANCE:
+				has_vengeance = true
+				vengeance_bonus += value
+			AbilityData.EffectType.LAST_RESORT:
+				has_last_resort = true
+				last_resort_bonus += value
+			AbilityData.EffectType.HORDE_BREAKER:
+				has_horde_breaker = true
+				horde_breaker_bonus += value
+			AbilityData.EffectType.ARCANE_ABSORPTION:
+				has_arcane_absorption = true
+				arcane_absorption_value += value
+			AbilityData.EffectType.ADRENALINE_RUSH:
+				has_adrenaline_rush = true
+			AbilityData.EffectType.PHALANX:
+				has_phalanx = true
+				phalanx_chance += value
+			AbilityData.EffectType.HOMING:
+				has_homing = true
+
+			# Defensive effects
+			AbilityData.EffectType.GUARDIAN_HEART:
+				has_guardian_heart = true
+				guardian_heart_bonus += value
+			AbilityData.EffectType.OVERHEAL_SHIELD:
+				has_overheal_shield = true
+				overheal_shield_max = value
+			AbilityData.EffectType.MIRROR_IMAGE:
+				has_mirror_image = true
+				mirror_image_chance += value
+			AbilityData.EffectType.BATTLE_MEDIC:
+				has_battle_medic = true
+				battle_medic_heal += value
+			AbilityData.EffectType.MIRROR_SHIELD:
+				has_mirror_shield = true
+				mirror_shield_interval = value
+			AbilityData.EffectType.THUNDERSHOCK:
+				has_thundershock = true
+				thundershock_damage += value
+
+			# Conditional effects
+			AbilityData.EffectType.WARMUP:
+				has_warmup = true
+				warmup_bonus += value
+				run_start_time = Time.get_ticks_msec() / 1000.0
+			AbilityData.EffectType.PRACTICED_STANCE:
+				has_practiced_stance = true
+				practiced_stance_bonus += value
+			AbilityData.EffectType.EARLY_BIRD:
+				has_early_bird = true
+				early_bird_bonus += value
+				run_start_time = Time.get_ticks_msec() / 1000.0
+
+			# Legendary effects
+			AbilityData.EffectType.CEREMONIAL_DAGGER:
+				has_ceremonial_dagger = true
+				ceremonial_dagger_count = int(value)
+			AbilityData.EffectType.MISSILE_BARRAGE:
+				has_missile_barrage = true
+				missile_barrage_chance += value
+			AbilityData.EffectType.SOUL_REAPER:
+				has_soul_reaper = true
+				soul_reaper_heal += value
+			AbilityData.EffectType.SUMMONER:
+				has_summoner = true
+				summoner_interval = value
+			AbilityData.EffectType.MIND_CONTROL:
+				has_mind_control = true
+				mind_control_chance += value
+			AbilityData.EffectType.BLOOD_DEBT:
+				has_blood_debt = true
+				blood_debt_bonus += value
+			AbilityData.EffectType.CHRONO_TRIGGER:
+				has_chrono_trigger = true
+				chrono_trigger_interval = value
+			AbilityData.EffectType.UNLIMITED_POWER:
+				has_unlimited_power = true
+				unlimited_power_bonus += value
+			AbilityData.EffectType.WIND_DANCER:
+				has_wind_dancer = true
+			AbilityData.EffectType.EMPATHIC_BOND:
+				has_empathic_bond = true
+				empathic_bond_multiplier = value
+			AbilityData.EffectType.FORTUNE_FAVOR:
+				has_fortune_favor = true
+
+			# Mythic effects
+			AbilityData.EffectType.IMMORTAL_OATH:
+				has_immortal_oath = true
+				immortal_oath_duration = value
+			AbilityData.EffectType.ALL_FOR_ONE:
+				has_all_for_one = true
+				all_for_one_multiplier = value
+			AbilityData.EffectType.TRANSCENDENCE:
+				has_transcendence = true
+				activate_transcendence()
+			AbilityData.EffectType.SYMBIOSIS:
+				has_symbiosis = true
+			AbilityData.EffectType.PANDEMONIUM:
+				has_pandemonium = true
+				pandemonium_multiplier = value
 
 	# Apply stat changes to player immediately
 	apply_stats_to_player()
@@ -1120,3 +1555,421 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# Bloodthirst
 	if has_bloodthirst:
 		apply_bloodthirst_boost(player)
+
+	# ============================================
+	# EXTENDED ON-KILL EFFECTS
+	# ============================================
+
+	# Ceremonial Dagger - fire homing daggers
+	if has_ceremonial_dagger:
+		fire_ceremonial_daggers(enemy.global_position, player)
+
+	# Soul Reaper - heal and stack damage
+	if has_soul_reaper:
+		var heal_amount = player.max_health * soul_reaper_heal
+		heal_player(player, heal_amount)
+		soul_reaper_stacks = mini(soul_reaper_stacks + 1, 50)  # Cap at 50 stacks
+		soul_reaper_timer = 5.0
+
+	# Unlimited Power - permanent stacking damage
+	if has_unlimited_power:
+		unlimited_power_stacks += 1
+
+	# Arcane Absorption - reduce cooldowns
+	if has_arcane_absorption:
+		reduce_active_cooldowns(arcane_absorption_value)
+
+	# Chain Reaction - spread status effects
+	if has_chain_reaction:
+		spread_status_effects(enemy)
+
+	# Adrenaline Rush (melee dash on kill)
+	if has_adrenaline_rush:
+		trigger_adrenaline_dash(player, enemy.global_position)
+
+# ============================================
+# EXTENDED ABILITY UTILITY FUNCTIONS
+# ============================================
+
+# Elemental on-hit checks
+func check_ignite() -> bool:
+	return has_ignite and randf() < ignite_chance
+
+func check_frostbite() -> bool:
+	return has_frostbite and randf() < frostbite_chance
+
+func check_toxic_tip() -> bool:
+	return has_toxic_tip and randf() < toxic_tip_chance
+
+func check_lightning_proc() -> bool:
+	return has_lightning_proc and randf() < lightning_proc_chance
+
+func get_chaotic_element() -> String:
+	if not has_chaotic_strikes:
+		return ""
+	var elements = ["fire", "ice", "lightning"]
+	return elements[randi() % elements.size()]
+
+func consume_static_charge() -> bool:
+	if has_static_charge and static_charge_ready:
+		static_charge_ready = false
+		return true
+	return false
+
+# Combat mechanics
+func trigger_berserker_fury() -> void:
+	if has_berserker_fury:
+		berserker_fury_stacks = mini(berserker_fury_stacks + 1, 5)  # Max 5 stacks
+		berserker_fury_timer = 5.0
+
+func get_berserker_fury_bonus() -> float:
+	if not has_berserker_fury:
+		return 0.0
+	return berserker_fury_bonus * berserker_fury_stacks
+
+func update_combat_momentum(target: Node2D) -> void:
+	if not has_combat_momentum:
+		return
+	if combat_momentum_target == target:
+		combat_momentum_stacks = mini(combat_momentum_stacks + 1, 5)
+	else:
+		combat_momentum_target = target
+		combat_momentum_stacks = 1
+
+func get_combat_momentum_bonus() -> float:
+	if not has_combat_momentum:
+		return 0.0
+	return combat_momentum_bonus * combat_momentum_stacks
+
+func get_executioner_bonus(enemy_hp_percent: float) -> float:
+	if not has_executioner or enemy_hp_percent > 0.3:
+		return 0.0
+	return executioner_bonus
+
+func trigger_vengeance() -> void:
+	if has_vengeance:
+		vengeance_active = true
+		vengeance_timer = 3.0
+
+func consume_vengeance() -> float:
+	if vengeance_active:
+		vengeance_active = false
+		return vengeance_bonus
+	return 0.0
+
+func get_last_resort_bonus(hp_percent: float) -> float:
+	if not has_last_resort or hp_percent > 0.1:
+		return 0.0
+	return last_resort_bonus
+
+func get_horde_breaker_bonus(player_pos: Vector2) -> float:
+	if not has_horde_breaker:
+		return 0.0
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var nearby_count = 0
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			if player_pos.distance_to(enemy.global_position) < 160.0:  # ~5 tiles
+				nearby_count += 1
+	return minf(horde_breaker_bonus * nearby_count, 0.2)  # Cap at 20%
+
+func check_phalanx(projectile_direction: Vector2, player_facing: Vector2) -> bool:
+	if not has_phalanx:
+		return false
+	# Check if projectile is coming from the front
+	if projectile_direction.dot(player_facing) < -0.5:
+		return randf() < phalanx_chance
+	return false
+
+func check_missile_barrage() -> bool:
+	return has_missile_barrage and randf() < missile_barrage_chance
+
+func check_mind_control() -> bool:
+	return has_mind_control and randf() < mind_control_chance
+
+# Defensive utilities
+func get_healing_multiplier() -> float:
+	if has_guardian_heart:
+		return 1.0 + guardian_heart_bonus
+	return 1.0
+
+func process_overheal(player: Node2D, heal_amount: float) -> float:
+	if not has_overheal_shield:
+		return heal_amount
+
+	var current_hp = player.current_health if player.has_method("get_health") else 0.0
+	var max_hp = player.max_health if "max_health" in player else 100.0
+	var overflow = (current_hp + heal_amount) - max_hp
+
+	if overflow > 0:
+		var max_shield = max_hp * overheal_shield_max
+		current_overheal_shield = minf(current_overheal_shield + overflow, max_shield)
+		return heal_amount - overflow
+	return heal_amount
+
+func get_overheal_shield() -> float:
+	return current_overheal_shield
+
+func damage_overheal_shield(damage: float) -> float:
+	if current_overheal_shield <= 0:
+		return damage
+	var absorbed = minf(damage, current_overheal_shield)
+	current_overheal_shield -= absorbed
+	return damage - absorbed
+
+func check_mirror_image() -> bool:
+	return has_mirror_image and randf() < mirror_image_chance
+
+func consume_mirror_shield() -> bool:
+	if has_mirror_shield and mirror_shield_ready:
+		mirror_shield_ready = false
+		return true
+	return false
+
+func trigger_thundershock(player_pos: Vector2) -> void:
+	if not has_thundershock:
+		return
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var targets_hit = 0
+	for enemy in enemies:
+		if targets_hit >= 3:
+			break
+		if is_instance_valid(enemy):
+			var dist = player_pos.distance_to(enemy.global_position)
+			if dist <= 200.0 and enemy.has_method("take_damage"):
+				enemy.take_damage(thundershock_damage)
+				spawn_lightning_effect(player_pos, enemy.global_position)
+				targets_hit += 1
+
+func trigger_battle_medic(player: Node2D) -> void:
+	if not has_battle_medic:
+		return
+	# Heal nova around player
+	heal_player(player, battle_medic_heal)
+	# Damage nearby enemies
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = player.global_position.distance_to(enemy.global_position)
+			if dist <= 80.0 and enemy.has_method("take_damage"):
+				enemy.take_damage(battle_medic_heal)
+	spawn_explosion_effect(player.global_position)
+
+# Conditional effect getters
+func get_warmup_attack_speed_bonus() -> float:
+	if has_warmup and warmup_active:
+		return warmup_bonus
+	return 0.0
+
+func get_practiced_stance_bonus(player_velocity: Vector2) -> float:
+	if not has_practiced_stance:
+		return 0.0
+	if player_velocity.length() < 5.0:
+		return practiced_stance_bonus
+	return 0.0
+
+func get_early_bird_xp_multiplier() -> float:
+	if not has_early_bird:
+		return 0.0
+	var current_time = Time.get_ticks_msec() / 1000.0
+	var run_time = current_time - run_start_time
+	# Assume run duration is ~10 minutes, so halfway is 5 minutes
+	if run_time < 300.0:  # First 5 minutes
+		return early_bird_bonus
+	else:
+		return -early_bird_bonus
+
+# Legendary effect functions
+func fire_ceremonial_daggers(origin: Vector2, player: Node2D) -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var targets: Array = []
+
+	for enemy in enemies:
+		if is_instance_valid(enemy) and targets.size() < ceremonial_dagger_count:
+			targets.append(enemy)
+
+	for target in targets:
+		spawn_homing_projectile(origin, target, player)
+
+func spawn_homing_projectile(origin: Vector2, target: Node2D, player: Node2D) -> void:
+	# Create a simple homing projectile
+	var projectile = Node2D.new()
+	projectile.global_position = origin
+	projectile.set_script(load("res://scripts/abilities/homing_projectile.gd"))
+	projectile.target = target
+	projectile.damage = get_damage_multiplier() * 20.0  # Base damage
+	projectile.source = player
+	get_tree().current_scene.add_child(projectile)
+
+func fire_homing_missiles(origin: Vector2, player: Node2D) -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	if enemies.size() == 0:
+		return
+
+	for i in 2:
+		var target = enemies[randi() % enemies.size()]
+		if is_instance_valid(target):
+			spawn_homing_projectile(origin, target, player)
+
+func spawn_skeleton(player: Node2D) -> void:
+	skeleton_count += 1
+	var skeleton = Node2D.new()
+	skeleton.global_position = player.global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
+	skeleton.set_script(load("res://scripts/abilities/skeleton_minion.gd"))
+	skeleton.owner_player = player
+	skeleton.tree_exited.connect(func(): skeleton_count -= 1)
+	get_tree().current_scene.add_child(skeleton)
+
+func trigger_chrono_freeze() -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.has_method("apply_freeze"):
+			enemy.apply_freeze(1.0)
+		elif is_instance_valid(enemy) and enemy.has_method("apply_stun"):
+			enemy.apply_stun(1.0)
+
+func get_soul_reaper_damage_bonus() -> float:
+	if not has_soul_reaper:
+		return 0.0
+	return 0.01 * soul_reaper_stacks  # 1% per stack
+
+func get_unlimited_power_bonus() -> float:
+	if not has_unlimited_power:
+		return 0.0
+	return unlimited_power_bonus * unlimited_power_stacks
+
+func reduce_active_cooldowns(amount: float) -> void:
+	# Signal to active ability system to reduce cooldowns
+	var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
+	if active_manager and active_manager.has_method("reduce_all_cooldowns"):
+		active_manager.reduce_all_cooldowns(amount)
+
+func spread_status_effects(dead_enemy: Node2D) -> void:
+	if not has_chain_reaction:
+		return
+	# Find nearby enemies to spread effects to
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var spread_count = 0
+	for enemy in enemies:
+		if spread_count >= chain_reaction_count:
+			break
+		if enemy == dead_enemy or not is_instance_valid(enemy):
+			continue
+		var dist = dead_enemy.global_position.distance_to(enemy.global_position)
+		if dist <= 100.0:
+			# Apply a random status effect
+			if enemy.has_method("apply_burn"):
+				enemy.apply_burn(3.0)
+			elif enemy.has_method("apply_poison"):
+				enemy.apply_poison(50.0, 5.0)
+			spread_count += 1
+
+func trigger_adrenaline_dash(player: Node2D, target_pos: Vector2) -> void:
+	if not has_adrenaline_rush:
+		return
+	# Find nearest enemy to dash toward
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest: Node2D = null
+	var closest_dist = 200.0
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = player.global_position.distance_to(enemy.global_position)
+			if dist < closest_dist:
+				closest_dist = dist
+				closest = enemy
+
+	if closest and player.has_method("dash_toward"):
+		player.dash_toward(closest.global_position)
+
+func spawn_decoy(player: Node2D) -> void:
+	var decoy = Node2D.new()
+	decoy.global_position = player.global_position
+	decoy.set_script(load("res://scripts/abilities/decoy.gd"))
+	decoy.owner_player = player
+	get_tree().current_scene.add_child(decoy)
+
+func get_blood_debt_damage_bonus() -> float:
+	if has_blood_debt:
+		return blood_debt_bonus
+	return 0.0
+
+func apply_blood_debt_self_damage(player: Node2D, damage_dealt: float) -> void:
+	if not has_blood_debt:
+		return
+	var self_damage = damage_dealt * 0.1
+	if player.has_method("take_damage_no_callback"):
+		player.take_damage_no_callback(self_damage)
+
+func has_wind_dancer_ability() -> bool:
+	return has_wind_dancer
+
+func get_empathic_bond_multiplier() -> float:
+	return empathic_bond_multiplier
+
+func has_fortune_favor_ability() -> bool:
+	return has_fortune_favor
+
+# Mythic effect functions
+func try_immortal_oath(player: Node2D) -> bool:
+	if not has_immortal_oath or immortal_oath_used:
+		return false
+	immortal_oath_used = true
+	immortal_oath_active = true
+	immortal_oath_timer = immortal_oath_duration
+	# Make player temporarily invulnerable
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(true, immortal_oath_duration)
+	return true
+
+func has_all_for_one_ability() -> bool:
+	return has_all_for_one
+
+func get_all_for_one_cooldown_multiplier() -> float:
+	if has_all_for_one:
+		return all_for_one_multiplier
+	return 1.0
+
+func activate_transcendence() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if player:
+		transcendence_max = player.max_health
+		transcendence_shields = transcendence_max
+		# Reduce HP to 1
+		if player.has_method("set_health"):
+			player.set_health(1)
+
+func get_transcendence_shields() -> float:
+	return transcendence_shields
+
+func damage_transcendence_shields(damage: float) -> float:
+	if not has_transcendence or transcendence_shields <= 0:
+		return damage
+	var absorbed = minf(damage, transcendence_shields)
+	transcendence_shields -= absorbed
+	return damage - absorbed
+
+func has_symbiosis_ability() -> bool:
+	return has_symbiosis
+
+func get_symbiosis_choice_count() -> int:
+	if has_symbiosis:
+		return 2
+	return 1
+
+func has_pandemonium_ability() -> bool:
+	return has_pandemonium
+
+func get_pandemonium_spawn_multiplier() -> float:
+	if has_pandemonium:
+		return pandemonium_multiplier
+	return 1.0
+
+func get_pandemonium_damage_multiplier() -> float:
+	if has_pandemonium:
+		return pandemonium_multiplier
+	return 1.0
+
+# Projectile helpers
+func should_apply_homing() -> bool:
+	return has_homing

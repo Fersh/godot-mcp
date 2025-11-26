@@ -223,15 +223,11 @@ func _apply_knockback_to_enemy(enemy: Node2D, direction: Vector2, force: float) 
 func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) -> Node:
 	"""Spawn a visual effect at a position."""
 	var scene_path = "res://scenes/effects/ability_effects/" + effect_id + ".tscn"
+
+	# Check if effect scene exists
 	if not _effect_scenes.has(effect_id):
 		if ResourceLoader.exists(scene_path):
 			_effect_scenes[effect_id] = load(scene_path)
-		else:
-			# Fallback to generic effect
-			if ResourceLoader.exists("res://scenes/effects/ability_effects/generic_impact.tscn"):
-				_effect_scenes[effect_id] = load("res://scenes/effects/ability_effects/generic_impact.tscn")
-			else:
-				return null
 
 	var scene = _effect_scenes.get(effect_id)
 	if scene:
@@ -242,7 +238,67 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 		else:
 			get_tree().current_scene.add_child(effect)
 		return effect
-	return null
+
+	# Fallback: use explosion effect for explosion-related effects
+	if effect_id.contains("explosion") or effect_id.contains("explode") or effect_id == "black_hole_explosion":
+		return _spawn_explosion_effect(position, parent)
+
+	# Fallback: spawn generic impact for other effects
+	return _spawn_generic_effect(position, parent)
+
+func _spawn_explosion_effect(position: Vector2, parent: Node = null) -> Node:
+	"""Spawn the animated pixel explosion effect."""
+	var explosion = Node2D.new()
+	explosion.global_position = position
+
+	var explosion_script = load("res://scripts/abilities/explosion_effect.gd")
+	if explosion_script:
+		explosion.set_script(explosion_script)
+
+	if parent:
+		parent.add_child(explosion)
+	else:
+		get_tree().current_scene.add_child(explosion)
+
+	return explosion
+
+func _spawn_generic_effect(position: Vector2, parent: Node = null) -> Node:
+	"""Spawn a simple generic impact effect."""
+	var effect = Node2D.new()
+	effect.global_position = position
+
+	# Simple flash effect that fades out
+	var sprite = Sprite2D.new()
+	sprite.texture = _get_generic_impact_texture()
+	effect.add_child(sprite)
+
+	if parent:
+		parent.add_child(effect)
+	else:
+		get_tree().current_scene.add_child(effect)
+
+	# Auto-cleanup after short delay
+	get_tree().create_timer(0.3).timeout.connect(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+	return effect
+
+func _get_generic_impact_texture() -> Texture2D:
+	"""Get or create a simple white circle texture for generic effects."""
+	if not _effect_scenes.has("_generic_texture"):
+		var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
+		img.fill(Color(1, 1, 1, 0))
+		var center = Vector2(16, 16)
+		for x in range(32):
+			for y in range(32):
+				var dist = Vector2(x, y).distance_to(center)
+				if dist < 14:
+					var alpha = 1.0 - (dist / 14.0)
+					img.set_pixel(x, y, Color(1, 1, 1, alpha * 0.8))
+		_effect_scenes["_generic_texture"] = ImageTexture.create_from_image(img)
+	return _effect_scenes["_generic_texture"]
 
 func _play_sound(sound_name: String) -> void:
 	"""Play a sound effect."""
@@ -268,8 +324,16 @@ func _screen_shake(intensity: String = "medium") -> void:
 # ============================================
 
 func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
 	var damage = _get_damage(ability)
+
+	# Aim cleave TOWARDS nearest enemy (extended search range)
+	var target = _get_nearest_enemy(player.global_position, ability.radius * 2.25)
+	var direction: Vector2
+
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+	else:
+		direction = _get_attack_direction(player)
 
 	# Hit enemies in arc in front of player
 	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.radius, PI * 0.75)
@@ -282,8 +346,16 @@ func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
 	_screen_shake("small")
 
 func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
 	var damage = _get_damage(ability)
+
+	# Aim shield bash TOWARDS nearest enemy (extended search range)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance * 2.25)
+	var direction: Vector2
+
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+	else:
+		direction = _get_attack_direction(player)
 
 	# Hit enemies in front
 	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.5)
@@ -321,10 +393,24 @@ func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> voi
 	_screen_shake("small")
 
 func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
 	var damage = _get_damage(ability)
 	var start_pos = player.global_position
-	var end_pos = start_pos + direction * ability.range_distance
+
+	# Dash TOWARDS nearest enemy (extended search range)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance * 3)
+	var direction: Vector2
+	var end_pos: Vector2
+
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+		# Dash to just in front of the enemy (not through them)
+		var dist_to_target = player.global_position.distance_to(target.global_position)
+		var dash_dist = min(ability.range_distance, dist_to_target - 30)
+		end_pos = start_pos + direction * max(dash_dist, 50)
+	else:
+		# No enemy, dash in attack direction
+		direction = _get_attack_direction(player)
+		end_pos = start_pos + direction * ability.range_distance
 
 	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
 	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
@@ -357,8 +443,16 @@ func _execute_whirlwind(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("whirlwind")
 
 func _execute_seismic_slam(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
 	var damage = _get_damage(ability)
+
+	# Aim shockwave TOWARDS nearest enemy (extended search range)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance * 2.25)
+	var direction: Vector2
+
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+	else:
+		direction = _get_attack_direction(player)
 
 	# Shockwave travels forward
 	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.4)
@@ -395,10 +489,22 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("leap")
 
 func _execute_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
 	var damage = _get_damage(ability)
 	var start_pos = player.global_position
-	var end_pos = start_pos + direction * ability.range_distance
+
+	# Dash TOWARDS nearest enemy (extended search range)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance * 2.25)
+	var direction: Vector2
+	var end_pos: Vector2
+
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+		# Dash through the enemy and beyond
+		end_pos = start_pos + direction * ability.range_distance
+	else:
+		# No enemy, dash in attack direction
+		direction = _get_attack_direction(player)
+		end_pos = start_pos + direction * ability.range_distance
 
 	# Clamp end position to arena
 	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
