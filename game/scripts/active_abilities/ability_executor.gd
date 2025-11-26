@@ -655,11 +655,41 @@ func _execute_whirlwind(ability: ActiveAbilityData, player: Node2D) -> void:
 	var effect = _spawn_effect("whirlwind", player.global_position, player)
 	if effect and effect.has_method("setup"):
 		effect.setup(ability.duration, ability.radius, _get_damage(ability), ability.damage_multiplier)
-	else:
-		# Fallback: manual tick damage
-		_start_periodic_damage(player, ability)
+
+	# Spin the player character for the duration
+	_spin_player_continuous(player, ability.duration)
+
+	# Deal periodic damage during whirlwind
+	var damage = _get_damage(ability)
+	var tick_count = int(ability.duration / 0.25)  # Tick every 0.25s
+	for i in range(tick_count):
+		var delay = 0.25 * i
+		get_tree().create_timer(delay).timeout.connect(func():
+			if is_instance_valid(player):
+				var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage * 0.25)  # DPS spread over ticks
+		)
 
 	_play_sound("whirlwind")
+	_screen_shake("small")
+
+func _spin_player_continuous(player: Node2D, duration: float) -> void:
+	"""Spin the player character continuously for a duration."""
+	if not player:
+		return
+
+	var original_scale = player.scale
+	var spin_count = int(duration / 0.15)  # Number of full spins
+
+	var spin_tween = create_tween()
+	for i in range(spin_count):
+		# Each spin: squash horizontally (flip effect)
+		spin_tween.tween_property(player, "scale:x", -original_scale.x, 0.075)
+		spin_tween.tween_property(player, "scale:x", original_scale.x, 0.075)
+
+	# Ensure we end at original scale
+	spin_tween.tween_property(player, "scale", original_scale, 0.05)
 
 func _execute_seismic_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)

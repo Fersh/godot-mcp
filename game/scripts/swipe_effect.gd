@@ -7,6 +7,7 @@ var arc_angle: float = PI / 2  # 90 degrees base, modified by melee_area
 var arc_radius: float = 80.0  # Modified by melee_range
 var lifetime: float = 0.25
 var timer: float = 0.0
+var tint_color: Color = Color.WHITE  # Elemental tint
 
 # Arc animation
 var arc_progress: float = 0.0
@@ -65,7 +66,7 @@ func _draw() -> void:
 
 	# Draw the main arc sweep line
 	var sweep_alpha = 1.0 - (timer / lifetime)
-	var sweep_color = Color(1.0, 1.0, 1.0, sweep_alpha * 0.8)
+	var sweep_color = Color(tint_color.r, tint_color.g, tint_color.b, sweep_alpha * 0.8)
 
 	# Draw arc outline (multiple lines for thickness)
 	var arc_points = 16
@@ -77,16 +78,18 @@ func _draw() -> void:
 
 		if i > 0:
 			var line_alpha = sweep_alpha * (0.5 + 0.5 * t)  # Brighter at the leading edge
-			draw_line(prev_point, point, Color(1.0, 1.0, 1.0, line_alpha), 3.0)
+			draw_line(prev_point, point, Color(tint_color.r, tint_color.g, tint_color.b, line_alpha), 3.0)
 		prev_point = point
 
 	# Draw the leading edge (bright slash tip)
 	if arc_progress > 0.1:
 		var tip_pos = Vector2(cos(sweep_angle), sin(sweep_angle)) * arc_radius
 		var tip_inner = Vector2(cos(sweep_angle), sin(sweep_angle)) * (arc_radius * 0.4)
-		draw_line(tip_inner, tip_pos, Color(1.0, 1.0, 0.9, sweep_alpha), 4.0)
+		var tip_color = Color(tint_color.r, tint_color.g, min(tint_color.b + 0.1, 1.0), sweep_alpha)
+		draw_line(tip_inner, tip_pos, tip_color, 4.0)
 		# Glow at tip
-		draw_circle(tip_pos, 6 * sweep_alpha, Color(1.0, 1.0, 0.8, sweep_alpha * 0.6))
+		var glow_color = Color(tint_color.r, tint_color.g, min(tint_color.b + 0.1, 1.0), sweep_alpha * 0.6)
+		draw_circle(tip_pos, 6 * sweep_alpha, glow_color)
 
 	# Draw trail particles
 	for p in trail_particles:
@@ -94,11 +97,12 @@ func _draw() -> void:
 		if age > 0 and p.alpha > 0:
 			var pos = Vector2(cos(p.angle), sin(p.angle)) * p.radius
 			var pixel_pos = Vector2(round(pos.x), round(pos.y))
-			var color = Color(1.0, 1.0, 1.0, p.alpha * 0.7)
+			var color = Color(tint_color.r, tint_color.g, tint_color.b, p.alpha * 0.7)
 			var rect = Rect2(pixel_pos - Vector2(p.size / 2, p.size / 2), Vector2(p.size, p.size))
 			draw_rect(rect, color)
 
 	# Draw origin burst
 	var burst_alpha = max(0, 1.0 - timer / 0.1) * 0.5
 	if burst_alpha > 0:
-		draw_circle(Vector2.ZERO, 8, Color(1.0, 1.0, 0.9, burst_alpha))
+		var burst_color = Color(tint_color.r, tint_color.g, min(tint_color.b + 0.1, 1.0), burst_alpha)
+		draw_circle(Vector2.ZERO, 8, burst_color)

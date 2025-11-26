@@ -78,7 +78,7 @@ static func get_common_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"regeneration",
 			"Regeneration",
-			"Heal 1 HP every 5 seconds",
+			"Heal 1% HP every 5 seconds",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.REGEN, value = 0.2}]  # HP per second

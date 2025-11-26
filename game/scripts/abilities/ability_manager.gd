@@ -480,13 +480,14 @@ func _process(delta: float) -> void:
 	process_periodic_effects(delta, player)
 
 func process_periodic_effects(delta: float, player: Node2D) -> void:
-	# Regeneration (from abilities and permanent upgrades)
+	# Regeneration (from abilities and permanent upgrades) - percentage based
 	var total_regen = get_regen_rate()
 	if total_regen > 0 or has_regen or has_permanent_regen():
 		regen_timer += delta
 		if regen_timer >= 1.0:
 			regen_timer = 0.0
-			heal_player(player, total_regen)
+			# Heal as percentage of max HP (0.2 rate = 0.2% per second = 1% every 5 seconds)
+			heal_player(player, player.max_health * total_regen * 0.01)
 
 	# Focus regen (only while standing still)
 	if has_focus_regen and player.has_method("get_velocity"):

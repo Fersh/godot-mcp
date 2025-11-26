@@ -608,6 +608,10 @@ func spawn_swipe_effect() -> void:
 	if AbilityManager:
 		melee_arc *= AbilityManager.get_melee_area_multiplier()
 	swipe.arc_angle = melee_arc
+	# Apply elemental tint
+	var elemental_tint = get_elemental_tint()
+	if elemental_tint != Color.WHITE:
+		swipe.tint_color = elemental_tint
 	get_parent().add_child(swipe)
 
 func spawn_blade_beam() -> void:
@@ -626,8 +630,12 @@ func spawn_blade_beam() -> void:
 		beam.damage_multiplier = AbilityManager.get_damage_multiplier()
 	beam.pierce_count = 2  # Pierce through a couple enemies
 
-	# Visual distinction - tint the projectile
-	beam.modulate = Color(0.7, 0.9, 1.0, 0.9)  # Light blue tint
+	# Visual distinction - tint the projectile (blend with elemental tint if present)
+	var elemental_tint = get_elemental_tint()
+	if elemental_tint != Color.WHITE:
+		beam.modulate = Color(0.7, 0.9, 1.0, 0.9).lerp(elemental_tint, 0.5)
+	else:
+		beam.modulate = Color(0.7, 0.9, 1.0, 0.9)  # Light blue tint
 
 	get_parent().add_child(beam)
 
@@ -652,6 +660,11 @@ func spawn_single_arrow(direction: Vector2) -> void:
 		arrow.has_knockback = AbilityManager.has_knockback
 		arrow.knockback_force = AbilityManager.knockback_force
 		arrow.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
+
+	# Apply elemental tint
+	var elemental_tint = get_elemental_tint()
+	if elemental_tint != Color.WHITE:
+		arrow.modulate = elemental_tint
 
 	get_parent().add_child(arrow)
 
@@ -681,8 +694,9 @@ func perform_melee_attack() -> void:
 	if AbilityManager and AbilityManager.should_fire_blade_beam():
 		spawn_blade_beam()
 
-	# Recoil - push player forward slightly for melee
-	recoil_offset = attack_direction * 0.5
+	# Recoil - push player back slightly for melee (only when not moving)
+	if velocity.length() < 5.0:
+		recoil_offset = -attack_direction * 1.0
 
 	# Calculate melee damage
 	var melee_damage = 10.0 * base_damage  # Base melee damage
@@ -1035,6 +1049,34 @@ func apply_damage_boost(multiplier: float, duration: float) -> void:
 func get_damage_boost() -> float:
 	"""Get the current damage boost multiplier."""
 	return damage_boost_multiplier if damage_boost_timer > 0 else 1.0
+
+func get_elemental_tint() -> Color:
+	"""Get tint color based on active elemental effects."""
+	if not AbilityManager:
+		return Color.WHITE
+
+	var colors: Array[Color] = []
+
+	# Check each elemental effect and add its color
+	if AbilityManager.has_ignite:
+		colors.append(Color(1.0, 0.4, 0.2))  # Fire - Orange/Red
+	if AbilityManager.has_frostbite:
+		colors.append(Color(0.4, 0.7, 1.0))  # Ice - Blue/Cyan
+	if AbilityManager.has_toxic_tip:
+		colors.append(Color(0.4, 1.0, 0.4))  # Poison - Green
+	if AbilityManager.has_lightning_proc:
+		colors.append(Color(1.0, 0.9, 0.4))  # Lightning - Yellow
+
+	if colors.is_empty():
+		return Color.WHITE
+
+	# Blend all active elemental colors
+	var blended = colors[0]
+	for i in range(1, colors.size()):
+		blended = blended.lerp(colors[i], 0.5)
+
+	# Make tint subtle by lerping toward white
+	return Color.WHITE.lerp(blended, 0.6)
 
 func spawn_dodge_effect() -> void:
 	"""Spawn a visual effect for dodging."""
