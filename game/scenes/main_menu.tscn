@@ -2,27 +2,31 @@
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_main_menu"]
 [ext_resource type="FontFile" uid="uid://dxrvcd7nrpprv" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
-[ext_resource type="Texture2D" uid="uid://bmyjn0o367s8l" path="res://assets/menu2.png" id="4_menu_bg"]
+[ext_resource type="Texture2D" path="res://assets/menu5.png" id="4_menu_bg"]
 
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_main_menu")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -100.0
+offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.06, 0.1, 1.0)
+texture = ExtResource("4_menu_bg")
+expand_mode = 1
+stretch_mode = 1
 
 [node name="Title" type="Label" parent="."]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -250.0
-offset_top = 120.0
+offset_top = 100.0
 offset_right = 250.0
-offset_bottom = 180.0
+offset_bottom = 160.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.298, 0.886, 0.404, 1)
 theme_override_colors/font_shadow_color = Color(0.15, 0.4, 0.2, 1)
