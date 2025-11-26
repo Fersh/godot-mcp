@@ -584,12 +584,12 @@ static func _create_shadowstep() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shadowstep",
 		"Shadowstep",
-		"Instantly teleport a short distance with a damage boost on next attack.",
+		"Instantly teleport to the nearest enemy with a damage boost.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		10.0
-	).with_range(150.0).with_movement().with_invulnerability(0.1)
+	).with_range(350.0).with_movement().with_invulnerability(0.1)
 
 static func _create_time_slow() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

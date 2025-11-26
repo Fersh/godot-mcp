@@ -1319,20 +1319,37 @@ func _execute_totem_of_frost(ability: ActiveAbilityData, player: Node2D) -> void
 	_play_sound("frost")
 
 func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
-	var direction = _get_attack_direction(player)
-	var target_pos = player.global_position + direction * ability.range_distance
+	var start_pos = player.global_position
+
+	# Find nearest enemy to teleport to
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var target_pos: Vector2
+
+	if target:
+		# Teleport behind the enemy (slightly offset from their position)
+		var dir_to_player = (player.global_position - target.global_position).normalized()
+		target_pos = target.global_position + dir_to_player * 50  # 50px behind enemy
+	else:
+		# No enemy in range, teleport in attack direction
+		var direction = _get_attack_direction(player)
+		target_pos = player.global_position + direction * ability.range_distance
 
 	target_pos.x = clamp(target_pos.x, 40, 1536 - 40)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
+	# Spawn effect at start position
+	_spawn_effect("shadowstep", start_pos)
+
 	# Instant teleport
 	player.global_position = target_pos
+
+	# Spawn effect at end position too
+	_spawn_effect("shadowstep", target_pos)
 
 	# Apply damage boost buff to player
 	if player.has_method("apply_damage_boost"):
 		player.apply_damage_boost(1.5, 3.0)  # 50% damage boost for 3 seconds
 
-	_spawn_effect("shadowstep", target_pos)
 	_play_sound("shadowstep")
 
 func _execute_time_slow(ability: ActiveAbilityData, player: Node2D) -> void:

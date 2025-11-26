@@ -482,6 +482,60 @@ func _physics_process(delta: float) -> void:
 				active_buffs.erase("combat_momentum")
 				buffs_changed = true
 
+		# Rampage - kill streak damage bonus
+		if AbilityManager.has_rampage:
+			if AbilityManager.rampage_stacks > 0:
+				if not active_buffs.has("rampage"):
+					active_buffs["rampage"] = {
+						"timer": AbilityManager.rampage_timer, "duration": AbilityManager.RAMPAGE_DECAY_TIME,
+						"name": "Rampage",
+						"description": "+" + str(AbilityManager.rampage_stacks * 3) + "% DMG",
+						"color": Color(1.0, 0.3, 0.2)  # Red
+					}
+					buffs_changed = true
+				else:
+					active_buffs["rampage"].timer = AbilityManager.rampage_timer
+					active_buffs["rampage"].description = "+" + str(AbilityManager.rampage_stacks * 3) + "% DMG"
+			elif active_buffs.has("rampage"):
+				active_buffs.erase("rampage")
+				buffs_changed = true
+
+		# Killing Frenzy - kill streak attack speed bonus
+		if AbilityManager.has_killing_frenzy:
+			if AbilityManager.killing_frenzy_stacks > 0:
+				if not active_buffs.has("killing_frenzy"):
+					active_buffs["killing_frenzy"] = {
+						"timer": AbilityManager.killing_frenzy_timer, "duration": AbilityManager.KILLING_FRENZY_DECAY_TIME,
+						"name": "Frenzy",
+						"description": "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% SPD",
+						"color": Color(1.0, 0.7, 0.2)  # Orange
+					}
+					buffs_changed = true
+				else:
+					active_buffs["killing_frenzy"].timer = AbilityManager.killing_frenzy_timer
+					active_buffs["killing_frenzy"].description = "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% SPD"
+			elif active_buffs.has("killing_frenzy"):
+				active_buffs.erase("killing_frenzy")
+				buffs_changed = true
+
+		# Massacre - kill streak damage + speed bonus
+		if AbilityManager.has_massacre:
+			if AbilityManager.massacre_stacks > 0:
+				if not active_buffs.has("massacre"):
+					active_buffs["massacre"] = {
+						"timer": AbilityManager.massacre_timer, "duration": AbilityManager.MASSACRE_DECAY_TIME,
+						"name": "Massacre",
+						"description": "+" + str(AbilityManager.massacre_stacks * 2) + "% ALL",
+						"color": Color(0.8, 0.2, 0.8)  # Purple
+					}
+					buffs_changed = true
+				else:
+					active_buffs["massacre"].timer = AbilityManager.massacre_timer
+					active_buffs["massacre"].description = "+" + str(AbilityManager.massacre_stacks * 2) + "% ALL"
+			elif active_buffs.has("massacre"):
+				active_buffs.erase("massacre")
+				buffs_changed = true
+
 	if buffs_changed:
 		emit_signal("buff_changed", active_buffs)
 
