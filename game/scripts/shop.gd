@@ -101,7 +101,43 @@ func _style_header() -> void:
 	header.add_theme_stylebox_override("panel", style)
 
 func _style_refund_button() -> void:
-	refund_button.flat = true
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.7, 0.2, 0.2, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 3
+	style_normal.border_color = Color(0.4, 0.1, 0.1, 1)
+	style_normal.corner_radius_top_left = 4
+	style_normal.corner_radius_top_right = 4
+	style_normal.corner_radius_bottom_left = 4
+	style_normal.corner_radius_bottom_right = 4
+	style_normal.content_margin_left = 12
+	style_normal.content_margin_right = 12
+	style_normal.content_margin_top = 8
+	style_normal.content_margin_bottom = 8
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.8, 0.25, 0.25, 1)
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 3
+	style_hover.border_color = Color(0.5, 0.15, 0.15, 1)
+	style_hover.corner_radius_top_left = 4
+	style_hover.corner_radius_top_right = 4
+	style_hover.corner_radius_bottom_left = 4
+	style_hover.corner_radius_bottom_right = 4
+	style_hover.content_margin_left = 12
+	style_hover.content_margin_right = 12
+	style_hover.content_margin_top = 8
+	style_hover.content_margin_bottom = 8
+
+	refund_button.add_theme_stylebox_override("normal", style_normal)
+	refund_button.add_theme_stylebox_override("hover", style_hover)
+	refund_button.add_theme_stylebox_override("pressed", style_normal)
+	refund_button.add_theme_stylebox_override("focus", style_normal)
+	refund_button.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 
 func _style_floating_tooltip() -> void:
 	var style = StyleBoxFlat.new()

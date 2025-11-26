@@ -1,7 +1,8 @@
 extends CanvasLayer
 
+@onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
-@onready var title_label: Label = $TitleLabel
+@onready var title_label: Label = $Header/TitleLabel
 @onready var preview_panel: PanelContainer = $CenterContainer/PreviewPanel
 @onready var selector_container: HBoxContainer = $SelectorContainer
 @onready var select_button: Button = $SelectButton
@@ -29,12 +30,22 @@ func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
 	select_button.pressed.connect(_on_select_pressed)
 
+	_style_header()
 	_style_golden_button(select_button)
 	_style_back_button(back_button)
 
 	_setup_preview_panel()
 	_create_selector_buttons()
 	_select_current_character()
+
+func _style_header() -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.055, 0.09, 1)
+	style.border_width_bottom = 2
+	style.border_color = Color(0.15, 0.14, 0.2, 1)
+	style.content_margin_left = 30
+	style.content_margin_right = 30
+	header.add_theme_stylebox_override("panel", style)
 
 func _process(delta: float) -> void:
 	# Update animation for preview sprite

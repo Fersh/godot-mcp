@@ -37,11 +37,15 @@ var selected_item: ItemData = null
 var popup_item: ItemData = null
 var pixel_font: Font = null
 
-@onready var back_button: Button = $Panel/VBoxContainer/HeaderContainer/BackButton
+@onready var header: PanelContainer = $Header
+@onready var back_button: Button = $BackButton
 @onready var character_tabs: HBoxContainer = $Panel/VBoxContainer/CharacterTabs
-@onready var equipment_container: GridContainer = $Panel/VBoxContainer/EquipmentRow/EquipmentContainer
-@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/EquipmentRow/StatsContainer
-@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/InventorySection/ScrollContainer/CenterContainer/InventoryGrid
+@onready var equipment_panel: PanelContainer = $Panel/VBoxContainer/MainRow/LeftColumn/EquipmentPanel
+@onready var equipment_container: GridContainer = $Panel/VBoxContainer/MainRow/LeftColumn/EquipmentPanel/EquipmentContainer
+@onready var stats_panel: PanelContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel
+@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel/StatsContainer
+@onready var inventory_panel: PanelContainer = $Panel/VBoxContainer/MainRow/InventoryPanel
+@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer/CenterContainer/InventoryGrid
 @onready var popup_panel: PanelContainer = $PopupPanel
 @onready var comparison_panel: PanelContainer = $ComparisonPanel
 
@@ -59,8 +63,40 @@ func _ready() -> void:
 	_refresh_display()
 
 func _setup_ui_style() -> void:
-	# Style back button with standardized style
+	# Style header and back button
+	_style_header()
 	_style_back_button()
+	_style_panels()
+
+func _style_panels() -> void:
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0.15, 0.14, 0.2, 1)
+	panel_style.corner_radius_top_left = 8
+	panel_style.corner_radius_top_right = 8
+	panel_style.corner_radius_bottom_left = 8
+	panel_style.corner_radius_bottom_right = 8
+	panel_style.content_margin_left = 12
+	panel_style.content_margin_right = 12
+	panel_style.content_margin_top = 12
+	panel_style.content_margin_bottom = 12
+
+	equipment_panel.add_theme_stylebox_override("panel", panel_style)
+	stats_panel.add_theme_stylebox_override("panel", panel_style.duplicate())
+	inventory_panel.add_theme_stylebox_override("panel", panel_style.duplicate())
+
+func _style_header() -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.055, 0.09, 1)
+	style.border_width_bottom = 2
+	style.border_color = Color(0.15, 0.14, 0.2, 1)
+	style.content_margin_left = 30
+	style.content_margin_right = 30
+	header.add_theme_stylebox_override("panel", style)
 
 func _style_back_button() -> void:
 	var style_normal = StyleBoxFlat.new()
@@ -312,15 +348,15 @@ func _refresh_stats() -> void:
 
 	# Display stats
 	var stat_names = {
-		"damage": "DMG",
-		"max_hp": "HP",
-		"attack_speed": "ATK SPD",
-		"move_speed": "SPD",
-		"crit_chance": "CRIT",
-		"dodge_chance": "DODGE",
-		"damage_reduction": "DEF",
-		"xp_gain": "XP",
-		"luck": "LUCK"
+		"damage": "Damage",
+		"max_hp": "Health",
+		"attack_speed": "Attack Speed",
+		"move_speed": "Move Speed",
+		"crit_chance": "Crit Chance",
+		"dodge_chance": "Dodge Chance",
+		"damage_reduction": "Defense",
+		"xp_gain": "XP Gain",
+		"luck": "Luck"
 	}
 
 	for stat_key in stat_names:
@@ -335,7 +371,7 @@ func _refresh_stats() -> void:
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
 		name_label.add_theme_font_size_override("font_size", 14)
-		name_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+		name_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(name_label)
 
@@ -521,6 +557,50 @@ func _show_equipped_popup(item: ItemData) -> void:
 	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(equipped_label)
+
+	# Item stats
+	var stats_vbox = VBoxContainer.new()
+	stats_vbox.add_theme_constant_override("separation", 4)
+
+	var stat_display_names = {
+		"damage": "Damage",
+		"max_hp": "Health",
+		"attack_speed": "Attack Speed",
+		"move_speed": "Move Speed",
+		"crit_chance": "Crit Chance",
+		"dodge_chance": "Dodge Chance",
+		"damage_reduction": "Defense",
+		"xp_gain": "XP Gain",
+		"luck": "Luck"
+	}
+
+	for stat_key in item.stats:
+		var value = item.stats[stat_key]
+		if abs(value) < 0.001:
+			continue
+
+		var stat_row = HBoxContainer.new()
+
+		var stat_name = Label.new()
+		stat_name.text = stat_display_names.get(stat_key, stat_key) + ":"
+		if pixel_font:
+			stat_name.add_theme_font_override("font", pixel_font)
+		stat_name.add_theme_font_size_override("font_size", 16)
+		stat_name.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		stat_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stat_row.add_child(stat_name)
+
+		var stat_value = Label.new()
+		stat_value.text = "%+d%%" % int(value * 100)
+		if pixel_font:
+			stat_value.add_theme_font_override("font", pixel_font)
+		stat_value.add_theme_font_size_override("font_size", 16)
+		stat_value.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
+		stat_row.add_child(stat_value)
+
+		stats_vbox.add_child(stat_row)
+
+	vbox.add_child(stats_vbox)
 
 	# Buttons
 	var button_row = HBoxContainer.new()
