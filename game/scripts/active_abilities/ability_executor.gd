@@ -305,7 +305,7 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"summon_burst", "dark_summon", "army_of_the_dead":
 			return "magic_cast"
 		"shadowstep":
-			return "magic_cast"
+			return "shadowstep"
 
 		# Ground/Spike effects
 		"seismic_slam", "spikes":

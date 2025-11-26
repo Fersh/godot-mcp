@@ -694,17 +694,24 @@ func spawn_lightning_effect(from: Vector2, to: Vector2) -> void:
 	tween.tween_callback(line.queue_free)
 
 func spawn_lightning_bolt(pos: Vector2) -> void:
-	# Visual effect for lightning strike
-	var bolt = Line2D.new()
-	bolt.add_point(pos + Vector2(0, -500))
-	bolt.add_point(pos)
-	bolt.width = 4.0
-	bolt.default_color = Color(1.0, 1.0, 0.5, 1.0)
-	get_tree().current_scene.add_child(bolt)
+	# Visual effect for lightning strike using sprite animation
+	var lightning_scene = load("res://scenes/effects/ability_effects/lightning.tscn")
+	if lightning_scene:
+		var lightning = lightning_scene.instantiate()
+		lightning.global_position = pos
+		get_tree().current_scene.add_child(lightning)
+	else:
+		# Fallback to simple line effect
+		var bolt = Line2D.new()
+		bolt.add_point(pos + Vector2(0, -500))
+		bolt.add_point(pos)
+		bolt.width = 4.0
+		bolt.default_color = Color(1.0, 1.0, 0.5, 1.0)
+		get_tree().current_scene.add_child(bolt)
 
-	var tween = create_tween()
-	tween.tween_property(bolt, "modulate:a", 0.0, 0.3)
-	tween.tween_callback(bolt.queue_free)
+		var tween = create_tween()
+		tween.tween_property(bolt, "modulate:a", 0.0, 0.3)
+		tween.tween_callback(bolt.queue_free)
 
 func apply_adrenaline_buff(player: Node2D) -> void:
 	# Temporary speed boost

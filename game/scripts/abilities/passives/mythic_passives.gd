@@ -16,15 +16,15 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.IMMORTAL_OATH, value = 3.0}]
 		),
 
-		# All-For-One
-		AbilityData.new(
-			"all_for_one",
-			"All-For-One",
-			"Equip all active abilities, double cooldowns",
-			AbilityData.Rarity.MYTHIC,
-			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.ALL_FOR_ONE, value = 2.0}]
-		),
+		# All-For-One - DISABLED: Not fully implemented
+		#AbilityData.new(
+		#	"all_for_one",
+		#	"All-For-One",
+		#	"Equip all active abilities, double cooldowns",
+		#	AbilityData.Rarity.MYTHIC,
+		#	AbilityData.Type.PASSIVE,
+		#	[{effect_type = AbilityData.EffectType.ALL_FOR_ONE, value = 2.0}]
+		#),
 
 		# Transcendence
 		AbilityData.new(
@@ -36,15 +36,15 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 1.0}]
 		),
 
-		# Symbiosis
-		AbilityData.new(
-			"symbiosis",
-			"Symbiosis",
-			"Choose 2 passives per level-up",
-			AbilityData.Rarity.MYTHIC,
-			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.SYMBIOSIS, value = 2.0}]
-		),
+		# Symbiosis - DISABLED: Not fully implemented
+		#AbilityData.new(
+		#	"symbiosis",
+		#	"Symbiosis",
+		#	"Choose 2 passives per level-up",
+		#	AbilityData.Rarity.MYTHIC,
+		#	AbilityData.Type.PASSIVE,
+		#	[{effect_type = AbilityData.EffectType.SYMBIOSIS, value = 2.0}]
+		#),
 
 		# Pandemonium
 		AbilityData.new(

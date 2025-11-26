@@ -207,10 +207,26 @@ func perform_dodge() -> bool:
 	return true
 
 func _calculate_dodge_direction() -> Vector2:
-	"""Calculate the direction to dodge (away from nearest enemy)."""
+	"""Calculate the direction to dodge. Prioritizes player input direction, falls back to away from enemies."""
 	if not player:
 		return Vector2.DOWN
 
+	# First priority: Use player's current movement direction if they're moving
+	var input_direction = Vector2.ZERO
+
+	# Check joystick direction
+	if "joystick_direction" in player and player.joystick_direction.length() > 0.1:
+		input_direction = player.joystick_direction.normalized()
+
+	# Check velocity as fallback (if player is actively moving)
+	if input_direction.length() < 0.1 and "velocity" in player and player.velocity.length() > 10:
+		input_direction = player.velocity.normalized()
+
+	# If player is actively holding a direction, dodge in that direction
+	if input_direction.length() > 0.1:
+		return input_direction
+
+	# Fallback: Dodge away from nearest enemy when no input is being held
 	var enemies = player.get_tree().get_nodes_in_group("enemies")
 	var closest_enemy: Node2D = null
 	var closest_dist: float = INF
@@ -226,7 +242,7 @@ func _calculate_dodge_direction() -> Vector2:
 		# Dodge away from the closest enemy
 		return (player.global_position - closest_enemy.global_position).normalized()
 	else:
-		# No enemies, dodge backward (opposite of facing direction)
+		# No enemies and no input, dodge backward (opposite of facing direction)
 		if player.has_method("get_facing_direction"):
 			return -player.get_facing_direction()
 		return Vector2.DOWN
