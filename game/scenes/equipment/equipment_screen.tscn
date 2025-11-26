@@ -109,9 +109,11 @@ theme_override_constants/separation = 4
 
 [node name="InventoryPanel" type="PanelContainer" parent="Panel/VBoxContainer/MainRow"]
 layout_mode = 2
+size_flags_vertical = 0
 
 [node name="InventorySection" type="VBoxContainer" parent="Panel/VBoxContainer/MainRow/InventoryPanel"]
 layout_mode = 2
+size_flags_vertical = 0
 theme_override_constants/separation = 6
 
 [node name="InventoryLabel" type="Label" parent="Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection"]

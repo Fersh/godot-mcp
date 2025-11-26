@@ -78,14 +78,14 @@ func _process(delta: float) -> void:
 				animation_timer = 0.0
 
 func _setup_preview_panel() -> void:
-	# Style the preview panel
+	# Style the preview panel - darker and less transparent like equipment screen
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
 	style.border_width_left = 4
 	style.border_width_right = 4
 	style.border_width_top = 4
 	style.border_width_bottom = 4
-	style.border_color = Color(0.3, 0.3, 0.4, 1)
+	style.border_color = Color(0.15, 0.14, 0.2, 1)
 	style.corner_radius_top_left = 16
 	style.corner_radius_top_right = 16
 	style.corner_radius_bottom_left = 16
@@ -197,12 +197,12 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	panel.set_meta("index", index)
 
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
 	style.border_width_left = 2
 	style.border_width_right = 2
 	style.border_width_top = 2
 	style.border_width_bottom = 2
-	style.border_color = Color(0.3, 0.3, 0.4, 1)
+	style.border_color = Color(0.15, 0.14, 0.2, 1)
 	style.corner_radius_top_left = 6
 	style.corner_radius_top_right = 6
 	style.corner_radius_bottom_left = 6
@@ -294,14 +294,14 @@ func _set_selected(index: int) -> void:
 			style.border_width_right = 3
 			style.border_width_top = 3
 			style.border_width_bottom = 3
-			style.bg_color = Color(0.2, 0.18, 0.12, 0.95)
+			style.bg_color = Color(0.12, 0.10, 0.08, 0.95)
 		else:
-			style.border_color = Color(0.3, 0.3, 0.4, 1)
+			style.border_color = Color(0.15, 0.14, 0.2, 1)
 			style.border_width_left = 2
 			style.border_width_right = 2
 			style.border_width_top = 2
 			style.border_width_bottom = 2
-			style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
+			style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
 
 		panel.add_theme_stylebox_override("panel", style)
 

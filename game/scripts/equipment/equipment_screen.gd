@@ -560,6 +560,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 	# Item stats
 	var stats_vbox = VBoxContainer.new()
+	stats_vbox.custom_minimum_size = Vector2(280, 0)
 	stats_vbox.add_theme_constant_override("separation", 4)
 
 	var stat_display_names = {
@@ -574,8 +575,18 @@ func _show_equipped_popup(item: ItemData) -> void:
 		"luck": "Luck"
 	}
 
-	for stat_key in item.stats:
-		var value = item.stats[stat_key]
+	# Combine base_stats and magic_stats
+	var all_stats = {}
+	for stat_key in item.base_stats:
+		all_stats[stat_key] = item.base_stats[stat_key]
+	for stat_key in item.magic_stats:
+		if all_stats.has(stat_key):
+			all_stats[stat_key] += item.magic_stats[stat_key]
+		else:
+			all_stats[stat_key] = item.magic_stats[stat_key]
+
+	for stat_key in all_stats:
+		var value = all_stats[stat_key]
 		if abs(value) < 0.001:
 			continue
 
@@ -629,19 +640,19 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 	vbox.add_child(button_row)
 
-	# Style popup
+	# Style popup - darker and fully opaque
 	var popup_style = StyleBoxFlat.new()
-	popup_style.bg_color = Color(0.15, 0.12, 0.18, 0.98)
+	popup_style.bg_color = Color(0.06, 0.055, 0.09, 1.0)
 	popup_style.border_color = item.get_rarity_color()
 	popup_style.set_border_width_all(3)
 	popup_style.corner_radius_top_left = 4
 	popup_style.corner_radius_top_right = 4
 	popup_style.corner_radius_bottom_left = 4
 	popup_style.corner_radius_bottom_right = 4
-	popup_style.content_margin_left = 12
-	popup_style.content_margin_right = 12
-	popup_style.content_margin_top = 8
-	popup_style.content_margin_bottom = 8
+	popup_style.content_margin_left = 16
+	popup_style.content_margin_right = 16
+	popup_style.content_margin_top = 12
+	popup_style.content_margin_bottom = 12
 	popup_panel.add_theme_stylebox_override("panel", popup_style)
 
 	popup_panel.add_child(vbox)
