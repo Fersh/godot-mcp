@@ -1,10 +1,10 @@
 extends CanvasLayer
 
-@onready var play_button: Button = $VBoxContainer/ButtonContainer/PlayButton
-@onready var gear_button: Button = $VBoxContainer/ButtonContainer/GearButton
-@onready var shop_button: Button = $VBoxContainer/ButtonContainer/ShopButton
-@onready var characters_button: Button = $VBoxContainer/ButtonContainer/CharactersButton
-@onready var coin_amount: Label = $VBoxContainer/CoinsDisplay/CoinAmount
+@onready var play_button: Button = $HBoxContainer/RightPanel/ButtonGrid/PlayButton
+@onready var gear_button: Button = $HBoxContainer/RightPanel/ButtonGrid/GearButton
+@onready var shop_button: Button = $HBoxContainer/RightPanel/ButtonGrid/ShopButton
+@onready var characters_button: Button = $HBoxContainer/RightPanel/ButtonGrid/CharactersButton
+@onready var coin_amount: Label = $HBoxContainer/LeftPanel/CoinsDisplay/CoinAmount
 
 func _ready() -> void:
 	# Connect button signals

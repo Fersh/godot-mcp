@@ -4,12 +4,12 @@ class_name ActiveAbilityButton
 signal pressed()
 
 # Visual configuration
-const BUTTON_SIZE := Vector2(160, 160)  # Doubled from 80
+var button_size := Vector2(120, 120)  # Configurable size, set by parent
 const COOLDOWN_COLOR := Color(0.2, 0.2, 0.2, 0.8)
 const READY_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 const PRESSED_SCALE := 0.9
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
-const BORDER_WIDTH := 4
+const BORDER_WIDTH := 3
 const LONG_PRESS_TIME := 0.4  # Time to hold before showing tooltip on touch
 
 var ability: ActiveAbilityData = null
@@ -36,8 +36,8 @@ var touch_triggered_tooltip: bool = false
 var pixel_font: Font = null
 
 func _ready() -> void:
-	custom_minimum_size = BUTTON_SIZE
-	size = BUTTON_SIZE
+	custom_minimum_size = button_size
+	size = button_size
 
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
@@ -51,20 +51,20 @@ func _create_ui() -> void:
 
 	# Icon (centered, slightly smaller than button for border)
 	icon_texture = TextureRect.new()
-	var icon_margin = 24
+	var icon_margin = button_size.x * 0.15  # 15% margin
 	icon_texture.position = Vector2(icon_margin, icon_margin)
-	icon_texture.size = BUTTON_SIZE - Vector2(icon_margin * 2, icon_margin * 2)
+	icon_texture.size = button_size - Vector2(icon_margin * 2, icon_margin * 2)
 	icon_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon_texture)
 
 	# Cooldown text (centered)
 	cooldown_label = Label.new()
-	cooldown_label.position = Vector2(0, BUTTON_SIZE.y / 2 - 16)
-	cooldown_label.size = Vector2(BUTTON_SIZE.x, 32)
+	cooldown_label.position = Vector2(0, button_size.y / 2 - 12)
+	cooldown_label.size = Vector2(button_size.x, 24)
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cooldown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 24)
+	cooldown_label.add_theme_font_size_override("font_size", int(button_size.x * 0.15))
 	cooldown_label.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		cooldown_label.add_theme_font_override("font", pixel_font)
@@ -75,7 +75,7 @@ func _create_ui() -> void:
 	# Touch area (invisible but captures input)
 	touch_area = Control.new()
 	touch_area.position = Vector2.ZERO
-	touch_area.size = BUTTON_SIZE
+	touch_area.size = button_size
 	touch_area.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(touch_area)
 
@@ -95,8 +95,8 @@ var border_color: Color = Color(0.5, 0.5, 0.5, 1.0)
 var bg_color: Color = Color(0.1, 0.1, 0.15, 0.95)
 
 func _draw() -> void:
-	var center = BUTTON_SIZE / 2
-	var radius = BUTTON_SIZE.x / 2 - BORDER_WIDTH
+	var center = button_size / 2
+	var radius = button_size.x / 2 - BORDER_WIDTH
 
 	# Draw outer border circle
 	draw_circle(center, radius + BORDER_WIDTH, border_color)
@@ -432,7 +432,7 @@ func _show_tooltip() -> void:
 	await get_tree().process_frame  # Wait for size calculation
 
 	var tooltip_pos = Vector2.ZERO
-	tooltip_pos.x = (BUTTON_SIZE.x - tooltip_panel.size.x) / 2  # Center horizontally
+	tooltip_pos.x = (button_size.x - tooltip_panel.size.x) / 2  # Center horizontally
 	tooltip_pos.y = -tooltip_panel.size.y - 10  # Above the button with padding
 
 	tooltip_panel.position = tooltip_pos

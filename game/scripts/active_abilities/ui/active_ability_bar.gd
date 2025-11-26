@@ -1,18 +1,18 @@
 extends CanvasLayer
 class_name ActiveAbilityBar
 
-# 2x2 grid layout:
-# [Ability 3] [Ability 2]
-# [Dodge]     [Ability 1]
+# Arc layout for landscape mode
+# Buttons arranged in a 90-degree arc from bottom-right corner
+# Dodge is easiest to reach (closest to corner), abilities fan out
 
-const BUTTON_SIZE := Vector2(160, 160)  # Doubled
-const BUTTON_SPACING := 15
-const MARGIN_RIGHT := 30
-const MARGIN_BOTTOM := 30
+const BUTTON_SIZE := Vector2(120, 120)
+const ARC_RADIUS := 180.0  # Distance from corner to button centers
+const MARGIN_RIGHT := 20
+const MARGIN_BOTTOM := 20
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null
-var grid_container: Control = null
+var arc_container: Control = null
 
 func _ready() -> void:
 	layer = 50  # Above game, below menus
@@ -26,50 +26,56 @@ func _ready() -> void:
 
 func _create_ui() -> void:
 	# Main container anchored to bottom-right
-	grid_container = Control.new()
-	grid_container.name = "GridContainer"
-
-	# Calculate grid size
-	var grid_width = BUTTON_SIZE.x * 2 + BUTTON_SPACING
-	var grid_height = BUTTON_SIZE.y * 2 + BUTTON_SPACING
+	arc_container = Control.new()
+	arc_container.name = "ArcContainer"
 
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	grid_container.position = Vector2(
-		viewport_size.x - grid_width - MARGIN_RIGHT,
-		viewport_size.y - grid_height - MARGIN_BOTTOM
+	# Position container at bottom-right corner
+	arc_container.position = Vector2(
+		viewport_size.x - MARGIN_RIGHT,
+		viewport_size.y - MARGIN_BOTTOM
 	)
-	grid_container.size = Vector2(grid_width, grid_height)
 
-	add_child(grid_container)
+	add_child(arc_container)
 
-	# Create buttons in grid layout
-	# Bottom-right: Ability slot 0 (first ability acquired)
+	# Create buttons in arc layout
+	# Arc spans from 180 degrees (left) to 270 degrees (up)
+	# That's a 90-degree arc going counter-clockwise from left to up
+
+	# Dodge: 200 degrees (bottom-right, easiest thumb reach)
+	dodge_button = _create_dodge_button()
+	_position_button_on_arc(dodge_button, deg_to_rad(200))
+
+	# Ability 0: 220 degrees
 	var btn0 = _create_ability_button(0)
-	btn0.position = Vector2(BUTTON_SIZE.x + BUTTON_SPACING, BUTTON_SIZE.y + BUTTON_SPACING)
+	_position_button_on_arc(btn0, deg_to_rad(220))
 	ability_buttons.append(btn0)
 
-	# Top-right: Ability slot 1 (second ability acquired)
+	# Ability 1: 245 degrees
 	var btn1 = _create_ability_button(1)
-	btn1.position = Vector2(BUTTON_SIZE.x + BUTTON_SPACING, 0)
+	_position_button_on_arc(btn1, deg_to_rad(245))
 	ability_buttons.append(btn1)
 
-	# Top-left: Ability slot 2 (third ability acquired)
+	# Ability 2: 270 degrees (top, ultimate ability)
 	var btn2 = _create_ability_button(2)
-	btn2.position = Vector2(0, 0)
+	_position_button_on_arc(btn2, deg_to_rad(270))
 	ability_buttons.append(btn2)
 
-	# Bottom-left: Dodge
-	dodge_button = _create_dodge_button()
-	dodge_button.position = Vector2(0, BUTTON_SIZE.y + BUTTON_SPACING)
+func _position_button_on_arc(button: Control, angle: float) -> void:
+	# Calculate position on arc (relative to bottom-right corner)
+	var x = cos(angle) * ARC_RADIUS - BUTTON_SIZE.x / 2
+	var y = sin(angle) * ARC_RADIUS - BUTTON_SIZE.y / 2
+	button.position = Vector2(x, y)
 
 func _create_ability_button(slot: int) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
 	var button = Control.new()
 	button.set_script(btn_script)
 	button.name = "AbilityButton" + str(slot)
-	grid_container.add_child(button)
+	button.button_size = BUTTON_SIZE
+	arc_container.add_child(button)
 
 	# Will be configured as empty initially
 	button.setup_empty(slot)
@@ -81,7 +87,8 @@ func _create_dodge_button() -> ActiveAbilityButton:
 	var button = Control.new()
 	button.set_script(btn_script)
 	button.name = "DodgeButton"
-	grid_container.add_child(button)
+	button.button_size = BUTTON_SIZE
+	arc_container.add_child(button)
 
 	button.setup_dodge()
 
@@ -116,16 +123,14 @@ func _animate_button_appear(button: ActiveAbilityButton) -> void:
 
 func update_position() -> void:
 	"""Update position when viewport resizes."""
-	if not grid_container:
+	if not arc_container:
 		return
 
-	var grid_width = BUTTON_SIZE.x * 2 + BUTTON_SPACING
-	var grid_height = BUTTON_SIZE.y * 2 + BUTTON_SPACING
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	grid_container.position = Vector2(
-		viewport_size.x - grid_width - MARGIN_RIGHT,
-		viewport_size.y - grid_height - MARGIN_BOTTOM
+	arc_container.position = Vector2(
+		viewport_size.x - MARGIN_RIGHT,
+		viewport_size.y - MARGIN_BOTTOM
 	)
 
 func _notification(what: int) -> void:

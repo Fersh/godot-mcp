@@ -15,120 +15,128 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.067, 0.082, 0.125, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="TopBar" type="HBoxContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="Spacer" type="Control" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CoinsDisplay" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="CoinLabel" type="Label" parent="TopBar/CoinsDisplay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "COINS:"
+
+[node name="CoinAmount" type="Label" parent="TopBar/CoinsDisplay"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = " 0"
+
+[node name="CoinIcon" type="TextureRect" parent="TopBar/CoinsDisplay"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("3_collectables")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MarginRight" type="Control" parent="TopBar"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 40
 
-[node name="TopSpacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 60)
+[node name="LeftPanel" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+alignment = 1
 
-[node name="Title" type="Label" parent="VBoxContainer"]
+[node name="Title" type="Label" parent="HBoxContainer/LeftPanel"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.298, 0.886, 0.404, 1)
 theme_override_colors/font_shadow_color = Color(0.15, 0.4, 0.2, 1)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 52
+theme_override_font_sizes/font_size = 36
 text = "PIXEL HEROES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WelcomeLabel" type="Label" parent="VBoxContainer"]
+[node name="RightPanel" type="VBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 14
-text = "Welcome back, Hunter."
-horizontal_alignment = 1
-
-[node name="CoinsDisplay" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
 alignment = 1
 
-[node name="CoinLabel" type="Label" parent="VBoxContainer/CoinsDisplay"]
+[node name="ButtonGrid" type="GridContainer" parent="HBoxContainer/RightPanel"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 12
+columns = 2
+
+[node name="CharactersButton" type="Button" parent="HBoxContainer/RightPanel/ButtonGrid"]
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 16
-text = "TOTAL COINS:"
-
-[node name="CoinAmount" type="Label" parent="VBoxContainer/CoinsDisplay"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 16
-text = " 0"
-
-[node name="CoinIcon" type="TextureRect" parent="VBoxContainer/CoinsDisplay"]
-custom_minimum_size = Vector2(24, 24)
-layout_mode = 2
-texture = ExtResource("3_collectables")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="MiddleSpacer" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-
-[node name="ButtonContainer" type="VBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
-
-[node name="PlayButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(320, 70)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
-theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-text = "PLAY RUN"
-
-[node name="GearButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(320, 70)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
-theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-text = "GEAR"
-
-[node name="ShopButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(320, 70)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
-theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
-text = "SHOP"
-
-[node name="CharactersButton" type="Button" parent="VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(320, 70)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
-theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
 text = "CHARACTERS"
 
-[node name="BottomSpacer" type="Control" parent="VBoxContainer"]
+[node name="ShopButton" type="Button" parent="HBoxContainer/RightPanel/ButtonGrid"]
+custom_minimum_size = Vector2(240, 55)
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "SHOP"
+
+[node name="GearButton" type="Button" parent="HBoxContainer/RightPanel/ButtonGrid"]
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "GEAR"
+
+[node name="PlayButton" type="Button" parent="HBoxContainer/RightPanel/ButtonGrid"]
+custom_minimum_size = Vector2(240, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
+theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "PLAY RUN"
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]

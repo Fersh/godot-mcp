@@ -143,6 +143,9 @@ func _add_no_powerups_label() -> void:
 	powerups_container.add_child(label)
 
 func _create_powerup_row(ability: AbilityData, count: int) -> Control:
+	var container = VBoxContainer.new()
+	container.add_theme_constant_override("separation", 2)
+
 	var row = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 
@@ -151,7 +154,7 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 
 	# Icon placeholder (colored square based on rarity)
 	var icon_bg = ColorRect.new()
-	icon_bg.custom_minimum_size = Vector2(24, 24)
+	icon_bg.custom_minimum_size = Vector2(20, 20)
 	icon_bg.color = rarity_color
 	row.add_child(icon_bg)
 
@@ -163,12 +166,24 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 		name_label.text = ability.name
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 12)
 	name_label.add_theme_color_override("font_color", rarity_color)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
 
-	return row
+	container.add_child(row)
+
+	# Description below the name
+	var desc_label = Label.new()
+	desc_label.text = ability.description
+	if pixel_font:
+		desc_label.add_theme_font_override("font", pixel_font)
+	desc_label.add_theme_font_size_override("font_size", 9)
+	desc_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	container.add_child(desc_label)
+
+	return container
 
 func _on_resume_pressed() -> void:
 	hide_menu()

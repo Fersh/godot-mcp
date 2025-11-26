@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Rogue Arena.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1.0.0</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>5FD72819BB35EDA4521D7C112D0C06097B4438BC</string>
+				<key>dateExpires</key>
+				<string>6/12/26</string>
+				<key>type</key>
+				<string>Apple Development</string>
+			</dict>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>WV7AGQ543J.com.Delusional.Rogue</string>
+				<key>com.apple.developer.team-identifier</key>
+				<string>WV7AGQ543J</string>
+				<key>get-task-allow</key>
+				<true/>
+			</dict>
+			<key>name</key>
+			<string>Rogue Arena.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>8b12722f-aa7c-4761-bd24-0aafe15876b4</string>
+				<key>dateExpires</key>
+				<string>11/25/26</string>
+				<key>name</key>
+				<string>iOS Team Provisioning Profile: com.Delusional.Rogue</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>WV7AGQ543J</string>
+				<key>name</key>
+				<string></string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>

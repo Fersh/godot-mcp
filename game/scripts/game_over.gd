@@ -1,7 +1,12 @@
 extends CanvasLayer
 
-@onready var stats_label: Label = $Panel/VBoxContainer/StatsLabel
-@onready var lifetime_stats_label: Label = $Panel/VBoxContainer/LifetimeStatsLabel
+@onready var points_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/PointsLabel
+@onready var time_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/TimeLabel
+@onready var best_time_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/BestTimeLabel
+@onready var level_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/LevelLabel
+@onready var kills_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/KillsLabel
+@onready var best_kills_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/BestKillsLabel
+@onready var coins_label: Label = $Panel/VBoxContainer/CoinsLabel
 @onready var play_again_button: Button = $Panel/VBoxContainer/ButtonContainer/PlayAgainButton
 @onready var main_menu_button: Button = $Panel/VBoxContainer/ButtonContainer/MainMenuButton
 @onready var loot_container: HBoxContainer = $Panel/VBoxContainer/LootContainer
@@ -38,19 +43,16 @@ func _ready() -> void:
 			coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
 		var coins_earned = int(final_coins * coin_bonus)
 
-		lifetime_stats_label.text = "Total Runs: %d\nBest Time: %s\nBest Kills: %d\n\n+%d coins added to wallet!\nWallet: %d" % [
-			lifetime.total_runs,
-			format_time(lifetime.best_time),
-			lifetime.best_kills,
-			coins_earned,
-			StatsManager.spendable_coins
-		]
+		# Update best labels
+		best_time_label.text = "Best: %s" % format_time(lifetime.best_time)
+		best_kills_label.text = "Best: %s" % format_number(lifetime.best_kills)
 
-	# Format the run stats
-	var time_str = format_time(final_time)
-	stats_label.text = "Level: %d\nTime: %s\nKills: %d\nCoins: %d\nPoints: %d" % [
-		final_level, time_str, final_kills, final_coins, final_points
-	]
+	# Format the run stats with commas
+	points_label.text = "Points: %s" % format_number(final_points)
+	time_label.text = "Time: %s" % format_time(final_time)
+	level_label.text = "Level: %d" % final_level
+	kills_label.text = "Kills: %s" % format_number(final_kills)
+	coins_label.text = "+%s coins" % format_number(final_coins)
 
 	# Show and commit loot
 	_display_loot()
@@ -64,6 +66,17 @@ func format_time(seconds: float) -> String:
 	var mins = int(seconds) / 60
 	var secs = int(seconds) % 60
 	return "%02d:%02d" % [mins, secs]
+
+func format_number(num: int) -> String:
+	var str_num = str(num)
+	var result = ""
+	var count = 0
+	for i in range(str_num.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			result = "," + result
+		result = str_num[i] + result
+		count += 1
+	return result
 
 func _on_play_again_pressed() -> void:
 	# Reset run stats and abilities, then restart game
@@ -96,7 +109,7 @@ func _display_loot() -> void:
 		if loot_container:
 			var no_loot = Label.new()
 			no_loot.text = "No loot found this run"
-			no_loot.add_theme_font_size_override("font_size", 16)
+			no_loot.add_theme_font_size_override("font_size", 14)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 			loot_container.add_child(no_loot)
 		return
@@ -107,8 +120,8 @@ func _display_loot() -> void:
 	# Display each item
 	if loot_container:
 		var loot_label = Label.new()
-		loot_label.text = "LOOT ACQUIRED: "
-		loot_label.add_theme_font_size_override("font_size", 16)
+		loot_label.text = "LOOT: "
+		loot_label.add_theme_font_size_override("font_size", 14)
 		loot_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 		loot_container.add_child(loot_label)
 
@@ -118,7 +131,7 @@ func _display_loot() -> void:
 
 func _create_loot_card(item: ItemData) -> Control:
 	var card = Button.new()
-	card.custom_minimum_size = Vector2(100, 100)
+	card.custom_minimum_size = Vector2(80, 80)
 	card.tooltip_text = "%s\n%s %s\n%s" % [
 		item.get_full_name(),
 		item.get_rarity_name(),
@@ -135,7 +148,7 @@ func _create_loot_card(item: ItemData) -> Control:
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(48, 48)
+		icon.custom_minimum_size = Vector2(40, 40)
 		var center = CenterContainer.new()
 		center.add_child(icon)
 		vbox.add_child(center)
@@ -143,10 +156,10 @@ func _create_loot_card(item: ItemData) -> Control:
 	# Name (truncated)
 	var name_label = Label.new()
 	var display_name = item.get_full_name()
-	if display_name.length() > 12:
-		display_name = display_name.substr(0, 10) + ".."
+	if display_name.length() > 10:
+		display_name = display_name.substr(0, 9) + ".."
 	name_label.text = display_name
-	name_label.add_theme_font_size_override("font_size", 10)
+	name_label.add_theme_font_size_override("font_size", 9)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(name_label)
@@ -156,7 +169,7 @@ func _create_loot_card(item: ItemData) -> Control:
 	style.bg_color = Color(0.1, 0.1, 0.12, 0.9)
 	style.border_color = item.get_rarity_color()
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
+	style.set_corner_radius_all(6)
 	card.add_theme_stylebox_override("normal", style)
 
 	var margin = MarginContainer.new()

@@ -38,9 +38,9 @@ var temp_speed_timer: float = 0.0
 # Heal accumulator (for small heals that would round to 0)
 var accumulated_heal: float = 0.0
 
-var touch_start_pos: Vector2 = Vector2.ZERO
-var touch_current_pos: Vector2 = Vector2.ZERO
-var is_touching: bool = false
+# Joystick input (replaces direct touch)
+var joystick: Control = null
+var joystick_direction: Vector2 = Vector2.ZERO
 
 # Character data
 var character_data: CharacterData = null
@@ -266,6 +266,10 @@ func take_damage(amount: float) -> void:
 	if SoundManager:
 		SoundManager.play_player_hurt()
 
+	# Haptic feedback on damage
+	if HapticManager:
+		HapticManager.damage()
+
 	# Spawn damage number (red for player, show blocked if applicable)
 	if was_blocked:
 		spawn_blocked_damage_number(final_damage)
@@ -293,6 +297,9 @@ func take_damage(amount: float) -> void:
 		emit_signal("player_died")
 		if JuiceManager:
 			JuiceManager.shake_large()
+		# Strong haptic feedback on death
+		if HapticManager:
+			HapticManager.death()
 
 func spawn_damage_number(amount: float) -> void:
 	if damage_number_scene == null:
@@ -328,21 +335,13 @@ func spawn_dodge_text() -> void:
 		# Fallback - just show 0 damage
 		dmg_num.set_damage(0, false, true)
 
-func _input(event: InputEvent) -> void:
-	# Ignore input when dead
-	if is_dead:
-		return
+func register_joystick(js: Control) -> void:
+	joystick = js
+	if joystick.has_signal("direction_changed"):
+		joystick.direction_changed.connect(_on_joystick_direction_changed)
 
-	if event is InputEventScreenTouch:
-		if event.pressed:
-			is_touching = true
-			touch_start_pos = event.position
-			touch_current_pos = event.position
-		else:
-			is_touching = false
-			velocity = Vector2.ZERO
-	elif event is InputEventScreenDrag:
-		touch_current_pos = event.position
+func _on_joystick_direction_changed(direction: Vector2) -> void:
+	joystick_direction = direction
 
 func _physics_process(delta: float) -> void:
 	# If dead, only update death animation
@@ -358,11 +357,9 @@ func _physics_process(delta: float) -> void:
 
 	var direction := Vector2.ZERO
 
-	# Touch/drag input for mobile
-	if is_touching:
-		var touch_delta = touch_current_pos - touch_start_pos
-		if touch_delta.length() > 20.0:
-			direction = touch_delta.normalized()
+	# Joystick input for mobile
+	if joystick_direction.length() > 0:
+		direction = joystick_direction
 
 	# Keyboard input for testing (Arrow keys + WASD)
 	if Input.is_action_pressed("ui_left") or Input.is_key_pressed(KEY_A):
@@ -711,6 +708,9 @@ func add_xp(amount: float) -> void:
 		# Play level up sound
 		if SoundManager:
 			SoundManager.play_levelup()
+		# Haptic feedback on level up
+		if HapticManager:
+			HapticManager.level_up()
 		emit_signal("level_up", current_level)
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 

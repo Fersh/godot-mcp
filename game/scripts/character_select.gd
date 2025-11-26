@@ -1,10 +1,10 @@
 extends CanvasLayer
 
-@onready var back_button: Button = $VBoxContainer/TopBar/BackButton
-@onready var title_label: Label = $VBoxContainer/TopBar/TitleLabel
-@onready var preview_panel: PanelContainer = $VBoxContainer/PreviewPanel
-@onready var selector_container: HBoxContainer = $VBoxContainer/SelectorContainer
-@onready var select_button: Button = $VBoxContainer/SelectButton
+@onready var back_button: Button = $HBoxContainer/RightPanel/TopBar/BackButton
+@onready var title_label: Label = $HBoxContainer/RightPanel/TopBar/TitleLabel
+@onready var preview_panel: PanelContainer = $HBoxContainer/LeftPanel/PreviewPanel
+@onready var selector_container: HBoxContainer = $HBoxContainer/RightPanel/SelectorContainer
+@onready var select_button: Button = $HBoxContainer/RightPanel/SelectButton
 
 # Preview elements (created dynamically)
 var preview_sprite: Sprite2D
@@ -94,18 +94,18 @@ func _setup_preview_panel() -> void:
 	# Character name at top
 	preview_name_label = Label.new()
 	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	preview_name_label.add_theme_font_size_override("font_size", 36)
+	preview_name_label.add_theme_font_size_override("font_size", 24)
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
 	vbox.add_child(preview_name_label)
 
 	# Spacer after name
 	var spacer1 = Control.new()
-	spacer1.custom_minimum_size = Vector2(0, 15)
+	spacer1.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(spacer1)
 
 	# Sprite preview - centered
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(400, 220)
+	sprite_center.custom_minimum_size = Vector2(300, 160)
 	vbox.add_child(sprite_center)
 
 	preview_sprite = Sprite2D.new()
@@ -113,36 +113,36 @@ func _setup_preview_panel() -> void:
 
 	# Spacer after sprite
 	var spacer2 = Control.new()
-	spacer2.custom_minimum_size = Vector2(0, 25)
+	spacer2.custom_minimum_size = Vector2(0, 10)
 	vbox.add_child(spacer2)
 
 	# Description - centered
 	preview_desc_label = Label.new()
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	preview_desc_label.custom_minimum_size = Vector2(700, 0)
-	preview_desc_label.add_theme_font_size_override("font_size", 18)
+	preview_desc_label.custom_minimum_size = Vector2(500, 0)
+	preview_desc_label.add_theme_font_size_override("font_size", 12)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
 	vbox.add_child(preview_desc_label)
 
 	# Spacer after description
 	var spacer3 = Control.new()
-	spacer3.custom_minimum_size = Vector2(0, 30)
+	spacer3.custom_minimum_size = Vector2(0, 12)
 	vbox.add_child(spacer3)
 
 	# Stats section
 	preview_stats_container = VBoxContainer.new()
-	preview_stats_container.add_theme_constant_override("separation", 8)
+	preview_stats_container.add_theme_constant_override("separation", 4)
 	vbox.add_child(preview_stats_container)
 
 	# Spacer after stats
 	var spacer4 = Control.new()
-	spacer4.custom_minimum_size = Vector2(0, 30)
+	spacer4.custom_minimum_size = Vector2(0, 12)
 	vbox.add_child(spacer4)
 
 	# Passive section
 	preview_passive_container = VBoxContainer.new()
-	preview_passive_container.add_theme_constant_override("separation", 5)
+	preview_passive_container.add_theme_constant_override("separation", 3)
 	vbox.add_child(preview_passive_container)
 
 func _create_selector_buttons() -> void:
@@ -156,7 +156,7 @@ func _create_selector_buttons() -> void:
 
 func _create_selector_button(char_data: CharacterData, index: int) -> PanelContainer:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(200, 80)
+	panel.custom_minimum_size = Vector2(150, 60)
 	panel.set_meta("index", index)
 
 	var style = StyleBoxFlat.new()
@@ -177,7 +177,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 
 	var label = Label.new()
 	label.text = char_data.display_name
-	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
 	center.add_child(label)
 
@@ -259,14 +259,14 @@ func _update_preview() -> void:
 	var stats_title = Label.new()
 	stats_title.text = "STATS"
 	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_title.add_theme_font_size_override("font_size", 20)
+	stats_title.add_theme_font_size_override("font_size", 14)
 	stats_title.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
 	preview_stats_container.add_child(stats_title)
 
 	# Fixed width container for stats to keep alignment consistent
 	var stats_box = VBoxContainer.new()
-	stats_box.custom_minimum_size = Vector2(350, 0)
-	stats_box.add_theme_constant_override("separation", 6)
+	stats_box.custom_minimum_size = Vector2(280, 0)
+	stats_box.add_theme_constant_override("separation", 3)
 	preview_stats_container.add_child(stats_box)
 
 	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
@@ -289,14 +289,14 @@ func _update_preview() -> void:
 	var passive_title = Label.new()
 	passive_title.text = "PASSIVE: " + char_data.passive_name
 	passive_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	passive_title.add_theme_font_size_override("font_size", 18)
+	passive_title.add_theme_font_size_override("font_size", 12)
 	passive_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3, 1))
 	preview_passive_container.add_child(passive_title)
 
 	var passive_desc = Label.new()
 	passive_desc.text = char_data.passive_description
 	passive_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	passive_desc.add_theme_font_size_override("font_size", 16)
+	passive_desc.add_theme_font_size_override("font_size", 10)
 	passive_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	preview_passive_container.add_child(passive_desc)
 
@@ -307,14 +307,14 @@ func _add_stat_row_to_container(container: VBoxContainer, stat_name: String, sta
 	var name_label = Label.new()
 	name_label.text = stat_name + ":"
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	hbox.add_child(name_label)
 
 	var value_label = Label.new()
 	value_label.text = stat_value
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.add_theme_font_size_override("font_size", 16)
+	value_label.add_theme_font_size_override("font_size", 11)
 	value_label.add_theme_color_override("font_color", color)
 	hbox.add_child(value_label)
 

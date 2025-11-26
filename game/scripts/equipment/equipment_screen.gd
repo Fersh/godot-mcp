@@ -63,7 +63,7 @@ func _setup_ui_style() -> void:
 	_style_button(back_button, Color(0.4, 0.25, 0.2))
 	if pixel_font:
 		back_button.add_theme_font_override("font", pixel_font)
-	back_button.add_theme_font_size_override("font_size", 36)
+	back_button.add_theme_font_size_override("font_size", 20)
 
 func _style_button(button: Button, base_color: Color) -> void:
 	var style = StyleBoxFlat.new()
@@ -101,7 +101,7 @@ func _setup_character_tabs() -> void:
 	for char_id in ["archer", "knight"]:
 		var tab = Button.new()
 		tab.text = char_id.to_upper()
-		tab.custom_minimum_size = Vector2(200, 50)
+		tab.custom_minimum_size = Vector2(140, 36)
 		tab.toggle_mode = true
 		tab.button_pressed = (char_id == selected_character)
 		tab.pressed.connect(_on_character_tab_pressed.bind(char_id))
@@ -111,7 +111,7 @@ func _setup_character_tabs() -> void:
 
 		if pixel_font:
 			tab.add_theme_font_override("font", pixel_font)
-		tab.add_theme_font_size_override("font_size", 48)
+		tab.add_theme_font_size_override("font_size", 24)
 
 func _style_character_tab(button: Button, is_selected: bool) -> void:
 	var style = StyleBoxFlat.new()
@@ -170,21 +170,21 @@ func _refresh_equipment_slots() -> void:
 
 func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
-	container.add_theme_constant_override("separation", 4)
+	container.add_theme_constant_override("separation", 2)
 
 	# Slot label
 	var slot_label = Label.new()
 	slot_label.text = SLOT_NAMES[slot]
 	if pixel_font:
 		slot_label.add_theme_font_override("font", pixel_font)
-	slot_label.add_theme_font_size_override("font_size", 32)
+	slot_label.add_theme_font_size_override("font_size", 16)
 	slot_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	slot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	container.add_child(slot_label)
 
 	# Slot button
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(100, 100)
+	button.custom_minimum_size = Vector2(70, 70)
 	button.pressed.connect(_on_equipment_slot_pressed.bind(slot))
 
 	# Get equipped item
@@ -220,7 +220,7 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 		icon.texture = load(equipped.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(80, 80)
+		icon.custom_minimum_size = Vector2(56, 56)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
@@ -228,7 +228,7 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 		empty.text = "-"
 		if pixel_font:
 			empty.add_theme_font_override("font", pixel_font)
-		empty.add_theme_font_size_override("font_size", 72)
+		empty.add_theme_font_size_override("font_size", 40)
 		empty.add_theme_color_override("font_color", Color(0.3, 0.28, 0.25, 1.0))
 		center.add_child(empty)
 
@@ -239,8 +239,8 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var name_label = Label.new()
 	if equipped:
 		var display_name = equipped.get_full_name()
-		if display_name.length() > 12:
-			display_name = display_name.substr(0, 11) + ".."
+		if display_name.length() > 10:
+			display_name = display_name.substr(0, 9) + ".."
 		name_label.text = display_name
 		name_label.add_theme_color_override("font_color", equipped.get_rarity_color())
 	else:
@@ -249,9 +249,9 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 28)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.custom_minimum_size = Vector2(100, 0)
+	name_label.custom_minimum_size = Vector2(70, 0)
 	container.add_child(name_label)
 
 	return container
@@ -273,7 +273,7 @@ func _refresh_stats() -> void:
 	header.text = "- STATS -"
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
-	header.add_theme_font_size_override("font_size", 40)
+	header.add_theme_font_size_override("font_size", 18)
 	header.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_container.add_child(header)
@@ -307,7 +307,7 @@ func _refresh_stats() -> void:
 		name_label.text = stat_names[stat_key] + ":"
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
-		name_label.add_theme_font_size_override("font_size", 36)
+		name_label.add_theme_font_size_override("font_size", 14)
 		name_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(name_label)
@@ -321,7 +321,7 @@ func _refresh_stats() -> void:
 		value_label.text = value_str
 		if pixel_font:
 			value_label.add_theme_font_override("font", pixel_font)
-		value_label.add_theme_font_size_override("font_size", 36)
+		value_label.add_theme_font_size_override("font_size", 14)
 		value_label.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
 		row.add_child(value_label)
 
@@ -332,7 +332,7 @@ func _refresh_stats() -> void:
 		empty.text = "No bonuses"
 		if pixel_font:
 			empty.add_theme_font_override("font", pixel_font)
-		empty.add_theme_font_size_override("font_size", 36)
+		empty.add_theme_font_size_override("font_size", 14)
 		empty.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		stats_container.add_child(empty)
@@ -348,8 +348,8 @@ func _refresh_inventory() -> void:
 	# Get all inventory items
 	var items = EquipmentManager.inventory
 
-	# Create 40 slots (8 columns x 5 rows)
-	var total_slots = 40
+	# Create 48 slots (12 columns x 4 rows for landscape)
+	var total_slots = 48
 
 	for i in range(total_slots):
 		if i < items.size():
@@ -363,7 +363,7 @@ func _refresh_inventory() -> void:
 
 func _create_empty_slot() -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(80, 80)
+	button.custom_minimum_size = Vector2(60, 60)
 	button.disabled = true
 
 	# Style - dark empty slot
@@ -386,7 +386,7 @@ func _create_empty_slot() -> Button:
 
 func _create_inventory_card(item: ItemData) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(80, 80)
+	button.custom_minimum_size = Vector2(60, 60)
 	button.pressed.connect(_on_inventory_item_pressed.bind(item))
 
 	# Style
@@ -428,13 +428,13 @@ func _create_inventory_card(item: ItemData) -> Button:
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(64, 64)
+		icon.custom_minimum_size = Vector2(48, 48)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
 		var placeholder = ColorRect.new()
 		placeholder.color = item.get_rarity_color()
-		placeholder.custom_minimum_size = Vector2(48, 48)
+		placeholder.custom_minimum_size = Vector2(36, 36)
 		center.add_child(placeholder)
 
 	button.add_child(center)
@@ -445,9 +445,9 @@ func _create_inventory_card(item: ItemData) -> Button:
 		indicator.text = item.equipped_by.substr(0, 1).to_upper()
 		if pixel_font:
 			indicator.add_theme_font_override("font", pixel_font)
-		indicator.add_theme_font_size_override("font_size", 28)
+		indicator.add_theme_font_size_override("font_size", 16)
 		indicator.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
-		indicator.position = Vector2(4, 2)
+		indicator.position = Vector2(2, 1)
 		button.add_child(indicator)
 
 	return button
@@ -480,7 +480,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 64)
+	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(name_label)
@@ -490,7 +490,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
 	if pixel_font:
 		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 48)
+	equipped_label.add_theme_font_size_override("font_size", 20)
 	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(equipped_label)
@@ -502,21 +502,21 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 	var unequip_btn = Button.new()
 	unequip_btn.text = "UNEQUIP"
-	unequip_btn.custom_minimum_size = Vector2(280, 88)
+	unequip_btn.custom_minimum_size = Vector2(180, 50)
 	_style_button(unequip_btn, Color(0.5, 0.3, 0.2))
 	if pixel_font:
 		unequip_btn.add_theme_font_override("font", pixel_font)
-	unequip_btn.add_theme_font_size_override("font_size", 36)
+	unequip_btn.add_theme_font_size_override("font_size", 18)
 	unequip_btn.pressed.connect(_on_unequip_popup_pressed)
 	button_row.add_child(unequip_btn)
 
 	var cancel_btn = Button.new()
 	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(280, 88)
+	cancel_btn.custom_minimum_size = Vector2(180, 50)
 	_style_button(cancel_btn, Color(0.3, 0.3, 0.35))
 	if pixel_font:
 		cancel_btn.add_theme_font_override("font", pixel_font)
-	cancel_btn.add_theme_font_size_override("font_size", 36)
+	cancel_btn.add_theme_font_size_override("font_size", 18)
 	cancel_btn.pressed.connect(_hide_popups)
 	button_row.add_child(cancel_btn)
 
@@ -570,7 +570,7 @@ func _show_comparison(item: ItemData) -> void:
 	vs_label.text = "VS"
 	if pixel_font:
 		vs_label.add_theme_font_override("font", pixel_font)
-	vs_label.add_theme_font_size_override("font_size", 40)
+	vs_label.add_theme_font_size_override("font_size", 20)
 	vs_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	vs_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	main_hbox.add_child(vs_label)
@@ -585,7 +585,7 @@ func _show_comparison(item: ItemData) -> void:
 		empty_label.text = "Empty Slot"
 		if pixel_font:
 			empty_label.add_theme_font_override("font", pixel_font)
-		empty_label.add_theme_font_size_override("font_size", 36)
+		empty_label.add_theme_font_size_override("font_size", 18)
 		empty_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty_card.add_child(empty_label)
@@ -605,22 +605,22 @@ func _show_comparison(item: ItemData) -> void:
 
 	var equip_btn = Button.new()
 	equip_btn.text = "EQUIP" if can_equip else "WRONG CLASS"
-	equip_btn.custom_minimum_size = Vector2(200, 70)
+	equip_btn.custom_minimum_size = Vector2(140, 45)
 	equip_btn.disabled = not can_equip
 	_style_button(equip_btn, Color(0.2, 0.5, 0.3) if can_equip else Color(0.3, 0.3, 0.3))
 	if pixel_font:
 		equip_btn.add_theme_font_override("font", pixel_font)
-	equip_btn.add_theme_font_size_override("font_size", 28)
+	equip_btn.add_theme_font_size_override("font_size", 16)
 	equip_btn.pressed.connect(_on_equip_comparison_pressed)
 	button_row.add_child(equip_btn)
 
 	var cancel_btn = Button.new()
 	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(200, 70)
+	cancel_btn.custom_minimum_size = Vector2(140, 45)
 	_style_button(cancel_btn, Color(0.4, 0.3, 0.25))
 	if pixel_font:
 		cancel_btn.add_theme_font_override("font", pixel_font)
-	cancel_btn.add_theme_font_size_override("font_size", 28)
+	cancel_btn.add_theme_font_size_override("font_size", 16)
 	cancel_btn.pressed.connect(_hide_comparison)
 	button_row.add_child(cancel_btn)
 
@@ -653,29 +653,29 @@ func _show_comparison(item: ItemData) -> void:
 
 func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dictionary) -> Control:
 	var card = VBoxContainer.new()
-	card.add_theme_constant_override("separation", 6)
-	# Reduced width to fit iOS screens (was 400)
-	card.custom_minimum_size = Vector2(280, 0)
+	card.add_theme_constant_override("separation", 4)
+	# Compact width for landscape
+	card.custom_minimum_size = Vector2(200, 0)
 
 	# Header
 	var header = Label.new()
 	header.text = "* NEW *" if show_arrows else "- EQUIPPED -"
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
-	header.add_theme_font_size_override("font_size", 28)
+	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(header)
 
 	# Icon
 	var icon_center = CenterContainer.new()
-	icon_center.custom_minimum_size = Vector2(56, 56)
+	icon_center.custom_minimum_size = Vector2(40, 40)
 	if item.icon_path != "" and ResourceLoader.exists(item.icon_path):
 		var icon = TextureRect.new()
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(48, 48)
+		icon.custom_minimum_size = Vector2(36, 36)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon_center.add_child(icon)
 	card.add_child(icon_center)
@@ -685,7 +685,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 36)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -696,7 +696,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	rarity_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
-	rarity_label.add_theme_font_size_override("font_size", 26)
+	rarity_label.add_theme_font_size_override("font_size", 12)
 	rarity_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(rarity_label)
@@ -704,7 +704,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	# Separator
 	var sep = ColorRect.new()
 	sep.color = item.get_rarity_color()
-	sep.custom_minimum_size = Vector2(0, 3)
+	sep.custom_minimum_size = Vector2(0, 2)
 	card.add_child(sep)
 
 	# Stats with arrows
@@ -722,7 +722,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		stat_label.text = line
 		if pixel_font:
 			stat_label.add_theme_font_override("font", pixel_font)
-		stat_label.add_theme_font_size_override("font_size", 30)
+		stat_label.add_theme_font_size_override("font_size", 12)
 		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
 		row.add_child(stat_label)
 
@@ -737,7 +737,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 						arrow.text = " ^" if diff > 0 else " v"
 						if pixel_font:
 							arrow.add_theme_font_override("font", pixel_font)
-						arrow.add_theme_font_size_override("font_size", 30)
+						arrow.add_theme_font_size_override("font_size", 12)
 						arrow.add_theme_color_override("font_color", COLOR_STAT_UP if diff > 0 else COLOR_STAT_DOWN)
 						row.add_child(arrow)
 					break
@@ -750,7 +750,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		desc.text = "\"%s\"" % item.description
 		if pixel_font:
 			desc.add_theme_font_override("font", pixel_font)
-		desc.add_theme_font_size_override("font_size", 26)
+		desc.add_theme_font_size_override("font_size", 11)
 		desc.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

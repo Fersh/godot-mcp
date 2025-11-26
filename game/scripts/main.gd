@@ -8,6 +8,10 @@ extends Node2D
 var active_ability_bar = null
 var active_ability_selection_ui = null
 
+# Virtual joystick for movement
+var virtual_joystick = null
+var joystick_scene: PackedScene = preload("res://scenes/ui/virtual_joystick.tscn")
+
 var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
 var game_time: float = 0.0
 var kill_count: int = 0
@@ -40,6 +44,9 @@ func _ready() -> void:
 
 	# Setup active ability system
 	_setup_active_ability_system()
+
+	# Setup virtual joystick
+	_setup_virtual_joystick()
 
 	# Show level 1 active ability selection after a short delay
 	# (allows UI to initialize first)
@@ -117,6 +124,27 @@ func _check_nearby_items() -> void:
 			item_pickup_ui.show_item(closest_item, equipped != null)
 	elif not closest_item:
 		nearby_item = null
+
+# ============================================
+# VIRTUAL JOYSTICK
+# ============================================
+
+func _setup_virtual_joystick() -> void:
+	"""Initialize the virtual joystick for player movement."""
+	if joystick_scene:
+		# Create a CanvasLayer for the joystick
+		var joystick_layer = CanvasLayer.new()
+		joystick_layer.layer = 10
+		joystick_layer.name = "JoystickLayer"
+		add_child(joystick_layer)
+
+		# Instantiate the joystick
+		virtual_joystick = joystick_scene.instantiate()
+		joystick_layer.add_child(virtual_joystick)
+
+		# Register with player
+		if player and player.has_method("register_joystick"):
+			player.register_joystick(virtual_joystick)
 
 # ============================================
 # ACTIVE ABILITY SYSTEM

@@ -173,16 +173,16 @@ func _populate_all_upgrades() -> void:
 
 func _create_upgrade_tile(upgrade) -> Button:
 	var tile = Button.new()
-	tile.custom_minimum_size = Vector2(240, 120)
+	tile.custom_minimum_size = Vector2(200, 95)
 
 	# Margin container to add internal padding
 	var margin = MarginContainer.new()
 	margin.name = "MarginContainer"
 	margin.anchors_preset = Control.PRESET_FULL_RECT
-	margin.add_theme_constant_override("margin_left", 10)
-	margin.add_theme_constant_override("margin_right", 10)
-	margin.add_theme_constant_override("margin_top", 12)
-	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.add_theme_constant_override("margin_left", 8)
+	margin.add_theme_constant_override("margin_right", 8)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Create container for tile content
@@ -197,7 +197,7 @@ func _create_upgrade_tile(upgrade) -> Button:
 	name_label.name = "NameLabel"
 	name_label.text = upgrade.name
 	name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85, 1))
 	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	name_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -228,7 +228,7 @@ func _create_upgrade_tile(upgrade) -> Button:
 	for i in range(upgrade.max_rank):
 		var square = ColorRect.new()
 		square.name = "Square%d" % i
-		square.custom_minimum_size = Vector2(12, 12)
+		square.custom_minimum_size = Vector2(10, 10)
 		square.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 		if i < rank:
