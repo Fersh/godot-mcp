@@ -70,7 +70,7 @@ enum AttackType {
 static func create_archer() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "archer"
-	data.display_name = "Ranger"
+	data.display_name = "The Robbin' Hood"
 	data.description = "Fast and agile. Attacks from range with deadly precision."
 	data.character_type = CharacterType.ARCHER
 	data.attack_type = AttackType.RANGED
@@ -120,7 +120,7 @@ static func create_archer() -> CharacterData:
 static func create_knight() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "knight"
-	data.display_name = "Knight"
+	data.display_name = "The Armored One"
 	data.description = "Slow but powerful. Cleaves through enemies with melee attacks."
 	data.character_type = CharacterType.KNIGHT
 	data.attack_type = AttackType.MELEE

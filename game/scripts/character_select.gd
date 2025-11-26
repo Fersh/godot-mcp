@@ -94,7 +94,7 @@ func _setup_preview_panel() -> void:
 
 	# Sprite preview - centered using SubViewportContainer for proper centering
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(300, 120)
+	sprite_center.custom_minimum_size = Vector2(300, 90)
 	sprite_center.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(sprite_center)
 
@@ -116,7 +116,7 @@ func _setup_preview_panel() -> void:
 	# Character name below sprite
 	preview_name_label = Label.new()
 	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	preview_name_label.add_theme_font_size_override("font_size", 24)
+	preview_name_label.add_theme_font_size_override("font_size", 18)
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
 	vbox.add_child(preview_name_label)
 
@@ -160,6 +160,11 @@ func _setup_preview_panel() -> void:
 	preview_passive_container = VBoxContainer.new()
 	preview_passive_container.add_theme_constant_override("separation", 3)
 	vbox.add_child(preview_passive_container)
+
+	# Spacer after passive (bottom padding)
+	var spacer5 = Control.new()
+	spacer5.custom_minimum_size = Vector2(0, 30)
+	vbox.add_child(spacer5)
 
 func _create_selector_buttons() -> void:
 	characters_list = CharacterManager.get_all_characters()
@@ -301,8 +306,8 @@ func _update_preview() -> void:
 	# Update name
 	preview_name_label.text = char_data.display_name
 
-	# Update class label
-	var class_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
+	# Update class label (Ranger for ranged, Knight for melee)
+	var class_type_text = "Ranger" if char_data.attack_type == CharacterData.AttackType.RANGED else "Knight"
 	preview_class_label.text = class_type_text
 
 	# Update sprite
@@ -322,13 +327,6 @@ func _update_preview() -> void:
 	# Update stats
 	for child in preview_stats_container.get_children():
 		child.queue_free()
-
-	var stats_title = Label.new()
-	stats_title.text = "STATS"
-	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_title.add_theme_font_size_override("font_size", 14)
-	stats_title.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
-	preview_stats_container.add_child(stats_title)
 
 	# Fixed width container for stats to keep alignment consistent
 	var stats_box = VBoxContainer.new()

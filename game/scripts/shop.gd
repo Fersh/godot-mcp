@@ -7,13 +7,14 @@ var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular
 @onready var back_button: Button = $BackButton
 @onready var coin_amount: Label = $MainContainer/Header/CoinsContainer/CoinAmount
 @onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/CenterContainer/GridContainer
-@onready var footer_tooltip: PanelContainer = $MainContainer/FooterTooltip
-@onready var upgrade_name_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/UpgradeName
-@onready var rank_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/RankLabel
-@onready var description_label: Label = $MainContainer/FooterTooltip/TooltipContent/Description
-@onready var benefit_label: Label = $MainContainer/FooterTooltip/TooltipContent/BenefitLabel
-@onready var cost_label: Label = $MainContainer/FooterTooltip/TooltipContent/BottomRow/CostLabel
-@onready var upgrade_button: Button = $MainContainer/FooterTooltip/TooltipContent/BottomRow/UpgradeButton
+@onready var scroll_container: ScrollContainer = $MainContainer/ScrollContainer
+@onready var floating_tooltip: PanelContainer = $MainContainer/ScrollContainer/FloatingTooltip
+@onready var upgrade_name_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/UpgradeName
+@onready var category_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/CategoryLabel
+@onready var description_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/Description
+@onready var current_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/CurrentLabel
+@onready var tooltip_rank_container: HBoxContainer = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/RankContainer
+@onready var upgrade_button: Button = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/UpgradeButton
 @onready var refund_button: Button = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/RefundButton
 @onready var confirm_dialog: ConfirmationDialog = $ConfirmDialog
 
@@ -37,7 +38,7 @@ func _ready() -> void:
 	# Style buttons
 	_style_back_button()
 	_style_header()
-	_style_footer_tooltip()
+	_style_floating_tooltip()
 	_style_refund_button()
 
 	# Connect signals
@@ -45,6 +46,7 @@ func _ready() -> void:
 	upgrade_button.pressed.connect(_on_upgrade_pressed)
 	refund_button.pressed.connect(_on_refund_pressed)
 	confirm_dialog.confirmed.connect(_on_refund_confirmed)
+	scroll_container.get_v_scroll_bar().value_changed.connect(_on_scroll_changed)
 
 	if PermanentUpgrades:
 		PermanentUpgrades.upgrade_purchased.connect(_on_upgrade_purchased)
@@ -57,7 +59,7 @@ func _ready() -> void:
 	_update_coin_display()
 
 	# Hide tooltip initially
-	footer_tooltip.visible = false
+	floating_tooltip.visible = false
 
 func _style_back_button() -> void:
 	var style_normal = StyleBoxFlat.new()
@@ -101,25 +103,32 @@ func _style_header() -> void:
 func _style_refund_button() -> void:
 	refund_button.flat = true
 
-func _style_footer_tooltip() -> void:
+func _style_floating_tooltip() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.05, 0.08, 0.98)
-	style.border_width_top = 3
-	style.border_color = Color(0.5, 0.45, 0.6, 1)
-	style.content_margin_left = 40
-	style.content_margin_right = 40
-	style.content_margin_top = 25
-	style.content_margin_bottom = 25
+	style.bg_color = Color(0.08, 0.08, 0.12, 1.0)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.4, 0.35, 0.5, 1)
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	style.content_margin_left = 16
+	style.content_margin_right = 16
+	style.content_margin_top = 12
+	style.content_margin_bottom = 12
 
-	footer_tooltip.add_theme_stylebox_override("panel", style)
+	floating_tooltip.add_theme_stylebox_override("panel", style)
 
-	# Style upgrade button - medieval
+	# Style upgrade button
 	var btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = Color(0.3, 0.5, 0.25, 1)
-	btn_style.border_width_left = 3
-	btn_style.border_width_right = 3
-	btn_style.border_width_top = 3
-	btn_style.border_width_bottom = 4
+	btn_style.border_width_left = 2
+	btn_style.border_width_right = 2
+	btn_style.border_width_top = 2
+	btn_style.border_width_bottom = 3
 	btn_style.border_color = Color(0.2, 0.35, 0.15, 1)
 	btn_style.corner_radius_top_left = 4
 	btn_style.corner_radius_top_right = 4
@@ -128,10 +137,10 @@ func _style_footer_tooltip() -> void:
 
 	var btn_hover = StyleBoxFlat.new()
 	btn_hover.bg_color = Color(0.35, 0.55, 0.3, 1)
-	btn_hover.border_width_left = 3
-	btn_hover.border_width_right = 3
-	btn_hover.border_width_top = 3
-	btn_hover.border_width_bottom = 4
+	btn_hover.border_width_left = 2
+	btn_hover.border_width_right = 2
+	btn_hover.border_width_top = 2
+	btn_hover.border_width_bottom = 3
 	btn_hover.border_color = Color(0.25, 0.4, 0.2, 1)
 	btn_hover.corner_radius_top_left = 4
 	btn_hover.corner_radius_top_right = 4
@@ -332,15 +341,111 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 	tile.modulate = Color(1, 1, 1, 1) if (can_afford or is_maxed) else Color(0.5, 0.5, 0.55, 1)
 
 func _on_tile_pressed(upgrade_id: String) -> void:
+	# Deselect previous tile
+	if selected_upgrade_id != "" and upgrade_tiles.has(selected_upgrade_id):
+		var prev_tile = upgrade_tiles[selected_upgrade_id]
+		var prev_upgrade = PermanentUpgrades.get_upgrade(selected_upgrade_id)
+		var prev_rank = PermanentUpgrades.get_rank(selected_upgrade_id)
+		var prev_cost = PermanentUpgrades.get_upgrade_cost(selected_upgrade_id)
+		var prev_is_maxed = prev_rank >= prev_upgrade.max_rank
+		var prev_can_afford = StatsManager.spendable_coins >= prev_cost
+		_style_upgrade_tile(prev_tile, prev_upgrade, prev_is_maxed, prev_can_afford)
+
 	if selected_upgrade_id == upgrade_id:
 		# Clicking same tile again hides tooltip
 		selected_upgrade_id = ""
-		footer_tooltip.visible = false
+		floating_tooltip.visible = false
 		return
 
 	selected_upgrade_id = upgrade_id
+
+	# Apply selected style to current tile
+	if upgrade_tiles.has(upgrade_id):
+		var tile = upgrade_tiles[upgrade_id]
+		var upgrade = PermanentUpgrades.get_upgrade(upgrade_id)
+		_apply_selected_style(tile, upgrade)
+
 	_update_tooltip(upgrade_id)
-	footer_tooltip.visible = true
+
+	# Position tooltip near the tile (this will also make it visible after positioning)
+	_position_tooltip(upgrade_id)
+
+func _position_tooltip(upgrade_id: String) -> void:
+	if not upgrade_tiles.has(upgrade_id):
+		return
+
+	var tile = upgrade_tiles[upgrade_id]
+
+	# Move tooltip offscreen first, then make visible so it can layout
+	floating_tooltip.position = Vector2(-1000, -1000)
+	floating_tooltip.visible = true
+
+	# Wait two frames for tooltip to fully layout and get its actual size
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# If selection changed during the await, abort
+	if selected_upgrade_id != upgrade_id:
+		return
+
+	# Make sure tooltip has a valid size, otherwise use a default
+	var tooltip_size = floating_tooltip.size
+	if tooltip_size.x <= 0 or tooltip_size.y <= 0:
+		tooltip_size = Vector2(280, 200)  # Fallback size
+
+	# Get the tile's global position and convert to position relative to scroll content
+	var tile_rect = tile.get_global_rect()
+	var scroll_rect = scroll_container.get_global_rect()
+
+	# Position in scroll container's local coordinates
+	var tile_in_scroll_x = tile_rect.position.x - scroll_rect.position.x
+	var tile_in_scroll_y = tile_rect.position.y - scroll_rect.position.y
+
+	# Add scroll offset to get position in scroll content space
+	var scroll_offset = scroll_container.scroll_vertical
+	var content_y = tile_in_scroll_y + scroll_offset
+
+	# Center tooltip horizontally on the tile
+	var tooltip_x = tile_in_scroll_x + (tile_rect.size.x / 2) - (tooltip_size.x / 2)
+
+	# Position below tile by default
+	var tooltip_y = content_y + tile_rect.size.y + 10
+
+	# Check if tooltip would go below visible area
+	var visible_bottom = scroll_offset + scroll_container.size.y
+	if tooltip_y + tooltip_size.y > visible_bottom - 20:
+		# Position above the tile instead
+		tooltip_y = content_y - tooltip_size.y - 10
+
+	# Clamp X position to stay within scroll container bounds
+	var max_x = scroll_container.size.x - tooltip_size.x - 20
+	tooltip_x = clamp(tooltip_x, 20, max_x)
+
+	# Ensure Y is not above the visible scroll area
+	tooltip_y = max(tooltip_y, scroll_offset + 10)
+
+	floating_tooltip.position = Vector2(tooltip_x, tooltip_y)
+
+func _apply_selected_style(tile: Button, upgrade) -> void:
+	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
+	var base_bg = Color(0.1, 0.1, 0.12, 1)
+
+	var style_selected = StyleBoxFlat.new()
+	style_selected.bg_color = base_bg.lightened(0.2)
+	style_selected.border_width_left = 3
+	style_selected.border_width_right = 3
+	style_selected.border_width_top = 3
+	style_selected.border_width_bottom = 4
+	style_selected.border_color = category_color.lightened(0.2)
+	style_selected.corner_radius_top_left = 8
+	style_selected.corner_radius_top_right = 8
+	style_selected.corner_radius_bottom_left = 8
+	style_selected.corner_radius_bottom_right = 8
+
+	tile.add_theme_stylebox_override("normal", style_selected)
+	tile.add_theme_stylebox_override("hover", style_selected)
+	tile.add_theme_stylebox_override("pressed", style_selected)
+	tile.add_theme_stylebox_override("focus", style_selected)
 
 func _update_tooltip(upgrade_id: String) -> void:
 	if not PermanentUpgrades:
@@ -357,44 +462,44 @@ func _update_tooltip(upgrade_id: String) -> void:
 
 	# Update labels
 	upgrade_name_label.text = upgrade.name
-	rank_label.text = "Rank %d/%d" % [rank, upgrade.max_rank]
-	var category_name = PermanentUpgrades.get_category_name(upgrade.category)
-	description_label.text = "[%s] %s" % [category_name.to_upper(), upgrade.description]
 
-	# Benefit display
+	var category_name = PermanentUpgrades.get_category_name(upgrade.category)
+	category_label.text = category_name.to_upper()
+
+	description_label.text = upgrade.description
+
+	# Update rank squares in tooltip
+	for child in tooltip_rank_container.get_children():
+		child.queue_free()
+
+	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
+	for i in range(upgrade.max_rank):
+		var square = ColorRect.new()
+		square.custom_minimum_size = Vector2(12, 12)
+		if i < rank:
+			square.color = category_color
+		else:
+			square.color = Color(0.25, 0.22, 0.18, 1)
+		tooltip_rank_container.add_child(square)
+
+	# Current benefit display
 	if is_maxed:
-		benefit_label.text = "MAXED: " + PermanentUpgrades.get_benefit_string(upgrade_id)
-		benefit_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 1))
+		current_label.text = "MAXED: " + PermanentUpgrades.get_benefit_string(upgrade_id)
+		current_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 1))
 	else:
 		var current_benefit = upgrade.benefit_per_rank * rank
-		var next_benefit = upgrade.benefit_per_rank * (rank + 1)
-
-		# Format based on percentage or flat
 		if "%d%%" in upgrade.benefit_format:
-			benefit_label.text = "Current: +%d%% | Next: +%d%%" % [int(current_benefit * 100), int(next_benefit * 100)]
+			current_label.text = "Current: +%d%%" % int(current_benefit * 100)
 		else:
-			benefit_label.text = "Current: +%d | Next: +%d" % [int(current_benefit), int(next_benefit)]
-		benefit_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.4, 1))
+			current_label.text = "Current: +%d" % int(current_benefit)
+		current_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.4, 1))
 
-	# Cost display
-	if is_maxed:
-		cost_label.text = "MAXED"
-		cost_label.add_theme_color_override("font_color", Color(0.5, 0.45, 0.4, 1))
-	else:
-		cost_label.text = "Cost: %d" % cost
-		if can_afford:
-			cost_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 1))
-		else:
-			cost_label.add_theme_color_override("font_color", Color(0.8, 0.4, 0.3, 1))
-
-	# Button state
+	# Button state with cost (● is the gold icon)
 	upgrade_button.disabled = is_maxed or not can_afford
 	if is_maxed:
 		upgrade_button.text = "MAXED"
-	elif not can_afford:
-		upgrade_button.text = "NEED GOLD"
 	else:
-		upgrade_button.text = "UPGRADE"
+		upgrade_button.text = "UPGRADE  ● %d" % cost
 
 func _on_upgrade_pressed() -> void:
 	if selected_upgrade_id.is_empty():
@@ -446,6 +551,25 @@ func _on_upgrade_purchased(_upgrade_id: String, _new_rank: int) -> void:
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
+func _on_scroll_changed(_value: float) -> void:
+	# Close tooltip when user scrolls
+	if floating_tooltip.visible:
+		_close_tooltip()
+
+func _close_tooltip() -> void:
+	# Deselect the current tile
+	if selected_upgrade_id != "" and upgrade_tiles.has(selected_upgrade_id):
+		var tile = upgrade_tiles[selected_upgrade_id]
+		var upgrade = PermanentUpgrades.get_upgrade(selected_upgrade_id)
+		var rank = PermanentUpgrades.get_rank(selected_upgrade_id)
+		var cost = PermanentUpgrades.get_upgrade_cost(selected_upgrade_id)
+		var is_maxed = rank >= upgrade.max_rank
+		var can_afford = StatsManager.spendable_coins >= cost
+		_style_upgrade_tile(tile, upgrade, is_maxed, can_afford)
+
+	selected_upgrade_id = ""
+	floating_tooltip.visible = false
+
 func _on_refund_pressed() -> void:
 	if PermanentUpgrades and PermanentUpgrades.total_coins_spent > 0:
 		confirm_dialog.dialog_text = "Are you sure you want to refund all upgrades?\nYou will get back %d gold." % PermanentUpgrades.total_coins_spent
@@ -462,4 +586,4 @@ func _on_upgrades_refunded(_coins_returned: int) -> void:
 
 	# Hide tooltip
 	selected_upgrade_id = ""
-	footer_tooltip.visible = false
+	floating_tooltip.visible = false
