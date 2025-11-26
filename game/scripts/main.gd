@@ -116,6 +116,10 @@ func _check_nearby_items() -> void:
 				closest_item = item
 
 	# Show pickup UI if we found a nearby item
+	# Reset nearby_item if it's no longer valid (was picked up or freed)
+	if nearby_item and not is_instance_valid(nearby_item):
+		nearby_item = null
+
 	if closest_item and closest_item != nearby_item:
 		nearby_item = closest_item
 		if item_pickup_ui and closest_item.has_method("get_item_data"):
