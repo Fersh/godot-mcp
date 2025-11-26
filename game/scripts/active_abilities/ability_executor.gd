@@ -440,6 +440,11 @@ func _screen_shake(intensity: String = "medium") -> void:
 			"large":
 				JuiceManager.shake_large()
 
+func _impact_pause() -> void:
+	"""Trigger a 1-frame pause for impact feel."""
+	if JuiceManager:
+		JuiceManager.hitstop_micro()
+
 # ============================================
 # MELEE ABILITIES - COMMON
 # ============================================
@@ -498,6 +503,7 @@ func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 			_deal_damage_to_enemy(enemy, damage)
 			_apply_stun_to_enemy(enemy, ability.stun_duration)
 			_apply_knockback_to_enemy(enemy, direction, ability.knockback_force)
+		_impact_pause()
 	)
 
 	_spawn_effect("shield_bash", start_pos + direction * 30)
@@ -515,6 +521,7 @@ func _execute_ground_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("ground_slam", player.global_position)
 	_play_sound("ground_slam")
 	_screen_shake("medium")
+	_impact_pause()
 
 func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
@@ -561,6 +568,8 @@ func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 		for enemy in enemies:
 			_deal_damage_to_enemy(enemy, damage)
 			_apply_knockback_to_enemy(enemy, direction, ability.knockback_force)
+		if enemies.size() > 0:
+			_impact_pause()
 	)
 
 	_spawn_effect("dash_strike", start_pos)
@@ -603,6 +612,7 @@ func _execute_seismic_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("seismic_slam", player.global_position + direction * 50)
 	_play_sound("ground_slam")
 	_screen_shake("large")
+	_impact_pause()
 
 func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Leap to enemy cluster
@@ -623,6 +633,7 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 			_deal_damage_to_enemy(enemy, damage)
 		_spawn_effect("savage_leap_landing", target_pos)
 		_screen_shake("medium")
+		_impact_pause()
 	)
 
 	_play_sound("leap")
@@ -702,6 +713,7 @@ func _execute_earthquake(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("earthquake", player.global_position)
 	_play_sound("earthquake")
 	_screen_shake("large")
+	_impact_pause()
 
 	# Continuing ground cracks damage
 	_start_periodic_damage(player, ability, true)
@@ -1089,6 +1101,7 @@ func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("frost_nova", player.global_position)
 	_play_sound("frost")
+	_impact_pause()
 
 func _execute_healing_light(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Heal over time
@@ -1178,6 +1191,7 @@ func _execute_meteor_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 
 		_spawn_effect("meteor_strike", target_pos)
 		_screen_shake("large")
+		_impact_pause()
 	)
 
 	_play_sound("meteor")

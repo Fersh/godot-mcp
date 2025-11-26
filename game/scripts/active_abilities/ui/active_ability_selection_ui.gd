@@ -68,16 +68,38 @@ func _create_ui() -> void:
 		title_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title_label)
 
-	# Subtitle
-	subtitle_label = Label.new()
-	subtitle_label.name = "SubtitleLabel"
-	subtitle_label.text = "Choose an ACTIVE ability"
-	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle_label.add_theme_font_size_override("font_size", 14)
-	subtitle_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	# Subtitle container for colored text
+	var subtitle_container = HBoxContainer.new()
+	subtitle_container.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var subtitle_prefix = Label.new()
+	subtitle_prefix.text = "Choose an "
+	subtitle_prefix.add_theme_font_size_override("font_size", 14)
+	subtitle_prefix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
-		subtitle_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(subtitle_label)
+		subtitle_prefix.add_theme_font_override("font", pixel_font)
+	subtitle_container.add_child(subtitle_prefix)
+
+	var subtitle_active = Label.new()
+	subtitle_active.text = "ACTIVE"
+	subtitle_active.add_theme_font_size_override("font_size", 14)
+	subtitle_active.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))  # Orange highlight
+	if pixel_font:
+		subtitle_active.add_theme_font_override("font", pixel_font)
+	subtitle_container.add_child(subtitle_active)
+
+	var subtitle_suffix = Label.new()
+	subtitle_suffix.text = " ability"
+	subtitle_suffix.add_theme_font_size_override("font_size", 14)
+	subtitle_suffix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	if pixel_font:
+		subtitle_suffix.add_theme_font_override("font", pixel_font)
+	subtitle_container.add_child(subtitle_suffix)
+
+	vbox.add_child(subtitle_container)
+
+	# Keep reference (not used but maintain compatibility)
+	subtitle_label = subtitle_prefix
 
 	# Spacer to push cards down
 	var cards_spacer = Control.new()

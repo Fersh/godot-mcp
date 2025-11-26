@@ -18,7 +18,6 @@ var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
 
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
-@onready var subtitle_label: Label = $Panel/VBoxContainer/SubtitleLabel
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
 var pixel_font: Font = null
@@ -29,11 +28,9 @@ func _ready() -> void:
 	# Use the same font as points/coins display
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
-	# Apply pixel font to title and subtitle
+	# Apply pixel font to title
 	if pixel_font and title_label:
 		title_label.add_theme_font_override("font", pixel_font)
-	if pixel_font and subtitle_label:
-		subtitle_label.add_theme_font_override("font", pixel_font)
 
 func _process(delta: float) -> void:
 	if not is_rolling:

@@ -31,13 +31,30 @@ theme_override_font_sizes/font_size = 26
 text = "LEVEL UP!"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="Panel/VBoxContainer"]
+[node name="SubtitleContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="SubtitlePrefix" type="Label" parent="Panel/VBoxContainer/SubtitleContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "Choose a PASSIVE ability"
-horizontal_alignment = 1
+text = "Choose a "
+
+[node name="SubtitlePassive" type="Label" parent="Panel/VBoxContainer/SubtitleContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = "PASSIVE"
+
+[node name="SubtitleSuffix" type="Label" parent="Panel/VBoxContainer/SubtitleContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
+text = " ability"
 
 [node name="CardsSpacer" type="Control" parent="Panel/VBoxContainer"]
 layout_mode = 2

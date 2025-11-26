@@ -1,12 +1,11 @@
 extends CanvasLayer
 
-@onready var points_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/PointsLabel
-@onready var time_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/TimeLabel
-@onready var best_time_label: Label = $Panel/VBoxContainer/StatsContainer/LeftStats/BestTimeLabel
-@onready var level_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/LevelLabel
-@onready var kills_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/KillsLabel
-@onready var best_kills_label: Label = $Panel/VBoxContainer/StatsContainer/RightStats/BestKillsLabel
-@onready var coins_label: Label = $Panel/VBoxContainer/CoinsLabel
+@onready var points_label: Label = $Panel/VBoxContainer/StatsContainer/PointsLabel
+@onready var time_label: Label = $Panel/VBoxContainer/StatsContainer/TimeLabel
+@onready var best_time_label: Label = $Panel/VBoxContainer/StatsContainer/BestTimeLabel
+@onready var kills_label: Label = $Panel/VBoxContainer/StatsContainer/KillsLabel
+@onready var best_kills_label: Label = $Panel/VBoxContainer/StatsContainer/BestKillsLabel
+@onready var coins_label: Label = $Panel/VBoxContainer/StatsContainer/CoinsLabel
 @onready var play_again_button: Button = $Panel/VBoxContainer/ButtonContainer/PlayAgainButton
 @onready var main_menu_button: Button = $Panel/VBoxContainer/ButtonContainer/MainMenuButton
 @onready var loot_container: HBoxContainer = $Panel/VBoxContainer/LootContainer
@@ -54,9 +53,8 @@ func _ready() -> void:
 	# Format the run stats with commas
 	points_label.text = "Points: %s" % format_number(final_points)
 	time_label.text = "Time: %s" % format_time(final_time)
-	level_label.text = "Level: %d" % final_level
 	kills_label.text = "Kills: %s" % format_number(final_kills)
-	coins_label.text = "+%s coins" % format_number(final_coins)
+	coins_label.text = "+%s Coins" % format_number(final_coins)
 
 	# Show and commit loot
 	_display_loot()
