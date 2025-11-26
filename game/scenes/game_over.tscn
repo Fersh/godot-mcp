@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://tuuhsw0a6emi"]
 
 [ext_resource type="Script" path="res://scripts/game_over.gd" id="1_script"]
-[ext_resource type="FontFile" uid="uid://bpixelify_bold" path="res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf" id="2_font"]
+[ext_resource type="FontFile" uid="uid://dxrvcd7nrpprv" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [node name="GameOver" type="CanvasLayer"]
 layer = 100

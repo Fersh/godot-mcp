@@ -26,6 +26,8 @@ const POOL_SIZE: int = 16
 # Music player (separate from SFX pool)
 var music_player: AudioStreamPlayer
 var music1: AudioStream
+var music2: AudioStream
+var play_music2_on_finish: bool = false
 
 func _ready() -> void:
 	_load_sounds()
@@ -76,8 +78,21 @@ func _setup_music_player() -> void:
 	music_player.volume_db = -10.0  # Background music quieter than SFX
 	add_child(music_player)
 
+	# Connect finished signal
+	music_player.finished.connect(_on_music_finished)
+
 	# Load music
 	music1 = load("res://assets/sounds/music1.mp3")
+	music2 = load("res://assets/sounds/music2.mp3")
+
+func _on_music_finished() -> void:
+	# When game over music ends, play music2 in a loop
+	if play_music2_on_finish and music2:
+		if GameSettings and not GameSettings.music_enabled:
+			return
+		music_player.stream = music2
+		music_player.play()
+		play_music2_on_finish = false  # Only trigger once, music2 will loop
 
 func _get_available_player() -> AudioStreamPlayer:
 	for player in audio_players:
@@ -160,6 +175,16 @@ func play_music() -> void:
 		# Check if music is enabled
 		if GameSettings and not GameSettings.music_enabled:
 			return
+		play_music2_on_finish = false
+		music_player.stream = music1
+		music_player.play()
+
+func play_game_over_music() -> void:
+	"""Play music1 once, then switch to music2 when it ends."""
+	if music_player and music1:
+		if GameSettings and not GameSettings.music_enabled:
+			return
+		play_music2_on_finish = true
 		music_player.stream = music1
 		music_player.play()
 

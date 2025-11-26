@@ -19,9 +19,19 @@ var final_points: int = 0
 var settings_dropdown: PanelContainer = null
 var settings_visible: bool = false
 
+# Font
+var pixel_font: Font = null
+
 func _ready() -> void:
+	# Load pixel font
+	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	play_again_button.pressed.connect(_on_play_again_pressed)
+
+	# Play game over music (will switch to music2 when it ends)
+	if SoundManager:
+		SoundManager.play_game_over_music()
 
 	# Style the buttons
 	_style_play_again_button()
@@ -112,8 +122,10 @@ func _display_loot() -> void:
 		if loot_container:
 			var no_loot = Label.new()
 			no_loot.text = "No loot found this run"
-			no_loot.add_theme_font_size_override("font_size", 14)
+			no_loot.add_theme_font_size_override("font_size", 12)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+			if pixel_font:
+				no_loot.add_theme_font_override("font", pixel_font)
 			loot_container.add_child(no_loot)
 		return
 
@@ -124,8 +136,10 @@ func _display_loot() -> void:
 	if loot_container:
 		var loot_label = Label.new()
 		loot_label.text = "LOOT: "
-		loot_label.add_theme_font_size_override("font_size", 14)
+		loot_label.add_theme_font_size_override("font_size", 12)
 		loot_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+		if pixel_font:
+			loot_label.add_theme_font_override("font", pixel_font)
 		loot_container.add_child(loot_label)
 
 		for item in pending:
@@ -162,9 +176,11 @@ func _create_loot_card(item: ItemData) -> Control:
 	if display_name.length() > 10:
 		display_name = display_name.substr(0, 9) + ".."
 	name_label.text = display_name
-	name_label.add_theme_font_size_override("font_size", 9)
+	name_label.add_theme_font_size_override("font_size", 8)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
 	# Style based on rarity
@@ -250,7 +266,7 @@ func _create_home_button() -> void:
 	# Position in top left
 	var margin = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_left", 60)
 	margin.add_theme_constant_override("margin_top", 60)
 	margin.add_child(home_btn)
 	add_child(margin)
@@ -302,9 +318,11 @@ func _create_settings_dropdown() -> void:
 	# Title
 	var title = Label.new()
 	title.text = "Settings"
-	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(1, 1, 1))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title)
 
 	# Music checkbox
@@ -338,8 +356,10 @@ func _create_settings_dropdown() -> void:
 	# Volume section
 	var vol_label = Label.new()
 	vol_label.text = "Volume"
-	vol_label.add_theme_font_size_override("font_size", 14)
+	vol_label.add_theme_font_size_override("font_size", 12)
 	vol_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	if pixel_font:
+		vol_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(vol_label)
 
 	var vol_hbox = HBoxContainer.new()
