@@ -95,11 +95,24 @@ theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 20
 
-[node name="CenterContainer" type="CenterContainer" parent="MainContainer/ScrollContainer/MarginContainer"]
+[node name="ContentVBox" type="VBoxContainer" parent="MainContainer/ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+
+[node name="RefundButton" type="Button" parent="MainContainer/ScrollContainer/MarginContainer/ContentVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.7, 0.5, 0.45, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 10
+text = "REFUND ALL"
+
+[node name="CenterContainer" type="CenterContainer" parent="MainContainer/ScrollContainer/MarginContainer/ContentVBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="GridContainer" type="GridContainer" parent="MainContainer/ScrollContainer/MarginContainer/CenterContainer"]
+[node name="GridContainer" type="GridContainer" parent="MainContainer/ScrollContainer/MarginContainer/ContentVBox/CenterContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 12
@@ -181,16 +194,6 @@ theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 14
 text = "UPGRADE"
 
-[node name="RefundButton" type="Button" parent="MainContainer"]
-custom_minimum_size = Vector2(0, 40)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.5, 0.4, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 11
-text = "REFUND ALL"
 
 [node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
 title = "Confirm Refund"

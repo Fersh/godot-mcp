@@ -6,7 +6,7 @@ var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular
 # Node references
 @onready var back_button: Button = $BackButton
 @onready var coin_amount: Label = $MainContainer/Header/CoinsContainer/CoinAmount
-@onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/CenterContainer/GridContainer
+@onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/CenterContainer/GridContainer
 @onready var footer_tooltip: PanelContainer = $MainContainer/FooterTooltip
 @onready var upgrade_name_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/UpgradeName
 @onready var rank_label: Label = $MainContainer/FooterTooltip/TooltipContent/TopRow/RankLabel
@@ -14,7 +14,7 @@ var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular
 @onready var benefit_label: Label = $MainContainer/FooterTooltip/TooltipContent/BenefitLabel
 @onready var cost_label: Label = $MainContainer/FooterTooltip/TooltipContent/BottomRow/CostLabel
 @onready var upgrade_button: Button = $MainContainer/FooterTooltip/TooltipContent/BottomRow/UpgradeButton
-@onready var refund_button: Button = $MainContainer/RefundButton
+@onready var refund_button: Button = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/RefundButton
 @onready var confirm_dialog: ConfirmationDialog = $ConfirmDialog
 
 # State
@@ -99,25 +99,17 @@ func _style_header() -> void:
 	header.add_theme_stylebox_override("panel", style)
 
 func _style_refund_button() -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.08, 0.06, 0.8)
-	style.border_width_top = 1
-	style.border_color = Color(0.4, 0.25, 0.2, 1)
-
-	refund_button.add_theme_stylebox_override("normal", style)
-	refund_button.add_theme_stylebox_override("hover", style)
-	refund_button.add_theme_stylebox_override("pressed", style)
-	refund_button.add_theme_stylebox_override("focus", style)
+	refund_button.flat = true
 
 func _style_footer_tooltip() -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.05, 0.05, 0.08, 0.98)
 	style.border_width_top = 3
 	style.border_color = Color(0.5, 0.45, 0.6, 1)
-	style.content_margin_left = 20
-	style.content_margin_right = 20
-	style.content_margin_top = 15
-	style.content_margin_bottom = 15
+	style.content_margin_left = 40
+	style.content_margin_right = 40
+	style.content_margin_top = 25
+	style.content_margin_bottom = 25
 
 	footer_tooltip.add_theme_stylebox_override("panel", style)
 
