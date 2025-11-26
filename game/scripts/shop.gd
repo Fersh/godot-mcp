@@ -524,10 +524,17 @@ func _update_tooltip(upgrade_id: String) -> void:
 		current_label.add_theme_color_override("font_color", Color(1, 0.84, 0, 1))
 	else:
 		var current_benefit = upgrade.benefit_per_rank * rank
+		var next_benefit = upgrade.benefit_per_rank * (rank + 1)
 		if "%d%%" in upgrade.benefit_format:
-			current_label.text = "Current: +%d%%" % int(current_benefit * 100)
+			if rank == 0:
+				current_label.text = "Next: +%d%%" % int(next_benefit * 100)
+			else:
+				current_label.text = "Current: +%d%%  →  Next: +%d%%" % [int(current_benefit * 100), int(next_benefit * 100)]
 		else:
-			current_label.text = "Current: +%d" % int(current_benefit)
+			if rank == 0:
+				current_label.text = "Next: +%d" % int(next_benefit)
+			else:
+				current_label.text = "Current: +%d  →  Next: +%d" % [int(current_benefit), int(next_benefit)]
 		current_label.add_theme_color_override("font_color", Color(0.5, 0.9, 0.4, 1))
 
 	# Button state with cost (● is the gold icon)

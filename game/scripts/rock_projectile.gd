@@ -12,7 +12,7 @@ var lifetime: float = 0.0
 
 # Arc motion
 var initial_velocity: Vector2 = Vector2.ZERO
-var gravity: float = 300.0
+var rock_gravity: float = 300.0
 var vertical_velocity: float = -150.0  # Initial upward arc
 
 # Spin animation
@@ -29,7 +29,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	# Apply gravity to create arc
-	vertical_velocity += gravity * delta
+	vertical_velocity += rock_gravity * delta
 
 	# Move with arc
 	var movement = initial_velocity * delta
