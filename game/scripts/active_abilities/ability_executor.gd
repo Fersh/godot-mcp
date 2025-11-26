@@ -647,6 +647,7 @@ func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("dash_strike", start_pos)
 	_play_sound("dash")
+	_screen_shake("small")
 
 # ============================================
 # MELEE ABILITIES - RARE
@@ -793,6 +794,7 @@ func _execute_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("blade_rush", start_pos)
 	_play_sound("dash")
+	_screen_shake("small")
 
 func _closest_point_on_line(a: Vector2, b: Vector2, p: Vector2) -> Vector2:
 	var ab = b - a
@@ -933,6 +935,7 @@ func _execute_power_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_projectile("power_shot", player.global_position, direction, ability)
 
 	_play_sound("arrow")
+	_screen_shake("small")
 
 func _execute_explosive_arrow(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target = _get_nearest_enemy(player.global_position)
@@ -943,6 +946,7 @@ func _execute_explosive_arrow(ability: ActiveAbilityData, player: Node2D) -> voi
 	_spawn_projectile("explosive_arrow", player.global_position, direction, ability)
 
 	_play_sound("arrow")
+	_screen_shake("small")
 
 func _execute_multi_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 	var direction = _get_attack_direction(player)
@@ -954,6 +958,7 @@ func _execute_multi_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 		_spawn_projectile("multi_shot", player.global_position, proj_dir, ability)
 
 	_play_sound("arrow")
+	_screen_shake("small")
 
 func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Similar to dodge but uses ability direction
@@ -1046,6 +1051,7 @@ func _execute_fan_of_knives(ability: ActiveAbilityData, player: Node2D) -> void:
 		_spawn_projectile("fan_of_knives", player.global_position, direction, ability)
 
 	_play_sound("throw")
+	_screen_shake("small")
 
 func _execute_sentry_turret(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a single turret at player position
@@ -1210,6 +1216,7 @@ func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_projectile("fireball", player.global_position, direction, ability)
 
 	_play_sound("fireball")
+	_screen_shake("small")
 
 func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
@@ -1360,6 +1367,7 @@ func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.apply_damage_boost(1.5, 3.0)  # 50% damage boost for 3 seconds
 
 	_play_sound("shadowstep")
+	_screen_shake("small")
 
 func _execute_time_slow(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Slow all enemies in radius significantly

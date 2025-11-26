@@ -237,8 +237,11 @@ func perform_dodge() -> bool:
 	if not player:
 		return false
 
-	# Start cooldown
-	dodge_cooldown_timer = DODGE_COOLDOWN
+	# Start cooldown (apply wind dancer reduction if applicable)
+	var cooldown_mult = 1.0
+	if AbilityManager:
+		cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
+	dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
 	is_dodging = true
 
 	# Calculate dodge direction (away from nearest enemy)

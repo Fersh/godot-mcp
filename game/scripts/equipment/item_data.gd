@@ -52,11 +52,11 @@ const SLOT_NAMES: Dictionary = {
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
 const BASE_DROP_WEIGHTS: Dictionary = {
-	Rarity.COMMON: 60.0,
-	Rarity.MAGIC: 25.0,
-	Rarity.RARE: 10.0,
-	Rarity.UNIQUE: 4.0,
-	Rarity.LEGENDARY: 1.0
+	Rarity.COMMON: 75.0,
+	Rarity.MAGIC: 20.0,
+	Rarity.RARE: 4.0,
+	Rarity.UNIQUE: 0.8,
+	Rarity.LEGENDARY: 0.2
 }
 
 # Unique identifier for this specific item instance
@@ -147,8 +147,14 @@ func get_stat_description() -> String:
 		lines.append("Grants: %s" % ability_name)
 
 	if grants_equipment_ability != "":
-		var special_name = grants_equipment_ability.replace("_", " ").capitalize()
-		lines.append("Special: %s" % special_name)
+		# Look up the ability details from ItemDatabase
+		if ItemDatabase and ItemDatabase.equipment_ability_effects.has(grants_equipment_ability):
+			var ability_info = ItemDatabase.equipment_ability_effects[grants_equipment_ability]
+			lines.append("Special: %s" % ability_info.name)
+			lines.append("  %s" % ability_info.description)
+		else:
+			var special_name = grants_equipment_ability.replace("_", " ").capitalize()
+			lines.append("Special: %s" % special_name)
 
 	return "\n".join(lines)
 

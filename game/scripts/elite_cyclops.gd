@@ -9,22 +9,22 @@ extends EliteBase
 @export var laser_beam_scene: PackedScene
 
 # Attack-specific stats
-@export var stomp_damage: float = 15.0
+@export var stomp_damage: float = 40.0
 @export var stomp_range: float = 80.0
 @export var stomp_aoe_radius: float = 100.0
 
-@export var rock_damage: float = 12.0
+@export var rock_damage: float = 30.0
 @export var rock_range: float = 300.0
 @export var rock_speed: float = 200.0
 
-@export var laser_damage: float = 8.0  # Per tick
+@export var laser_damage: float = 20.0  # Per tick
 @export var laser_range: float = 400.0
 @export var laser_duration: float = 2.0
 @export var laser_tick_rate: float = 0.25
 
-# Animation rows for Cyclops spritesheet (12 cols x 20 rows)
+# Animation rows for Cyclops spritesheet (15 cols x 20 rows, 64x64 per frame)
 var ROW_GUARD: int = 7
-var ROW_LASER: int = 8
+var ROW_LASER: int = 9  # Beam is at row 9
 var ROW_STOMP: int = 3
 var ROW_THROW: int = 4
 
@@ -50,35 +50,37 @@ func _setup_elite() -> void:
 	elite_name = "Cyclops"
 	enemy_type = "cyclops"
 
-	# Cyclops stats - 5x health, slower, hits hard
+	# Cyclops stats - 25x health (elite!), slower, hits hard
 	speed = 60.0  # Slower than most enemies
-	max_health = 100.0  # 5x orc health
+	max_health = 500.0  # 25x orc health
 	attack_damage = stomp_damage
 	attack_cooldown = 1.0
 	windup_duration = 0.5
 	animation_speed = 8.0
 
-	# Cyclops spritesheet: 12 cols x 20 rows
+	# Cyclops spritesheet: 15 cols x 20 rows
 	ROW_IDLE = 0
 	ROW_MOVE = 1
 	ROW_ATTACK = 3  # Stomp
 	ROW_DAMAGE = 5
 	ROW_DEATH = 6
 	ROW_GUARD = 7
-	ROW_LASER = 8
+	ROW_LASER = 9  # Beam is at row 9
 	ROW_STOMP = 3
 	ROW_THROW = 4
-	COLS_PER_ROW = 12
+	COLS_PER_ROW = 15
 
 	FRAME_COUNTS = {
-		0: 12,  # IDLE
+		0: 15,  # IDLE
 		1: 12,  # MOVE
-		3: 7,   # STOMP
-		4: 9,   # THROW
-		5: 4,   # DAMAGE
-		6: 7,   # DEATH
+		2: 7,
+		3: 13,  # STOMP
+		4: 3,   # THROW
+		5: 5,   # DAMAGE
+		6: 9,   # DEATH
 		7: 4,   # GUARD
-		8: 6,   # LASER
+		8: 6,
+		9: 8,   # LASER/BEAM
 	}
 
 	current_health = max_health

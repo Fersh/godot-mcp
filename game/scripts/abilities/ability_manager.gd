@@ -237,6 +237,7 @@ var has_unlimited_power: bool = false
 var unlimited_power_bonus: float = 0.0
 var unlimited_power_stacks: int = 0
 var has_wind_dancer: bool = false
+var wind_dancer_reduction: float = 0.0  # Cooldown reduction (0.5 = 50% reduction)
 var has_empathic_bond: bool = false
 var empathic_bond_multiplier: float = 1.0
 var has_fortune_favor: bool = false
@@ -490,6 +491,7 @@ func reset() -> void:
 	unlimited_power_bonus = 0.0
 	unlimited_power_stacks = 0
 	has_wind_dancer = false
+	wind_dancer_reduction = 0.0
 	has_empathic_bond = false
 	empathic_bond_multiplier = 1.0
 	has_fortune_favor = false
@@ -1216,6 +1218,7 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				unlimited_power_bonus += value
 			AbilityData.EffectType.WIND_DANCER:
 				has_wind_dancer = true
+				wind_dancer_reduction = value  # 0.5 = 50% cooldown reduction
 			AbilityData.EffectType.EMPATHIC_BOND:
 				has_empathic_bond = true
 				empathic_bond_multiplier = value
@@ -2051,6 +2054,12 @@ func apply_blood_debt_self_damage(player: Node2D, damage_dealt: float) -> void:
 
 func has_wind_dancer_ability() -> bool:
 	return has_wind_dancer
+
+func get_wind_dancer_cooldown_multiplier() -> float:
+	# Returns 0.5 for 50% cooldown (half duration), 1.0 for full cooldown
+	if has_wind_dancer:
+		return 1.0 - wind_dancer_reduction
+	return 1.0
 
 func get_empathic_bond_multiplier() -> float:
 	return empathic_bond_multiplier

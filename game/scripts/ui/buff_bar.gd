@@ -7,8 +7,11 @@ const ICON_SIZE := Vector2(40, 40)
 const ICON_SPACING := 8
 const MARGIN_TOP := 70  # Below XP bar
 const LONG_PRESS_TIME := 0.3
+const RUNE_BG_PATH := "res://assets/sprites/runes/Background/runes+bricks+effects/"
+const RUNE_BG_COUNT := 48
 
 var player: Node2D = null
+var rune_textures: Array[Texture2D] = []
 var buff_container: HBoxContainer = null
 var buff_icons: Dictionary = {}  # buff_id -> Control
 var pixel_font: Font = null
@@ -27,6 +30,9 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
+	# Load rune background textures
+	_load_rune_textures()
+
 	_create_ui()
 	_create_tooltip()
 
@@ -34,6 +40,20 @@ func _ready() -> void:
 	player = get_tree().get_first_node_in_group("player")
 	if player:
 		player.connect("buff_changed", _on_buff_changed)
+
+func _load_rune_textures() -> void:
+	# Load all rune background textures
+	for i in range(1, RUNE_BG_COUNT + 1):
+		var path = RUNE_BG_PATH + "Icon%d.png" % i
+		if ResourceLoader.exists(path):
+			var texture = load(path)
+			if texture:
+				rune_textures.append(texture)
+
+func _get_random_rune_texture() -> Texture2D:
+	if rune_textures.size() > 0:
+		return rune_textures[randi() % rune_textures.size()]
+	return null
 
 func _create_ui() -> void:
 	# Center container at top
@@ -127,13 +147,27 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	icon_container.custom_minimum_size = ICON_SIZE
 	icon_container.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# Background circle
-	var bg = ColorRect.new()
-	bg.name = "Background"
-	bg.color = Color(0.1, 0.1, 0.15, 0.9)
-	bg.size = ICON_SIZE
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_container.add_child(bg)
+	# Background - use rune texture if available
+	var rune_texture = _get_random_rune_texture()
+	if rune_texture:
+		var bg = TextureRect.new()
+		bg.name = "Background"
+		bg.texture = rune_texture
+		bg.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.size = ICON_SIZE
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Tint with buff color
+		bg.modulate = buff_data.get("color", Color.WHITE).lerp(Color.WHITE, 0.5)
+		icon_container.add_child(bg)
+	else:
+		# Fallback to ColorRect
+		var bg = ColorRect.new()
+		bg.name = "Background"
+		bg.color = Color(0.1, 0.1, 0.15, 0.9)
+		bg.size = ICON_SIZE
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_container.add_child(bg)
 
 	# Border (colored by buff)
 	var border = ColorRect.new()
@@ -143,14 +177,26 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon_container.add_child(border)
 
-	# Inner background (slightly smaller)
-	var inner = ColorRect.new()
-	inner.name = "Inner"
-	inner.color = Color(0.15, 0.15, 0.2, 0.95)
-	inner.position = Vector2(3, 3)
-	inner.size = ICON_SIZE - Vector2(6, 6)
-	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_container.add_child(inner)
+	# Inner - use same rune texture with darker tint
+	if rune_texture:
+		var inner = TextureRect.new()
+		inner.name = "Inner"
+		inner.texture = rune_texture
+		inner.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		inner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		inner.position = Vector2(3, 3)
+		inner.size = ICON_SIZE - Vector2(6, 6)
+		inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		inner.modulate = buff_data.get("color", Color.WHITE).darkened(0.3)
+		icon_container.add_child(inner)
+	else:
+		var inner = ColorRect.new()
+		inner.name = "Inner"
+		inner.color = Color(0.15, 0.15, 0.2, 0.95)
+		inner.position = Vector2(3, 3)
+		inner.size = ICON_SIZE - Vector2(6, 6)
+		inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_container.add_child(inner)
 
 	# Letter label (first letter of buff name)
 	var letter = Label.new()

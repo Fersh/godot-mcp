@@ -32,7 +32,7 @@ rock_projectile_scene = ExtResource("9_rock_projectile")
 material = SubResource("ShaderMaterial_hit_flash")
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("2_texture")
-hframes = 12
+hframes = 15
 vframes = 20
 frame = 0
 

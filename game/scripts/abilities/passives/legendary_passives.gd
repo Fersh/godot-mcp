@@ -90,10 +90,10 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"wind_dancer",
 			"One With The Wind",
-			"No dodge cooldown, invisibility on dodge",
+			"50% reduced dodge cooldown, invisibility on dodge",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.WIND_DANCER, value = 1.0}]
+			[{effect_type = AbilityData.EffectType.WIND_DANCER, value = 0.5}]
 		),
 
 		# Empathic Bond

@@ -5,7 +5,7 @@ class_name ActiveAbilityBar
 # Bottom-left: Dodge, Bottom-right: Ability 1 (larger)
 # Top-left: Ability 3, Top-right: Ability 2
 
-const BUTTON_SIZE := Vector2(112, 112)  # Standard button size (25% larger)
+const BUTTON_SIZE := Vector2(101, 101)  # Standard button size (10% smaller than 112)
 const ABILITY1_SIZE := Vector2(138, 138)  # Ability 1 is larger (25% larger)
 const GRID_SPACING := 8  # Space between buttons
 const MARGIN_RIGHT := 80  # 20px more left
