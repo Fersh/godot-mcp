@@ -154,7 +154,7 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 
 	# Icon placeholder (colored square based on rarity)
 	var icon_bg = ColorRect.new()
-	icon_bg.custom_minimum_size = Vector2(20, 20)
+	icon_bg.custom_minimum_size = Vector2(12, 12)
 	icon_bg.color = rarity_color
 	row.add_child(icon_bg)
 

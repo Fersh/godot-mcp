@@ -525,18 +525,89 @@ func _execute_ground_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 
 func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
-	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	var spin_duration = 0.4
 
+	# Deal damage to all enemies in radius
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
 
-	# Spawn effect and configure with ability radius
-	var effect = _spawn_effect("spinning_attack", player.global_position)
-	if effect and effect.has_method("setup"):
-		effect.setup(0.5, ability.radius, damage, 1.0)  # Short duration, scale to radius
+	# Spawn circular slash effect attached to player
+	_spawn_spinning_slash_effect(player, ability.radius, spin_duration)
+
+	# Spin the player character
+	_spin_player(player, spin_duration)
 
 	_play_sound("swing")
 	_screen_shake("small")
+
+func _spawn_spinning_slash_effect(player: Node2D, radius: float, duration: float) -> void:
+	# Create a spinning slash visual that follows the player
+	var effect = Node2D.new()
+	effect.name = "SpinningSlashEffect"
+	player.add_child(effect)
+
+	# Create the slash sprite
+	var sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(radius / 40.0, radius / 40.0)  # Scale based on radius
+	sprite.centered = true
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.position = Vector2(50, 0)  # Offset from center
+	effect.add_child(sprite)
+
+	# Setup frames from slash sprite sheet
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 20.0)
+	frames.set_animation_loop("default", true)
+
+	var source_path = "res://assets/sprites/effects/slash/SlashFX Combo1 sheet.png"
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var height = img.get_height()
+			var frame_count = 6
+			var frame_width = total_width / frame_count
+
+			for i in range(frame_count):
+				var frame_img = Image.create(frame_width, height, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_width, 0, frame_width, height), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+
+	sprite.sprite_frames = frames
+	sprite.play("default")
+
+	# Spin the effect around the player
+	var tween = effect.create_tween()
+	tween.tween_property(effect, "rotation", TAU * 2, duration)  # Two full rotations
+	tween.tween_callback(effect.queue_free)
+
+func _spin_player(player: Node2D, duration: float) -> void:
+	# Find the player's sprite and animate it spinning
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		sprite = player.get_node_or_null("AnimatedSprite2D")
+	if not sprite:
+		return
+
+	# Store original scale for flip restoration
+	var original_scale = sprite.scale
+
+	# Create spin animation by rapidly flipping and scaling
+	var tween = sprite.create_tween()
+	var spin_steps = 8
+	var step_duration = duration / spin_steps
+
+	for i in range(spin_steps):
+		# Squash horizontally to simulate rotation
+		tween.tween_property(sprite, "scale:x", 0.0, step_duration * 0.5)
+		tween.tween_callback(func(): sprite.flip_h = not sprite.flip_h)
+		tween.tween_property(sprite, "scale:x", abs(original_scale.x), step_duration * 0.5)
+
+	# Restore original state
+	tween.tween_callback(func(): sprite.scale = original_scale)
 
 func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)

@@ -79,7 +79,7 @@ var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 1012.5  # Base XP required (50% reduction from 2025)
+var xp_to_next_level: float = 759.4  # Base XP required (75% reduction from original)
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
@@ -520,6 +520,32 @@ func spawn_swipe_effect() -> void:
 	swipe.arc_angle = melee_arc
 	get_parent().add_child(swipe)
 
+func spawn_blade_beam() -> void:
+	# Create a blade beam projectile (energy wave from melee swing)
+	if arrow_scene == null:
+		return
+
+	var beam = arrow_scene.instantiate()
+	beam.global_position = global_position + attack_direction * 30  # Start slightly in front
+	beam.direction = attack_direction
+
+	# Blade beam properties - travels further and does good damage
+	beam.speed = 400.0
+	beam.max_distance = 500.0
+	beam.damage_multiplier = 1.0
+	if AbilityManager:
+		beam.damage_multiplier = AbilityManager.get_damage_multiplier()
+	beam.pierce_count = 2  # Pierce through a couple enemies
+
+	# Visual distinction - tint the projectile
+	beam.modulate = Color(0.7, 0.9, 1.0, 0.9)  # Light blue tint
+
+	get_parent().add_child(beam)
+
+	# Play a sound effect
+	if SoundManager and SoundManager.has_method("play_arrow"):
+		SoundManager.play_arrow()
+
 func spawn_single_arrow(direction: Vector2) -> void:
 	var arrow = arrow_scene.instantiate()
 	arrow.global_position = global_position
@@ -561,6 +587,10 @@ func perform_melee_attack() -> void:
 
 	# Spawn swipe effect for melee attacks
 	spawn_swipe_effect()
+
+	# Blade Beam - fire a projectile on melee swing
+	if AbilityManager and AbilityManager.should_fire_blade_beam():
+		spawn_blade_beam()
 
 	# Recoil - push player forward slightly for melee
 	recoil_offset = attack_direction * 0.5

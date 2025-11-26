@@ -64,7 +64,7 @@ horizontal_scroll_mode = 0
 [node name="PowerupsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/PowerupsMargin/PowerupsScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 6
+theme_override_constants/separation = 16
 
 [node name="PowerupsSpacer2" type="Control" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -73,16 +73,17 @@ custom_minimum_size = Vector2(0, 10)
 [node name="Separator2" type="HSeparator" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="ButtonContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 12
+alignment = 1
+theme_override_constants/separation = 20
 
 [node name="GiveUpButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 text = "GIVE UP"
 
 [node name="ResumeButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(150, 40)
 layout_mode = 2
 text = "RESUME"

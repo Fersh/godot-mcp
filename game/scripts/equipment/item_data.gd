@@ -143,10 +143,12 @@ func get_stat_description() -> String:
 			lines.append("%s%d %s" % [sign, int(value), stat_name])
 
 	if grants_ability != "":
-		lines.append("[color=yellow]Grants: %s[/color]" % grants_ability)
+		var ability_name = grants_ability.replace("_", " ").capitalize()
+		lines.append("Grants: %s" % ability_name)
 
 	if grants_equipment_ability != "":
-		lines.append("[color=orange]Special: %s[/color]" % grants_equipment_ability)
+		var special_name = grants_equipment_ability.replace("_", " ").capitalize()
+		lines.append("Special: %s" % special_name)
 
 	return "\n".join(lines)
 
