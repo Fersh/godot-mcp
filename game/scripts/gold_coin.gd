@@ -1,6 +1,6 @@
 extends Area2D
 
-@export var xp_value: float = 7.5  # Flat XP so higher levels require more coins
+@export var xp_value: float = 22.5  # Flat XP so higher levels require more coins
 @export var bob_speed: float = 3.0
 @export var bob_height: float = 5.0
 @export var magnet_range: float = 80.0

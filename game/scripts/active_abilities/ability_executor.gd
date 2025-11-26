@@ -993,6 +993,7 @@ func _execute_ballista_strike(ability: ActiveAbilityData, player: Node2D) -> voi
 
 	_play_sound("ballista")
 	_screen_shake("medium")
+	_impact_pause()
 
 func _execute_sentry_network(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn 3 turrets around the player
@@ -1072,6 +1073,7 @@ func _execute_explosive_decoy(ability: ActiveAbilityData, player: Node2D) -> voi
 
 		_spawn_effect("explosion", decoy_pos)
 		_screen_shake("large")
+		_impact_pause()
 		_play_sound("explosion")
 	)
 
@@ -1101,6 +1103,7 @@ func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_spawn_effect("frost_nova", player.global_position)
 	_play_sound("frost")
+	_screen_shake("small")
 	_impact_pause()
 
 func _execute_healing_light(ability: ActiveAbilityData, player: Node2D) -> void:
@@ -1133,6 +1136,7 @@ func _execute_blinding_flash(ability: ActiveAbilityData, player: Node2D) -> void
 	_spawn_effect("blinding_flash", player.global_position)
 	_play_sound("flash")
 	_screen_shake("small")
+	_impact_pause()
 
 # ============================================
 # GLOBAL ABILITIES - RARE
@@ -1174,6 +1178,8 @@ func _execute_chain_lightning(ability: ActiveAbilityData, player: Node2D) -> voi
 			break
 
 	_play_sound("lightning")
+	_screen_shake("small")
+	_impact_pause()
 
 func _execute_meteor_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target_pos = _get_enemy_cluster_center(player.global_position, 300.0)
@@ -1265,6 +1271,7 @@ func _execute_black_hole(ability: ActiveAbilityData, player: Node2D) -> void:
 			_deal_damage_to_enemy(enemy, damage)
 		_spawn_effect("black_hole_explosion", target_pos)
 		_screen_shake("large")
+		_impact_pause()
 	)
 
 	_play_sound("black_hole")
