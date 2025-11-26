@@ -13,7 +13,12 @@ config_version=5
 config/name="Rogue Arena"
 run/main_scene="res://scenes/main_menu.tscn"
 config/features=PackedStringArray("4.5", "Mobile")
-config/icon="res://icon.svg"
+config/icon="res://icon1024.png"
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/image="res://splash.png"
+boot_splash/fullsize=false
+boot_splash/use_filter=false
+boot_splash/minimum_display_time=1500
 
 [autoload]
 
@@ -33,6 +38,7 @@ window/size/viewport_width=1280
 window/size/viewport_height=752
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=0
 
 [input_devices]
 

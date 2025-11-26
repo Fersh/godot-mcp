@@ -150,7 +150,7 @@ func start_attack() -> void:
 func _on_attack_complete() -> void:
 	if player and is_instance_valid(player) and player.has_method("take_damage"):
 		var dist_to_player = global_position.distance_to(player.global_position)
-		if dist_to_player <= attack_range * 1.35:  # 10% more forgiving for player escape
+		if dist_to_player <= attack_range * 1.25:  # Forgiving for player escape
 			player.take_damage(attack_damage)
 			if AbilityManager and AbilityManager.has_thorns:
 				take_damage(AbilityManager.thorns_damage, false)
@@ -308,7 +308,6 @@ func die() -> void:
 	if sprite.material:
 		sprite.material.set_shader_parameter("flash_intensity", 0.0)
 
-	remove_from_group("enemies")
 	spawn_death_particles()
 
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
@@ -316,6 +315,9 @@ func die() -> void:
 
 	if AbilityManager and player and is_instance_valid(player):
 		AbilityManager.on_enemy_killed(self, player)
+
+	# Remove from group AFTER on_enemy_killed so abilities can find other enemies
+	remove_from_group("enemies")
 
 	var stats = get_node_or_null("/root/Main/StatsDisplay")
 	if stats and stats.has_method("add_kill_points"):

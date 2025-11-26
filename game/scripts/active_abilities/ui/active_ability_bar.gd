@@ -8,8 +8,8 @@ class_name ActiveAbilityBar
 const BUTTON_SIZE := Vector2(90, 90)  # Standard button size
 const ABILITY1_SIZE := Vector2(110, 110)  # Ability 1 is larger
 const GRID_SPACING := 8  # Space between buttons
-const MARGIN_RIGHT := 40
-const MARGIN_BOTTOM := 40
+const MARGIN_RIGHT := 60
+const MARGIN_BOTTOM := 60
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null

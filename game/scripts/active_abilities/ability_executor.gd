@@ -693,7 +693,10 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 	target_pos.x = clamp(target_pos.x, 40, 1536 - 40)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
-	# Create leap tween
+	# Store original scale
+	var original_scale = player.scale
+
+	# Create leap tween for position
 	var tween = create_tween()
 	tween.tween_property(player, "global_position", target_pos, 0.3).set_trans(Tween.TRANS_QUAD)
 	tween.tween_callback(func():
@@ -706,6 +709,17 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 		_screen_shake("medium")
 		_impact_pause()
 	)
+
+	# Animate player body - scrunch mid-jump then expand on landing
+	var jump_tween = create_tween()
+	# First half: scrunch vertically (compress body mid-air)
+	var scrunch_scale = Vector2(original_scale.x * 1.2, original_scale.y * 0.6)
+	jump_tween.tween_property(player, "scale", scrunch_scale, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Second half: expand back and slightly squash on landing
+	var land_scale = Vector2(original_scale.x * 1.1, original_scale.y * 0.9)
+	jump_tween.tween_property(player, "scale", land_scale, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	# Return to normal
+	jump_tween.tween_property(player, "scale", original_scale, 0.1).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 	_play_sound("leap")
 
@@ -813,7 +827,7 @@ func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	# Make player invulnerable during omnislash
 	if player.has_method("set_invulnerable"):
-		player.set_invulnerable(true)
+		player.set_invulnerable(true, ability.invulnerability_duration)
 
 	var damage_per_hit = _get_damage(ability) / 12.0  # 12 hits total
 	var hit_count = 0
@@ -862,13 +876,7 @@ func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_divine_shield(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Make player invulnerable
 	if player.has_method("set_invulnerable"):
-		player.set_invulnerable(true)
-
-	# End after duration
-	get_tree().create_timer(ability.invulnerability_duration).timeout.connect(func():
-		if player.has_method("set_invulnerable"):
-			player.set_invulnerable(false)
-	)
+		player.set_invulnerable(true, ability.invulnerability_duration)
 
 	_spawn_effect("divine_shield", player.global_position, player)
 	_play_sound("buff")

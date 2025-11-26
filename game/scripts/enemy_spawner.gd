@@ -6,8 +6,8 @@ extends Node2D
 @export var imp_scene: PackedScene
 @export var slime_scene: PackedScene
 
-@export var initial_spawn_interval: float = 2.5  # 20% fewer mobs (was 2.0)
-@export var final_spawn_interval: float = 0.625  # 20% fewer mobs (was 0.5)
+@export var initial_spawn_interval: float = 2.75  # 30% fewer mobs (was 2.0)
+@export var final_spawn_interval: float = 0.69  # 30% fewer mobs (was 0.5)
 @export var ramp_up_time: float = 90.0
 @export var min_spawn_distance: float = 200.0
 

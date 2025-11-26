@@ -34,6 +34,12 @@ var size_scale: float = 1.0
 # Temporary buffs
 var temp_speed_boost: float = 0.0
 var temp_speed_timer: float = 0.0
+var temp_attack_speed_boost: float = 0.0
+var temp_attack_speed_timer: float = 0.0
+
+# Active buffs tracking for UI {buff_id: {timer: float, duration: float, name: String, description: String, color: Color}}
+var active_buffs: Dictionary = {}
+signal buff_changed(buffs: Dictionary)
 
 # Heal accumulator (for small heals that would round to 0)
 var accumulated_heal: float = 0.0
@@ -365,10 +371,93 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Update temporary buffs
+	var buffs_changed = false
 	if temp_speed_timer > 0:
 		temp_speed_timer -= delta
 		if temp_speed_timer <= 0:
 			temp_speed_boost = 0.0
+			if active_buffs.has("speed_boost"):
+				active_buffs.erase("speed_boost")
+				buffs_changed = true
+		elif active_buffs.has("speed_boost"):
+			active_buffs["speed_boost"].timer = temp_speed_timer
+
+	if temp_attack_speed_timer > 0:
+		temp_attack_speed_timer -= delta
+		if temp_attack_speed_timer <= 0:
+			temp_attack_speed_boost = 0.0
+			if active_buffs.has("attack_speed_boost"):
+				active_buffs.erase("attack_speed_boost")
+				buffs_changed = true
+		elif active_buffs.has("attack_speed_boost"):
+			active_buffs["attack_speed_boost"].timer = temp_attack_speed_timer
+
+	# Track conditional ability buffs
+	if AbilityManager:
+		var is_standing_still = velocity.length() < 5.0
+		var is_moving = velocity.length() > 50.0
+
+		# Focus Regen - active when standing still
+		if AbilityManager.has_focus_regen:
+			if is_standing_still and not active_buffs.has("focus_regen"):
+				active_buffs["focus_regen"] = {
+					"timer": -1, "duration": -1,  # Infinite while condition met
+					"name": "Focus",
+					"description": "Regenerating HP",
+					"color": Color(0.2, 0.9, 0.4)  # Green
+				}
+				buffs_changed = true
+			elif not is_standing_still and active_buffs.has("focus_regen"):
+				active_buffs.erase("focus_regen")
+				buffs_changed = true
+
+		# Practiced Stance - active when standing still
+		if AbilityManager.has_practiced_stance:
+			if is_standing_still and not active_buffs.has("practiced_stance"):
+				active_buffs["practiced_stance"] = {
+					"timer": -1, "duration": -1,
+					"name": "Stance",
+					"description": "+" + str(int(AbilityManager.practiced_stance_bonus * 100)) + "% Damage",
+					"color": Color(0.9, 0.6, 0.2)  # Orange
+				}
+				buffs_changed = true
+			elif not is_standing_still and active_buffs.has("practiced_stance"):
+				active_buffs.erase("practiced_stance")
+				buffs_changed = true
+
+		# Momentum - active when moving
+		if AbilityManager.has_momentum:
+			if is_moving and not active_buffs.has("momentum"):
+				active_buffs["momentum"] = {
+					"timer": -1, "duration": -1,
+					"name": "Momentum",
+					"description": "+" + str(int(AbilityManager.momentum_bonus * 100)) + "% Damage",
+					"color": Color(0.4, 0.7, 1.0)  # Blue
+				}
+				buffs_changed = true
+			elif not is_moving and active_buffs.has("momentum"):
+				active_buffs.erase("momentum")
+				buffs_changed = true
+
+		# Combat Momentum - active when stacks > 0
+		if AbilityManager.has_combat_momentum:
+			if AbilityManager.combat_momentum_stacks > 0 and not active_buffs.has("combat_momentum"):
+				active_buffs["combat_momentum"] = {
+					"timer": -1, "duration": -1,
+					"name": "C.Momentum",
+					"description": str(AbilityManager.combat_momentum_stacks) + " stacks",
+					"color": Color(0.9, 0.3, 0.5)  # Pink
+				}
+				buffs_changed = true
+			elif AbilityManager.combat_momentum_stacks > 0 and active_buffs.has("combat_momentum"):
+				# Update stack count
+				active_buffs["combat_momentum"].description = str(AbilityManager.combat_momentum_stacks) + " stacks"
+			elif AbilityManager.combat_momentum_stacks == 0 and active_buffs.has("combat_momentum"):
+				active_buffs.erase("combat_momentum")
+				buffs_changed = true
+
+	if buffs_changed:
+		emit_signal("buff_changed", active_buffs)
 
 	var direction := Vector2.ZERO
 
@@ -401,9 +490,10 @@ func _physics_process(delta: float) -> void:
 	position.x = clamp(position.x, MARGIN, ARENA_WIDTH - MARGIN)
 	position.y = clamp(position.y, MARGIN, ARENA_HEIGHT - MARGIN)
 
-	# Auto-attack
+	# Auto-attack (apply temp attack speed boost)
 	attack_timer += delta
-	if attack_timer >= attack_cooldown:
+	var effective_cooldown = attack_cooldown / (1.0 + temp_attack_speed_boost)
+	if attack_timer >= effective_cooldown:
 		try_attack()
 
 	# Apply recoil to actual position
@@ -807,10 +897,7 @@ func revive_with_percent(hp_percent: float) -> void:
 		JuiceManager.shake_large()
 
 	# Brief invulnerability after revive
-	set_invulnerable(true)
-	get_tree().create_timer(1.5).timeout.connect(func():
-		set_invulnerable(false)
-	)
+	set_invulnerable(true, 1.5)
 
 func spawn_heal_number(amount: float) -> void:
 	if damage_number_scene == null:
@@ -824,6 +911,26 @@ func spawn_heal_number(amount: float) -> void:
 func apply_temporary_speed_boost(boost: float, duration: float) -> void:
 	temp_speed_boost = boost
 	temp_speed_timer = duration
+	active_buffs["speed_boost"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Adrenaline",
+		"description": "+" + str(int(boost * 100)) + "% Move Speed",
+		"color": Color(0.2, 0.8, 0.2)  # Green
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func apply_temporary_attack_speed_boost(boost: float, duration: float) -> void:
+	temp_attack_speed_boost = boost
+	temp_attack_speed_timer = duration
+	active_buffs["attack_speed_boost"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Bloodthirst",
+		"description": "+" + str(int(boost * 100)) + "% Attack Speed",
+		"color": Color(0.8, 0.2, 0.2)  # Red
+	}
+	emit_signal("buff_changed", active_buffs)
 
 func update_ability_stats(modifiers: Dictionary) -> void:
 	# Update speed
@@ -881,14 +988,27 @@ var invulnerability_timer: float = 0.0
 var damage_boost_multiplier: float = 1.0
 var damage_boost_timer: float = 0.0
 
-func set_invulnerable(invulnerable: bool) -> void:
+func set_invulnerable(invulnerable: bool, duration: float = 0.0) -> void:
 	"""Set the player's invulnerability state."""
 	is_invulnerable = invulnerable
 	if invulnerable:
 		# Visual feedback - make player slightly transparent
 		modulate.a = 0.6
+		if duration > 0:
+			invulnerability_timer = duration
+			active_buffs["invulnerable"] = {
+				"timer": duration,
+				"duration": duration,
+				"name": "Shield",
+				"description": "Invulnerable",
+				"color": Color(0.4, 0.8, 1.0)  # Cyan
+			}
+			emit_signal("buff_changed", active_buffs)
 	else:
 		modulate.a = 1.0
+		if active_buffs.has("invulnerable"):
+			active_buffs.erase("invulnerable")
+			emit_signal("buff_changed", active_buffs)
 
 func get_attack_direction() -> Vector2:
 	"""Get the current attack/facing direction."""
@@ -902,6 +1022,15 @@ func apply_damage_boost(multiplier: float, duration: float) -> void:
 	"""Apply a temporary damage boost."""
 	damage_boost_multiplier = multiplier
 	damage_boost_timer = duration
+	var boost_percent = int((multiplier - 1.0) * 100)
+	active_buffs["damage_boost"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Battle Cry",
+		"description": "+" + str(boost_percent) + "% Damage",
+		"color": Color(1.0, 0.8, 0.2)  # Gold/Yellow
+	}
+	emit_signal("buff_changed", active_buffs)
 
 func get_damage_boost() -> float:
 	"""Get the current damage boost multiplier."""
@@ -968,11 +1097,18 @@ func _update_active_ability_timers(delta: float) -> void:
 	# Update invulnerability timer
 	if invulnerability_timer > 0:
 		invulnerability_timer -= delta
+		if active_buffs.has("invulnerable"):
+			active_buffs["invulnerable"].timer = invulnerability_timer
 		if invulnerability_timer <= 0:
 			set_invulnerable(false)
 
 	# Update damage boost timer
 	if damage_boost_timer > 0:
 		damage_boost_timer -= delta
+		if active_buffs.has("damage_boost"):
+			active_buffs["damage_boost"].timer = damage_boost_timer
 		if damage_boost_timer <= 0:
 			damage_boost_multiplier = 1.0
+			if active_buffs.has("damage_boost"):
+				active_buffs.erase("damage_boost")
+				emit_signal("buff_changed", active_buffs)

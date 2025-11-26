@@ -13,6 +13,7 @@ func _ready() -> void:
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(2.0, 2.0)
+	sprite.centered = true
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()

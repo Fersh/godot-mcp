@@ -1525,7 +1525,7 @@ func should_fire_blade_beam() -> bool:
 # Called when player picks up a coin
 func on_coin_pickup(player: Node2D) -> void:
 	if has_blood_money:
-		heal_player(player, blood_money_heal)
+		heal_player(player, player.max_health * 0.01)
 
 # Trigger divine shield invulnerability
 func trigger_divine_shield() -> void:
@@ -1571,7 +1571,7 @@ func should_boomerang() -> bool:
 func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# Vampirism
 	if has_vampirism and randf() < vampirism_chance:
-		heal_player(player, 1.0)
+		heal_player(player, player.max_health * 0.01)
 
 	# Adrenaline
 	if has_adrenaline:

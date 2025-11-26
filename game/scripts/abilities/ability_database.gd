@@ -189,7 +189,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"vampirism",
 			"Vampirism",
-			"5% Chance to heal 1HP on kill",
+			"5% Chance to heal 1% HP on kill",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.VAMPIRISM, value = 0.05}]
@@ -327,7 +327,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"blood_money",
 			"Blood Money",
-			"Picking up coins heals you for 1 HP",
+			"Picking up coins heals you for 1% HP",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BLOOD_MONEY, value = 1.0}]  # HP per coin

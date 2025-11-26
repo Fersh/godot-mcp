@@ -7,6 +7,7 @@ extends Node2D
 # Active ability UI components (untyped to allow script assignment)
 var active_ability_bar = null
 var active_ability_selection_ui = null
+var buff_bar = null
 
 # Virtual joystick for movement
 var virtual_joystick = null
@@ -74,7 +75,7 @@ func _on_player_level_up(new_level: int) -> void:
 
 func _on_player_died() -> void:
 	# Wait for death animation then show game over
-	await get_tree().create_timer(2.5).timeout
+	await get_tree().create_timer(3.5).timeout
 	show_game_over()
 
 func show_game_over() -> void:
@@ -172,6 +173,14 @@ func _setup_active_ability_system() -> void:
 		active_ability_selection_ui.set_script(selection_script)
 		active_ability_selection_ui.name = "ActiveAbilitySelectionUI"
 		add_child(active_ability_selection_ui)
+
+	# Create the buff bar UI
+	var buff_script = load("res://scripts/ui/buff_bar.gd")
+	if buff_script:
+		buff_bar = CanvasLayer.new()
+		buff_bar.set_script(buff_script)
+		buff_bar.name = "BuffBar"
+		add_child(buff_bar)
 
 func _show_initial_ability_selection() -> void:
 	"""Show the level 1 active ability selection at game start."""
