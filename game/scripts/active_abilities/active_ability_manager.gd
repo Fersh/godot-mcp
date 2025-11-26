@@ -24,6 +24,12 @@ var cooldown_timers: Array[float] = []  # Time remaining on each slot
 var dodge_cooldown_timer: float = 0.0
 var is_dodging: bool = false
 
+# Keyboard input state (to prevent holding key = spam)
+var _dodge_key_held: bool = false
+var _ability1_key_held: bool = false
+var _ability2_key_held: bool = false
+var _ability3_key_held: bool = false
+
 # Reference to player (set by player on ready)
 var player: Node2D = null
 
@@ -50,6 +56,40 @@ func _process(delta: float) -> void:
 	if dodge_cooldown_timer > 0:
 		dodge_cooldown_timer = max(0.0, dodge_cooldown_timer - delta)
 		emit_signal("dodge_cooldown_updated", dodge_cooldown_timer, DODGE_COOLDOWN)
+
+	# Keyboard shortcuts for abilities
+	if not get_tree().paused:
+		# Dodge: J or Q
+		if Input.is_key_pressed(KEY_J) or Input.is_key_pressed(KEY_Q):
+			if not _dodge_key_held:
+				_dodge_key_held = true
+				perform_dodge()
+		else:
+			_dodge_key_held = false
+
+		# Ability 1: K or W (note: W may conflict with movement)
+		if Input.is_key_pressed(KEY_K):
+			if not _ability1_key_held:
+				_ability1_key_held = true
+				use_ability(0)
+		else:
+			_ability1_key_held = false
+
+		# Ability 2: L or E
+		if Input.is_key_pressed(KEY_L) or Input.is_key_pressed(KEY_E):
+			if not _ability2_key_held:
+				_ability2_key_held = true
+				use_ability(1)
+		else:
+			_ability2_key_held = false
+
+		# Ability 3: ; or R
+		if Input.is_key_pressed(KEY_SEMICOLON) or Input.is_key_pressed(KEY_R):
+			if not _ability3_key_held:
+				_ability3_key_held = true
+				use_ability(2)
+		else:
+			_ability3_key_held = false
 
 func reset_for_new_run() -> void:
 	"""Reset all abilities for a new game run."""

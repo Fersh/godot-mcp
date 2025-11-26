@@ -13,7 +13,7 @@ offset_left = -130.0
 offset_bottom = 100.0
 grow_horizontal = 0
 theme_override_constants/margin_top = 55
-theme_override_constants/margin_right = 40
+theme_override_constants/margin_right = 60
 
 [node name="PauseButton" type="Button" parent="MarginContainer"]
 custom_minimum_size = Vector2(34, 34)
