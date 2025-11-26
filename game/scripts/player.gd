@@ -242,16 +242,31 @@ func take_damage(amount: float) -> void:
 		if randf() < block_chance:
 			was_blocked = true
 
-	# Apply character passive damage reduction (Knight's Iron Will)
+	# Calculate total damage reduction
 	var final_damage = amount
+	var total_reduction = 0.0
+
+	# Add permanent upgrade damage reduction
+	if PermanentUpgrades:
+		total_reduction += PermanentUpgrades.get_all_bonuses().get("damage_reduction", 0.0)
+
+	# Add equipment damage reduction
+	if AbilityManager:
+		total_reduction += AbilityManager.get_equipment_damage_reduction()
+
+	# Add character passive damage reduction (Knight's Iron Will - conditional)
 	if CharacterManager:
 		var bonuses = CharacterManager.get_passive_bonuses()
-		var reduction = bonuses.get("damage_reduction", 0.0)
+		var passive_reduction = bonuses.get("damage_reduction", 0.0)
 		var threshold = bonuses.get("damage_reduction_threshold", 0.0)
-		if reduction > 0 and threshold > 0:
+		if passive_reduction > 0 and threshold > 0:
 			var health_percent = current_health / max_health
 			if health_percent < threshold:
-				final_damage = amount * (1.0 - reduction)
+				total_reduction += passive_reduction
+
+	# Apply total damage reduction (cap at 75% to prevent invincibility)
+	total_reduction = min(total_reduction, 0.75)
+	final_damage = amount * (1.0 - total_reduction)
 
 	# Block reduces damage by 50%
 	if was_blocked:
