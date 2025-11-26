@@ -22,6 +22,7 @@ class UpgradeDefinition:
 	var description: String
 	var icon: String  # Icon name/path for UI
 	var category: int
+	var sort_order: int  # Order within category for display
 	var base_cost: int
 	var cost_multiplier: float
 	var max_rank: int
@@ -30,13 +31,14 @@ class UpgradeDefinition:
 	var benefit_format: String  # How to display the benefit (e.g., "+%d%%" or "+%d")
 
 	func _init(p_id: String, p_name: String, p_desc: String, p_icon: String,
-			   p_category: int, p_base_cost: int, p_cost_mult: float,
+			   p_category: int, p_sort: int, p_base_cost: int, p_cost_mult: float,
 			   p_max_rank: int, p_benefit: float, p_benefit_type: String, p_format: String):
 		id = p_id
 		name = p_name
 		description = p_desc
 		icon = p_icon
 		category = p_category
+		sort_order = p_sort
 		base_cost = p_base_cost
 		cost_multiplier = p_cost_mult
 		max_rank = p_max_rank
@@ -58,103 +60,103 @@ func _ready() -> void:
 	load_upgrades()
 
 func _init_upgrade_definitions() -> void:
-	# Combat Upgrades
-	_add_upgrade("neon_power", "Neon Power", "Increase all damage dealt", "damage",
-		Category.COMBAT, 100, 1.5, 5, 0.10, "damage", "+%d%% damage")
+	# Combat Upgrades - ordered by importance/commonality
+	_add_upgrade("neon_power", "Damage", "Increase all damage dealt", "damage",
+		Category.COMBAT, 0, 100, 1.5, 5, 0.10, "damage", "+%d%% damage")
 
-	_add_upgrade("hard_light_shield", "Hard Light Shield", "Reduce incoming damage", "shield",
-		Category.COMBAT, 150, 1.6, 5, 0.05, "damage_reduction", "-%d%% incoming damage")
+	_add_upgrade("overclocked_emitter", "Atk Speed", "Increase attack speed", "fire_rate",
+		Category.COMBAT, 1, 200, 1.6, 5, 0.10, "attack_speed", "+%d%% attack speed")
 
-	_add_upgrade("overclocked_emitter", "Overclocked Emitter", "Increase fire rate", "fire_rate",
-		Category.COMBAT, 200, 1.6, 5, 0.10, "attack_speed", "+%d%% fire rate")
+	_add_upgrade("keen_eye", "Crit Chance", "Increase critical hit chance", "crit_chance",
+		Category.COMBAT, 2, 200, 1.5, 5, 0.02, "crit_chance", "+%d%% crit chance")
 
-	_add_upgrade("volatile_plasma", "Volatile Plasma", "Increase area of effect size", "aoe",
-		Category.COMBAT, 300, 1.5, 5, 0.15, "aoe_size", "+%d%% AoE size")
+	_add_upgrade("precision_core", "Crit Damage", "Increase critical hit damage", "crit_damage",
+		Category.COMBAT, 3, 250, 1.5, 5, 0.20, "crit_damage", "+%d%% crit damage")
 
-	_add_upgrade("magnetic_accelerator", "Magnetic Accelerator", "Increase projectile speed", "projectile",
-		Category.COMBAT, 100, 1.3, 5, 0.10, "projectile_speed", "+%d%% projectile speed")
+	_add_upgrade("volatile_plasma", "AoE Size", "Increase area of effect size", "aoe",
+		Category.COMBAT, 4, 300, 1.5, 5, 0.15, "aoe_size", "+%d%% AoE size")
 
-	_add_upgrade("split_chamber", "Split Chamber", "Fire additional projectiles", "multishot",
-		Category.COMBAT, 1000, 2.5, 5, 1.0, "projectile_count", "+%d projectile")
+	_add_upgrade("magnetic_accelerator", "Proj. Speed", "Increase projectile speed", "projectile",
+		Category.COMBAT, 5, 100, 1.3, 5, 0.10, "projectile_speed", "+%d%% projectile speed")
 
-	_add_upgrade("viral_payload", "Viral Payload", "Enemies have reduced health", "virus",
-		Category.COMBAT, 400, 1.6, 5, 0.05, "enemy_health_reduction", "-%d%% enemy health")
+	_add_upgrade("split_chamber", "Multishot", "Fire additional projectiles", "multishot",
+		Category.COMBAT, 6, 1000, 2.5, 5, 1.0, "projectile_count", "+%d projectile")
 
-	_add_upgrade("precision_core", "Precision Core", "Increase critical hit damage", "crit_damage",
-		Category.COMBAT, 250, 1.5, 5, 0.20, "crit_damage", "+%d%% crit damage")
+	_add_upgrade("elemental_mastery", "Elemental", "Increase elemental effect chance", "element",
+		Category.COMBAT, 7, 300, 1.5, 5, 0.05, "elemental_chance", "+%d%% elemental procs")
 
-	_add_upgrade("keen_eye", "Keen Eye", "Increase critical hit chance", "crit_chance",
-		Category.COMBAT, 200, 1.5, 5, 0.02, "crit_chance", "+%d%% crit chance")
+	_add_upgrade("status_amplifier", "Status", "Status effects last longer", "status",
+		Category.COMBAT, 8, 250, 1.5, 5, 0.15, "status_duration", "+%d%% status duration")
 
-	_add_upgrade("shield_mastery", "Shield Mastery", "Chance to block incoming attacks", "block",
-		Category.SURVIVAL, 250, 1.6, 5, 0.02, "block_chance", "+%d%% block")
+	_add_upgrade("summoner_bond", "Summons", "Summons deal more damage", "summon",
+		Category.COMBAT, 9, 350, 1.6, 5, 0.15, "summon_damage", "+%d%% summon damage")
 
-	# Survival Upgrades
-	_add_upgrade("core_integrity", "Core Integrity", "Increase maximum health", "health",
-		Category.SURVIVAL, 100, 1.4, 5, 0.10, "max_hp", "+%d%% max HP")
+	_add_upgrade("viral_payload", "Weaken", "Enemies have reduced health", "virus",
+		Category.COMBAT, 10, 400, 1.6, 5, 0.05, "enemy_health_reduction", "-%d%% enemy health")
 
-	_add_upgrade("auto_repair", "Auto-Repair", "Regenerate health over time", "regen",
-		Category.SURVIVAL, 500, 1.8, 5, 1.0, "hp_regen", "+%d HP/second")
+	# Survival Upgrades - ordered by importance/commonality
+	_add_upgrade("core_integrity", "Health", "Increase maximum health", "health",
+		Category.SURVIVAL, 0, 100, 1.4, 5, 0.10, "max_hp", "+%d%% max HP")
 
-	_add_upgrade("thruster_boost", "Thruster Boost", "Increase movement speed", "speed",
-		Category.SURVIVAL, 150, 1.5, 5, 0.05, "move_speed", "+%d%% speed")
+	_add_upgrade("hard_light_shield", "Armor", "Reduce incoming damage", "shield",
+		Category.SURVIVAL, 1, 150, 1.6, 5, 0.05, "damage_reduction", "-%d%% incoming damage")
 
-	_add_upgrade("evasion_matrix", "Evasion Matrix", "Chance to dodge attacks", "dodge",
-		Category.SURVIVAL, 300, 1.6, 5, 0.03, "dodge_chance", "+%d%% dodge")
+	_add_upgrade("thruster_boost", "Speed", "Increase movement speed", "speed",
+		Category.SURVIVAL, 2, 150, 1.5, 5, 0.05, "move_speed", "+%d%% speed")
 
-	# Utility Upgrades
-	_add_upgrade("stable_fields", "Stable Fields", "Powerups last longer", "duration",
-		Category.UTILITY, 200, 1.4, 5, 0.10, "powerup_duration", "+%d%% duration")
+	_add_upgrade("auto_repair", "Regen", "Regenerate health over time", "regen",
+		Category.SURVIVAL, 3, 500, 1.8, 5, 1.0, "hp_regen", "+%d HP/second")
 
-	_add_upgrade("attractor_beam", "Attractor Beam", "Increase pickup range", "magnet",
-		Category.UTILITY, 100, 1.3, 5, 0.20, "pickup_range", "+%d%% range")
+	_add_upgrade("evasion_matrix", "Dodge", "Chance to dodge attacks", "dodge",
+		Category.SURVIVAL, 4, 300, 1.6, 5, 0.03, "dodge_chance", "+%d%% dodge")
 
-	_add_upgrade("quantum_flux", "Quantum Flux", "Increase luck for crits and drops", "luck",
-		Category.UTILITY, 250, 1.5, 5, 0.10, "luck", "+%d%% luck")
+	_add_upgrade("shield_mastery", "Block", "Chance to block incoming attacks", "block",
+		Category.SURVIVAL, 5, 250, 1.6, 5, 0.02, "block_chance", "+%d%% block")
 
-	_add_upgrade("cooldown_matrix", "Cooldown Matrix", "Reduce ability cooldowns", "cooldown",
-		Category.UTILITY, 200, 1.5, 5, 0.05, "cooldown_reduction", "-%d%% cooldowns")
+	_add_upgrade("healing_amplifier", "Healing", "Increase all healing received", "heal",
+		Category.SURVIVAL, 6, 200, 1.5, 5, 0.10, "healing_received", "+%d%% healing")
 
-	_add_upgrade("elemental_mastery", "Elemental Mastery", "Increase elemental effect chance", "element",
-		Category.COMBAT, 300, 1.5, 5, 0.05, "elemental_chance", "+%d%% elemental procs")
+	# Utility Upgrades - ordered by importance/commonality
+	_add_upgrade("attractor_beam", "Magnet", "Increase pickup range", "magnet",
+		Category.UTILITY, 0, 100, 1.3, 5, 0.20, "pickup_range", "+%d%% range")
 
-	_add_upgrade("status_amplifier", "Status Amplifier", "Status effects last longer", "status",
-		Category.COMBAT, 250, 1.5, 5, 0.15, "status_duration", "+%d%% status duration")
+	_add_upgrade("cooldown_matrix", "Cooldown", "Reduce ability cooldowns", "cooldown",
+		Category.UTILITY, 1, 200, 1.5, 5, 0.05, "cooldown_reduction", "-%d%% cooldowns")
 
-	_add_upgrade("healing_amplifier", "Healing Amplifier", "Increase all healing received", "heal",
-		Category.SURVIVAL, 200, 1.5, 5, 0.10, "healing_received", "+%d%% healing")
+	_add_upgrade("stable_fields", "Duration", "Powerups last longer", "duration",
+		Category.UTILITY, 2, 200, 1.4, 5, 0.10, "powerup_duration", "+%d%% duration")
 
-	_add_upgrade("summoner_bond", "Summoner's Bond", "Summons deal more damage", "summon",
-		Category.COMBAT, 350, 1.6, 5, 0.15, "summon_damage", "+%d%% summon damage")
+	_add_upgrade("quantum_flux", "Luck", "Increase luck for crits and drops", "luck",
+		Category.UTILITY, 3, 250, 1.5, 5, 0.10, "luck", "+%d%% luck")
 
-	_add_upgrade("aura_expansion", "Aura Expansion", "Increase aura and orbital range", "aura",
-		Category.UTILITY, 250, 1.5, 5, 0.10, "aura_range", "+%d%% aura range")
+	_add_upgrade("aura_expansion", "Aura Range", "Increase aura and orbital range", "aura",
+		Category.UTILITY, 4, 250, 1.5, 5, 0.10, "aura_range", "+%d%% aura range")
 
-	# Progression Upgrades
-	_add_upgrade("data_mining", "Data Mining", "Gain more experience", "xp",
-		Category.PROGRESSION, 200, 1.4, 5, 0.10, "xp_gain", "+%d%% XP")
+	# Progression Upgrades - ordered by importance/commonality
+	_add_upgrade("data_mining", "XP Gain", "Gain more experience", "xp",
+		Category.PROGRESSION, 0, 200, 1.4, 5, 0.10, "xp_gain", "+%d%% XP")
 
-	_add_upgrade("score_multiplier", "Score Multiplier", "Earn more points", "score",
-		Category.PROGRESSION, 500, 1.5, 5, 0.10, "points_gain", "+%d%% points")
+	_add_upgrade("coin_magnet", "Coins", "Find more coins", "coins",
+		Category.PROGRESSION, 1, 300, 1.4, 5, 0.10, "coin_gain", "+%d%% coins")
 
-	_add_upgrade("coin_magnet", "Coin Magnet", "Find more coins", "coins",
-		Category.PROGRESSION, 300, 1.4, 5, 0.10, "coin_gain", "+%d%% coins")
+	_add_upgrade("score_multiplier", "Score", "Earn more points", "score",
+		Category.PROGRESSION, 2, 500, 1.5, 5, 0.10, "points_gain", "+%d%% points")
 
-	# Special Upgrades
-	_add_upgrade("daredevil_protocol", "Daredevil Protocol", "Harder enemies, more points", "skull",
-		Category.SPECIAL, 50, 1.4, 10, 0.10, "daredevil", "+%d0%% difficulty, +%d0%% points")
+	# Special Upgrades - ordered by importance/commonality
+	_add_upgrade("starting_arsenal", "Starter", "Begin runs with a random ability", "starter",
+		Category.SPECIAL, 0, 2000, 3.0, 3, 1.0, "starting_abilities", "+%d starting ability")
 
-	_add_upgrade("emergency_reboot", "Emergency Reboot", "Revive once per run at 50%% HP", "revive",
-		Category.SPECIAL, 5000, 10.0, 1, 1.0, "revive", "Revive once per run")
+	_add_upgrade("emergency_reboot", "Revive", "Revive once per run at 50%% HP", "revive",
+		Category.SPECIAL, 1, 5000, 10.0, 1, 1.0, "revive", "Revive once per run")
 
-	_add_upgrade("starting_arsenal", "Starting Arsenal", "Begin runs with a random ability", "starter",
-		Category.SPECIAL, 2000, 3.0, 3, 1.0, "starting_abilities", "+%d starting ability")
+	_add_upgrade("daredevil_protocol", "Daredevil", "Harder enemies, more points", "skull",
+		Category.SPECIAL, 2, 50, 1.4, 10, 0.10, "daredevil", "+%d0%% difficulty, +%d0%% points")
 
 func _add_upgrade(id: String, uname: String, desc: String, icon: String,
-				  category: int, base_cost: int, cost_mult: float,
+				  category: int, sort_order: int, base_cost: int, cost_mult: float,
 				  max_rank: int, benefit: float, benefit_type: String, format: String) -> void:
 	upgrade_definitions[id] = UpgradeDefinition.new(
-		id, uname, desc, icon, category, base_cost, cost_mult, max_rank, benefit, benefit_type, format
+		id, uname, desc, icon, category, sort_order, base_cost, cost_mult, max_rank, benefit, benefit_type, format
 	)
 	# Initialize rank to 0 if not loaded
 	if not upgrade_ranks.has(id):

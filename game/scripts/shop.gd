@@ -4,7 +4,7 @@ extends CanvasLayer
 var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
 # Node references
-@onready var back_button: Button = $MainContainer/Header/BackButton
+@onready var back_button: Button = $BackButton
 @onready var coin_amount: Label = $MainContainer/Header/CoinsContainer/CoinAmount
 @onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/CenterContainer/GridContainer
 @onready var footer_tooltip: PanelContainer = $MainContainer/FooterTooltip
@@ -163,8 +163,12 @@ func _populate_all_upgrades() -> void:
 	# Get all upgrades and add them all to the grid
 	var all_upgrades = PermanentUpgrades.get_all_upgrades()
 
-	# Sort by category for visual grouping
-	all_upgrades.sort_custom(func(a, b): return a.category < b.category)
+	# Sort by category first, then by sort_order within each category
+	all_upgrades.sort_custom(func(a, b):
+		if a.category != b.category:
+			return a.category < b.category
+		return a.sort_order < b.sort_order
+	)
 
 	for upgrade in all_upgrades:
 		var tile = _create_upgrade_tile(upgrade)
@@ -175,10 +179,11 @@ func _create_upgrade_tile(upgrade) -> Button:
 	var tile = Button.new()
 	tile.custom_minimum_size = Vector2(200, 95)
 
-	# Margin container to add internal padding
+	# Margin container to add internal padding - must set anchors AND offsets explicitly
 	var margin = MarginContainer.new()
 	margin.name = "MarginContainer"
-	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.set_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 8)
 	margin.add_theme_constant_override("margin_right", 8)
 	margin.add_theme_constant_override("margin_top", 8)
@@ -188,8 +193,10 @@ func _create_upgrade_tile(upgrade) -> Button:
 	# Create container for tile content
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBoxContainer"
-	vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-	vbox.add_theme_constant_override("separation", 0)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Name label - centered via horizontal alignment
@@ -207,12 +214,6 @@ func _create_upgrade_tile(upgrade) -> Button:
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
-
-	# Expanding spacer to push squares to bottom
-	var middle_spacer = Control.new()
-	middle_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	middle_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(middle_spacer)
 
 	# Rank squares - HBox with center alignment, full width
 	var rank = PermanentUpgrades.get_rank(upgrade.id)
