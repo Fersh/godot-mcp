@@ -300,6 +300,10 @@ func _on_button_pressed() -> void:
 	# Visual feedback
 	_animate_press()
 
+	# Haptic feedback
+	if HapticManager:
+		HapticManager.light()
+
 	# Emit signal
 	emit_signal("pressed")
 

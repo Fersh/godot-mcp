@@ -17,11 +17,11 @@ const COLOR_TEXT_DIM = Color(0.6, 0.55, 0.45, 1.0)
 const COLOR_STAT_UP = Color(0.3, 0.9, 0.3)
 const COLOR_STAT_DOWN = Color(0.9, 0.3, 0.3)
 
-@onready var panel: PanelContainer = $Panel
-@onready var item_display: VBoxContainer = $Panel/MainVBox/HBoxContainer/ItemDisplay
-@onready var comparison_display: VBoxContainer = $Panel/MainVBox/HBoxContainer/ComparisonDisplay
-@onready var equip_button: Button = $Panel/MainVBox/ButtonContainer/EquipButton
-@onready var pickup_button: Button = $Panel/MainVBox/ButtonContainer/PickupButton
+@onready var panel: PanelContainer = $CenterContainer/Panel
+@onready var item_display: VBoxContainer = $CenterContainer/Panel/HBoxContainer/ItemDisplay
+@onready var comparison_display: VBoxContainer = $CenterContainer/Panel/HBoxContainer/ComparisonDisplay
+@onready var equip_button: Button = $CenterContainer/ButtonContainer/EquipButton
+@onready var pickup_button: Button = $CenterContainer/ButtonContainer/PickupButton
 
 func _ready() -> void:
 	visible = false
@@ -124,13 +124,13 @@ func show_item(dropped_item: DroppedItem, show_comparison: bool = true) -> void:
 	if show_comparison and equipped:
 		_build_comparison_display(equipped, max_stats)
 		comparison_display.visible = true
-		$Panel/MainVBox/HBoxContainer/VSeparator.visible = true
+		$CenterContainer/Panel/HBoxContainer/VSeparator.visible = true
 	else:
 		# Clear and hide comparison
 		for child in comparison_display.get_children():
 			child.queue_free()
 		comparison_display.visible = false
-		$Panel/MainVBox/HBoxContainer/VSeparator.visible = false
+		$CenterContainer/Panel/HBoxContainer/VSeparator.visible = false
 
 	# Update button states
 	_update_buttons()
@@ -179,6 +179,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	header_label.add_theme_font_size_override("font_size", 22)
 	header_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_child(header_label)
 
 	# Item icon container - smaller, pixel-perfect
@@ -210,6 +211,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	info_label.add_theme_font_size_override("font_size", 18)
 	info_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
 	info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	info_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.add_child(info_label)
 
 	# Item name with rarity color - pixel font
@@ -220,6 +222,7 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_child(name_label)
 

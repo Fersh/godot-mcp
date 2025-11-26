@@ -15,7 +15,7 @@ const COLOR_TEXT_DIM = Color(0.55, 0.50, 0.42, 1.0)
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var powerups_label: Label = $Panel/VBoxContainer/PowerupsLabel
-@onready var powerups_container: VBoxContainer = $Panel/VBoxContainer/PowerupsScroll/PowerupsContainer
+@onready var powerups_container: VBoxContainer = $Panel/VBoxContainer/PowerupsMargin/PowerupsScroll/PowerupsContainer
 @onready var resume_button: Button = $Panel/VBoxContainer/ButtonContainer/ResumeButton
 @onready var give_up_button: Button = $Panel/VBoxContainer/ButtonContainer/GiveUpButton
 

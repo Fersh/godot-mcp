@@ -102,7 +102,7 @@ horizontal_alignment = 1
 
 [node name="ButtonSpacerTop" type="Control" parent="Panel/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 40)
 
 [node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -129,7 +129,7 @@ text = "PLAY AGAIN"
 
 [node name="ButtonSpacerBottom" type="Control" parent="Panel/VBoxContainer"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 40)
 
 [node name="LootContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
