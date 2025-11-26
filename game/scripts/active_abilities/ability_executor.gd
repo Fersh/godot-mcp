@@ -254,7 +254,9 @@ func _get_mapped_effect(effect_id: String) -> String:
 	"""Map ability effect IDs to sprite-based effect scenes."""
 	match effect_id:
 		# Slash/Melee effects
-		"cleave", "slash", "omnislash":
+		"cleave":
+			return "cleave"
+		"slash", "omnislash":
 			return "slash"
 		"spinning_attack", "bladestorm":
 			return "firespin"

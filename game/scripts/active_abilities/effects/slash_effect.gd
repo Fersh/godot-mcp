@@ -34,8 +34,8 @@ func _setup_sprite() -> void:
 			var img = source_texture.get_image()
 			var total_width = img.get_width()
 			var height = img.get_height()
-			# These sheets are typically 6 frames, roughly 64x64 each
-			var frame_count = 6
+			# These sheets have 7 frames of 128x128 each (896 / 128 = 7)
+			var frame_count = 7
 			var frame_width = total_width / frame_count
 
 			for i in range(frame_count):

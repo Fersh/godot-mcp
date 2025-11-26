@@ -28,7 +28,7 @@ func _setup_sprite() -> void:
 	frames.set_animation_speed("default", 28.0)  # Fast slash
 	frames.set_animation_loop("default", false)
 
-	# Load SlashFX Combo1 sprite sheet
+	# Load SlashFX Combo1 sprite sheet (7 frames of 128x128)
 	var source_path = "res://assets/sprites/effects/slash/SlashFX Combo1 sheet.png"
 	if ResourceLoader.exists(source_path):
 		var source_texture = load(source_path) as Texture2D
@@ -36,7 +36,7 @@ func _setup_sprite() -> void:
 			var img = source_texture.get_image()
 			var total_width = img.get_width()
 			var height = img.get_height()
-			var frame_count = 6
+			var frame_count = 7  # 896 / 128 = 7 frames
 			var frame_width = total_width / frame_count
 
 			for i in range(frame_count):

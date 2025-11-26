@@ -9,7 +9,7 @@ var speed: float = 150.0
 var attack_range: float = 40.0
 var attack_cooldown: float = 1.0
 var attack_timer: float = 0.0
-var lifetime: float = 15.0
+var lifetime: float = 5.0  # 5 second duration
 var current_target: Node2D = null
 
 func _ready() -> void:
