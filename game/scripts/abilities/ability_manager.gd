@@ -1655,6 +1655,12 @@ func should_boomerang() -> bool:
 
 # Called when enemy dies - handle bloodthirst
 func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
+	# Permanent upgrade: HP on kill (Life Leech)
+	if PermanentUpgrades:
+		var bonuses = PermanentUpgrades.get_all_bonuses()
+		if bonuses.hp_on_kill > 0:
+			heal_player(player, bonuses.hp_on_kill)
+
 	# Vampirism
 	if has_vampirism and randf() < vampirism_chance:
 		heal_player(player, player.max_health * 0.01)

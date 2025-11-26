@@ -116,6 +116,9 @@ func _init_upgrade_definitions() -> void:
 	_add_upgrade("healing_amplifier", "Healing", "Increase all healing received", "heal",
 		Category.SURVIVAL, 6, 200, 1.5, 5, 0.10, "healing_received", "+%d%% healing")
 
+	_add_upgrade("life_leech", "Life Leech", "Restore HP on each kill", "lifesteal",
+		Category.SURVIVAL, 7, 150, 1.5, 5, 1.0, "hp_on_kill", "+%d HP per kill")
+
 	# Utility Upgrades - ordered by importance/commonality
 	_add_upgrade("attractor_beam", "Magnet", "Increase pickup range", "magnet",
 		Category.UTILITY, 0, 100, 1.3, 5, 0.20, "pickup_range", "+%d%% range")
@@ -283,6 +286,7 @@ func get_all_bonuses() -> Dictionary:
 		"block_chance": 0.0,
 		"max_hp": 0.0,
 		"hp_regen": 0.0,
+		"hp_on_kill": 0.0,
 		"move_speed": 0.0,
 		"dodge_chance": 0.0,
 		"powerup_duration": 0.0,
