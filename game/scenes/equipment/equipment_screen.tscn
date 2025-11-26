@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1equipment_screen"]
+[gd_scene load_steps=3 format=3 uid="uid://c1equipment_screen"]
 
 [ext_resource type="Script" path="res://scripts/equipment/equipment_screen.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://dxrvcd7nrpprv" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [node name="EquipmentScreen" type="CanvasLayer"]
 script = ExtResource("1_script")
@@ -25,8 +26,11 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="BackButton" type="Button" parent="Panel/VBoxContainer/HeaderContainer"]
-custom_minimum_size = Vector2(100, 36)
+custom_minimum_size = Vector2(100, 45)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 12
 text = "< BACK"
 
 [node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/HeaderContainer"]

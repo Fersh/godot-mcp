@@ -1,10 +1,10 @@
 extends CanvasLayer
 
-@onready var back_button: Button = $HBoxContainer/RightPanel/TopBar/BackButton
-@onready var title_label: Label = $HBoxContainer/RightPanel/TopBar/TitleLabel
-@onready var preview_panel: PanelContainer = $HBoxContainer/LeftPanel/PreviewPanel
-@onready var selector_container: HBoxContainer = $HBoxContainer/RightPanel/SelectorContainer
-@onready var select_button: Button = $HBoxContainer/RightPanel/SelectButton
+@onready var back_button: Button = $BackButton
+@onready var title_label: Label = $TitleLabel
+@onready var preview_panel: PanelContainer = $CenterContainer/PreviewPanel
+@onready var selector_container: HBoxContainer = $SelectorContainer
+@onready var select_button: Button = $SelectButton
 
 # Preview elements (created dynamically)
 var preview_sprite: Sprite2D
@@ -100,20 +100,28 @@ func _setup_preview_panel() -> void:
 
 	# Spacer after name
 	var spacer1 = Control.new()
-	spacer1.custom_minimum_size = Vector2(0, 8)
+	spacer1.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer1)
 
-	# Sprite preview - centered
+	# Sprite preview - centered using SubViewportContainer for proper centering
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(300, 160)
+	sprite_center.custom_minimum_size = Vector2(300, 120)
+	sprite_center.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(sprite_center)
 
+	# Use a Control as parent to center the Sprite2D properly
+	var sprite_holder = Control.new()
+	sprite_holder.custom_minimum_size = Vector2(100, 100)
+	sprite_center.add_child(sprite_holder)
+
 	preview_sprite = Sprite2D.new()
-	sprite_center.add_child(preview_sprite)
+	preview_sprite.centered = true
+	preview_sprite.position = Vector2(50, 50)  # Center within the holder
+	sprite_holder.add_child(preview_sprite)
 
 	# Spacer after sprite
 	var spacer2 = Control.new()
-	spacer2.custom_minimum_size = Vector2(0, 10)
+	spacer2.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer2)
 
 	# Description - centered
@@ -127,7 +135,7 @@ func _setup_preview_panel() -> void:
 
 	# Spacer after description
 	var spacer3 = Control.new()
-	spacer3.custom_minimum_size = Vector2(0, 12)
+	spacer3.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer3)
 
 	# Stats section
@@ -137,7 +145,7 @@ func _setup_preview_panel() -> void:
 
 	# Spacer after stats
 	var spacer4 = Control.new()
-	spacer4.custom_minimum_size = Vector2(0, 12)
+	spacer4.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer4)
 
 	# Passive section
@@ -156,30 +164,33 @@ func _create_selector_buttons() -> void:
 
 func _create_selector_button(char_data: CharacterData, index: int) -> PanelContainer:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(150, 60)
+	panel.custom_minimum_size = Vector2(50, 50)  # Small square
 	panel.set_meta("index", index)
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
-	style.border_width_left = 3
-	style.border_width_right = 3
-	style.border_width_top = 3
-	style.border_width_bottom = 3
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
 	style.border_color = Color(0.3, 0.3, 0.4, 1)
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8
-	style.corner_radius_bottom_right = 8
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
 	panel.add_theme_stylebox_override("panel", style)
 
+	# Add character sprite preview in the square
 	var center = CenterContainer.new()
 	panel.add_child(center)
 
-	var label = Label.new()
-	label.text = char_data.display_name
-	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
-	center.add_child(label)
+	var sprite = Sprite2D.new()
+	sprite.texture = char_data.sprite_texture
+	sprite.hframes = char_data.hframes
+	sprite.vframes = char_data.vframes
+	sprite.frame = char_data.row_idle * char_data.hframes
+	sprite.scale = Vector2(1.5, 1.5) if char_data.id == "knight" else Vector2(2.0, 2.0)
+	center.add_child(sprite)
 
 	# Clickable button overlay
 	var button = Button.new()
@@ -211,17 +222,17 @@ func _set_selected(index: int) -> void:
 
 		if i == index:
 			style.border_color = Color(0.95, 0.75, 0.2, 1)  # Gold
-			style.border_width_left = 4
-			style.border_width_right = 4
-			style.border_width_top = 4
-			style.border_width_bottom = 4
-			style.bg_color = Color(0.2, 0.18, 0.12, 0.95)
-		else:
-			style.border_color = Color(0.3, 0.3, 0.4, 1)
 			style.border_width_left = 3
 			style.border_width_right = 3
 			style.border_width_top = 3
 			style.border_width_bottom = 3
+			style.bg_color = Color(0.2, 0.18, 0.12, 0.95)
+		else:
+			style.border_color = Color(0.3, 0.3, 0.4, 1)
+			style.border_width_left = 2
+			style.border_width_right = 2
+			style.border_width_top = 2
+			style.border_width_bottom = 2
 			style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
 
 		panel.add_theme_stylebox_override("panel", style)

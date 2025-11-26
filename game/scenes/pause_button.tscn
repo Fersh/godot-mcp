@@ -10,13 +10,13 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -130.0
-offset_bottom = 80.0
+offset_bottom = 100.0
 grow_horizontal = 0
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 55
 theme_override_constants/margin_right = 40
 
 [node name="PauseButton" type="Button" parent="MarginContainer"]
-custom_minimum_size = Vector2(70, 40)
+custom_minimum_size = Vector2(45, 45)
 layout_mode = 2
 size_flags_horizontal = 8
 text = "| |"

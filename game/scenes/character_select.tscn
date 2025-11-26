@@ -14,45 +14,25 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.067, 0.082, 0.125, 1)
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 20
-
-[node name="LeftPanel" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="PreviewPanel" type="PanelContainer" parent="HBoxContainer/LeftPanel"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="RightPanel" type="VBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-
-[node name="TopBar" type="HBoxContainer" parent="HBoxContainer/RightPanel"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="BackButton" type="Button" parent="HBoxContainer/RightPanel/TopBar"]
-custom_minimum_size = Vector2(100, 40)
-layout_mode = 2
+[node name="BackButton" type="Button" parent="."]
+offset_left = 30.0
+offset_top = 25.0
+offset_right = 130.0
+offset_bottom = 70.0
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
 text = "< BACK"
 
-[node name="TitleLabel" type="Label" parent="HBoxContainer/RightPanel/TopBar"]
-layout_mode = 2
-size_flags_horizontal = 3
+[node name="TitleLabel" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 30.0
+offset_right = 150.0
+offset_bottom = 60.0
+grow_horizontal = 2
 theme_override_colors/font_color = Color(0.298, 0.886, 0.404, 1)
 theme_override_colors/font_shadow_color = Color(0.15, 0.4, 0.2, 1)
 theme_override_constants/shadow_offset_x = 2
@@ -63,16 +43,50 @@ text = "SELECT CHARACTER"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SelectorContainer" type="HBoxContainer" parent="HBoxContainer/RightPanel"]
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PreviewPanel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(560, 380)
 layout_mode = 2
-size_flags_vertical = 3
+
+[node name="SelectorContainer" type="HBoxContainer" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -140.0
+offset_right = 200.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="SelectButton" type="Button" parent="HBoxContainer/RightPanel"]
-custom_minimum_size = Vector2(300, 55)
-layout_mode = 2
-size_flags_horizontal = 4
+[node name="SelectButton" type="Button" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -65.0
+offset_right = 150.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
@@ -80,7 +94,3 @@ theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 18
 text = "START GAME"
-
-[node name="BottomSpacer" type="Control" parent="HBoxContainer/RightPanel"]
-custom_minimum_size = Vector2(0, 15)
-layout_mode = 2

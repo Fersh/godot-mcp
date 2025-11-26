@@ -3,7 +3,6 @@ extends CanvasLayer
 @onready var play_button: Button = $ButtonContainer/PlayButton
 @onready var gear_button: Button = $ButtonContainer/GearButton
 @onready var shop_button: Button = $ButtonContainer/ShopButton
-@onready var characters_button: Button = $ButtonContainer/CharactersButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 @onready var music_player: AudioStreamPlayer = $MusicPlayer
 
@@ -14,13 +13,11 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	gear_button.pressed.connect(_on_gear_pressed)
 	shop_button.pressed.connect(_on_shop_pressed)
-	characters_button.pressed.connect(_on_characters_pressed)
 
 	# Style all buttons with yellow/gold wooden look
 	_style_golden_button(play_button)
 	_style_golden_button(gear_button)
 	_style_golden_button(shop_button)
-	_style_golden_button(characters_button)
 
 	# Update displays
 	_update_coin_display()
@@ -94,6 +91,3 @@ func _on_gear_pressed() -> void:
 
 func _on_shop_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/shop.tscn")
-
-func _on_characters_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/character_select.tscn")

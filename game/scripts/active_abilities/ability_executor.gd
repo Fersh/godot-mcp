@@ -471,6 +471,8 @@ func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
 
 func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
+	var start_pos = player.global_position
+	var dash_distance = 80.0  # Short forward dash
 
 	# Aim shield bash TOWARDS nearest enemy (extended search range)
 	var target = _get_nearest_enemy(player.global_position, ability.range_distance * 2.25)
@@ -481,15 +483,24 @@ func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 	else:
 		direction = _get_attack_direction(player)
 
-	# Hit enemies in front
-	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.5)
+	# Calculate end position with arena bounds
+	var end_pos = start_pos + direction * dash_distance
+	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
+	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
 
-	for enemy in enemies:
-		_deal_damage_to_enemy(enemy, damage)
-		_apply_stun_to_enemy(enemy, ability.stun_duration)
-		_apply_knockback_to_enemy(enemy, direction, ability.knockback_force)
+	# Dash forward then hit
+	var tween = create_tween()
+	tween.tween_property(player, "global_position", end_pos, 0.1)
+	tween.tween_callback(func():
+		# Hit enemies in front after dash
+		var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.5)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+			_apply_stun_to_enemy(enemy, ability.stun_duration)
+			_apply_knockback_to_enemy(enemy, direction, ability.knockback_force)
+	)
 
-	_spawn_effect("shield_bash", player.global_position + direction * 30)
+	_spawn_effect("shield_bash", start_pos + direction * 30)
 	_play_sound("shield_bash")
 	_screen_shake("medium")
 
@@ -512,7 +523,11 @@ func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> voi
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
 
-	_spawn_effect("spinning_attack", player.global_position)
+	# Spawn effect and configure with ability radius
+	var effect = _spawn_effect("spinning_attack", player.global_position)
+	if effect and effect.has_method("setup"):
+		effect.setup(0.5, ability.radius, damage, 1.0)  # Short duration, scale to radius
+
 	_play_sound("swing")
 	_screen_shake("small")
 
@@ -1367,8 +1382,11 @@ func _spawn_projectile(type: String, position: Vector2, direction: Vector2, abil
 		return
 
 	var projectile = scene.instantiate()
-	projectile.global_position = position
 	projectile.direction = direction
+
+	# Set ability_id BEFORE adding to scene (so _ready can use it for sprite setup)
+	if "ability_id" in projectile:
+		projectile.ability_id = ability.id
 
 	# Configure projectile based on ability
 	if projectile.has_method("setup_from_ability"):
@@ -1382,6 +1400,7 @@ func _spawn_projectile(type: String, position: Vector2, direction: Vector2, abil
 		if "pierce_count" in projectile and piercing:
 			projectile.pierce_count = 99
 
+	projectile.global_position = position
 	get_tree().current_scene.add_child(projectile)
 
 # ============================================

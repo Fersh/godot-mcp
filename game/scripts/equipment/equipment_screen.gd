@@ -59,11 +59,38 @@ func _ready() -> void:
 	_refresh_display()
 
 func _setup_ui_style() -> void:
-	# Style back button
-	_style_button(back_button, Color(0.4, 0.25, 0.2))
-	if pixel_font:
-		back_button.add_theme_font_override("font", pixel_font)
-	back_button.add_theme_font_size_override("font_size", 20)
+	# Style back button with standardized style
+	_style_back_button()
+
+func _style_back_button() -> void:
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 4
+	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 4
+	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+
+	back_button.add_theme_stylebox_override("normal", style_normal)
+	back_button.add_theme_stylebox_override("hover", style_hover)
+	back_button.add_theme_stylebox_override("pressed", style_normal)
+	back_button.add_theme_stylebox_override("focus", style_normal)
 
 func _style_button(button: Button, base_color: Color) -> void:
 	var style = StyleBoxFlat.new()
