@@ -1,10 +1,10 @@
 extends CanvasLayer
 
-@onready var play_button: Button = $HBoxContainer/RightPanel/ButtonGrid/PlayButton
-@onready var gear_button: Button = $HBoxContainer/RightPanel/ButtonGrid/GearButton
-@onready var shop_button: Button = $HBoxContainer/RightPanel/ButtonGrid/ShopButton
-@onready var characters_button: Button = $HBoxContainer/RightPanel/ButtonGrid/CharactersButton
-@onready var coin_amount: Label = $TopBar/CoinsDisplay/CoinAmount
+@onready var play_button: Button = $ButtonContainer/PlayButton
+@onready var gear_button: Button = $ButtonContainer/GearButton
+@onready var shop_button: Button = $ButtonContainer/ShopButton
+@onready var characters_button: Button = $ButtonContainer/CharactersButton
+@onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 @onready var music_player: AudioStreamPlayer = $MusicPlayer
 
 var menu_music: AudioStream = null
