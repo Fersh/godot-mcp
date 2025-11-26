@@ -530,8 +530,7 @@ func spawn_blade_beam() -> void:
 	beam.direction = attack_direction
 
 	# Blade beam properties - travels further and does good damage
-	beam.speed = 400.0
-	beam.max_distance = 500.0
+	beam.speed_multiplier = 1.2  # Slightly faster than normal arrows
 	beam.damage_multiplier = 1.0
 	if AbilityManager:
 		beam.damage_multiplier = AbilityManager.get_damage_multiplier()

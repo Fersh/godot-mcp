@@ -320,9 +320,6 @@ func _style_button(button: Button, rarity: ActiveAbilityData.Rarity) -> void:
 		ActiveAbilityData.Rarity.LEGENDARY:
 			style.bg_color = Color(0.2, 0.15, 0.1, 0.95)
 			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
-		ActiveAbilityData.Rarity.MYTHIC:
-			style.bg_color = Color(0.18, 0.08, 0.1, 0.95)  # Dark red-tinted background
-			style.border_color = ActiveAbilityData.get_rarity_color(rarity)  # Red mythic border
 		_:
 			# Fallback for unknown rarity
 			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)

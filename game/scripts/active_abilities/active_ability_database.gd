@@ -515,7 +515,7 @@ static func _create_healing_light() -> ActiveAbilityData:
 		"healing_light",
 		"Healing Light",
 		"Restore 20% of your max HP over 5 seconds.",
-		ActiveAbilityData.Rarity.COMMON,
+		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
