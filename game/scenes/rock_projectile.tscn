@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/rock_projectile.gd" id="1_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rock"]
+radius = 12.0
+
+[node name="RockProjectile" type="Area2D"]
+collision_layer = 8
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+modulate = Color(0.5, 0.4, 0.3, 1)
+scale = Vector2(1.5, 1.5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_rock")
+
+[node name="RockVisual" type="Polygon2D" parent="."]
+color = Color(0.45, 0.35, 0.25, 1)
+polygon = PackedVector2Array(-10, -8, -5, -12, 5, -12, 10, -8, 12, 0, 10, 8, 5, 10, -5, 10, -10, 6, -12, 0)
