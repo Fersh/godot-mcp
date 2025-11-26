@@ -5,9 +5,14 @@ extends Node2D
 
 var sprite: AnimatedSprite2D
 var effect_scale: float = 1.5
+var _pending_direction: Vector2 = Vector2.ZERO
+var _has_pending_direction: bool = false
 
 func _ready() -> void:
 	_setup_sprite()
+	# Apply pending direction if set before _ready
+	if _has_pending_direction:
+		_apply_direction(_pending_direction)
 
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
@@ -44,7 +49,15 @@ func _on_animation_finished() -> void:
 	queue_free()
 
 func set_direction(dir: Vector2) -> void:
+	if sprite:
+		_apply_direction(dir)
+	else:
+		# Store direction to apply after _ready
+		_pending_direction = dir
+		_has_pending_direction = true
+
+func _apply_direction(dir: Vector2) -> void:
 	rotation = dir.angle()
 	# Flip if going left
-	if dir.x < 0:
+	if sprite and dir.x < 0:
 		sprite.flip_h = true

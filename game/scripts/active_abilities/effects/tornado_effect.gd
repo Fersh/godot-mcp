@@ -10,8 +10,16 @@ var radius: float = 100.0
 var damage: float = 0.0
 var damage_multiplier: float = 1.0
 var follow_parent: bool = true
+var _setup_done: bool = false
 
 func _ready() -> void:
+	# Defer setup to allow setup() to be called first
+	call_deferred("_deferred_setup")
+
+func _deferred_setup() -> void:
+	if _setup_done:
+		return
+	_setup_done = true
 	_setup_sprite()
 
 func _setup_sprite() -> void:
@@ -57,5 +65,10 @@ func setup(ability_duration: float, ability_radius: float, ability_damage: float
 	damage_multiplier = ability_multiplier
 	# Adjust scale based on radius
 	effect_scale = radius / 60.0
-	if sprite:
+
+	# If setup is called before _ready completes, mark as done and setup now
+	if not _setup_done:
+		_setup_done = true
+		_setup_sprite()
+	elif sprite:
 		sprite.scale = Vector2(effect_scale, effect_scale)

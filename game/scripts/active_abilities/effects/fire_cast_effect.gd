@@ -10,8 +10,15 @@ var effect_scale: float = 1.5
 var fire_type: FireType = FireType.CAST
 var duration: float = 3.0
 var is_looping: bool = false
+var _setup_done: bool = false
 
 func _ready() -> void:
+	call_deferred("_deferred_setup")
+
+func _deferred_setup() -> void:
+	if _setup_done:
+		return
+	_setup_done = true
 	_setup_sprite()
 
 func _setup_sprite() -> void:
@@ -86,6 +93,13 @@ func _on_duration_finished() -> void:
 func set_fire_type(type: FireType) -> void:
 	fire_type = type
 
-func setup(ability_duration: float) -> void:
+func setup(ability_duration: float, ability_scale: float = 1.5) -> void:
 	duration = ability_duration
+	effect_scale = ability_scale
 	is_looping = true
+	# If setup is called before _ready completes, mark as done and setup now
+	if not _setup_done:
+		_setup_done = true
+		_setup_sprite()
+	elif sprite:
+		sprite.scale = Vector2(effect_scale, effect_scale)

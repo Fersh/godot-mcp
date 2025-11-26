@@ -13,6 +13,9 @@ var direction: Vector2 = Vector2.RIGHT
 
 func _ready() -> void:
 	_setup_sprite()
+	# Apply direction after sprite is created
+	if direction != Vector2.RIGHT:
+		rotation = direction.angle()
 
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
@@ -86,5 +89,5 @@ func set_effect_scale(new_scale: float) -> void:
 
 func set_direction(dir: Vector2) -> void:
 	direction = dir
-	if sprite:
-		rotation = dir.angle()
+	# Can set rotation on Node2D even before sprite exists
+	rotation = dir.angle()

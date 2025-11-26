@@ -10,8 +10,15 @@ var effect_scale: float = 1.5
 var poison_type: PoisonType = PoisonType.CAST
 var duration: float = 0.5
 var is_looping: bool = false
+var _setup_done: bool = false
 
 func _ready() -> void:
+	call_deferred("_deferred_setup")
+
+func _deferred_setup() -> void:
+	if _setup_done:
+		return
+	_setup_done = true
 	_setup_sprite()
 
 func _setup_sprite() -> void:
@@ -68,3 +75,14 @@ func set_poison_type(type: PoisonType) -> void:
 func set_looping(loop: bool, loop_duration: float = 3.0) -> void:
 	is_looping = loop
 	duration = loop_duration
+
+func setup(ability_duration: float = 0.5, ability_scale: float = 1.5) -> void:
+	duration = ability_duration
+	effect_scale = ability_scale
+	is_looping = duration > 0.5
+	# If setup is called before _ready completes, mark as done and setup now
+	if not _setup_done:
+		_setup_done = true
+		_setup_sprite()
+	elif sprite:
+		sprite.scale = Vector2(effect_scale, effect_scale)

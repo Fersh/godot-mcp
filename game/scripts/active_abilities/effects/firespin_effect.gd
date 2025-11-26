@@ -7,8 +7,15 @@ var sprite: AnimatedSprite2D
 var effect_scale: float = 1.5
 var duration: float = 0.5
 var is_looping: bool = false
+var _setup_done: bool = false
 
 func _ready() -> void:
+	call_deferred("_deferred_setup")
+
+func _deferred_setup() -> void:
+	if _setup_done:
+		return
+	_setup_done = true
 	_setup_sprite()
 
 func _setup_sprite() -> void:
@@ -61,5 +68,9 @@ func setup(ability_duration: float, ability_radius: float, _damage: float, _mult
 	duration = ability_duration
 	is_looping = duration > 0.5
 	effect_scale = ability_radius / 60.0
-	if sprite:
+	# If setup is called before _ready completes, mark as done and setup now
+	if not _setup_done:
+		_setup_done = true
+		_setup_sprite()
+	elif sprite:
 		sprite.scale = Vector2(effect_scale, effect_scale)

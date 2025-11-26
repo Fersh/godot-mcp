@@ -9,8 +9,15 @@ var sprite: AnimatedSprite2D
 var effect_scale: float = 1.5
 var holy_type: HolyType = HolyType.EXPLOSION
 var duration: float = 0.5
+var _setup_done: bool = false
 
 func _ready() -> void:
+	call_deferred("_deferred_setup")
+
+func _deferred_setup() -> void:
+	if _setup_done:
+		return
+	_setup_done = true
 	_setup_sprite()
 
 func _setup_sprite() -> void:
@@ -86,5 +93,12 @@ func _on_duration_finished() -> void:
 func set_holy_type(type: HolyType) -> void:
 	holy_type = type
 
-func setup(ability_duration: float) -> void:
+func setup(ability_duration: float, ability_scale: float = 1.5) -> void:
 	duration = ability_duration
+	effect_scale = ability_scale
+	# If setup is called before _ready completes, mark as done and setup now
+	if not _setup_done:
+		_setup_done = true
+		_setup_sprite()
+	elif sprite:
+		sprite.scale = Vector2(effect_scale, effect_scale)
