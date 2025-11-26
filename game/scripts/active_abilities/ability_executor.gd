@@ -341,7 +341,10 @@ func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
 
-	_spawn_effect("cleave", player.global_position)
+	# Spawn effect with correct direction
+	var effect = _spawn_effect("cleave", player.global_position)
+	if effect and "direction" in effect:
+		effect.direction = direction
 	_play_sound("swing")
 	_screen_shake("small")
 

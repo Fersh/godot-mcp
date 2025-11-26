@@ -2,8 +2,8 @@ extends CanvasLayer
 class_name ActiveAbilityBar
 
 # 2x2 grid layout:
-# [Ability 1] [Ability 2]
-# [Dodge]     [Ability 3]
+# [Ability 3] [Ability 2]
+# [Dodge]     [Ability 1]
 
 const BUTTON_SIZE := Vector2(160, 160)  # Doubled
 const BUTTON_SPACING := 15
@@ -45,24 +45,24 @@ func _create_ui() -> void:
 	add_child(grid_container)
 
 	# Create buttons in grid layout
-	# Top-left: Ability slot 0
+	# Bottom-right: Ability slot 0 (first ability acquired)
 	var btn0 = _create_ability_button(0)
-	btn0.position = Vector2(0, 0)
+	btn0.position = Vector2(BUTTON_SIZE.x + BUTTON_SPACING, BUTTON_SIZE.y + BUTTON_SPACING)
 	ability_buttons.append(btn0)
 
-	# Top-right: Ability slot 1
+	# Top-right: Ability slot 1 (second ability acquired)
 	var btn1 = _create_ability_button(1)
 	btn1.position = Vector2(BUTTON_SIZE.x + BUTTON_SPACING, 0)
 	ability_buttons.append(btn1)
 
+	# Top-left: Ability slot 2 (third ability acquired)
+	var btn2 = _create_ability_button(2)
+	btn2.position = Vector2(0, 0)
+	ability_buttons.append(btn2)
+
 	# Bottom-left: Dodge
 	dodge_button = _create_dodge_button()
 	dodge_button.position = Vector2(0, BUTTON_SIZE.y + BUTTON_SPACING)
-
-	# Bottom-right: Ability slot 2
-	var btn2 = _create_ability_button(2)
-	btn2.position = Vector2(BUTTON_SIZE.x + BUTTON_SPACING, BUTTON_SIZE.y + BUTTON_SPACING)
-	ability_buttons.append(btn2)
 
 func _create_ability_button(slot: int) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")

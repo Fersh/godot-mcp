@@ -4,11 +4,16 @@ extends Node2D
 
 var arc_radius: float = 80.0
 var arc_angle: float = PI * 0.75  # 135 degrees
-var direction: Vector2 = Vector2.RIGHT
+var direction: Vector2 = Vector2.RIGHT:
+	set(value):
+		direction = value
+		queue_redraw()  # Redraw when direction changes
 var color: Color = Color(1.0, 0.9, 0.7, 0.9)
 var duration: float = 0.2
 
 func _ready() -> void:
+	# Defer to allow direction to be set first
+	await get_tree().process_frame
 	queue_redraw()
 
 	var tween = create_tween()
