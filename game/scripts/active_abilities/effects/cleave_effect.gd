@@ -1,40 +1,54 @@
 extends Node2D
 
-# Cleave visual effect - a sweeping arc
+# Cleave visual effect - uses SlashFX Combo sprite sheet
 
 var arc_radius: float = 80.0
 var arc_angle: float = PI * 0.75  # 135 degrees
 var direction: Vector2 = Vector2.RIGHT:
 	set(value):
 		direction = value
-		queue_redraw()  # Redraw when direction changes
+		_update_rotation()
 var color: Color = Color(1.0, 0.9, 0.7, 0.9)
-var duration: float = 0.2
+var duration: float = 0.25
+
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	# Defer to allow direction to be set first
-	await get_tree().process_frame
-	queue_redraw()
+	_setup_sprite()
+	_update_rotation()
 
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, duration)
-	tween.parallel().tween_property(self, "scale", Vector2(1.2, 1.2), duration)
-	tween.tween_callback(queue_free)
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(2.5, 2.5)  # Scale up the sprite
+	add_child(sprite)
 
-func _draw() -> void:
-	var start_angle = direction.angle() - arc_angle / 2
-	var end_angle = direction.angle() + arc_angle / 2
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 28.0)  # Fast slash
+	frames.set_animation_loop("default", false)
 
-	# Draw multiple arcs for thickness effect
-	for i in range(3):
-		var r = arc_radius - i * 10
-		var c = color
-		c.a *= 1.0 - i * 0.25
-		draw_arc(Vector2.ZERO, r, start_angle, end_angle, 24, c, 6.0 - i * 1.5)
+	# Load SlashFX Combo1 sprite sheet
+	var source_path = "res://assets/sprites/effects/slash/SlashFX Combo1 sheet.png"
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var height = img.get_height()
+			var frame_count = 6
+			var frame_width = total_width / frame_count
 
-	# Draw slash lines
-	for i in range(5):
-		var angle = start_angle + (end_angle - start_angle) * (i / 4.0)
-		var inner = Vector2.from_angle(angle) * 20
-		var outer = Vector2.from_angle(angle) * arc_radius
-		draw_line(inner, outer, color, 2.0)
+			for i in range(frame_count):
+				var frame_img = Image.create(frame_width, height, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_width, 0, frame_width, height), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
+
+func _update_rotation() -> void:
+	rotation = direction.angle()
+
+func _on_animation_finished() -> void:
+	queue_free()

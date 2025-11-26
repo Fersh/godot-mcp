@@ -1,44 +1,47 @@
 extends Node2D
 
-# Ground slam shockwave effect
+# Ground slam shockwave effect - uses BIG IMPACT SMOKE sprite
 
 var radius: float = 100.0
-var duration: float = 0.4
+var duration: float = 0.5
 
-var wave_count: int = 3
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	queue_redraw()
+	_setup_sprite()
 
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, duration)
-	tween.tween_callback(queue_free)
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(3.0, 3.0)  # Large impact
+	add_child(sprite)
 
-func _process(_delta: float) -> void:
-	queue_redraw()
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 18.0)
+	frames.set_animation_loop("default", false)
 
-func _draw() -> void:
-	var progress = 1.0 - modulate.a
+	# Load BIG IMPACT SMOKE sprite sheet
+	var source_path = "res://assets/sprites/effects/slash/BIG IMPACT SMOKE.png"
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var height = img.get_height()
+			# Estimate frame count based on aspect ratio
+			var frame_count = max(1, int(total_width / height))
+			if frame_count < 2:
+				frame_count = 6  # Default estimate
+			var frame_width = total_width / frame_count
 
-	# Draw expanding shockwave rings
-	for i in range(wave_count):
-		var wave_progress = clamp(progress - i * 0.15, 0.0, 1.0)
-		var wave_radius = radius * wave_progress
-		var alpha = (1.0 - wave_progress) * 0.8
+			for i in range(frame_count):
+				var frame_img = Image.create(frame_width, height, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_width, 0, frame_width, height), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
 
-		draw_arc(Vector2.ZERO, wave_radius, 0, TAU, 32, Color(0.8, 0.6, 0.3, alpha), 4.0 - i)
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
 
-	# Ground crack lines
-	for i in range(8):
-		var angle = TAU * i / 8.0
-		var crack_length = radius * 0.9 * progress
-		var end_pos = Vector2.from_angle(angle) * crack_length
-		draw_line(Vector2.ZERO, end_pos, Color(0.6, 0.4, 0.2, 0.6 * (1.0 - progress)), 2.0)
-
-	# Dust particles
-	for i in range(12):
-		var angle = TAU * i / 12.0
-		var dist = radius * 0.5 * progress
-		var pos = Vector2.from_angle(angle) * dist + Vector2(0, -progress * 20)
-		var size = 5.0 * (1.0 - progress)
-		draw_circle(pos, size, Color(0.7, 0.6, 0.4, 0.5 * (1.0 - progress)))
+func _on_animation_finished() -> void:
+	queue_free()

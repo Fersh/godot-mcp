@@ -1,52 +1,44 @@
 extends Node2D
 
-# Frost Nova - expanding ring of ice
+# Frost Nova - uses IceShatter_96x96 sprite sheet
 
 var radius: float = 100.0
 var color: Color = Color(0.5, 0.8, 1.0, 0.8)
-var duration: float = 0.4
+var duration: float = 0.5
 
-var particles: Array = []
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	# Create ice particle positions
-	for i in range(12):
-		var angle = TAU * i / 12.0
-		particles.append({
-			"angle": angle,
-			"dist": randf_range(0.3, 0.8),
-			"size": randf_range(5, 15)
-		})
+	_setup_sprite()
 
-	queue_redraw()
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(2.0, 2.0)  # Scale based on radius
+	add_child(sprite)
 
-	# Animate expansion
-	scale = Vector2(0.3, 0.3)
-	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector2(1.0, 1.0), duration * 0.6).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "modulate:a", 0.0, duration).set_ease(Tween.EASE_IN)
-	tween.tween_callback(queue_free)
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 22.0)
+	frames.set_animation_loop("default", false)
 
-func _draw() -> void:
-	# Outer ring
-	draw_arc(Vector2.ZERO, radius, 0, TAU, 32, color, 4.0)
+	# Load IceShatter sprite sheet
+	var source_path = "res://assets/sprites/effects/pack2/IceShatter_96x96.png"
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var frame_size = 96
+			var frame_count = total_width / frame_size
 
-	# Inner glow
-	var inner_color = color
-	inner_color.a *= 0.2
-	draw_circle(Vector2.ZERO, radius * 0.7, inner_color)
+			for i in range(frame_count):
+				var frame_img = Image.create(frame_size, frame_size, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_size, 0, frame_size, frame_size), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
 
-	# Ice crystal particles
-	for p in particles:
-		var pos = Vector2.from_angle(p.angle) * radius * p.dist
-		_draw_ice_crystal(pos, p.size)
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
 
-func _draw_ice_crystal(pos: Vector2, size: float) -> void:
-	# Simple diamond shape
-	var points = [
-		pos + Vector2(0, -size),
-		pos + Vector2(size * 0.5, 0),
-		pos + Vector2(0, size),
-		pos + Vector2(-size * 0.5, 0)
-	]
-	draw_colored_polygon(points, Color(0.8, 0.95, 1.0, 0.9))
+func _on_animation_finished() -> void:
+	queue_free()

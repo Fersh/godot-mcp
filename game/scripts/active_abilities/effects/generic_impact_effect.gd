@@ -1,7 +1,7 @@
 extends Node2D
 class_name GenericImpactEffect
 
-# A generic circular impact effect that can be customized
+# A generic impact effect using weapon hit sprite
 # Used as fallback for abilities without specific effects
 
 @export var color: Color = Color(1.0, 0.8, 0.3, 0.8)
@@ -9,28 +9,54 @@ class_name GenericImpactEffect
 @export var duration: float = 0.3
 @export var expand: bool = true
 
-var elapsed: float = 0.0
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	queue_redraw()
+	_setup_sprite()
 
-	# Auto-destroy after duration
-	var tween = create_tween()
-	if expand:
-		tween.tween_property(self, "scale", Vector2(1.5, 1.5), duration)
-	tween.parallel().tween_property(self, "modulate:a", 0.0, duration)
-	tween.tween_callback(queue_free)
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(2.0, 2.0)
+	add_child(sprite)
 
-func _draw() -> void:
-	# Draw expanding ring
-	draw_arc(Vector2.ZERO, radius, 0, TAU, 32, color, 4.0)
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 20.0)
+	frames.set_animation_loop("default", false)
 
-	# Draw inner glow
-	var inner_color = color
-	inner_color.a *= 0.3
-	draw_circle(Vector2.ZERO, radius * 0.5, inner_color)
+	# Try to load weapon hit sprite sheet
+	var source_path = "res://assets/sprites/effects/Free Pixel Effects Pack/10_weaponhit_spritesheet.png"
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var total_height = img.get_height()
+			var grid_cols = 8
+			var grid_rows = 8
+			var frame_width = total_width / grid_cols
+			var frame_height = total_height / grid_rows
+
+			for row in range(grid_rows):
+				for col in range(grid_cols):
+					var frame_img = Image.create(frame_width, frame_height, false, img.get_format())
+					frame_img.blit_rect(img, Rect2i(col * frame_width, row * frame_height, frame_width, frame_height), Vector2i.ZERO)
+					frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
+
+	# Tint with color
+	sprite.modulate = color
+
+func _on_animation_finished() -> void:
+	queue_free()
 
 func setup(p_radius: float, p_color: Color, p_duration: float = 0.3) -> void:
 	radius = p_radius
 	color = p_color
 	duration = p_duration
+	if sprite:
+		sprite.modulate = color
+		sprite.scale = Vector2(p_radius / 25.0, p_radius / 25.0)

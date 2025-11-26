@@ -222,14 +222,16 @@ func _apply_knockback_to_enemy(enemy: Node2D, direction: Vector2, force: float) 
 
 func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) -> Node:
 	"""Spawn a visual effect at a position."""
-	var scene_path = "res://scenes/effects/ability_effects/" + effect_id + ".tscn"
+	# Map effect IDs to sprite-based effects
+	var mapped_effect = _get_mapped_effect(effect_id)
+	var scene_path = "res://scenes/effects/ability_effects/" + mapped_effect + ".tscn"
 
 	# Check if effect scene exists
-	if not _effect_scenes.has(effect_id):
+	if not _effect_scenes.has(mapped_effect):
 		if ResourceLoader.exists(scene_path):
-			_effect_scenes[effect_id] = load(scene_path)
+			_effect_scenes[mapped_effect] = load(scene_path)
 
-	var scene = _effect_scenes.get(effect_id)
+	var scene = _effect_scenes.get(mapped_effect)
 	if scene:
 		var effect = scene.instantiate()
 		effect.global_position = position
@@ -237,6 +239,8 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 			parent.add_child(effect)
 		else:
 			get_tree().current_scene.add_child(effect)
+		# Configure effect based on type
+		_configure_spawned_effect(effect, effect_id)
 		return effect
 
 	# Fallback: use explosion effect for explosion-related effects
@@ -245,6 +249,123 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 
 	# Fallback: spawn generic impact for other effects
 	return _spawn_generic_effect(position, parent)
+
+func _get_mapped_effect(effect_id: String) -> String:
+	"""Map ability effect IDs to sprite-based effect scenes."""
+	match effect_id:
+		# Slash/Melee effects
+		"cleave", "slash", "omnislash":
+			return "slash"
+		"spinning_attack", "bladestorm":
+			return "firespin"
+		"whirlwind":
+			return "tornado"
+
+		# Impact/Smoke effects
+		"ground_slam", "savage_leap_landing", "earthquake":
+			return "impact_smoke"
+		"shield_bash", "punch":
+			return "punch_impact"
+		"dash_strike", "blade_rush", "quick_roll", "dash":
+			return "dash_smoke"
+
+		# Explosion effects
+		"explosion", "explosive_arrow", "cluster_bomb", "throwing_bomb", "black_hole_explosion":
+			return "explosion_sprite"
+		"meteor_strike":
+			return "explosion_sprite"  # Large explosion
+		"fireball":
+			return "fireball_sprite"
+
+		# Ice effects
+		"frost_nova", "ice_shatter":
+			return "ice_shatter"
+		"totem_of_frost", "ice_cast":
+			return "ice_cast"
+
+		# Lightning effects
+		"chain_lightning", "lightning_strike", "thunderstorm":
+			return "lightning"
+
+		# Holy/Light effects
+		"healing_light", "blinding_flash", "holy":
+			return "holy"
+		"divine_shield":
+			return "shield"
+		"battle_cry":
+			return "holy"  # Protection circle
+
+		# Fire effects
+		"avatar_of_war", "fire_aura":
+			return "fire_cast"
+
+		# Dark/Magic effects
+		"black_hole":
+			return "black_hole"
+		"summon_burst", "dark_summon", "army_of_the_dead":
+			return "magic_cast"
+		"shadowstep":
+			return "magic_cast"
+
+		# Ground/Spike effects
+		"seismic_slam", "spikes":
+			return "spikes"
+
+		# Poison effects
+		"poison", "toxic":
+			return "poison"
+
+		_:
+			return effect_id  # Return original if no mapping
+
+func _configure_spawned_effect(effect: Node, effect_id: String) -> void:
+	"""Configure effect properties based on original effect ID."""
+	match effect_id:
+		# Configure explosion sizes
+		"meteor_strike", "earthquake", "black_hole_explosion":
+			if effect.has_method("set_size_from_string"):
+				effect.set_size_from_string("large")
+		"cluster_bomb":
+			if effect.has_method("set_size_from_string"):
+				effect.set_size_from_string("medium")
+		"explosive_arrow":
+			if effect.has_method("set_size_from_string"):
+				effect.set_size_from_string("small")
+
+		# Configure impact types
+		"ground_slam", "earthquake":
+			if effect.has_method("set_impact_type"):
+				effect.impact_type = 2  # BIG_SMOKE
+		"savage_leap_landing":
+			if effect.has_method("set_impact_type"):
+				effect.impact_type = 3  # DUST_KICK
+
+		# Configure holy types
+		"healing_light":
+			if effect.has_method("set_holy_type"):
+				effect.holy_type = 0  # EXPLOSION
+		"blinding_flash":
+			if effect.has_method("set_holy_type"):
+				effect.holy_type = 1  # CAST
+		"battle_cry":
+			if effect.has_method("set_holy_type"):
+				effect.holy_type = 2  # PROTECTION
+
+		# Configure fire types
+		"avatar_of_war":
+			if effect.has_method("set_fire_type"):
+				effect.fire_type = 2  # AURA
+
+		# Configure magic types
+		"summon_burst":
+			if effect.has_method("set_magic_type"):
+				effect.magic_type = 2  # SUMMON
+		"dark_summon", "army_of_the_dead":
+			if effect.has_method("set_magic_type"):
+				effect.magic_type = 1  # DARK
+		"shadowstep":
+			if effect.has_method("set_magic_type"):
+				effect.magic_type = 3  # VORTEX
 
 func _spawn_explosion_effect(position: Vector2, parent: Node = null) -> Node:
 	"""Spawn the animated pixel explosion effect."""

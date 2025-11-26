@@ -1,42 +1,34 @@
 extends Node2D
 
-# Chain lightning hit effect
+# Chain lightning hit effect - uses Lightning sprite sequence
 
 var color: Color = Color(0.6, 0.8, 1.0, 0.9)
-var duration: float = 0.2
+var duration: float = 0.3
+
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	queue_redraw()
+	_setup_sprite()
 
-	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, duration)
-	tween.tween_callback(queue_free)
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(2.0, 2.0)
+	add_child(sprite)
 
-func _draw() -> void:
-	# Central spark
-	draw_circle(Vector2.ZERO, 10, Color(1.0, 1.0, 1.0, 0.9))
-	draw_circle(Vector2.ZERO, 15, color)
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 28.0)  # Fast lightning
+	frames.set_animation_loop("default", false)
 
-	# Lightning bolts radiating out
-	for i in range(6):
-		var angle = TAU * i / 6.0
-		_draw_lightning_bolt(Vector2.ZERO, Vector2.from_angle(angle) * 40, color)
+	# Load individual Lightning frames 1-11
+	for i in range(1, 12):
+		var path = "res://assets/sprites/effects/Lightning/Lightning%d.png" % i
+		if ResourceLoader.exists(path):
+			frames.add_frame("default", load(path))
 
-func _draw_lightning_bolt(start: Vector2, end: Vector2, col: Color) -> void:
-	var points: Array[Vector2] = [start]
-	var segments = 4
-	var direction = (end - start) / segments
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
 
-	for i in range(1, segments):
-		var point = start + direction * i
-		# Add some randomness for jagged effect
-		point += Vector2(randf_range(-8, 8), randf_range(-8, 8))
-		points.append(point)
-
-	points.append(end)
-
-	# Draw the bolt
-	for i in range(points.size() - 1):
-		draw_line(points[i], points[i + 1], col, 2.0)
-		# Glow
-		draw_line(points[i], points[i + 1], Color(col.r, col.g, col.b, col.a * 0.3), 5.0)
+func _on_animation_finished() -> void:
+	queue_free()

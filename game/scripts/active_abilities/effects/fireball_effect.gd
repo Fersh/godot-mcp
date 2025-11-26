@@ -1,32 +1,44 @@
 extends Node2D
 
-# Fireball explosion effect
+# Fireball explosion effect - uses FireBall_64x64 or Explosion_96x96 sprite sheet
 
 var radius: float = 50.0
-var duration: float = 0.3
+var duration: float = 0.4
+
+var sprite: AnimatedSprite2D
 
 func _ready() -> void:
-	queue_redraw()
+	_setup_sprite()
 
-	scale = Vector2(0.5, 0.5)
-	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector2(1.5, 1.5), duration).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "modulate:a", 0.0, duration)
-	tween.tween_callback(queue_free)
+func _setup_sprite() -> void:
+	sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(1.8, 1.8)
+	add_child(sprite)
 
-func _draw() -> void:
-	# Outer orange glow
-	draw_circle(Vector2.ZERO, radius, Color(1.0, 0.5, 0.1, 0.4))
+	var frames = SpriteFrames.new()
+	frames.add_animation("default")
+	frames.set_animation_speed("default", 22.0)
+	frames.set_animation_loop("default", false)
 
-	# Middle yellow
-	draw_circle(Vector2.ZERO, radius * 0.7, Color(1.0, 0.8, 0.2, 0.6))
+	# Load FireBall sprite sheet
+	var source_path = "res://assets/sprites/effects/pack2/FireBall_64x64.png"
+	var frame_size = 64
 
-	# Inner white-hot core
-	draw_circle(Vector2.ZERO, radius * 0.3, Color(1.0, 1.0, 0.8, 0.9))
+	if ResourceLoader.exists(source_path):
+		var source_texture = load(source_path) as Texture2D
+		if source_texture:
+			var img = source_texture.get_image()
+			var total_width = img.get_width()
+			var frame_count = total_width / frame_size
 
-	# Flame tendrils
-	for i in range(8):
-		var angle = TAU * i / 8.0 + randf_range(-0.2, 0.2)
-		var length = radius * randf_range(0.8, 1.2)
-		var end_pos = Vector2.from_angle(angle) * length
-		draw_line(Vector2.ZERO, end_pos, Color(1.0, 0.6, 0.1, 0.7), 3.0)
+			for i in range(frame_count):
+				var frame_img = Image.create(frame_size, frame_size, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_size, 0, frame_size, frame_size), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+
+	sprite.sprite_frames = frames
+	sprite.animation_finished.connect(_on_animation_finished)
+	sprite.play("default")
+
+func _on_animation_finished() -> void:
+	queue_free()

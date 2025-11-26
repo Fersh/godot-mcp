@@ -861,6 +861,9 @@ func get_damage_boost() -> float:
 
 func spawn_dodge_effect() -> void:
 	"""Spawn a visual effect for dodging."""
+	# Spawn dash smoke effect using the new sprite animation
+	_spawn_dash_smoke()
+
 	# Create afterimage effect
 	if sprite:
 		var afterimage = Sprite2D.new()
@@ -878,6 +881,18 @@ func spawn_dodge_effect() -> void:
 		var tween = afterimage.create_tween()
 		tween.tween_property(afterimage, "modulate:a", 0.0, 0.3)
 		tween.tween_callback(afterimage.queue_free)
+
+func _spawn_dash_smoke() -> void:
+	"""Spawn the dash smoke sprite effect."""
+	var smoke_scene = load("res://scenes/effects/ability_effects/dash_smoke.tscn")
+	if smoke_scene:
+		var smoke = smoke_scene.instantiate()
+		smoke.global_position = global_position
+		# Set direction based on movement or facing
+		var dir = velocity.normalized() if velocity.length() > 10 else (Vector2.RIGHT if facing_right else Vector2.LEFT)
+		if smoke.has_method("set_direction"):
+			smoke.set_direction(dir)
+		get_parent().add_child(smoke)
 
 func _update_active_ability_timers(delta: float) -> void:
 	"""Update timers for active ability effects."""
