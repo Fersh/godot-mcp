@@ -642,7 +642,29 @@ func strike_lightning(player: Node2D) -> void:
 	if enemies.size() == 0:
 		return
 
-	var target = enemies[randi() % enemies.size()]
+	# Filter to only enemies visible on screen
+	var viewport_rect = get_viewport().get_visible_rect()
+	var camera = get_viewport().get_camera_2d()
+	var visible_enemies: Array = []
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var screen_pos = enemy.global_position
+			if camera:
+				# Convert to screen-relative position
+				var cam_pos = camera.global_position
+				var half_size = viewport_rect.size / 2
+				if abs(screen_pos.x - cam_pos.x) < half_size.x and abs(screen_pos.y - cam_pos.y) < half_size.y:
+					visible_enemies.append(enemy)
+			else:
+				# No camera, just check viewport bounds
+				if viewport_rect.has_point(screen_pos):
+					visible_enemies.append(enemy)
+
+	if visible_enemies.size() == 0:
+		return
+
+	var target = visible_enemies[randi() % visible_enemies.size()]
 	if is_instance_valid(target) and target.has_method("take_damage"):
 		target.take_damage(lightning_damage)
 		spawn_lightning_bolt(target.global_position)

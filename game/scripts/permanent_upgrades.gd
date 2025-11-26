@@ -115,6 +115,21 @@ func _init_upgrade_definitions() -> void:
 	_add_upgrade("cooldown_matrix", "Cooldown Matrix", "Reduce ability cooldowns", "cooldown",
 		Category.UTILITY, 200, 1.5, 5, 0.05, "cooldown_reduction", "-%d%% cooldowns")
 
+	_add_upgrade("elemental_mastery", "Elemental Mastery", "Increase elemental effect chance", "element",
+		Category.COMBAT, 300, 1.5, 5, 0.05, "elemental_chance", "+%d%% elemental procs")
+
+	_add_upgrade("status_amplifier", "Status Amplifier", "Status effects last longer", "status",
+		Category.COMBAT, 250, 1.5, 5, 0.15, "status_duration", "+%d%% status duration")
+
+	_add_upgrade("healing_amplifier", "Healing Amplifier", "Increase all healing received", "heal",
+		Category.SURVIVAL, 200, 1.5, 5, 0.10, "healing_received", "+%d%% healing")
+
+	_add_upgrade("summoner_bond", "Summoner's Bond", "Summons deal more damage", "summon",
+		Category.COMBAT, 350, 1.6, 5, 0.15, "summon_damage", "+%d%% summon damage")
+
+	_add_upgrade("aura_expansion", "Aura Expansion", "Increase aura and orbital range", "aura",
+		Category.UTILITY, 250, 1.5, 5, 0.10, "aura_range", "+%d%% aura range")
+
 	# Progression Upgrades
 	_add_upgrade("data_mining", "Data Mining", "Gain more experience", "xp",
 		Category.PROGRESSION, 200, 1.4, 5, 0.10, "xp_gain", "+%d%% XP")
@@ -272,6 +287,11 @@ func get_all_bonuses() -> Dictionary:
 		"pickup_range": 0.0,
 		"luck": 0.0,
 		"cooldown_reduction": 0.0,
+		"elemental_chance": 0.0,
+		"status_duration": 0.0,
+		"healing_received": 0.0,
+		"summon_damage": 0.0,
+		"aura_range": 0.0,
 		"xp_gain": 0.0,
 		"points_gain": 0.0,
 		"coin_gain": 0.0,

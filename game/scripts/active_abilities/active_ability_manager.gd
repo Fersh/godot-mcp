@@ -130,14 +130,30 @@ func use_ability(slot: int) -> bool:
 	if ability == null:
 		return false
 
-	# Start cooldown
-	cooldown_timers[slot] = ability.cooldown
+	# Start cooldown (apply cooldown reduction from permanent upgrades)
+	var cooldown = ability.cooldown * get_cooldown_multiplier()
+	cooldown_timers[slot] = cooldown
 
 	# Execute the ability
 	_execute_ability(ability)
 
 	emit_signal("ability_used", slot, ability)
 	return true
+
+func get_cooldown_multiplier() -> float:
+	"""Get the cooldown multiplier from permanent upgrades and abilities."""
+	var multiplier = 1.0
+
+	# Apply permanent upgrade cooldown reduction
+	if PermanentUpgrades:
+		var reduction = PermanentUpgrades.get_all_bonuses().get("cooldown_reduction", 0.0)
+		multiplier -= reduction
+
+	# Apply All-For-One mythic penalty if active
+	if AbilityManager and AbilityManager.has_all_for_one_ability():
+		multiplier *= AbilityManager.get_all_for_one_cooldown_multiplier()
+
+	return maxf(multiplier, 0.1)  # Minimum 10% of original cooldown
 
 func _execute_ability(ability: ActiveAbilityData) -> void:
 	"""Execute an ability's effect. Delegates to AbilityExecutor."""
@@ -354,8 +370,19 @@ func get_cooldown_percent(slot: int) -> float:
 	var ability = ability_slots[slot]
 	if ability == null or ability.cooldown <= 0:
 		return 0.0
-	return cooldown_timers[slot] / ability.cooldown
+	# Use the modified cooldown for percentage calculation
+	var modified_cooldown = ability.cooldown * get_cooldown_multiplier()
+	return cooldown_timers[slot] / modified_cooldown
 
 func get_dodge_cooldown_percent() -> float:
 	"""Get dodge cooldown progress (0 = ready, 1 = just used)."""
 	return dodge_cooldown_timer / DODGE_COOLDOWN
+
+func reduce_all_cooldowns(amount: float) -> void:
+	"""Reduce all active ability cooldowns by a flat amount (used by Arcane Absorption)."""
+	for i in MAX_ABILITY_SLOTS:
+		if cooldown_timers[i] > 0:
+			cooldown_timers[i] = maxf(0.0, cooldown_timers[i] - amount)
+	# Also reduce dodge cooldown
+	if dodge_cooldown_timer > 0:
+		dodge_cooldown_timer = maxf(0.0, dodge_cooldown_timer - amount)
