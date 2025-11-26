@@ -23,7 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("3_menu_bg")
 expand_mode = 1
-stretch_mode = 1
+stretch_mode = 6
 modulate = Color(1, 1, 1, 0.8)
 
 [node name="MainContainer" type="VBoxContainer" parent="."]

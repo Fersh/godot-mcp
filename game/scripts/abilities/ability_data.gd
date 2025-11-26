@@ -115,6 +115,12 @@ enum EffectType {
 	PHALANX,            # Block frontal projectiles
 	HOMING,             # Mild homing projectiles
 
+	# Kill Streak Effects
+	RAMPAGE,            # Stacking damage on kill, decays
+	KILLING_FRENZY,     # Stacking attack speed on kill, decays
+	MASSACRE,           # Stacking both damage and speed on kill
+	COOLDOWN_KILLER,    # Reduce active cooldowns on kill
+
 	# Legendary Effects
 	CEREMONIAL_DAGGER,  # Homing daggers on kill
 	MISSILE_BARRAGE,    # Random homing missiles

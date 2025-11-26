@@ -16,7 +16,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("4_menu_bg")
 expand_mode = 1
-stretch_mode = 1
+stretch_mode = 6
 
 [node name="Title" type="Label" parent="."]
 anchors_preset = 5

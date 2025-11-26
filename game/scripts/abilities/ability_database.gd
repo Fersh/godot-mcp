@@ -562,8 +562,8 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.DEFLECT, value = 1.0}]
 		),
 		AbilityData.new(
-			"cleave",
-			"Cleave",
+			"wide_swing",
+			"Wide Swing",
 			"+40% Melee Area, hits more enemies",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.MELEE_ONLY,

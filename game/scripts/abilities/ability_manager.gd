@@ -160,6 +160,31 @@ var has_phalanx: bool = false
 var phalanx_chance: float = 0.0
 var has_homing: bool = false
 
+# Kill streak effects
+var has_rampage: bool = false
+var rampage_bonus: float = 0.0
+var rampage_stacks: int = 0
+var rampage_timer: float = 0.0
+const RAMPAGE_DECAY_TIME: float = 4.0
+const RAMPAGE_MAX_STACKS: int = 20
+
+var has_killing_frenzy: bool = false
+var killing_frenzy_bonus: float = 0.0
+var killing_frenzy_stacks: int = 0
+var killing_frenzy_timer: float = 0.0
+const KILLING_FRENZY_DECAY_TIME: float = 4.0
+const KILLING_FRENZY_MAX_STACKS: int = 15
+
+var has_massacre: bool = false
+var massacre_bonus: float = 0.0
+var massacre_stacks: int = 0
+var massacre_timer: float = 0.0
+const MASSACRE_DECAY_TIME: float = 3.0
+const MASSACRE_MAX_STACKS: int = 15
+
+var has_cooldown_killer: bool = false
+var cooldown_killer_value: float = 0.0
+
 # Defensive effects
 var has_guardian_heart: bool = false
 var guardian_heart_bonus: float = 0.0
@@ -403,6 +428,22 @@ func reset() -> void:
 	phalanx_chance = 0.0
 	has_homing = false
 
+	# Kill streak effects
+	has_rampage = false
+	rampage_bonus = 0.0
+	rampage_stacks = 0
+	rampage_timer = 0.0
+	has_killing_frenzy = false
+	killing_frenzy_bonus = 0.0
+	killing_frenzy_stacks = 0
+	killing_frenzy_timer = 0.0
+	has_massacre = false
+	massacre_bonus = 0.0
+	massacre_stacks = 0
+	massacre_timer = 0.0
+	has_cooldown_killer = false
+	cooldown_killer_value = 0.0
+
 	has_guardian_heart = false
 	guardian_heart_bonus = 0.0
 	has_overheal_shield = false
@@ -551,6 +592,22 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 		vengeance_timer -= delta
 		if vengeance_timer <= 0:
 			vengeance_active = false
+
+	# Kill streak decay timers
+	if has_rampage and rampage_stacks > 0:
+		rampage_timer -= delta
+		if rampage_timer <= 0:
+			rampage_stacks = 0
+
+	if has_killing_frenzy and killing_frenzy_stacks > 0:
+		killing_frenzy_timer -= delta
+		if killing_frenzy_timer <= 0:
+			killing_frenzy_stacks = 0
+
+	if has_massacre and massacre_stacks > 0:
+		massacre_timer -= delta
+		if massacre_timer <= 0:
+			massacre_stacks = 0
 
 	# Soul Reaper stack decay
 	if has_soul_reaper and soul_reaper_stacks > 0:
@@ -1082,6 +1139,20 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.HOMING:
 				has_homing = true
 
+			# Kill streak effects
+			AbilityData.EffectType.RAMPAGE:
+				has_rampage = true
+				rampage_bonus += value
+			AbilityData.EffectType.KILLING_FRENZY:
+				has_killing_frenzy = true
+				killing_frenzy_bonus += value
+			AbilityData.EffectType.MASSACRE:
+				has_massacre = true
+				massacre_bonus += value
+			AbilityData.EffectType.COOLDOWN_KILLER:
+				has_cooldown_killer = true
+				cooldown_killer_value += value
+
 			# Defensive effects
 			AbilityData.EffectType.GUARDIAN_HEART:
 				has_guardian_heart = true
@@ -1224,6 +1295,13 @@ func get_damage_multiplier() -> float:
 	# Add equipment bonus
 	base += _get_equipment_stat("damage")
 
+	# Kill streak bonuses
+	if has_rampage and rampage_stacks > 0:
+		base += rampage_bonus * rampage_stacks
+
+	if has_massacre and massacre_stacks > 0:
+		base += massacre_bonus * massacre_stacks
+
 	return base
 
 func get_attack_speed_multiplier() -> float:
@@ -1237,6 +1315,13 @@ func get_attack_speed_multiplier() -> float:
 
 	# Add equipment bonus
 	base += _get_equipment_stat("attack_speed")
+
+	# Kill streak bonuses
+	if has_killing_frenzy and killing_frenzy_stacks > 0:
+		base += killing_frenzy_bonus * killing_frenzy_stacks
+
+	if has_massacre and massacre_stacks > 0:
+		base += massacre_bonus * massacre_stacks
 
 	return base
 
@@ -1616,6 +1701,22 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# Adrenaline Rush (melee dash on kill)
 	if has_adrenaline_rush:
 		trigger_adrenaline_dash(player, enemy.global_position)
+
+	# Kill Streak Effects
+	if has_rampage:
+		rampage_stacks = mini(rampage_stacks + 1, RAMPAGE_MAX_STACKS)
+		rampage_timer = RAMPAGE_DECAY_TIME
+
+	if has_killing_frenzy:
+		killing_frenzy_stacks = mini(killing_frenzy_stacks + 1, KILLING_FRENZY_MAX_STACKS)
+		killing_frenzy_timer = KILLING_FRENZY_DECAY_TIME
+
+	if has_massacre:
+		massacre_stacks = mini(massacre_stacks + 1, MASSACRE_MAX_STACKS)
+		massacre_timer = MASSACRE_DECAY_TIME
+
+	if has_cooldown_killer:
+		reduce_active_cooldowns(cooldown_killer_value)
 
 # ============================================
 # EXTENDED ABILITY UTILITY FUNCTIONS

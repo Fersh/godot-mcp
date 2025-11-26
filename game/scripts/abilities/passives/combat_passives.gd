@@ -105,4 +105,41 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Type.RANGED_ONLY,
 			[{effect_type = AbilityData.EffectType.HOMING, value = 1.0}]
 		),
+
+		# Kill Streak Passives
+		AbilityData.new(
+			"rampage",
+			"Rampage",
+			"+3% damage per kill, resets after 4s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.RAMPAGE, value = 0.03}]
+		),
+
+		AbilityData.new(
+			"killing_frenzy",
+			"Killing Frenzy",
+			"+5% attack speed per kill, resets after 4s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.KILLING_FRENZY, value = 0.05}]
+		),
+
+		AbilityData.new(
+			"massacre",
+			"Massacre",
+			"+2% damage and speed per kill, resets after 3s",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.MASSACRE, value = 0.02}]
+		),
+
+		AbilityData.new(
+			"cooldown_killer",
+			"Cooldown Killer",
+			"Kills reduce active ability cooldowns by 1s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 1.0}]
+		),
 	]

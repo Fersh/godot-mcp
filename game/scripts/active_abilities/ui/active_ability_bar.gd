@@ -5,11 +5,11 @@ class_name ActiveAbilityBar
 # Bottom-left: Dodge, Bottom-right: Ability 1 (larger)
 # Top-left: Ability 3, Top-right: Ability 2
 
-const BUTTON_SIZE := Vector2(90, 90)  # Standard button size
-const ABILITY1_SIZE := Vector2(110, 110)  # Ability 1 is larger
+const BUTTON_SIZE := Vector2(112, 112)  # Standard button size (25% larger)
+const ABILITY1_SIZE := Vector2(138, 138)  # Ability 1 is larger (25% larger)
 const GRID_SPACING := 8  # Space between buttons
-const MARGIN_RIGHT := 60
-const MARGIN_BOTTOM := 60
+const MARGIN_RIGHT := 80  # 20px more left
+const MARGIN_BOTTOM := 80  # 20px more up
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null
@@ -35,10 +35,10 @@ func _create_ui() -> void:
 
 	# Calculate grid dimensions
 	# Grid is 2x2, with ability 1 being larger
-	# Total width: BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
-	# Total height: BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y (roughly)
-	var grid_width = BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
-	var grid_height = BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y
+	# Total width: BUTTON_SIZE.x + GRID_SPACING + 32 (extra spacing) + ABILITY1_SIZE.x
+	# Total height: BUTTON_SIZE.y + GRID_SPACING + 32 (extra spacing) + ABILITY1_SIZE.y
+	var grid_width = BUTTON_SIZE.x + GRID_SPACING + 32 + ABILITY1_SIZE.x
+	var grid_height = BUTTON_SIZE.y + GRID_SPACING + 32 + ABILITY1_SIZE.y
 
 	# Position container so grid is at bottom-right corner
 	grid_container.position = Vector2(
@@ -53,8 +53,8 @@ func _create_ui() -> void:
 
 	# Bottom-right: Ability 1 (larger, primary ability)
 	var btn0 = _create_ability_button(0, ABILITY1_SIZE)
-	var ability1_x = BUTTON_SIZE.x + GRID_SPACING + 12  # Extra 12px left spacing
-	var ability1_y = BUTTON_SIZE.y + GRID_SPACING + 12  # Extra 12px top spacing
+	var ability1_x = BUTTON_SIZE.x + GRID_SPACING + 32  # Extra 32px left spacing (20px more)
+	var ability1_y = BUTTON_SIZE.y + GRID_SPACING + 32  # Extra 32px top spacing (20px more)
 	btn0.position = Vector2(ability1_x, ability1_y)
 	ability_buttons.append(btn0)
 
@@ -135,8 +135,8 @@ func update_position() -> void:
 		return
 
 	var viewport_size = get_viewport().get_visible_rect().size
-	var grid_width = BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
-	var grid_height = BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y
+	var grid_width = BUTTON_SIZE.x + GRID_SPACING + 32 + ABILITY1_SIZE.x
+	var grid_height = BUTTON_SIZE.y + GRID_SPACING + 32 + ABILITY1_SIZE.y
 
 	grid_container.position = Vector2(
 		viewport_size.x - MARGIN_RIGHT - grid_width,

@@ -15,7 +15,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("3_menu_bg")
 expand_mode = 1
-stretch_mode = 1
+stretch_mode = 6
 
 [node name="Header" type="PanelContainer" parent="."]
 anchors_preset = 10
