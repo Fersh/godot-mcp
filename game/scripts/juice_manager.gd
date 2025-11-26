@@ -136,6 +136,9 @@ func register_low_hp_vignette(overlay: ColorRect) -> void:
 
 # Screen shake with optional rotation
 func shake(intensity: float, rotation: float = 0.0) -> void:
+	# Check if screen shake is enabled
+	if GameSettings and not GameSettings.screen_shake_enabled:
+		return
 	shake_intensity = max(shake_intensity, intensity)
 	shake_rotation = max(shake_rotation, rotation)
 

@@ -92,6 +92,9 @@ func _on_body_entered(body: Node2D) -> void:
 		# Deal damage
 		body.take_damage(final_damage, is_crit)
 
+		# Apply elemental effects
+		_apply_elemental_effects(body)
+
 		# Apply knockback
 		if has_knockback and body.has_method("apply_knockback"):
 			body.apply_knockback(direction * knockback_force)
@@ -102,6 +105,42 @@ func _on_body_entered(body: Node2D) -> void:
 			pierce_count -= 1
 		else:
 			queue_free()
+
+func _apply_elemental_effects(enemy: Node2D) -> void:
+	if not AbilityManager:
+		return
+
+	# Ignite - apply burn damage
+	if AbilityManager.check_ignite():
+		if enemy.has_method("apply_burn"):
+			enemy.apply_burn(3.0)  # 3 second burn
+		_spawn_elemental_damage_number(enemy, "BURN", Color(1.0, 0.4, 0.2))
+
+	# Frostbite - apply chill (slow)
+	if AbilityManager.check_frostbite():
+		if enemy.has_method("apply_slow"):
+			enemy.apply_slow(0.5, 2.0)  # 50% slow for 2 seconds
+		_spawn_elemental_damage_number(enemy, "CHILL", Color(0.4, 0.7, 1.0))
+
+	# Toxic Tip - apply poison
+	if AbilityManager.check_toxic_tip():
+		if enemy.has_method("apply_poison"):
+			enemy.apply_poison(50.0, 5.0)  # 50 damage over 5 seconds
+		_spawn_elemental_damage_number(enemy, "POISON", Color(0.4, 1.0, 0.4))
+
+	# Lightning Proc - trigger lightning
+	if AbilityManager.check_lightning_proc():
+		AbilityManager.trigger_lightning_at(enemy.global_position)
+		_spawn_elemental_damage_number(enemy, "ZAP", Color(1.0, 0.9, 0.4))
+
+func _spawn_elemental_damage_number(enemy: Node2D, text: String, color: Color) -> void:
+	var damage_num_scene = load("res://scenes/damage_number.tscn")
+	if damage_num_scene:
+		var dmg_num = damage_num_scene.instantiate()
+		dmg_num.global_position = enemy.global_position + Vector2(randf_range(-15, 15), -30)
+		get_tree().root.add_child(dmg_num)
+		if dmg_num.has_method("set_elemental"):
+			dmg_num.set_elemental(text, color)
 
 func calculate_damage(enemy: Node2D) -> float:
 	var final_damage = damage * damage_multiplier

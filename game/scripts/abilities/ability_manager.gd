@@ -1634,6 +1634,10 @@ func check_toxic_tip() -> bool:
 func check_lightning_proc() -> bool:
 	return has_lightning_proc and randf() < lightning_proc_chance
 
+func trigger_lightning_at(pos: Vector2) -> void:
+	"""Trigger a lightning strike at the given position."""
+	spawn_lightning_bolt(pos)
+
 func get_chaotic_element() -> String:
 	if not has_chaotic_strikes:
 		return ""

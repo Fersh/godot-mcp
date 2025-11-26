@@ -10,47 +10,47 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"lightning_strike_proc",
 			"Lightning Strike",
-			"20% chance to call lightning on hit",
+			"Auto attacks call lightning",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.LIGHTNING_PROC, value = 0.2}]
+			[{effect_type = AbilityData.EffectType.LIGHTNING_PROC, value = 1.0}]
 		),
 
 		# Ignite (On-Hit)
 		AbilityData.new(
 			"ignite",
 			"Ignite",
-			"30% chance to burn enemies for 5% max HP",
+			"Auto attacks burn for 5% max HP",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.IGNITE, value = 0.3}]
+			[{effect_type = AbilityData.EffectType.IGNITE, value = 1.0}]
 		),
 
-		# Frostbite (On-Hit)
+		# Frostbite (On-Hit) - Changed to Chill
 		AbilityData.new(
 			"frostbite",
 			"Frostbite",
-			"20% chance to freeze enemies briefly",
+			"Auto attacks chill, slowing enemies",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.FROSTBITE, value = 0.2}]
+			[{effect_type = AbilityData.EffectType.FROSTBITE, value = 1.0}]
 		),
 
 		# Toxic Tip (On-Hit)
 		AbilityData.new(
 			"toxic_tip",
 			"Toxic Tip",
-			"30% chance to poison for 50 damage over 5s",
+			"Auto attacks poison for 50 damage over 5s",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.TOXIC_TIP, value = 0.3}]
+			[{effect_type = AbilityData.EffectType.TOXIC_TIP, value = 1.0}]
 		),
 
 		# Chaotic Strikes
 		AbilityData.new(
 			"chaotic_strikes",
 			"Chaotic Strikes",
-			"Attacks deal random elemental damage",
+			"Auto attacks deal random elemental damage",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CHAOTIC_STRIKES, value = 0.1}]

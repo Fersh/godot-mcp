@@ -22,6 +22,7 @@ boot_splash/minimum_display_time=1500
 
 [autoload]
 
+GameSettings="*res://scripts/game_settings.gd"
 AbilityManager="*res://scripts/abilities/ability_manager.gd"
 JuiceManager="*res://scripts/juice_manager.gd"
 StatsManager="*res://scripts/stats_manager.gd"

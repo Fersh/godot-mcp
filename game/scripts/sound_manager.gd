@@ -89,6 +89,9 @@ func _get_available_player() -> AudioStreamPlayer:
 func _play_sound(stream: AudioStream, volume_db: float = 0.0, pitch_variance: float = 0.0) -> void:
 	if stream == null:
 		return
+	# Check if SFX is enabled
+	if GameSettings and not GameSettings.sfx_enabled:
+		return
 	var player = _get_available_player()
 	player.stream = stream
 	player.volume_db = volume_db
@@ -154,6 +157,9 @@ func play_block() -> void:
 # Music controls
 func play_music() -> void:
 	if music_player and music1:
+		# Check if music is enabled
+		if GameSettings and not GameSettings.music_enabled:
+			return
 		music_player.stream = music1
 		music_player.play()
 

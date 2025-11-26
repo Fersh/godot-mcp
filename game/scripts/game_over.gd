@@ -7,7 +7,6 @@ extends CanvasLayer
 @onready var best_kills_label: Label = $Panel/VBoxContainer/StatsContainer/BestKillsLabel
 @onready var coins_label: Label = $Panel/VBoxContainer/StatsContainer/CoinsLabel
 @onready var play_again_button: Button = $Panel/VBoxContainer/ButtonContainer/PlayAgainButton
-@onready var main_menu_button: Button = $Panel/VBoxContainer/ButtonContainer/MainMenuButton
 @onready var loot_container: HBoxContainer = $Panel/VBoxContainer/LootContainer
 
 var final_level: int = 1
@@ -16,14 +15,22 @@ var final_kills: int = 0
 var final_coins: int = 0
 var final_points: int = 0
 
+# Settings dropdown
+var settings_dropdown: PanelContainer = null
+var settings_visible: bool = false
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	play_again_button.pressed.connect(_on_play_again_pressed)
-	main_menu_button.pressed.connect(_on_main_menu_pressed)
 
 	# Style the buttons
 	_style_play_again_button()
-	_style_main_menu_button()
+
+	# Create home button (top left)
+	_create_home_button()
+
+	# Create settings button (top right)
+	_create_settings_button()
 
 	# Get stats from StatsManager
 	if StatsManager:
@@ -94,12 +101,6 @@ func _on_main_menu_pressed() -> void:
 	# Unpause and go to main menu
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
-
-func _input(event: InputEvent) -> void:
-	# Allow play again with spacebar or enter
-	if event is InputEventKey and event.pressed:
-		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
-			_on_play_again_pressed()
 
 func _display_loot() -> void:
 	if not EquipmentManager:
@@ -228,45 +229,164 @@ func _style_play_again_button() -> void:
 	play_again_button.add_theme_stylebox_override("pressed", style_pressed)
 	play_again_button.add_theme_stylebox_override("focus", style_normal)
 
-func _style_main_menu_button() -> void:
-	# Darker, secondary button for Main Menu
-	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 6
-	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
-	style_normal.corner_radius_top_left = 8
-	style_normal.corner_radius_top_right = 8
-	style_normal.corner_radius_bottom_left = 8
-	style_normal.corner_radius_bottom_right = 8
+func _create_home_button() -> void:
+	var home_btn = Button.new()
+	home_btn.text = "🏠"
+	home_btn.custom_minimum_size = Vector2(50, 50)
+	home_btn.add_theme_font_size_override("font_size", 24)
+	home_btn.pressed.connect(_on_main_menu_pressed)
+
+	# Style the button
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.2, 0.25, 0.9)
+	style.set_corner_radius_all(8)
+	home_btn.add_theme_stylebox_override("normal", style)
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 6
-	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
-	style_hover.corner_radius_top_left = 8
-	style_hover.corner_radius_top_right = 8
-	style_hover.corner_radius_bottom_left = 8
-	style_hover.corner_radius_bottom_right = 8
+	style_hover.bg_color = Color(0.3, 0.3, 0.35, 0.9)
+	style_hover.set_corner_radius_all(8)
+	home_btn.add_theme_stylebox_override("hover", style_hover)
 
-	var style_pressed = StyleBoxFlat.new()
-	style_pressed.bg_color = Color(0.2, 0.2, 0.25, 1)
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 5
-	style_pressed.border_width_bottom = 4
-	style_pressed.border_color = Color(0.12, 0.12, 0.15, 1)
-	style_pressed.corner_radius_top_left = 8
-	style_pressed.corner_radius_top_right = 8
-	style_pressed.corner_radius_bottom_left = 8
-	style_pressed.corner_radius_bottom_right = 8
+	# Position in top left
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	margin.add_theme_constant_override("margin_left", 20)
+	margin.add_theme_constant_override("margin_top", 60)
+	margin.add_child(home_btn)
+	add_child(margin)
 
-	main_menu_button.add_theme_stylebox_override("normal", style_normal)
-	main_menu_button.add_theme_stylebox_override("hover", style_hover)
-	main_menu_button.add_theme_stylebox_override("pressed", style_pressed)
-	main_menu_button.add_theme_stylebox_override("focus", style_normal)
+func _create_settings_button() -> void:
+	var settings_btn = Button.new()
+	settings_btn.text = "⚙️"
+	settings_btn.custom_minimum_size = Vector2(50, 50)
+	settings_btn.add_theme_font_size_override("font_size", 24)
+	settings_btn.pressed.connect(_toggle_settings_dropdown)
+
+	# Style the button
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.2, 0.25, 0.9)
+	style.set_corner_radius_all(8)
+	settings_btn.add_theme_stylebox_override("normal", style)
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.3, 0.3, 0.35, 0.9)
+	style_hover.set_corner_radius_all(8)
+	settings_btn.add_theme_stylebox_override("hover", style_hover)
+
+	# Position in top right
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	margin.add_theme_constant_override("margin_right", 20)
+	margin.add_theme_constant_override("margin_top", 60)
+	margin.add_child(settings_btn)
+	add_child(margin)
+
+	# Create the dropdown (hidden initially)
+	_create_settings_dropdown()
+
+func _create_settings_dropdown() -> void:
+	settings_dropdown = PanelContainer.new()
+	settings_dropdown.visible = false
+
+	# Style the panel
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.12, 0.12, 0.15, 0.95)
+	panel_style.border_color = Color(0.3, 0.3, 0.35, 1)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	settings_dropdown.add_theme_stylebox_override("panel", panel_style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+
+	# Title
+	var title = Label.new()
+	title.text = "Settings"
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(1, 1, 1))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+
+	# Music checkbox
+	var music_check = CheckBox.new()
+	music_check.text = "Music"
+	music_check.button_pressed = GameSettings.music_enabled if GameSettings else true
+	music_check.toggled.connect(func(pressed): GameSettings.set_music_enabled(pressed))
+	vbox.add_child(music_check)
+
+	# SFX checkbox
+	var sfx_check = CheckBox.new()
+	sfx_check.text = "Sound Effects"
+	sfx_check.button_pressed = GameSettings.sfx_enabled if GameSettings else true
+	sfx_check.toggled.connect(func(pressed): GameSettings.set_sfx_enabled(pressed))
+	vbox.add_child(sfx_check)
+
+	# Screen Shake checkbox
+	var shake_check = CheckBox.new()
+	shake_check.text = "Screen Shake"
+	shake_check.button_pressed = GameSettings.screen_shake_enabled if GameSettings else true
+	shake_check.toggled.connect(func(pressed): GameSettings.set_screen_shake_enabled(pressed))
+	vbox.add_child(shake_check)
+
+	# Haptics checkbox
+	var haptics_check = CheckBox.new()
+	haptics_check.text = "Haptics"
+	haptics_check.button_pressed = GameSettings.haptics_enabled if GameSettings else true
+	haptics_check.toggled.connect(func(pressed): GameSettings.set_haptics_enabled(pressed))
+	vbox.add_child(haptics_check)
+
+	# Volume section
+	var vol_label = Label.new()
+	vol_label.text = "Volume"
+	vol_label.add_theme_font_size_override("font_size", 14)
+	vol_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	vbox.add_child(vol_label)
+
+	var vol_hbox = HBoxContainer.new()
+	vol_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var vol_down = Button.new()
+	vol_down.text = "-"
+	vol_down.custom_minimum_size = Vector2(40, 40)
+	vol_down.pressed.connect(func(): GameSettings.decrease_volume())
+	vol_hbox.add_child(vol_down)
+
+	var vol_up = Button.new()
+	vol_up.text = "+"
+	vol_up.custom_minimum_size = Vector2(40, 40)
+	vol_up.pressed.connect(func(): GameSettings.increase_volume())
+	vol_hbox.add_child(vol_up)
+
+	vbox.add_child(vol_hbox)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+	margin.add_child(vbox)
+	settings_dropdown.add_child(margin)
+
+	# Position dropdown below settings button
+	settings_dropdown.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	settings_dropdown.position = Vector2(-200, 120)
+	add_child(settings_dropdown)
+
+func _toggle_settings_dropdown() -> void:
+	settings_visible = not settings_visible
+	settings_dropdown.visible = settings_visible
+
+func _input(event: InputEvent) -> void:
+	# Allow play again with spacebar or enter
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+			_on_play_again_pressed()
+
+	# Close settings dropdown when clicking outside
+	if settings_visible and event is InputEventMouseButton and event.pressed:
+		if settings_dropdown and not settings_dropdown.get_global_rect().has_point(event.position):
+			# Check if clicking the settings button itself
+			var settings_btn_rect = Rect2(Vector2(get_viewport().size.x - 70, 60), Vector2(50, 50))
+			if not settings_btn_rect.has_point(event.position):
+				settings_visible = false
+				settings_dropdown.visible = false

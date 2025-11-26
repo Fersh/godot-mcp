@@ -764,9 +764,49 @@ func perform_melee_attack() -> void:
 						if enemy.has_method("apply_knockback"):
 							enemy.apply_knockback(to_enemy.normalized() * AbilityManager.knockback_force)
 
+					# Apply elemental effects
+					_apply_elemental_effects_to_enemy(enemy)
+
 	# Slight screen shake on melee hit
 	if melee_hit_enemies.size() > 0 and JuiceManager:
 		JuiceManager.shake_small()
+
+func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
+	"""Apply elemental on-hit effects to an enemy."""
+	if not AbilityManager:
+		return
+
+	# Ignite - apply burn damage
+	if AbilityManager.check_ignite():
+		if enemy.has_method("apply_burn"):
+			enemy.apply_burn(3.0)
+		_spawn_elemental_text(enemy, "BURN", Color(1.0, 0.4, 0.2))
+
+	# Frostbite - apply chill (slow)
+	if AbilityManager.check_frostbite():
+		if enemy.has_method("apply_slow"):
+			enemy.apply_slow(0.5, 2.0)
+		_spawn_elemental_text(enemy, "CHILL", Color(0.4, 0.7, 1.0))
+
+	# Toxic Tip - apply poison
+	if AbilityManager.check_toxic_tip():
+		if enemy.has_method("apply_poison"):
+			enemy.apply_poison(50.0, 5.0)
+		_spawn_elemental_text(enemy, "POISON", Color(0.4, 1.0, 0.4))
+
+	# Lightning Proc - trigger lightning
+	if AbilityManager.check_lightning_proc():
+		AbilityManager.trigger_lightning_at(enemy.global_position)
+		_spawn_elemental_text(enemy, "ZAP", Color(1.0, 0.9, 0.4))
+
+func _spawn_elemental_text(enemy: Node2D, text: String, color: Color) -> void:
+	"""Spawn a colored elemental damage number."""
+	if damage_number_scene:
+		var dmg_num = damage_number_scene.instantiate()
+		dmg_num.global_position = enemy.global_position + Vector2(randf_range(-15, 15), -30)
+		get_parent().add_child(dmg_num)
+		if dmg_num.has_method("set_elemental"):
+			dmg_num.set_elemental(text, color)
 
 func update_animation(delta: float, move_direction: Vector2) -> void:
 	var prev_row = current_row

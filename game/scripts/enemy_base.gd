@@ -45,6 +45,19 @@ var slow_timer: float = 0.0
 var slow_percent: float = 0.0
 var base_speed: float = 0.0
 
+# Burn system (fire damage over time)
+var is_burning: bool = false
+var burn_timer: float = 0.0
+var burn_tick_timer: float = 0.0
+const BURN_TICK_INTERVAL: float = 0.5
+
+# Poison system (damage over time)
+var is_poisoned: bool = false
+var poison_timer: float = 0.0
+var poison_damage: float = 0.0
+var poison_tick_timer: float = 0.0
+const POISON_TICK_INTERVAL: float = 0.5
+
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
@@ -253,6 +266,17 @@ func apply_slow(percent: float, duration: float) -> void:
 	slow_timer = max(slow_timer, duration)
 	_update_speed()
 
+func apply_burn(duration: float) -> void:
+	"""Apply burn effect - deals 5% max HP per tick."""
+	is_burning = true
+	burn_timer = max(burn_timer, duration)
+
+func apply_poison(total_damage: float, duration: float) -> void:
+	"""Apply poison effect - deals damage over time."""
+	is_poisoned = true
+	poison_timer = max(poison_timer, duration)
+	poison_damage = total_damage / (duration / POISON_TICK_INTERVAL)  # Damage per tick
+
 func handle_stun(delta: float) -> bool:
 	"""Handle stun status - returns true if stunned and should skip behavior."""
 	if is_stunned:
@@ -274,6 +298,50 @@ func handle_status_effects(delta: float) -> void:
 			is_slowed = false
 			slow_percent = 0.0
 			_update_speed()
+
+	# Handle burn damage
+	if is_burning:
+		burn_timer -= delta
+		burn_tick_timer -= delta
+		if burn_tick_timer <= 0:
+			burn_tick_timer = BURN_TICK_INTERVAL
+			var burn_damage = max_health * 0.05  # 5% max HP per tick
+			_take_dot_damage(burn_damage, Color(1.0, 0.4, 0.2))
+		if burn_timer <= 0:
+			is_burning = false
+
+	# Handle poison damage
+	if is_poisoned:
+		poison_timer -= delta
+		poison_tick_timer -= delta
+		if poison_tick_timer <= 0:
+			poison_tick_timer = POISON_TICK_INTERVAL
+			_take_dot_damage(poison_damage, Color(0.4, 1.0, 0.4))
+		if poison_timer <= 0:
+			is_poisoned = false
+			poison_damage = 0.0
+
+func _take_dot_damage(amount: float, color: Color) -> void:
+	"""Take damage from DoT effects without triggering on-hit effects."""
+	if is_dying:
+		return
+
+	current_health -= amount
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+
+	# Spawn colored damage number
+	if damage_number_scene:
+		var dmg_num = damage_number_scene.instantiate()
+		dmg_num.global_position = global_position + Vector2(randf_range(-10, 10), -30)
+		get_parent().add_child(dmg_num)
+		if dmg_num.has_method("set_elemental"):
+			dmg_num.set_elemental(str(int(amount)), color)
+		else:
+			dmg_num.set_damage(amount, false, false)
+
+	if current_health <= 0:
+		die()
 
 func _update_speed() -> void:
 	"""Update current speed based on slow effects."""
