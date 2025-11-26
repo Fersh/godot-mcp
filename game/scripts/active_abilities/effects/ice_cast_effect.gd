@@ -9,6 +9,15 @@ var duration: float = 5.0
 var is_looping: bool = true
 var _setup_done: bool = false
 
+# Totem functionality
+var totem_radius: float = 100.0
+var totem_damage: float = 0.0
+var totem_slow_percent: float = 0.0
+var totem_slow_duration: float = 0.0
+var tick_interval: float = 0.5
+var tick_timer: float = 0.0
+var is_totem: bool = false
+
 func _ready() -> void:
 	call_deferred("_deferred_setup")
 
@@ -18,9 +27,34 @@ func _deferred_setup() -> void:
 	_setup_done = true
 	_setup_sprite()
 
+func _process(delta: float) -> void:
+	if not is_totem:
+		return
+
+	tick_timer += delta
+	if tick_timer >= tick_interval:
+		tick_timer = 0.0
+		_apply_totem_effect()
+
+func _apply_totem_effect() -> void:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist <= totem_radius:
+			# Apply slow
+			if totem_slow_percent > 0 and enemy.has_method("apply_slow"):
+				enemy.apply_slow(totem_slow_percent, totem_slow_duration)
+			# Apply damage
+			if totem_damage > 0 and enemy.has_method("take_damage"):
+				enemy.take_damage(totem_damage * tick_interval)  # DPS scaled to tick
+
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(effect_scale, effect_scale)
+	sprite.centered = true
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
@@ -55,13 +89,20 @@ func _on_animation_finished() -> void:
 	queue_free()
 
 func _on_duration_finished() -> void:
+	is_totem = false  # Stop applying effects
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(queue_free)
 
-func setup(ability_duration: float, ability_radius: float = 100.0, _damage: float = 0.0, _slow_percent: float = 0.0, _slow_duration: float = 0.0) -> void:
+func setup(ability_duration: float, ability_radius: float = 100.0, damage: float = 0.0, slow_percent: float = 0.0, slow_duration: float = 0.0) -> void:
 	duration = ability_duration
+	totem_radius = ability_radius
+	totem_damage = damage
+	totem_slow_percent = slow_percent
+	totem_slow_duration = slow_duration
 	effect_scale = ability_radius / 60.0
+	is_totem = true  # Enable totem functionality when setup is called with params
+
 	# If setup is called before _ready completes, mark as done and setup now
 	if not _setup_done:
 		_setup_done = true
