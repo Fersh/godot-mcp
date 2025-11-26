@@ -79,7 +79,7 @@ var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 2025.0  # Base XP required (3x from 675)
+var xp_to_next_level: float = 1012.5  # Base XP required (50% reduction from 2025)
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)

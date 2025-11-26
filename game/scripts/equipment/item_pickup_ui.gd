@@ -18,10 +18,10 @@ const COLOR_STAT_UP = Color(0.3, 0.9, 0.3)
 const COLOR_STAT_DOWN = Color(0.9, 0.3, 0.3)
 
 @onready var panel: PanelContainer = $Panel
-@onready var item_display: VBoxContainer = $Panel/HBoxContainer/ItemDisplay
-@onready var comparison_display: VBoxContainer = $Panel/HBoxContainer/ComparisonDisplay
-@onready var equip_button: Button = $Panel/HBoxContainer/ItemDisplay/ButtonContainer/EquipButton
-@onready var pickup_button: Button = $Panel/HBoxContainer/ItemDisplay/ButtonContainer/PickupButton
+@onready var item_display: VBoxContainer = $Panel/MainVBox/HBoxContainer/ItemDisplay
+@onready var comparison_display: VBoxContainer = $Panel/MainVBox/HBoxContainer/ComparisonDisplay
+@onready var equip_button: Button = $Panel/MainVBox/ButtonContainer/EquipButton
+@onready var pickup_button: Button = $Panel/MainVBox/ButtonContainer/PickupButton
 
 func _ready() -> void:
 	visible = false
@@ -124,13 +124,13 @@ func show_item(dropped_item: DroppedItem, show_comparison: bool = true) -> void:
 	if show_comparison and equipped:
 		_build_comparison_display(equipped, max_stats)
 		comparison_display.visible = true
-		$Panel/HBoxContainer/VSeparator.visible = true
+		$Panel/MainVBox/HBoxContainer/VSeparator.visible = true
 	else:
 		# Clear and hide comparison
 		for child in comparison_display.get_children():
 			child.queue_free()
 		comparison_display.visible = false
-		$Panel/HBoxContainer/VSeparator.visible = false
+		$Panel/MainVBox/HBoxContainer/VSeparator.visible = false
 
 	# Update button states
 	_update_buttons()
@@ -146,10 +146,9 @@ func hide_ui() -> void:
 	current_item = null
 
 func _build_item_display(comparison: Dictionary, max_stats: int) -> void:
-	# Clear existing content (except buttons)
+	# Clear existing content
 	for child in item_display.get_children():
-		if child.name != "ButtonContainer":
-			child.queue_free()
+		child.queue_free()
 
 	# Wait for nodes to be freed
 	await get_tree().process_frame
@@ -157,7 +156,6 @@ func _build_item_display(comparison: Dictionary, max_stats: int) -> void:
 	# Create new content with comparison arrows
 	var content = _create_item_card(current_item, true, comparison, max_stats)
 	item_display.add_child(content)
-	item_display.move_child(content, 0)
 
 func _build_comparison_display(equipped: ItemData, max_stats: int) -> void:
 	# Clear existing content
@@ -204,26 +202,26 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 
 	card.add_child(icon_container)
 
+	# Rarity and slot - above title
+	var info_label = Label.new()
+	info_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
+	if pixel_font:
+		info_label.add_theme_font_override("font", pixel_font)
+	info_label.add_theme_font_size_override("font_size", 18)
+	info_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
+	info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.add_child(info_label)
+
 	# Item name with rarity color - pixel font
 	var name_label = Label.new()
 	name_label.text = item.get_full_name()
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_child(name_label)
-
-	# Rarity and slot - smaller
-	var info_label = Label.new()
-	info_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
-	if pixel_font:
-		info_label.add_theme_font_override("font", pixel_font)
-	info_label.add_theme_font_size_override("font_size", 20)
-	info_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
-	info_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card.add_child(info_label)
 
 	# Pixel separator
 	var separator = ColorRect.new()

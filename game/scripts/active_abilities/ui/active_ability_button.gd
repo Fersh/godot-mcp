@@ -418,8 +418,7 @@ func _update_tooltip_content() -> void:
 	if is_dodge:
 		# Dodge button tooltip
 		if rarity_label:
-			rarity_label.text = "UTILITY"
-			rarity_label.add_theme_color_override("font_color", DODGE_COLOR)
+			rarity_label.visible = false
 		if name_label:
 			name_label.text = "Dodge"
 		if desc_label:
@@ -435,6 +434,7 @@ func _update_tooltip_content() -> void:
 	elif ability:
 		# Ability tooltip
 		if rarity_label:
+			rarity_label.visible = true
 			rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
 			rarity_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
 		if name_label:
