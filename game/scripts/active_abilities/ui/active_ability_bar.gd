@@ -1,18 +1,19 @@
 extends CanvasLayer
 class_name ActiveAbilityBar
 
-# Arc layout for landscape mode
-# Buttons arranged in a 90-degree arc from bottom-right corner
-# Dodge is easiest to reach (closest to corner), abilities fan out
+# 2x2 Grid layout for landscape mode
+# Bottom-left: Dodge, Bottom-right: Ability 1 (larger)
+# Top-left: Ability 3, Top-right: Ability 2
 
-const BUTTON_SIZE := Vector2(120, 120)
-const ARC_RADIUS := 180.0  # Distance from corner to button centers
-const MARGIN_RIGHT := 20
-const MARGIN_BOTTOM := 20
+const BUTTON_SIZE := Vector2(90, 90)  # Standard button size
+const ABILITY1_SIZE := Vector2(110, 110)  # Ability 1 is larger
+const GRID_SPACING := 8  # Space between buttons
+const MARGIN_RIGHT := 40
+const MARGIN_BOTTOM := 40
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null
-var arc_container: Control = null
+var grid_container: Control = null
 
 func _ready() -> void:
 	layer = 50  # Above game, below menus
@@ -26,69 +27,72 @@ func _ready() -> void:
 
 func _create_ui() -> void:
 	# Main container anchored to bottom-right
-	arc_container = Control.new()
-	arc_container.name = "ArcContainer"
+	grid_container = Control.new()
+	grid_container.name = "GridContainer"
 
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	# Position container at bottom-right corner
-	arc_container.position = Vector2(
-		viewport_size.x - MARGIN_RIGHT,
-		viewport_size.y - MARGIN_BOTTOM
+	# Calculate grid dimensions
+	# Grid is 2x2, with ability 1 being larger
+	# Total width: BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
+	# Total height: BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y (roughly)
+	var grid_width = BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
+	var grid_height = BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y
+
+	# Position container so grid is at bottom-right corner
+	grid_container.position = Vector2(
+		viewport_size.x - MARGIN_RIGHT - grid_width,
+		viewport_size.y - MARGIN_BOTTOM - grid_height
 	)
 
-	add_child(arc_container)
+	add_child(grid_container)
 
-	# Create buttons in arc layout
-	# Arc spans from 180 degrees (left) to 270 degrees (up)
-	# That's a 90-degree arc going counter-clockwise from left to up
+	# Create buttons in 2x2 grid layout
+	# All buttons are circles
 
-	# Dodge: 200 degrees (bottom-right, easiest thumb reach)
-	dodge_button = _create_dodge_button()
-	_position_button_on_arc(dodge_button, deg_to_rad(200))
-
-	# Ability 0: 220 degrees
-	var btn0 = _create_ability_button(0)
-	_position_button_on_arc(btn0, deg_to_rad(220))
+	# Bottom-right: Ability 1 (larger, primary ability)
+	var btn0 = _create_ability_button(0, ABILITY1_SIZE)
+	var ability1_x = BUTTON_SIZE.x + GRID_SPACING + 12  # Extra 12px left spacing
+	var ability1_y = BUTTON_SIZE.y + GRID_SPACING + 12  # Extra 12px top spacing
+	btn0.position = Vector2(ability1_x, ability1_y)
 	ability_buttons.append(btn0)
 
-	# Ability 1: 245 degrees
-	var btn1 = _create_ability_button(1)
-	_position_button_on_arc(btn1, deg_to_rad(245))
+	# Bottom-left: Dodge (vertically centered with Ability 1)
+	dodge_button = _create_dodge_button(BUTTON_SIZE)
+	var dodge_y = ability1_y + (ABILITY1_SIZE.y - BUTTON_SIZE.y) / 2
+	dodge_button.position = Vector2(0, dodge_y)
+
+	# Top-right: Ability 2 (centered above Ability 1)
+	var btn1 = _create_ability_button(1, BUTTON_SIZE)
+	btn1.position = Vector2(ability1_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, 0)
 	ability_buttons.append(btn1)
 
-	# Ability 2: 270 degrees (top, ultimate ability)
-	var btn2 = _create_ability_button(2)
-	_position_button_on_arc(btn2, deg_to_rad(270))
+	# Top-left: Ability 3
+	var btn2 = _create_ability_button(2, BUTTON_SIZE)
+	btn2.position = Vector2(0, 0)
 	ability_buttons.append(btn2)
 
-func _position_button_on_arc(button: Control, angle: float) -> void:
-	# Calculate position on arc (relative to bottom-right corner)
-	var x = cos(angle) * ARC_RADIUS - BUTTON_SIZE.x / 2
-	var y = sin(angle) * ARC_RADIUS - BUTTON_SIZE.y / 2
-	button.position = Vector2(x, y)
-
-func _create_ability_button(slot: int) -> ActiveAbilityButton:
+func _create_ability_button(slot: int, size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
 	var button = Control.new()
 	button.set_script(btn_script)
 	button.name = "AbilityButton" + str(slot)
-	button.button_size = BUTTON_SIZE
-	arc_container.add_child(button)
+	button.button_size = size
+	grid_container.add_child(button)
 
 	# Will be configured as empty initially
 	button.setup_empty(slot)
 
 	return button
 
-func _create_dodge_button() -> ActiveAbilityButton:
+func _create_dodge_button(size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
 	var button = Control.new()
 	button.set_script(btn_script)
 	button.name = "DodgeButton"
-	button.button_size = BUTTON_SIZE
-	arc_container.add_child(button)
+	button.button_size = size
+	grid_container.add_child(button)
 
 	button.setup_dodge()
 
@@ -101,12 +105,16 @@ func _connect_signals() -> void:
 
 func _setup_initial_state() -> void:
 	# Start with empty ability slots
+	# Hide ability 2 and 3 until unlocked (indices 1 and 2)
 	for i in range(ability_buttons.size()):
 		ability_buttons[i].setup_empty(i)
+		if i > 0:  # Ability 2 and 3 (indices 1 and 2)
+			ability_buttons[i].visible = false
 
 func _on_ability_acquired(slot: int, ability: ActiveAbilityData) -> void:
 	"""Update the button when an ability is acquired."""
 	if slot >= 0 and slot < ability_buttons.size():
+		ability_buttons[slot].visible = true
 		ability_buttons[slot].setup_ability(ability, slot)
 		_animate_button_appear(ability_buttons[slot])
 
@@ -123,14 +131,16 @@ func _animate_button_appear(button: ActiveAbilityButton) -> void:
 
 func update_position() -> void:
 	"""Update position when viewport resizes."""
-	if not arc_container:
+	if not grid_container:
 		return
 
 	var viewport_size = get_viewport().get_visible_rect().size
+	var grid_width = BUTTON_SIZE.x + GRID_SPACING + ABILITY1_SIZE.x
+	var grid_height = BUTTON_SIZE.y + GRID_SPACING + ABILITY1_SIZE.y
 
-	arc_container.position = Vector2(
-		viewport_size.x - MARGIN_RIGHT,
-		viewport_size.y - MARGIN_BOTTOM
+	grid_container.position = Vector2(
+		viewport_size.x - MARGIN_RIGHT - grid_width,
+		viewport_size.y - MARGIN_BOTTOM - grid_height
 	)
 
 func _notification(what: int) -> void:
@@ -156,4 +166,6 @@ func reset_for_new_run() -> void:
 	"""Reset all buttons for a new game run."""
 	for i in range(ability_buttons.size()):
 		ability_buttons[i].setup_empty(i)
+		if i > 0:  # Hide ability 2 and 3 again
+			ability_buttons[i].visible = false
 	dodge_button.setup_dodge()

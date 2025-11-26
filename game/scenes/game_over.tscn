@@ -102,22 +102,26 @@ horizontal_alignment = 1
 
 [node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 30
 alignment = 1
 
-[node name="PlayAgainButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(180, 50)
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 18
-text = "PLAY AGAIN"
-
 [node name="MainMenuButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
-custom_minimum_size = Vector2(180, 50)
+custom_minimum_size = Vector2(200, 55)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 18
 text = "MAIN MENU"
+
+[node name="PlayAgainButton" type="Button" parent="Panel/VBoxContainer/ButtonContainer"]
+custom_minimum_size = Vector2(200, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 18
+text = "PLAY AGAIN"
 
 [node name="LootContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2

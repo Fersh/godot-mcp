@@ -4,8 +4,8 @@
 
 [node name="VirtualJoystick" type="Control"]
 anchors_preset = 0
-offset_left = 120.0
-offset_top = 632.0
-offset_right = 120.0
-offset_bottom = 632.0
+offset_left = 150.0
+offset_top = 590.0
+offset_right = 150.0
+offset_bottom = 590.0
 script = ExtResource("1_script")

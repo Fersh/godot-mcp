@@ -4,11 +4,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0, 0, 0, 0.85)
-corner_radius_left_top = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
+bg_color = Color(0, 0, 0, 0.92)
 
 [node name="AbilitySelection" type="CanvasLayer"]
 layer = 100
@@ -37,11 +33,15 @@ horizontal_alignment = 1
 
 [node name="SubtitleLabel" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "Choose an ability"
+text = "Choose a PASSIVE ability"
 horizontal_alignment = 1
+
+[node name="CardsSpacer" type="Control" parent="Panel/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
 
 [node name="ChoicesContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2

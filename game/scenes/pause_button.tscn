@@ -16,7 +16,9 @@ theme_override_constants/margin_top = 55
 theme_override_constants/margin_right = 40
 
 [node name="PauseButton" type="Button" parent="MarginContainer"]
-custom_minimum_size = Vector2(45, 45)
+custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 size_flags_horizontal = 8
-text = "| |"
+size_flags_stretch_ratio = 0.0
+expand_icon = true
+text = "ll"

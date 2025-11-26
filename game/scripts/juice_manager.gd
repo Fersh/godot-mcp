@@ -139,6 +139,10 @@ func shake(intensity: float, rotation: float = 0.0) -> void:
 	shake_intensity = max(shake_intensity, intensity)
 	shake_rotation = max(shake_rotation, rotation)
 
+# Tiny shake for critical hits
+func shake_crit() -> void:
+	shake(2.0, 0.005)
+
 # Small shake for regular hits
 func shake_small() -> void:
 	shake(3.0, 0.01)

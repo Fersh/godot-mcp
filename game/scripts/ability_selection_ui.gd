@@ -111,46 +111,38 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 
 func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(280, 280)
+	button.custom_minimum_size = Vector2(260, 300)
 	button.focus_mode = Control.FOCUS_ALL
+	button.clip_contents = false
 
-	# Create container for card content
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", 4)
 
-	# Rarity label
-	var rarity_label = Label.new()
-	rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
-	rarity_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 14)
-	if pixel_font:
-		rarity_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(rarity_label)
+	# Spacer above ability name (for rarity tag)
+	var top_spacer = Control.new()
+	top_spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(top_spacer)
 
 	# Ability name
 	var name_label = Label.new()
+	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
-	# Separator
-	var separator = HSeparator.new()
-	separator.add_theme_stylebox_override("separator", create_separator_style(ability.rarity))
-	vbox.add_child(separator)
-
 	# Description
 	var desc_label = Label.new()
+	desc_label.name = "DescLabel"
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 14)
+	desc_label.add_theme_font_size_override("font_size", 12)
 	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -158,26 +150,26 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
-	# Select hint
-	var hint_label = Label.new()
-	hint_label.text = "[TAP]"
-	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint_label.add_theme_font_size_override("font_size", 12)
-	hint_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
-	if pixel_font:
-		hint_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(hint_label)
+	# Bottom spacer
+	var bottom_spacer = Control.new()
+	bottom_spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(bottom_spacer)
 
 	# Add margin container
 	var margin = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_right", 12)
-	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_top", 20)
 	margin.add_theme_constant_override("margin_bottom", 12)
 	margin.add_child(vbox)
 
 	button.add_child(margin)
+
+	# Rarity tag pinned to top (half above, half inside card)
+	var rarity_tag = _create_rarity_tag(ability.rarity)
+	rarity_tag.name = "RarityTag"
+	button.add_child(rarity_tag)
 
 	# Style the button
 	style_button(button, ability.rarity)
@@ -186,6 +178,43 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	button.pressed.connect(_on_ability_selected.bind(index))
 
 	return button
+
+func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
+	# Use CenterContainer to properly center the tag
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	center.anchor_left = 0
+	center.anchor_right = 1
+	center.anchor_top = 0
+	center.anchor_bottom = 0
+	center.offset_top = -12  # Half above the card
+	center.offset_bottom = 12
+
+	var tag = PanelContainer.new()
+
+	# Style the tag
+	var tag_style = StyleBoxFlat.new()
+	tag_style.bg_color = AbilityData.get_rarity_color(rarity)
+	tag_style.set_corner_radius_all(4)
+	tag_style.content_margin_left = 10
+	tag_style.content_margin_right = 10
+	tag_style.content_margin_top = 4
+	tag_style.content_margin_bottom = 4
+	tag.add_theme_stylebox_override("panel", tag_style)
+
+	# Rarity label inside tag
+	var label = Label.new()
+	label.name = "RarityLabel"
+	label.text = AbilityData.get_rarity_name(rarity)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	tag.add_child(label)
+
+	center.add_child(tag)
+	return center
 
 func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 	var style = StyleBoxFlat.new()
@@ -200,7 +229,7 @@ func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 			style.border_color = Color(0.3, 0.5, 1.0)
 		AbilityData.Rarity.LEGENDARY:
 			style.bg_color = Color(0.2, 0.15, 0.1, 0.95)
-			style.border_color = Color(1.0, 0.8, 0.2)
+			style.border_color = AbilityData.get_rarity_color(rarity)  # Match tag color
 
 	style.set_border_width_all(3)
 	style.set_corner_radius_all(12)
@@ -232,26 +261,28 @@ func update_card_content(button: Button, ability: AbilityData) -> void:
 	if not vbox:
 		return
 
-	# Update rarity label (child 0)
-	var rarity_label = vbox.get_child(0) as Label
-	if rarity_label:
-		rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
-		rarity_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
-
+	# Children: 0=top_spacer, 1=name, 2=desc, 3=bottom_spacer
 	# Update name label (child 1)
 	var name_label = vbox.get_child(1) as Label
 	if name_label:
 		name_label.text = ability.name
 
-	# Update separator (child 2)
-	var separator = vbox.get_child(2) as HSeparator
-	if separator:
-		separator.add_theme_stylebox_override("separator", create_separator_style(ability.rarity))
-
-	# Update description label (child 3)
-	var desc_label = vbox.get_child(3) as Label
+	# Update description label (child 2)
+	var desc_label = vbox.get_child(2) as Label
 	if desc_label:
 		desc_label.text = ability.description
+
+	# Update rarity tag (child 1 of button is CenterContainer, which contains PanelContainer)
+	var center_container = button.get_child(1) as CenterContainer
+	if center_container:
+		var rarity_tag = center_container.get_child(0) as PanelContainer
+		if rarity_tag:
+			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+			tag_style.bg_color = AbilityData.get_rarity_color(ability.rarity)
+			rarity_tag.add_theme_stylebox_override("panel", tag_style)
+			var rarity_label = rarity_tag.get_child(0) as Label
+			if rarity_label:
+				rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
 
 	# Update button style
 	style_button(button, ability.rarity)

@@ -31,7 +31,7 @@ theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 8
 
 [node name="ProgressBar" type="ProgressBar" parent="MarginContainer"]
-custom_minimum_size = Vector2(0, 35)
+custom_minimum_size = Vector2(0, 26)
 layout_mode = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_fill")

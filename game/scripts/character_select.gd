@@ -341,7 +341,7 @@ func _update_preview() -> void:
 
 	# Fixed width container for stats to keep alignment consistent
 	var stats_box = VBoxContainer.new()
-	stats_box.custom_minimum_size = Vector2(180, 0)
+	stats_box.custom_minimum_size = Vector2(150, 0)
 	stats_box.add_theme_constant_override("separation", 2)
 	preview_stats_container.add_child(stats_box)
 
@@ -384,7 +384,7 @@ func _add_stat_row_to_container(container: VBoxContainer, stat_name: String, sta
 	name_label.text = stat_name + ":"
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.add_theme_font_size_override("font_size", 11)
-	name_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
+	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
 	hbox.add_child(name_label)
 
 	var value_label = Label.new()

@@ -40,7 +40,7 @@ func _setup_style() -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", Color(0.9, 0.85, 0.75, 1.0))
 
 func _on_pause_pressed() -> void:

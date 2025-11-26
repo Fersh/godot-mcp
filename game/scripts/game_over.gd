@@ -22,6 +22,10 @@ func _ready() -> void:
 	play_again_button.pressed.connect(_on_play_again_pressed)
 	main_menu_button.pressed.connect(_on_main_menu_pressed)
 
+	# Style the buttons
+	_style_play_again_button()
+	_style_main_menu_button()
+
 	# Get stats from StatsManager
 	if StatsManager:
 		var run = StatsManager.get_run_stats()
@@ -182,3 +186,89 @@ func _create_loot_card(item: ItemData) -> Control:
 	card.add_child(margin)
 
 	return card
+
+func _style_play_again_button() -> void:
+	# Golden/green prominent button for Play Again
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.2, 0.75, 0.3, 1)
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 6
+	style_normal.border_color = Color(0.1, 0.4, 0.15, 1)
+	style_normal.corner_radius_top_left = 8
+	style_normal.corner_radius_top_right = 8
+	style_normal.corner_radius_bottom_left = 8
+	style_normal.corner_radius_bottom_right = 8
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.3, 0.85, 0.4, 1)
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 6
+	style_hover.border_color = Color(0.15, 0.5, 0.2, 1)
+	style_hover.corner_radius_top_left = 8
+	style_hover.corner_radius_top_right = 8
+	style_hover.corner_radius_bottom_left = 8
+	style_hover.corner_radius_bottom_right = 8
+
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.15, 0.6, 0.25, 1)
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_top = 5
+	style_pressed.border_width_bottom = 4
+	style_pressed.border_color = Color(0.08, 0.35, 0.12, 1)
+	style_pressed.corner_radius_top_left = 8
+	style_pressed.corner_radius_top_right = 8
+	style_pressed.corner_radius_bottom_left = 8
+	style_pressed.corner_radius_bottom_right = 8
+
+	play_again_button.add_theme_stylebox_override("normal", style_normal)
+	play_again_button.add_theme_stylebox_override("hover", style_hover)
+	play_again_button.add_theme_stylebox_override("pressed", style_pressed)
+	play_again_button.add_theme_stylebox_override("focus", style_normal)
+
+func _style_main_menu_button() -> void:
+	# Darker, secondary button for Main Menu
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 6
+	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
+	style_normal.corner_radius_top_left = 8
+	style_normal.corner_radius_top_right = 8
+	style_normal.corner_radius_bottom_left = 8
+	style_normal.corner_radius_bottom_right = 8
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 6
+	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
+	style_hover.corner_radius_top_left = 8
+	style_hover.corner_radius_top_right = 8
+	style_hover.corner_radius_bottom_left = 8
+	style_hover.corner_radius_bottom_right = 8
+
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.2, 0.2, 0.25, 1)
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_top = 5
+	style_pressed.border_width_bottom = 4
+	style_pressed.border_color = Color(0.12, 0.12, 0.15, 1)
+	style_pressed.corner_radius_top_left = 8
+	style_pressed.corner_radius_top_right = 8
+	style_pressed.corner_radius_bottom_left = 8
+	style_pressed.corner_radius_bottom_right = 8
+
+	main_menu_button.add_theme_stylebox_override("normal", style_normal)
+	main_menu_button.add_theme_stylebox_override("hover", style_hover)
+	main_menu_button.add_theme_stylebox_override("pressed", style_pressed)
+	main_menu_button.add_theme_stylebox_override("focus", style_normal)

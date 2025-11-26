@@ -85,6 +85,9 @@ func _on_body_entered(body: Node2D) -> void:
 		var is_crit = randf() < crit_chance
 		if is_crit:
 			final_damage *= crit_multiplier
+			# Tiny screen shake on crit
+			if JuiceManager:
+				JuiceManager.shake_crit()
 
 		# Deal damage
 		body.take_damage(final_damage, is_crit)

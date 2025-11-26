@@ -614,6 +614,9 @@ func perform_melee_attack() -> void:
 						if randf() < crit_chance:
 							is_crit = true
 							final_damage *= AbilityManager.get_crit_damage_multiplier()
+							# Tiny screen shake on crit
+							if JuiceManager:
+								JuiceManager.shake_crit()
 
 					# Apply damage
 					if enemy.has_method("take_damage"):

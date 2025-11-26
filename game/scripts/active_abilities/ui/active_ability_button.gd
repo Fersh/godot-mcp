@@ -47,14 +47,11 @@ func _ready() -> void:
 
 func _create_ui() -> void:
 	# We'll use custom drawing for the circular button
-	# Set clip to false so we can draw outside bounds if needed
+	# Icon will be drawn in _draw() to clip it to the circle
 
-	# Icon (centered, slightly smaller than button for border)
+	# Icon texture rect (hidden, we use it just to hold the texture)
 	icon_texture = TextureRect.new()
-	var icon_margin = button_size.x * 0.15  # 15% margin
-	icon_texture.position = Vector2(icon_margin, icon_margin)
-	icon_texture.size = button_size - Vector2(icon_margin * 2, icon_margin * 2)
-	icon_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_texture.visible = false  # We draw it manually in _draw()
 	icon_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon_texture)
 
@@ -104,6 +101,23 @@ func _draw() -> void:
 	# Draw inner background circle
 	draw_circle(center, radius, bg_color)
 
+	# Draw icon clipped to circle
+	if icon_texture.texture:
+		var tex = icon_texture.texture
+		var tex_size = tex.get_size()
+
+		# Calculate size to fill the circle (cover mode)
+		var scale_factor = (radius * 2) / min(tex_size.x, tex_size.y)
+		var draw_size = tex_size * scale_factor
+
+		# Center the icon
+		var draw_pos = center - draw_size / 2
+
+		# Draw the icon with circular clipping using stencil technique
+		# We'll draw the texture and then use the polygon to mask it
+		var icon_color = icon_texture.modulate if icon_texture.modulate else Color.WHITE
+		_draw_texture_clipped_to_circle(tex, center, radius, icon_color)
+
 	# Draw cooldown overlay as arc if on cooldown
 	if cooldown_percent > 0:
 		var overlay_color = COOLDOWN_COLOR
@@ -111,6 +125,34 @@ func _draw() -> void:
 		var start_angle = -PI / 2  # Start at top
 		var end_angle = start_angle + (TAU * cooldown_percent)
 		_draw_filled_arc(center, radius, start_angle, end_angle, overlay_color)
+
+func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: float, modulate: Color) -> void:
+	# Create circular UV mapping to draw texture clipped to circle
+	var segments = 64
+	var points = PackedVector2Array()
+	var uvs = PackedVector2Array()
+	var colors = PackedColorArray()
+
+	var tex_size = tex.get_size()
+	# Scale to fill circle (cover mode - may crop)
+	var scale_factor = (radius * 2) / min(tex_size.x, tex_size.y)
+	var scaled_size = tex_size * scale_factor
+
+	for i in range(segments):
+		var angle = (float(i) / segments) * TAU - PI / 2
+		var point = center + Vector2(cos(angle), sin(angle)) * radius
+		points.append(point)
+
+		# Calculate UV based on position relative to center
+		var offset = point - center
+		# Map from circle space to texture space
+		var uv = Vector2(0.5, 0.5) + offset / scaled_size
+		uvs.append(uv)
+		colors.append(modulate)
+
+	# Draw the textured polygon
+	if points.size() >= 3:
+		draw_polygon(points, colors, uvs, tex)
 
 func _draw_filled_arc(center: Vector2, radius: float, start_angle: float, end_angle: float, color: Color) -> void:
 	var points = PackedVector2Array()
@@ -434,6 +476,22 @@ func _show_tooltip() -> void:
 	var tooltip_pos = Vector2.ZERO
 	tooltip_pos.x = (button_size.x - tooltip_panel.size.x) / 2  # Center horizontally
 	tooltip_pos.y = -tooltip_panel.size.y - 10  # Above the button with padding
+
+	# Clamp tooltip position to stay on screen
+	var viewport_size = get_viewport().get_visible_rect().size
+	var global_pos = global_position + tooltip_pos
+
+	# Clamp right edge
+	if global_pos.x + tooltip_panel.size.x > viewport_size.x - 10:
+		tooltip_pos.x = viewport_size.x - 10 - global_position.x - tooltip_panel.size.x
+
+	# Clamp left edge
+	if global_pos.x < 10:
+		tooltip_pos.x = 10 - global_position.x
+
+	# If tooltip would go off top, show it below the button instead
+	if global_pos.y < 10:
+		tooltip_pos.y = button_size.y + 10
 
 	tooltip_panel.position = tooltip_pos
 	tooltip_panel.visible = true
