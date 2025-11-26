@@ -9,6 +9,7 @@ extends CanvasLayer
 # Preview elements (created dynamically)
 var preview_sprite: Sprite2D
 var preview_name_label: Label
+var preview_class_label: Label
 var preview_desc_label: Label
 var preview_stats_container: VBoxContainer
 var preview_passive_container: VBoxContainer
@@ -119,7 +120,14 @@ func _setup_preview_panel() -> void:
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
 	vbox.add_child(preview_name_label)
 
-	# Spacer after name
+	# Class label below name (same styling as STATS header)
+	preview_class_label = Label.new()
+	preview_class_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_class_label.add_theme_font_size_override("font_size", 14)
+	preview_class_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
+	vbox.add_child(preview_class_label)
+
+	# Spacer after class
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer2)
@@ -293,23 +301,9 @@ func _update_preview() -> void:
 	# Update name
 	preview_name_label.text = char_data.display_name
 
-	# Update class label (below name)
-	if not has_node("ClassLabel"):
-		# Find the vbox that contains preview_name_label and add class label after it
-		var parent = preview_name_label.get_parent()
-		var class_label = Label.new()
-		class_label.name = "ClassLabel"
-		class_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		class_label.add_theme_font_size_override("font_size", 14)
-		class_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
-		# Insert after preview_name_label
-		var name_idx = preview_name_label.get_index()
-		parent.add_child(class_label)
-		parent.move_child(class_label, name_idx + 1)
-
-	var class_label = preview_name_label.get_parent().get_node("ClassLabel")
-	var attack_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
-	class_label.text = attack_type_text
+	# Update class label
+	var class_type_text = "Ranged" if char_data.attack_type == CharacterData.AttackType.RANGED else "Melee"
+	preview_class_label.text = class_type_text
 
 	# Update sprite
 	preview_sprite.texture = char_data.sprite_texture

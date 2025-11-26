@@ -21,8 +21,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Header" type="Control" parent="MainContainer"]
-custom_minimum_size = Vector2(0, 55)
+[node name="Header" type="PanelContainer" parent="MainContainer"]
+custom_minimum_size = Vector2(0, 95)
 layout_mode = 2
 
 [node name="Title" type="Label" parent="MainContainer/Header"]
@@ -32,9 +32,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -120.0
-offset_top = -5.0
+offset_top = 5.0
 offset_right = 120.0
-offset_bottom = 25.0
+offset_bottom = 35.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
@@ -53,23 +53,21 @@ anchor_left = 1.0
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -12.0
-offset_right = -20.0
-offset_bottom = 12.0
+offset_left = -120.0
+offset_top = 5.0
+offset_right = 0.0
+offset_bottom = 35.0
 grow_horizontal = 0
 grow_vertical = 2
+theme_override_constants/separation = 6
 alignment = 2
 
 [node name="CoinIcon" type="Label" parent="MainContainer/Header/CoinsContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 14
-text = "GOLD:"
+theme_override_font_sizes/font_size = 20
+text = "●"
 vertical_alignment = 1
 
 [node name="CoinAmount" type="Label" parent="MainContainer/Header/CoinsContainer"]
@@ -79,20 +77,21 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
 theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 14
-text = " 0"
+theme_override_font_sizes/font_size = 16
+text = "0"
 vertical_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MainContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MainContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 40
 theme_override_constants/margin_right = 40
 theme_override_constants/margin_bottom = 20
 

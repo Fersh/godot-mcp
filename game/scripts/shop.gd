@@ -30,18 +30,13 @@ const CATEGORY_COLORS = {
 	4: Color(0.55, 0.4, 0.65, 1),    # Special - Muted Purple
 }
 
-# Darker versions for backgrounds - very subtle tints
-const CATEGORY_BG_COLORS = {
-	0: Color(0.12, 0.08, 0.08, 1),   # Combat - Subtle Red
-	1: Color(0.08, 0.11, 0.08, 1),   # Survival - Subtle Green
-	2: Color(0.08, 0.09, 0.12, 1),   # Utility - Subtle Blue
-	3: Color(0.12, 0.11, 0.07, 1),   # Progression - Subtle Gold
-	4: Color(0.1, 0.08, 0.12, 1),    # Special - Subtle Purple
-}
+
+@onready var header: PanelContainer = $MainContainer/Header
 
 func _ready() -> void:
 	# Style buttons
 	_style_back_button()
+	_style_header()
 	_style_footer_tooltip()
 	_style_refund_button()
 
@@ -93,6 +88,15 @@ func _style_back_button() -> void:
 	back_button.add_theme_stylebox_override("hover", style_hover)
 	back_button.add_theme_stylebox_override("pressed", style_normal)
 	back_button.add_theme_stylebox_override("focus", style_normal)
+
+func _style_header() -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.055, 0.09, 1)
+	style.border_width_bottom = 2
+	style.border_color = Color(0.15, 0.14, 0.2, 1)
+	style.content_margin_left = 30
+	style.content_margin_right = 30
+	header.add_theme_stylebox_override("panel", style)
 
 func _style_refund_button() -> void:
 	var style = StyleBoxFlat.new()
@@ -268,20 +272,22 @@ func _create_upgrade_tile(upgrade) -> Button:
 
 func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool = true) -> void:
 	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
-	var category_bg = CATEGORY_BG_COLORS.get(upgrade.category, Color(0.1, 0.1, 0.1, 1))
+
+	# Unified background color for all available tiles
+	var base_bg = Color(0.1, 0.1, 0.12, 1)
 
 	var style = StyleBoxFlat.new()
 	if is_maxed:
 		# Maxed - golden glow effect
-		style.bg_color = category_bg.lightened(0.15)
+		style.bg_color = base_bg.lightened(0.15)
 		style.border_width_left = 2
 		style.border_width_right = 2
 		style.border_width_top = 2
 		style.border_width_bottom = 3
 		style.border_color = Color(1.0, 0.85, 0.3, 0.9)
 	elif can_afford:
-		# Affordable - category colored background with bright border
-		style.bg_color = category_bg
+		# Affordable - unified background with category-colored border
+		style.bg_color = base_bg
 		style.border_width_left = 2
 		style.border_width_right = 2
 		style.border_width_top = 2
@@ -302,7 +308,7 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 	style.corner_radius_bottom_right = 8
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = category_bg.lightened(0.1)
+	style_hover.bg_color = base_bg.lightened(0.1)
 	style_hover.border_width_left = 2
 	style_hover.border_width_right = 2
 	style_hover.border_width_top = 2
@@ -314,7 +320,7 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 	style_hover.corner_radius_bottom_right = 8
 
 	var style_selected = StyleBoxFlat.new()
-	style_selected.bg_color = category_bg.lightened(0.2)
+	style_selected.bg_color = base_bg.lightened(0.2)
 	style_selected.border_width_left = 3
 	style_selected.border_width_right = 3
 	style_selected.border_width_top = 3

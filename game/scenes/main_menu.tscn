@@ -1,8 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://c3m2qv8j7e6yi"]
+[gd_scene load_steps=4 format=3 uid="uid://c3m2qv8j7e6yi"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_main_menu"]
 [ext_resource type="FontFile" uid="uid://dxrvcd7nrpprv" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
-[ext_resource type="Texture2D" uid="uid://cmxc76b6x5gig" path="res://assets/sprites/collectables.png" id="3_collectables"]
 [ext_resource type="Texture2D" uid="uid://bmyjn0o367s8l" path="res://assets/menu2.png" id="4_menu_bg"]
 
 [node name="MainMenu" type="CanvasLayer"]
@@ -38,33 +37,32 @@ horizontal_alignment = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -150.0
-offset_top = 15.0
-offset_right = -20.0
-offset_bottom = 45.0
+offset_left = -120.0
+offset_top = 35.0
+offset_right = -30.0
+offset_bottom = 65.0
+alignment = 2
 grow_horizontal = 0
 theme_override_constants/separation = 6
 
-[node name="CoinLabel" type="Label" parent="CoinsDisplay"]
+[node name="CoinIcon" type="Label" parent="CoinsDisplay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
-text = "COINS:"
+theme_override_font_sizes/font_size = 20
+text = "●"
+vertical_alignment = 1
 
 [node name="CoinAmount" type="Label" parent="CoinsDisplay"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.75, 0.3, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
-text = " 0"
-
-[node name="CoinIcon" type="TextureRect" parent="CoinsDisplay"]
-custom_minimum_size = Vector2(16, 16)
-layout_mode = 2
-texture = ExtResource("3_collectables")
-expand_mode = 1
-stretch_mode = 5
+theme_override_font_sizes/font_size = 16
+text = "0"
+vertical_alignment = 1
 
 [node name="ButtonContainer" type="VBoxContainer" parent="."]
 anchors_preset = 8
