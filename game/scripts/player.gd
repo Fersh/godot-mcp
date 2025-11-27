@@ -1514,15 +1514,29 @@ func dash_toward(target_pos: Vector2) -> void:
 	"""Dash toward a target position (used by Adrenaline Rush)."""
 	var direction = (target_pos - global_position).normalized()
 	var dash_distance = 80.0
+	var dash_duration = 0.12  # Fast but smooth dash
 
-	# Move player toward target
-	global_position += direction * dash_distance
+	# Calculate end position
+	var end_pos = global_position + direction * dash_distance
+
+	# Clamp to arena bounds
+	const ARENA_WIDTH = 1536
+	const ARENA_HEIGHT = 1382
+	const MARGIN = 40
+	end_pos.x = clamp(end_pos.x, MARGIN, ARENA_WIDTH - MARGIN)
+	end_pos.y = clamp(end_pos.y, MARGIN, ARENA_HEIGHT - MARGIN)
 
 	# Update facing direction
 	if direction.x > 0:
 		facing_right = true
+		sprite.flip_h = false
 	elif direction.x < 0:
 		facing_right = false
+		sprite.flip_h = true
+
+	# Create tween for smooth dash movement
+	var tween = create_tween()
+	tween.tween_property(self, "global_position", end_pos, dash_duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
 	# Spawn visual effect
 	_spawn_dash_smoke()

@@ -22,7 +22,7 @@ var _ultimate_key_held: bool = false
 var player: Node2D = null
 
 # Reference to activation overlay
-var activation_overlay: Control = null
+var activation_overlay: Node = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -65,7 +65,7 @@ func register_player(p: Node2D) -> void:
 	"""Register the player reference for ability execution."""
 	player = p
 
-func register_activation_overlay(overlay: Control) -> void:
+func register_activation_overlay(overlay: Node) -> void:
 	"""Register the comic book activation overlay."""
 	activation_overlay = overlay
 
