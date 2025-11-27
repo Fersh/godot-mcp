@@ -8,6 +8,7 @@ var effect_scale: float = 1.5
 var duration: float = 5.0
 var is_looping: bool = true
 var _setup_done: bool = false
+var _totem_started: bool = false
 
 # Totem functionality
 var totem_radius: float = 100.0
@@ -28,7 +29,7 @@ func _deferred_setup() -> void:
 	_setup_sprite()
 
 func _process(delta: float) -> void:
-	if not is_totem:
+	if not is_totem or not _totem_started:
 		return
 
 	tick_timer += delta
@@ -43,12 +44,13 @@ func _apply_totem_effect() -> void:
 			continue
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= totem_radius:
+			# Apply damage first
+			if totem_damage > 0 and enemy.has_method("take_damage"):
+				var tick_damage = totem_damage * tick_interval
+				enemy.take_damage(tick_damage, false)
 			# Apply slow
 			if totem_slow_percent > 0 and enemy.has_method("apply_slow"):
 				enemy.apply_slow(totem_slow_percent, totem_slow_duration)
-			# Apply damage
-			if totem_damage > 0 and enemy.has_method("take_damage"):
-				enemy.take_damage(totem_damage * tick_interval)  # DPS scaled to tick
 
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
@@ -109,3 +111,6 @@ func setup(ability_duration: float, ability_radius: float = 100.0, damage: float
 		_setup_sprite()
 	elif sprite:
 		sprite.scale = Vector2(effect_scale, effect_scale)
+
+	# Start totem processing after setup is complete
+	_totem_started = true

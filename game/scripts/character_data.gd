@@ -211,7 +211,7 @@ static func create_beast() -> CharacterData:
 	data.base_speed = 220.0
 	data.base_attack_cooldown = 0.65  # Very fast attacks
 	data.base_damage = 1.8
-	data.attack_range = 65.0  # Slightly longer melee reach
+	data.attack_range = 35.0  # Tight melee reach for single target focus
 
 	# Combat stats - High crit, high dodge, no block (too feral to block)
 	data.base_crit_rate = 0.12  # 12% base crit
@@ -222,7 +222,7 @@ static func create_beast() -> CharacterData:
 	data.frame_size = Vector2(128, 128)
 	data.hframes = 11
 	data.vframes = 9
-	data.sprite_scale = Vector2(1.08, 1.08)  # Reduced 20% from 1.35
+	data.sprite_scale = Vector2(0.918, 0.918)  # Reduced 15% from 1.08
 	data.sprite_offset = Vector2(-20, -35)  # Center the off-center beast frames (x: left/right, y: up)
 
 	# Animation rows (based on Beast spritesheet)
