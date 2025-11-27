@@ -148,7 +148,7 @@ static func _create_cleave() -> ActiveAbilityData:
 static func _create_shield_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shield_bash",
-		"Shield Bash",
+		"Bash",
 		"Slam forward, dealing damage and stunning nearby enemies for 1 second.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,

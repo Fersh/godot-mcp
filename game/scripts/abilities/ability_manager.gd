@@ -215,6 +215,7 @@ var early_bird_bonus: float = 0.0
 # Legendary effects
 var has_ceremonial_dagger: bool = false
 var ceremonial_dagger_count: int = 0
+var _ceremonial_dagger_kill: bool = false  # Prevents daggers from proccing off dagger kills
 var has_missile_barrage: bool = false
 var missile_barrage_chance: float = 0.0
 var has_soul_reaper: bool = false
@@ -472,6 +473,7 @@ func reset() -> void:
 
 	has_ceremonial_dagger = false
 	ceremonial_dagger_count = 0
+	_ceremonial_dagger_kill = false
 	has_missile_barrage = false
 	missile_barrage_chance = 0.0
 	has_soul_reaper = false
@@ -1704,8 +1706,8 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# EXTENDED ON-KILL EFFECTS
 	# ============================================
 
-	# Ceremonial Dagger - fire homing daggers
-	if has_ceremonial_dagger:
+	# Ceremonial Dagger - fire homing daggers (only from player kills, not dagger kills)
+	if has_ceremonial_dagger and not _ceremonial_dagger_kill:
 		fire_ceremonial_daggers(enemy.global_position, player)
 
 	# Soul Reaper - heal and stack damage

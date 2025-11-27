@@ -153,10 +153,10 @@ func get_passive_bonuses() -> Dictionary:
 			# Flowing Strikes: stack-based bonuses handled in player.gd
 			# Flag to enable the flow system
 			bonuses["has_flow"] = 1.0  # Boolean as float
-			bonuses["flow_damage_per_stack"] = 0.08  # +8% damage per stack
+			bonuses["flow_damage_per_stack"] = 0.05  # +5% damage per stack
 			bonuses["flow_speed_per_stack"] = 0.05  # +5% attack speed per stack
 			bonuses["flow_dash_threshold"] = 3  # Dash at 3+ stacks
-			bonuses["flow_max_stacks"] = 5  # Max 5 stacks
+			bonuses["flow_max_stacks"] = 4  # Max 4 stacks
 			bonuses["flow_decay_time"] = 1.5  # Stacks decay after 1.5s
 
 	return bonuses

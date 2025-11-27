@@ -328,8 +328,8 @@ static func create_monk() -> CharacterData:
 	# Monk stats - fast, combo-focused, medium survivability
 	data.base_health = 22.0
 	data.base_speed = 185.0
-	data.base_attack_cooldown = 0.75  # Fast attacks for combos
-	data.base_damage = 1.3
+	data.base_attack_cooldown = 0.85  # Fast attacks for combos
+	data.base_damage = 1.15
 	data.attack_range = 58.0  # Medium melee reach
 
 	# Combat stats - balanced with slight crit/dodge lean
@@ -341,7 +341,7 @@ static func create_monk() -> CharacterData:
 	data.frame_size = Vector2(96, 96)
 	data.hframes = 16
 	data.vframes = 8
-	data.sprite_scale = Vector2(1.0, 1.0)  # Already large frames
+	data.sprite_scale = Vector2(1.75, 1.75)  # Scaled up for visibility
 
 	# Animation rows
 	# Row 0: Idle 1 (skip)
@@ -372,12 +372,12 @@ static func create_monk() -> CharacterData:
 	# Monk-specific: Triple attack system
 	data.row_attack_2 = 5  # Attack 2 row
 	data.row_attack_3 = 3  # Staff spin (taunt) as Attack 3
-	data.frames_attack_2 = 15
+	data.frames_attack_2 = 14
 	data.frames_attack_3 = 8
 	data.has_triple_attack = true
 
 	# Passive
 	data.passive_name = "Flowing Strikes"
-	data.passive_description = "Each attack builds Flow. Gain 8% damage and speed per stack. At 3 stacks, dash toward enemies."
+	data.passive_description = "Each attack builds Flow. Gain 5% damage and speed per stack (max 4). At 3 stacks, dash toward enemies."
 
 	return data

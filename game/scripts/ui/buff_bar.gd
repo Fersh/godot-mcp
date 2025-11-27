@@ -201,7 +201,8 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	# Letter label (first letter of buff name)
 	var letter = Label.new()
 	letter.name = "Letter"
-	letter.text = buff_data.get("name", "?").substr(0, 1).to_upper()
+	var buff_name = buff_data.get("name", "?")
+	letter.text = buff_name.substr(0, 1).to_upper()
 	letter.add_theme_font_size_override("font_size", 18)
 	letter.add_theme_color_override("font_color", buff_data.get("color", Color.WHITE))
 	if pixel_font:
@@ -211,6 +212,28 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	letter.size = ICON_SIZE
 	letter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon_container.add_child(letter)
+
+	# Stack counter (for buffs with stacks like "Flow x3")
+	var stack_label = Label.new()
+	stack_label.name = "StackLabel"
+	stack_label.add_theme_font_size_override("font_size", 10)
+	stack_label.add_theme_color_override("font_color", Color.WHITE)
+	stack_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	stack_label.add_theme_constant_override("shadow_offset_x", 1)
+	stack_label.add_theme_constant_override("shadow_offset_y", 1)
+	if pixel_font:
+		stack_label.add_theme_font_override("font", pixel_font)
+	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	stack_label.position = Vector2(0, 2)
+	stack_label.size = Vector2(ICON_SIZE.x - 4, 14)
+	stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Extract stack count from name like "Flow x3"
+	if " x" in buff_name:
+		var parts = buff_name.split(" x")
+		if parts.size() > 1:
+			stack_label.text = "x" + parts[1]
+	icon_container.add_child(stack_label)
 
 	# Cooldown overlay (drawn on top, partially transparent)
 	var cooldown_overlay = ColorRect.new()
@@ -281,6 +304,17 @@ func _update_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 		else:
 			timer_label.visible = true
 			timer_label.text = str(ceil(timer)) + "s"
+
+	# Update stack label for buffs with stacks
+	var stack_label = icon.get_node_or_null("StackLabel")
+	if stack_label:
+		var buff_name = buff_data.get("name", "")
+		if " x" in buff_name:
+			var parts = buff_name.split(" x")
+			if parts.size() > 1:
+				stack_label.text = "x" + parts[1]
+		else:
+			stack_label.text = ""
 
 	# Update stored data
 	icon.set_meta("buff_data", buff_data)

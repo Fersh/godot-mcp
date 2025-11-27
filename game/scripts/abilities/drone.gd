@@ -4,7 +4,7 @@ var drone_index: int = 0
 var target_offset: Vector2 = Vector2(-50, -50)
 var follow_speed: float = 200.0
 var fire_range: float = 300.0
-var fire_cooldown: float = 1.2
+var fire_cooldown: float = 2.4
 var fire_timer: float = 0.0
 var damage: float = 5.4  # 80% increase from 3.0
 

@@ -624,7 +624,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"blade_beam",
 			"Blade Beam",
-			"Swinging your sword fires a projectile beam",
+			"Auto attacking fires an extra projectile",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.BLADE_BEAM, value = 1.0}]

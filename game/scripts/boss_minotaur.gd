@@ -15,8 +15,8 @@ extends BossBase
 @export var slam_aoe_radius: float = 150.0
 @export var melee_range: float = 90.0
 
-# Spritesheet config: 96x96 frames, 9 cols x 20 rows (10 right + 10 left facing)
-const SPRITE_COLS: int = 9
+# Spritesheet config: 128x96 frames, 8 cols x 20 rows (10 right + 10 left facing)
+const SPRITE_COLS: int = 8
 const SPRITE_ROWS: int = 20
 
 # Animation rows (right-facing, top half of sheet)

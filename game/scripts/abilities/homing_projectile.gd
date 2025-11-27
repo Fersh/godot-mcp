@@ -69,7 +69,12 @@ func _process(delta: float) -> void:
 
 func hit_enemy(enemy: Node2D) -> void:
 	if enemy.has_method("take_damage"):
+		# Mark this as a proc kill so ceremonial daggers don't chain
+		if AbilityManager:
+			AbilityManager._ceremonial_dagger_kill = true
 		enemy.take_damage(damage)
+		if AbilityManager:
+			AbilityManager._ceremonial_dagger_kill = false
 
 	# Visual effect
 	spawn_hit_effect()

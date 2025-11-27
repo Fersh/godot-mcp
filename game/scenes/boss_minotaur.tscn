@@ -30,7 +30,7 @@ dropped_item_scene = ExtResource("8_dropped_item")
 material = SubResource("ShaderMaterial_hit_flash")
 scale = Vector2(4, 4)
 texture = ExtResource("2_texture")
-hframes = 9
+hframes = 8
 vframes = 20
 frame = 0
 
