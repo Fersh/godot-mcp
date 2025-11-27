@@ -1161,8 +1161,11 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 			is_attacking = false
 			melee_hitbox_active = false
 
+	# Clamp animation frame to valid range to prevent empty frames
+	var clamped_frame = mini(int(animation_frame), max_frames - 1)
+
 	# Set the sprite frame
-	sprite.frame = current_row * cols_per_row + int(animation_frame)
+	sprite.frame = current_row * cols_per_row + clamped_frame
 
 	# Apply sprite offset (for off-center sprites like beast)
 	# When sprite is flipped, we need to negate X offset to keep character centered

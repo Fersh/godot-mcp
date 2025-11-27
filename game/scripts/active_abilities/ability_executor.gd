@@ -1265,7 +1265,7 @@ func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
 
 func _execute_healing_light(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Heal over time
-	var heal_amount = player.max_health * 0.20  # 20% max HP
+	var heal_amount = player.max_health * 0.10  # 10% max HP
 	var ticks = int(ability.duration / 0.5)
 	var heal_per_tick = heal_amount / ticks
 
