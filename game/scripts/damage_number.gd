@@ -11,13 +11,42 @@ var time: float = 0.0
 
 var pixel_font: Font
 
+# Static tracking for position spreading
+static var spawn_index: int = 0
+static var recent_positions: Array[Vector2] = []
+static var position_cleanup_time: float = 0.0
+
+const SPREAD_RADIUS: float = 45.0  # How far to spread from center
+const MIN_DISTANCE: float = 35.0   # Minimum distance between numbers
+const POSITION_MEMORY: int = 8     # How many recent positions to remember
+
 func _ready() -> void:
 	# Load pixel font
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 	if pixel_font and label:
 		label.add_theme_font_override("font", pixel_font)
-	# Random horizontal spread
-	velocity = Vector2(randf_range(-spread, spread), -rise_speed)
+
+	# Calculate spread position using rotating pattern
+	var angle = (spawn_index * 137.5) * PI / 180.0  # Golden angle for even distribution
+	var radius = SPREAD_RADIUS * (0.5 + 0.5 * (spawn_index % 3) / 2.0)  # Vary radius
+	spawn_index = (spawn_index + 1) % 360
+
+	# Apply position offset
+	var offset = Vector2(cos(angle) * radius, sin(angle) * radius * 0.5)  # Squash vertically
+	global_position += offset
+
+	# Push away from recent positions
+	_avoid_recent_positions()
+
+	# Track this position
+	recent_positions.append(global_position)
+	if recent_positions.size() > POSITION_MEMORY:
+		recent_positions.pop_front()
+
+	# Velocity goes outward from center + upward
+	var outward_dir = Vector2(cos(angle), -0.5).normalized()
+	velocity = outward_dir * rise_speed * randf_range(0.8, 1.2)
+	velocity.y = min(velocity.y, -rise_speed * 0.5)  # Ensure it goes up
 
 	# Set initial scale for pop effect
 	scale = Vector2(0.5, 0.5)
@@ -25,6 +54,14 @@ func _ready() -> void:
 	# Animate scale up
 	var tween = create_tween()
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
+
+func _avoid_recent_positions() -> void:
+	# Push away from any nearby recent damage numbers
+	for recent_pos in recent_positions:
+		var dist = global_position.distance_to(recent_pos)
+		if dist < MIN_DISTANCE and dist > 0:
+			var push_dir = (global_position - recent_pos).normalized()
+			global_position += push_dir * (MIN_DISTANCE - dist)
 
 func _process(delta: float) -> void:
 	time += delta
