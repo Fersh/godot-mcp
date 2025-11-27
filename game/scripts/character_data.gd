@@ -40,6 +40,7 @@ enum AttackType {
 @export var hframes: int = 8
 @export var vframes: int = 8
 @export var sprite_scale: Vector2 = Vector2(1.875, 1.875)
+@export var sprite_offset: Vector2 = Vector2(0, 0)  # Offset to center sprite if frames are off-center
 
 # Animation row indices (0-indexed)
 @export_group("Animation Rows")
@@ -222,6 +223,7 @@ static func create_beast() -> CharacterData:
 	data.hframes = 11
 	data.vframes = 9
 	data.sprite_scale = Vector2(1.08, 1.08)  # Reduced 20% from 1.35
+	data.sprite_offset = Vector2(-20, -35)  # Center the off-center beast frames (x: left/right, y: up)
 
 	# Animation rows (based on Beast spritesheet)
 	# Row 0: emerge (8), Row 1: taunt (7), Row 2: idle (6), Row 3: leap (11 - skip)

@@ -23,25 +23,36 @@ func _setup_sprite() -> void:
 	frames.set_animation_loop("default", false)
 
 	var source_path: String
-	var frame_width: int
-	var frame_height: int
+	var frame_size: int  # Square frames: width = height = image height
 	var frame_count: int
 
 	match impact_type:
 		ImpactType.SMALL_SMOKE:
 			source_path = "res://assets/sprites/effects/slash/SMALL SMOKE.png"
+			frame_size = 11
+			frame_count = 9
 		ImpactType.MEDIUM_SMOKE:
 			source_path = "res://assets/sprites/effects/slash/MEDIUM SMOKE.png"
+			frame_size = 31
+			frame_count = 10
 		ImpactType.BIG_SMOKE:
 			source_path = "res://assets/sprites/effects/slash/BIG IMPACT SMOKE.png"
+			frame_size = 61
+			frame_count = 34
 		ImpactType.DUST_KICK:
 			source_path = "res://assets/sprites/effects/slash/IMPACT DUST KICK.png"
+			frame_size = 14
+			frame_count = 12
 
-	# Use full image as single frame
+	# Split horizontal spritesheet into individual frames
 	if ResourceLoader.exists(source_path):
 		var source_texture = load(source_path) as Texture2D
 		if source_texture:
-			frames.add_frame("default", source_texture)
+			for i in frame_count:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = source_texture
+				atlas.region = Rect2(i * frame_size, 0, frame_size, frame_size)
+				frames.add_frame("default", atlas)
 
 	sprite.sprite_frames = frames
 	sprite.animation_finished.connect(_on_animation_finished)

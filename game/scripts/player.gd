@@ -118,6 +118,9 @@ var current_row: int = 0
 var animation_frame: float = 0.0
 @onready var sprite: Sprite2D = $Sprite
 
+# Sprite offset (for off-center sprites like beast)
+var base_sprite_offset: Vector2 = Vector2.ZERO
+
 # Combat
 var attack_timer: float = 0.0
 var is_attacking: bool = false
@@ -192,6 +195,8 @@ func _load_character_data() -> void:
 		sprite.hframes = character_data.hframes
 		sprite.vframes = character_data.vframes
 		sprite.scale = character_data.sprite_scale
+		base_sprite_offset = character_data.sprite_offset
+		sprite.offset = base_sprite_offset
 
 	# Setup animation rows
 	row_idle = character_data.row_idle
@@ -1142,6 +1147,12 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 
 	# Set the sprite frame
 	sprite.frame = current_row * cols_per_row + int(animation_frame)
+
+	# Update sprite offset based on flip (for off-center sprites like beast)
+	if sprite.flip_h:
+		sprite.offset = base_sprite_offset
+	else:
+		sprite.offset = Vector2(-base_sprite_offset.x, base_sprite_offset.y)
 
 func update_death_animation(delta: float) -> void:
 	# Play death animation once, then hold on last frame
