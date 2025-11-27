@@ -676,6 +676,11 @@ func _physics_process(delta: float) -> void:
 	if buffs_changed:
 		emit_signal("buff_changed", active_buffs)
 
+	# Update shield display on health bar
+	if health_bar and AbilityManager and AbilityManager.has_transcendence:
+		if health_bar.has_method("set_shield"):
+			health_bar.set_shield(AbilityManager.transcendence_shields, AbilityManager.transcendence_max)
+
 	var direction := Vector2.ZERO
 
 	# Joystick input for mobile

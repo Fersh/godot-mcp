@@ -80,8 +80,8 @@ func set_shield() -> void:
 	label.text = "SHIELDED!"
 	# Shield - purple/violet color for transcendence
 	label.add_theme_color_override("font_color", Color(0.7, 0.4, 1.0, 1))
-	label.add_theme_font_size_override("font_size", 28)
-	scale = Vector2(1.1, 1.1)
+	label.add_theme_font_size_override("font_size", 18)
+	scale = Vector2(0.9, 0.9)
 
 func set_elemental(text: String, color: Color) -> void:
 	label.text = text
