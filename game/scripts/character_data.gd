@@ -5,7 +5,8 @@ enum CharacterType {
 	ARCHER,
 	KNIGHT,
 	BEAST,
-	MAGE
+	MAGE,
+	MONK
 }
 
 enum AttackType {
@@ -78,6 +79,14 @@ enum AttackType {
 @export var death_spans_rows: bool = false  # Death animation spans multiple rows
 @export var death_row_2: int = -1  # Second row for death if spans rows
 @export var frames_death_row_2: int = 0  # Frames in second death row
+
+# Monk-specific (triple attack animations)
+@export_group("Monk Animations")
+@export var row_attack_2: int = -1  # Second attack animation
+@export var row_attack_3: int = -1  # Third attack animation
+@export var frames_attack_2: int = 8
+@export var frames_attack_3: int = 8
+@export var has_triple_attack: bool = false  # Randomly pick between 3 attacks
 
 # Passive ability (unique to each character)
 @export_group("Passive")
@@ -305,5 +314,70 @@ static func create_mage() -> CharacterData:
 	# Passive
 	data.passive_name = "Arcane Intellect"
 	data.passive_description = "+30% Damage, +50% Crit Damage"
+
+	return data
+
+static func create_monk() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "monk"
+	data.display_name = "The Really Talkative One"
+	data.description = "Won't shut up. Attacks build Flow, granting speed and dashing strikes."
+	data.character_type = CharacterType.MONK
+	data.attack_type = AttackType.MELEE
+
+	# Monk stats - fast, combo-focused, medium survivability
+	data.base_health = 22.0
+	data.base_speed = 185.0
+	data.base_attack_cooldown = 0.75  # Fast attacks for combos
+	data.base_damage = 1.3
+	data.attack_range = 58.0  # Medium melee reach
+
+	# Combat stats - balanced with slight crit/dodge lean
+	data.base_crit_rate = 0.08  # 8% base crit
+	data.base_block_rate = 0.03  # 3% block
+	data.base_dodge_rate = 0.08  # 8% dodge
+
+	# Sprite config (96x96 per frame, 16 cols x 8 rows)
+	data.frame_size = Vector2(96, 96)
+	data.hframes = 16
+	data.vframes = 8
+	data.sprite_scale = Vector2(1.0, 1.0)  # Already large frames
+
+	# Animation rows
+	# Row 0: Idle 1 (skip)
+	# Row 1: Idle 2 (use this)
+	# Row 2: Movement
+	# Row 3: Spin the Staff / Taunt (use as Attack 3)
+	# Row 4: Attack 1
+	# Row 5: Attack 2
+	# Row 6: Damage
+	# Row 7: Death
+	data.row_idle = 1  # Use Idle 2
+	data.row_move = 2
+	data.row_attack = 4  # Attack 1
+	data.row_attack_up = 4  # Monk uses same attack for all directions
+	data.row_attack_down = 4
+	data.row_damage = 6
+	data.row_death = 7
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 6
+	data.frames_attack = 16
+	data.frames_attack_up = 16
+	data.frames_attack_down = 16
+	data.frames_damage = 6
+	data.frames_death = 6
+
+	# Monk-specific: Triple attack system
+	data.row_attack_2 = 5  # Attack 2 row
+	data.row_attack_3 = 3  # Staff spin (taunt) as Attack 3
+	data.frames_attack_2 = 15
+	data.frames_attack_3 = 8
+	data.has_triple_attack = true
+
+	# Passive
+	data.passive_name = "Flowing Strikes"
+	data.passive_description = "Attacks build Flow. +8% DMG/SPD per stack. Dash at 3+ stacks."
 
 	return data

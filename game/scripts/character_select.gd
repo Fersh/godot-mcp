@@ -228,6 +228,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 			sprite.scale = Vector2(0.9, 0.9)  # Beast has larger frames
 		"mage":
 			sprite.scale = Vector2(1.4, 1.4)  # Mage sprite is 32x32
+		"monk":
+			sprite.scale = Vector2(0.55, 0.55)  # Monk has 96x96 frames
 		_:
 			sprite.scale = Vector2(1.3, 1.3)
 	sprite.centered = true
@@ -333,6 +335,8 @@ func _update_preview() -> void:
 			class_type_text = "???"
 		"mage":
 			class_type_text = "Mage"
+		"monk":
+			class_type_text = "Monk"
 	preview_class_label.text = class_type_text
 
 	# Update sprite
@@ -348,6 +352,8 @@ func _update_preview() -> void:
 			preview_sprite.scale = Vector2(2.0, 2.0)  # Beast has larger frames
 		"mage":
 			preview_sprite.scale = Vector2(2.8, 2.8)  # Mage sprite is 32x32
+		"monk":
+			preview_sprite.scale = Vector2(1.1, 1.1)  # Monk has 96x96 frames
 		_:
 			preview_sprite.scale = Vector2(2.55, 2.55)  # Archer default
 

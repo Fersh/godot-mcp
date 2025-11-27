@@ -19,6 +19,7 @@ var archer_texture: Texture2D
 var knight_texture: Texture2D
 var beast_texture: Texture2D
 var mage_texture: Texture2D
+var monk_texture: Texture2D
 
 func _ready() -> void:
 	_init_characters()
@@ -30,6 +31,7 @@ func _init_characters() -> void:
 	knight_texture = load("res://assets/sprites/knightred.png")
 	beast_texture = load("res://assets/sprites/The Beast Sprite Sheet v1.1 Fixed.png")
 	mage_texture = load("res://assets/sprites/BlueMage_Sprites.png")
+	monk_texture = load("res://assets/sprites/Monk Sprite Sheet.png")
 
 	# Create archer
 	var archer = CharacterData.create_archer()
@@ -50,6 +52,11 @@ func _init_characters() -> void:
 	var mage = CharacterData.create_mage()
 	mage.sprite_texture = mage_texture
 	characters["mage"] = mage
+
+	# Create monk
+	var monk = CharacterData.create_monk()
+	monk.sprite_texture = monk_texture
+	characters["monk"] = monk
 
 	# Set default selection
 	selected_character = characters.get(selected_character_id, characters["archer"])
@@ -138,6 +145,15 @@ func get_passive_bonuses() -> Dictionary:
 			# Arcane Intellect: +30% damage, +50% crit damage
 			bonuses["damage"] = 0.30
 			bonuses["crit_damage"] = 0.50
+		"monk":
+			# Flowing Strikes: stack-based bonuses handled in player.gd
+			# Flag to enable the flow system
+			bonuses["has_flow"] = 1.0  # Boolean as float
+			bonuses["flow_damage_per_stack"] = 0.08  # +8% damage per stack
+			bonuses["flow_speed_per_stack"] = 0.05  # +5% attack speed per stack
+			bonuses["flow_dash_threshold"] = 3  # Dash at 3+ stacks
+			bonuses["flow_max_stacks"] = 5  # Max 5 stacks
+			bonuses["flow_decay_time"] = 1.5  # Stacks decay after 1.5s
 
 	return bonuses
 

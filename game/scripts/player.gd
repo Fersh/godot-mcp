@@ -66,6 +66,22 @@ var row_attack_alt: int = -1  # Alternate attack (randomly chosen)
 var has_alt_attack: bool = false
 var current_attack_row: int = 2  # Which attack row to use this attack
 
+# Monk-specific triple attack system
+var row_attack_2: int = -1  # Second attack animation
+var row_attack_3: int = -1  # Third attack animation
+var has_triple_attack: bool = false
+var monk_attack_cycle: int = 0  # Cycles through 0, 1, 2 for attack variety
+
+# Monk Flow system (Flowing Strikes passive)
+var has_flow: bool = false
+var flow_stacks: int = 0
+var flow_max_stacks: int = 5
+var flow_timer: float = 0.0
+var flow_decay_time: float = 1.5
+var flow_damage_per_stack: float = 0.08
+var flow_speed_per_stack: float = 0.05
+var flow_dash_threshold: int = 3
+
 # Mage-specific death animation
 var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
 var death_spans_rows: bool = false  # Death animation spans multiple rows
@@ -185,6 +201,16 @@ func _load_character_data() -> void:
 	if has_alt_attack and row_attack_alt >= 0:
 		frame_counts[row_attack_alt] = character_data.frames_attack_alt
 
+	# Monk-specific triple attack animations
+	row_attack_2 = character_data.row_attack_2
+	row_attack_3 = character_data.row_attack_3
+	has_triple_attack = character_data.has_triple_attack
+	if has_triple_attack:
+		if row_attack_2 >= 0:
+			frame_counts[row_attack_2] = character_data.frames_attack_2
+		if row_attack_3 >= 0:
+			frame_counts[row_attack_3] = character_data.frames_attack_3
+
 	# Mage-specific death animation properties
 	death_frame_skip = character_data.death_frame_skip
 	death_spans_rows = character_data.death_spans_rows
@@ -234,6 +260,17 @@ func _apply_character_passive() -> void:
 	if attack_speed_bonus > 0:
 		base_attack_cooldown = base_attack_cooldown / (1.0 + attack_speed_bonus)
 		attack_cooldown = base_attack_cooldown
+
+	# Initialize Monk Flow system
+	has_flow = bonuses.get("has_flow", 0.0) > 0.0
+	if has_flow:
+		flow_damage_per_stack = bonuses.get("flow_damage_per_stack", 0.08)
+		flow_speed_per_stack = bonuses.get("flow_speed_per_stack", 0.05)
+		flow_dash_threshold = int(bonuses.get("flow_dash_threshold", 3))
+		flow_max_stacks = int(bonuses.get("flow_max_stacks", 5))
+		flow_decay_time = bonuses.get("flow_decay_time", 1.5)
+		flow_stacks = 0
+		flow_timer = 0.0
 
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
@@ -602,9 +639,12 @@ func _physics_process(delta: float) -> void:
 	position.x = clamp(position.x, MARGIN, ARENA_WIDTH - MARGIN)
 	position.y = clamp(position.y, MARGIN, ARENA_HEIGHT - MARGIN)
 
-	# Auto-attack (apply temp attack speed boost)
+	# Auto-attack (apply temp attack speed boost and flow bonus)
 	attack_timer += delta
 	var effective_cooldown = attack_cooldown / (1.0 + temp_attack_speed_boost)
+	# Apply Monk Flow attack speed bonus
+	if has_flow and flow_stacks > 0:
+		effective_cooldown /= get_flow_attack_speed_multiplier()
 	if attack_timer >= effective_cooldown:
 		try_attack()
 
@@ -792,14 +832,30 @@ func perform_melee_attack() -> void:
 	melee_hit_enemies.clear()
 	melee_hitbox_active = true
 
-	# Choose attack animation (randomly for Beast with alternate attack)
-	if has_alt_attack and row_attack_alt >= 0:
+	# Choose attack animation based on character type
+	if has_triple_attack:
+		# Monk: Cycle through 3 attack animations
+		match monk_attack_cycle:
+			0:
+				current_attack_row = row_attack
+			1:
+				current_attack_row = row_attack_2 if row_attack_2 >= 0 else row_attack
+			2:
+				current_attack_row = row_attack_3 if row_attack_3 >= 0 else row_attack
+		monk_attack_cycle = (monk_attack_cycle + 1) % 3
+	elif has_alt_attack and row_attack_alt >= 0:
+		# Beast: Randomly pick between 2 attacks
 		current_attack_row = row_attack if randf() < 0.5 else row_attack_alt
 	else:
 		current_attack_row = row_attack
 
 	# Snap attack direction to 8 directions for cleaner arc attacks
 	attack_direction = snap_to_8_directions(attack_direction)
+
+	# Monk Flow dash - dash toward enemy at 3+ stacks
+	var closest_enemy = find_closest_enemy()
+	if has_flow and flow_stacks >= flow_dash_threshold and closest_enemy:
+		_perform_flow_dash(closest_enemy.global_position)
 
 	# Play swing sound
 	if SoundManager:
@@ -822,6 +878,10 @@ func perform_melee_attack() -> void:
 	# Apply ability modifiers
 	if AbilityManager:
 		melee_damage *= AbilityManager.get_damage_multiplier()
+
+	# Apply Monk Flow damage bonus
+	if has_flow and flow_stacks > 0:
+		melee_damage *= get_flow_damage_multiplier()
 
 	# Get enemies in melee range with arc check
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -898,6 +958,10 @@ func perform_melee_attack() -> void:
 	# Slight screen shake on melee hit
 	if melee_hit_enemies.size() > 0 and JuiceManager:
 		JuiceManager.shake_small()
+
+	# Monk Flow: Build stacks on successful hits
+	if has_flow and melee_hit_enemies.size() > 0:
+		_add_flow_stack()
 
 func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 	"""Apply elemental on-hit effects to an enemy."""
@@ -1356,3 +1420,88 @@ func _update_active_ability_timers(delta: float) -> void:
 			if active_buffs.has("damage_boost"):
 				active_buffs.erase("damage_boost")
 				emit_signal("buff_changed", active_buffs)
+
+	# Update Monk Flow timer
+	if has_flow and flow_stacks > 0:
+		flow_timer -= delta
+		if flow_timer <= 0:
+			_decay_flow_stacks()
+
+# ============================================
+# MONK FLOW SYSTEM (Flowing Strikes Passive)
+# ============================================
+
+func _add_flow_stack() -> void:
+	"""Add a flow stack and reset the decay timer."""
+	var prev_stacks = flow_stacks
+	flow_stacks = min(flow_stacks + 1, flow_max_stacks)
+	flow_timer = flow_decay_time
+
+	# Update buff display
+	_update_flow_buff()
+
+	# Visual/audio feedback when reaching dash threshold
+	if prev_stacks < flow_dash_threshold and flow_stacks >= flow_dash_threshold:
+		if JuiceManager:
+			JuiceManager.shake_small()
+
+func _decay_flow_stacks() -> void:
+	"""Decay all flow stacks when timer expires."""
+	flow_stacks = 0
+	flow_timer = 0.0
+	if active_buffs.has("flow"):
+		active_buffs.erase("flow")
+		emit_signal("buff_changed", active_buffs)
+
+func _update_flow_buff() -> void:
+	"""Update the flow buff display."""
+	if flow_stacks > 0:
+		var dmg_bonus = int(flow_stacks * flow_damage_per_stack * 100)
+		var spd_bonus = int(flow_stacks * flow_speed_per_stack * 100)
+		var desc = "+" + str(dmg_bonus) + "% DMG, +" + str(spd_bonus) + "% SPD"
+		if flow_stacks >= flow_dash_threshold:
+			desc += " [DASH]"
+
+		active_buffs["flow"] = {
+			"timer": flow_timer,
+			"duration": flow_decay_time,
+			"name": "Flow x" + str(flow_stacks),
+			"description": desc,
+			"color": Color(0.6, 0.4, 1.0)  # Purple for Monk
+		}
+		emit_signal("buff_changed", active_buffs)
+
+func _perform_flow_dash(target_pos: Vector2) -> void:
+	"""Dash toward target position (Monk Flow at 3+ stacks)."""
+	var direction = (target_pos - global_position).normalized()
+	var dash_distance = 60.0  # Shorter dash for flow
+
+	# Move player toward target
+	global_position += direction * dash_distance
+
+	# Update facing direction
+	if direction.x > 0:
+		facing_right = true
+		sprite.flip_h = false
+	elif direction.x < 0:
+		facing_right = false
+		sprite.flip_h = true
+
+	# Spawn visual effect
+	_spawn_dash_smoke()
+
+	# Play dash sound
+	if SoundManager:
+		SoundManager.play_dash()
+
+func get_flow_damage_multiplier() -> float:
+	"""Get the current flow damage multiplier."""
+	if not has_flow or flow_stacks <= 0:
+		return 1.0
+	return 1.0 + (flow_stacks * flow_damage_per_stack)
+
+func get_flow_attack_speed_multiplier() -> float:
+	"""Get the current flow attack speed multiplier."""
+	if not has_flow or flow_stacks <= 0:
+		return 1.0
+	return 1.0 + (flow_stacks * flow_speed_per_stack)
