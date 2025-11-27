@@ -442,6 +442,8 @@ func take_damage(amount: float) -> void:
 	# Trigger Retribution explosion when taking damage (ability)
 	if AbilityManager:
 		AbilityManager.trigger_retribution(global_position)
+		# Trigger Adrenaline Surge (reduces active ability cooldowns)
+		AbilityManager.on_player_damaged()
 
 	# Trigger Knight Retribution passive (damage boost on next attack)
 	if has_retribution and not retribution_ready:
@@ -709,6 +711,9 @@ func _physics_process(delta: float) -> void:
 
 	# Apply speed with ability modifiers and temp boosts
 	var effective_speed = speed * (1.0 + temp_speed_boost)
+	# Apply Swift Dodge speed bonus
+	if AbilityManager:
+		effective_speed *= AbilityManager.get_swift_dodge_speed_multiplier()
 	velocity = direction * effective_speed
 	move_and_slide()
 

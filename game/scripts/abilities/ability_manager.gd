@@ -258,6 +258,31 @@ var has_symbiosis: bool = false
 var has_pandemonium: bool = false
 var pandemonium_multiplier: float = 2.0
 
+# Active ability synergy effects
+var has_quick_reflexes: bool = false
+var quick_reflexes_reduction: float = 0.0  # Cooldown reduction (0.15 = 15%)
+var has_adrenaline_surge: bool = false
+var adrenaline_surge_reduction: float = 0.0  # Cooldown reduction on damage taken
+var adrenaline_surge_cooldown: float = 0.0  # Internal cooldown (1 second)
+var has_empowered_abilities: bool = false
+var empowered_abilities_bonus: float = 0.0  # Damage bonus for active abilities
+var has_elemental_infusion: bool = false  # Active abilities apply elemental effects
+var has_double_charge: bool = false  # Dodge gains second charge
+var has_combo_master: bool = false
+var combo_master_bonus: float = 0.0  # Damage bonus from using actives
+var combo_master_timer: float = 0.0  # Duration remaining
+var combo_master_active: bool = false
+var has_ability_echo: bool = false
+var ability_echo_chance: float = 0.0  # Chance for actives to trigger twice
+var has_swift_dodge: bool = false
+var swift_dodge_bonus: float = 0.0  # Move speed bonus after dodging
+var swift_dodge_timer: float = 0.0  # Duration remaining
+var swift_dodge_active: bool = false
+var has_phantom_strike: bool = false
+var phantom_strike_damage: float = 0.0  # Damage dealt when dodging through enemies
+var has_kill_accelerant: bool = false
+var kill_accelerant_reduction: float = 0.0  # Ultimate cooldown reduction per kill
+
 # Run tracking
 var run_start_time: float = 0.0
 var run_duration_for_warmup: float = 120.0  # 2 minutes
@@ -511,6 +536,31 @@ func reset() -> void:
 	has_pandemonium = false
 	pandemonium_multiplier = 2.0
 
+	# Reset active ability synergy effects
+	has_quick_reflexes = false
+	quick_reflexes_reduction = 0.0
+	has_adrenaline_surge = false
+	adrenaline_surge_reduction = 0.0
+	adrenaline_surge_cooldown = 0.0
+	has_empowered_abilities = false
+	empowered_abilities_bonus = 0.0
+	has_elemental_infusion = false
+	has_double_charge = false
+	has_combo_master = false
+	combo_master_bonus = 0.0
+	combo_master_timer = 0.0
+	combo_master_active = false
+	has_ability_echo = false
+	ability_echo_chance = 0.0
+	has_swift_dodge = false
+	swift_dodge_bonus = 0.0
+	swift_dodge_timer = 0.0
+	swift_dodge_active = false
+	has_phantom_strike = false
+	phantom_strike_damage = 0.0
+	has_kill_accelerant = false
+	kill_accelerant_reduction = 0.0
+
 	run_start_time = 0.0
 
 	# Reset timers
@@ -529,6 +579,7 @@ func _process(delta: float) -> void:
 		return
 
 	process_periodic_effects(delta, player)
+	_update_active_synergy_timers(delta)
 
 func process_periodic_effects(delta: float, player: Node2D) -> void:
 	# Regeneration (from abilities and permanent upgrades) - percentage based
@@ -1249,6 +1300,37 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				has_pandemonium = true
 				pandemonium_multiplier = value
 
+			# Active ability synergy effects
+			AbilityData.EffectType.QUICK_REFLEXES:
+				has_quick_reflexes = true
+				quick_reflexes_reduction += value  # Stacks
+			AbilityData.EffectType.ADRENALINE_SURGE:
+				has_adrenaline_surge = true
+				adrenaline_surge_reduction = value
+			AbilityData.EffectType.EMPOWERED_ABILITIES:
+				has_empowered_abilities = true
+				empowered_abilities_bonus += value  # Stacks
+			AbilityData.EffectType.ELEMENTAL_INFUSION:
+				has_elemental_infusion = true
+			AbilityData.EffectType.DOUBLE_CHARGE:
+				has_double_charge = true
+				_apply_double_charge()
+			AbilityData.EffectType.COMBO_MASTER:
+				has_combo_master = true
+				combo_master_bonus = value
+			AbilityData.EffectType.ABILITY_ECHO:
+				has_ability_echo = true
+				ability_echo_chance += value  # Stacks
+			AbilityData.EffectType.SWIFT_DODGE:
+				has_swift_dodge = true
+				swift_dodge_bonus = value
+			AbilityData.EffectType.PHANTOM_STRIKE:
+				has_phantom_strike = true
+				phantom_strike_damage = value
+			AbilityData.EffectType.KILL_ACCELERANT:
+				has_kill_accelerant = true
+				kill_accelerant_reduction = value
+
 	# Apply stat changes to player immediately
 	apply_stats_to_player()
 
@@ -1319,6 +1401,9 @@ func get_damage_multiplier() -> float:
 
 	if has_massacre and massacre_stacks > 0:
 		base += massacre_bonus * massacre_stacks
+
+	# Combo Master bonus (from using active abilities)
+	base *= get_combo_master_damage_multiplier()
 
 	return base
 
@@ -1813,6 +1898,10 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	if has_cooldown_killer:
 		reduce_active_cooldowns(cooldown_killer_value)
 
+	# Kill Accelerant - reduce ultimate cooldown on kill
+	if has_kill_accelerant and UltimateAbilityManager:
+		UltimateAbilityManager.reduce_cooldown(kill_accelerant_reduction)
+
 # ============================================
 # EXTENDED ABILITY UTILITY FUNCTIONS
 # ============================================
@@ -2221,3 +2310,150 @@ func get_pandemonium_damage_multiplier() -> float:
 # Projectile helpers
 func should_apply_homing() -> bool:
 	return has_homing
+
+# ============================================
+# ACTIVE ABILITY SYNERGY HELPERS
+# ============================================
+
+func get_active_cooldown_multiplier() -> float:
+	"""Get cooldown multiplier for active abilities (Quick Reflexes)."""
+	if has_quick_reflexes:
+		return 1.0 - quick_reflexes_reduction
+	return 1.0
+
+func on_player_damaged() -> void:
+	"""Called when player takes damage - triggers Adrenaline Surge."""
+	if not has_adrenaline_surge:
+		return
+	if adrenaline_surge_cooldown > 0:
+		return  # Still on internal cooldown
+
+	# Reduce all active ability cooldowns
+	if ActiveAbilityManager:
+		ActiveAbilityManager.reduce_all_cooldowns(adrenaline_surge_reduction)
+
+	# Set internal cooldown (1 second)
+	adrenaline_surge_cooldown = 1.0
+
+func get_active_ability_damage_multiplier() -> float:
+	"""Get damage multiplier for active abilities (Empowered Abilities)."""
+	var multiplier = 1.0
+	if has_empowered_abilities:
+		multiplier += empowered_abilities_bonus
+	return multiplier
+
+func should_apply_elemental_to_active() -> bool:
+	"""Check if active abilities should apply elemental effects."""
+	return has_elemental_infusion
+
+func apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
+	"""Apply the player's elemental effects to an enemy (for Elemental Infusion)."""
+	if not has_elemental_infusion or enemy == null:
+		return
+
+	# Apply any elemental effects the player has
+	if has_ignite and enemy.has_method("apply_burn"):
+		enemy.apply_burn(3.0)
+	if has_frostbite and enemy.has_method("apply_chill"):
+		enemy.apply_chill(2.0)
+	if has_toxic_tip and enemy.has_method("apply_poison"):
+		enemy.apply_poison(30.0, 3.0)
+	if has_lightning_proc and enemy.has_method("apply_shock"):
+		enemy.apply_shock(15.0)
+
+func _apply_double_charge() -> void:
+	"""Apply double charge to dodge ability."""
+	if ActiveAbilityManager:
+		ActiveAbilityManager.add_dodge_charge()
+
+func on_active_ability_used() -> void:
+	"""Called when any active ability is used - triggers Combo Master."""
+	if not has_combo_master:
+		return
+
+	combo_master_active = true
+	combo_master_timer = 3.0  # 3 second duration
+
+func get_combo_master_damage_multiplier() -> float:
+	"""Get auto-attack damage multiplier from Combo Master."""
+	if has_combo_master and combo_master_active:
+		return 1.0 + combo_master_bonus
+	return 1.0
+
+func should_echo_ability() -> bool:
+	"""Check if ability should trigger twice (Ability Echo)."""
+	if not has_ability_echo:
+		return false
+	return randf() < ability_echo_chance
+
+func on_dodge_used() -> void:
+	"""Called when dodge is used - triggers Swift Dodge speed boost."""
+	if has_swift_dodge:
+		swift_dodge_active = true
+		swift_dodge_timer = 2.0  # 2 second duration
+
+func get_swift_dodge_speed_multiplier() -> float:
+	"""Get move speed multiplier from Swift Dodge."""
+	if has_swift_dodge and swift_dodge_active:
+		return 1.0 + swift_dodge_bonus
+	return 1.0
+
+func on_dodge_through_enemy(player: Node2D, enemies_hit: Array) -> void:
+	"""Called when player dodges through enemies - triggers Phantom Strike damage."""
+	if not has_phantom_strike or enemies_hit.is_empty():
+		return
+
+	# Calculate damage based on player's attack damage
+	var base_damage = phantom_strike_damage
+	if player.has_method("get_attack_damage"):
+		base_damage += player.get_attack_damage() * 0.5  # 50% of attack damage
+
+	# Apply damage to all enemies passed through
+	for enemy in enemies_hit:
+		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
+			enemy.take_damage(base_damage)
+
+	# Visual effect - small explosion at player position
+	_spawn_phantom_strike_effect(player.global_position)
+
+func _spawn_phantom_strike_effect(pos: Vector2) -> void:
+	"""Spawn visual effect for Phantom Strike."""
+	# Create a simple particle effect
+	var particles = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 12
+	particles.lifetime = 0.3
+	particles.direction = Vector2.ZERO
+	particles.spread = 180
+	particles.initial_velocity_min = 100
+	particles.initial_velocity_max = 200
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 5.0
+	particles.color = Color(0.6, 0.3, 1.0, 0.8)  # Purple
+
+	get_tree().current_scene.add_child(particles)
+
+	# Auto-cleanup
+	var timer = get_tree().create_timer(0.5)
+	timer.timeout.connect(func(): particles.queue_free())
+
+func _update_active_synergy_timers(delta: float) -> void:
+	"""Update timers for active ability synergy effects."""
+	# Adrenaline Surge internal cooldown
+	if adrenaline_surge_cooldown > 0:
+		adrenaline_surge_cooldown -= delta
+
+	# Combo Master timer
+	if combo_master_active and combo_master_timer > 0:
+		combo_master_timer -= delta
+		if combo_master_timer <= 0:
+			combo_master_active = false
+
+	# Swift Dodge timer
+	if swift_dodge_active and swift_dodge_timer > 0:
+		swift_dodge_timer -= delta
+		if swift_dodge_timer <= 0:
+			swift_dodge_active = false

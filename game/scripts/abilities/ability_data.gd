@@ -145,6 +145,18 @@ enum EffectType {
 	TRANSCENDENCE,      # HP to shields conversion
 	SYMBIOSIS,          # Double passive choices
 	PANDEMONIUM,        # Double spawns, double damage
+
+	# Active Ability Synergy Effects
+	QUICK_REFLEXES,     # Reduce all active ability cooldowns by 15%
+	ADRENALINE_SURGE,   # Taking damage reduces active cooldowns by 0.5s
+	EMPOWERED_ABILITIES, # Active abilities deal 20% more damage
+	ELEMENTAL_INFUSION, # Active abilities apply your elemental effects
+	DOUBLE_CHARGE,      # Dodge gains a second charge
+	COMBO_MASTER,       # Using active grants 15% auto-attack damage for 3s
+	ABILITY_ECHO,       # 10% chance for active abilities to trigger twice
+	SWIFT_DODGE,        # Dodging grants 30% move speed for 2s
+	PHANTOM_STRIKE,     # Dodge through enemies deals area damage
+	KILL_ACCELERANT,    # Kills reduce ultimate cooldown by 0.5s
 }
 
 # Rarity weights for random selection (out of 100)

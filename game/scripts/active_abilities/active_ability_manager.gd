@@ -23,6 +23,8 @@ var cooldown_timers: Array[float] = []  # Time remaining on each slot
 # Dodge state
 var dodge_cooldown_timer: float = 0.0
 var is_dodging: bool = false
+var dodge_charges: int = 1  # Default 1 charge, can be 2 with Double Charge
+var max_dodge_charges: int = 1
 
 # Keyboard input state (to prevent holding key = spam)
 var _dodge_key_held: bool = false
@@ -55,10 +57,20 @@ func _process(delta: float) -> void:
 			if ability_slots[i]:
 				emit_signal("cooldown_updated", i, cooldown_timers[i], ability_slots[i].cooldown)
 
-	# Update dodge cooldown
+	# Update dodge cooldown / charge regeneration
 	if dodge_cooldown_timer > 0:
 		dodge_cooldown_timer = max(0.0, dodge_cooldown_timer - delta)
 		emit_signal("dodge_cooldown_updated", dodge_cooldown_timer, DODGE_COOLDOWN)
+
+		# Handle charge regeneration (Double Charge passive)
+		if dodge_cooldown_timer <= 0 and max_dodge_charges > 1 and dodge_charges < max_dodge_charges:
+			dodge_charges += 1
+			# Start cooldown for next charge if still below max
+			if dodge_charges < max_dodge_charges:
+				var cooldown_mult = 1.0
+				if AbilityManager:
+					cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
+				dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
 
 	# Keyboard shortcuts for abilities
 	if not get_tree().paused:
@@ -101,6 +113,8 @@ func reset_for_new_run() -> void:
 		cooldown_timers[i] = 0.0
 	dodge_cooldown_timer = 0.0
 	is_dodging = false
+	dodge_charges = 1
+	max_dodge_charges = 1
 	acquired_ability_ids.clear()
 
 func register_player(p: Node2D) -> void:
@@ -183,6 +197,15 @@ func use_ability(slot: int) -> bool:
 	# Execute the ability
 	_execute_ability(ability)
 
+	# Trigger Combo Master (grants damage buff)
+	if AbilityManager:
+		AbilityManager.on_active_ability_used()
+
+	# Check for Ability Echo (10% chance to trigger twice)
+	if AbilityManager and AbilityManager.should_echo_ability():
+		# Execute ability again with slight delay
+		get_tree().create_timer(0.1).timeout.connect(func(): _execute_ability(ability))
+
 	emit_signal("ability_used", slot, ability)
 	return true
 
@@ -194,6 +217,10 @@ func get_cooldown_multiplier() -> float:
 	if PermanentUpgrades:
 		var reduction = PermanentUpgrades.get_all_bonuses().get("cooldown_reduction", 0.0)
 		multiplier -= reduction
+
+	# Apply Quick Reflexes passive cooldown reduction
+	if AbilityManager:
+		multiplier *= AbilityManager.get_active_cooldown_multiplier()
 
 	# Apply All-For-One mythic penalty if active
 	if AbilityManager and AbilityManager.has_all_for_one_ability():
@@ -232,6 +259,9 @@ func can_dodge() -> bool:
 	"""Check if dodge is available."""
 	if player and player.is_dead:
 		return false
+	# With charge system: can dodge if we have charges OR cooldown is ready
+	if max_dodge_charges > 1:
+		return dodge_charges > 0 and not is_dodging
 	return dodge_cooldown_timer <= 0 and not is_dodging
 
 func perform_dodge() -> bool:
@@ -242,20 +272,40 @@ func perform_dodge() -> bool:
 	if not player:
 		return false
 
-	# Start cooldown (apply wind dancer reduction if applicable)
-	var cooldown_mult = 1.0
-	if AbilityManager:
-		cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
-	dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
+	# Handle charge-based system (Double Charge)
+	if max_dodge_charges > 1:
+		dodge_charges -= 1
+		# Start recharge timer if we're below max
+		if dodge_charges < max_dodge_charges and dodge_cooldown_timer <= 0:
+			var cooldown_mult = 1.0
+			if AbilityManager:
+				cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
+			dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
+	else:
+		# Standard single-charge cooldown
+		var cooldown_mult = 1.0
+		if AbilityManager:
+			cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
+		dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
+
 	is_dodging = true
 
 	# Calculate dodge direction (away from nearest enemy)
 	var dodge_direction = _calculate_dodge_direction()
 
-	# Execute the dodge
+	# Trigger Swift Dodge speed boost
+	if AbilityManager:
+		AbilityManager.on_dodge_used()
+
+	# Execute the dodge (with Phantom Strike check)
 	_execute_dodge(dodge_direction)
 
 	return true
+
+func add_dodge_charge() -> void:
+	"""Add an additional dodge charge (Double Charge passive)."""
+	max_dodge_charges = 2
+	dodge_charges = 2
 
 func _calculate_dodge_direction() -> Vector2:
 	"""Calculate the direction to dodge. Prioritizes player input direction, falls back to away from enemies."""
@@ -304,6 +354,9 @@ func _execute_dodge(direction: Vector2) -> void:
 		is_dodging = false
 		return
 
+	# Store start position for Phantom Strike
+	var start_pos = player.global_position
+
 	# Grant brief invulnerability
 	if player.has_method("set_invulnerable"):
 		player.set_invulnerable(true)
@@ -318,10 +371,15 @@ func _execute_dodge(direction: Vector2) -> void:
 	target_pos.x = clamp(target_pos.x, MARGIN, ARENA_WIDTH - MARGIN)
 	target_pos.y = clamp(target_pos.y, MARGIN, ARENA_HEIGHT - MARGIN)
 
+	# Check for Phantom Strike - find enemies in dodge path
+	var enemies_in_path: Array = []
+	if AbilityManager and AbilityManager.has_phantom_strike:
+		enemies_in_path = _get_enemies_in_dodge_path(start_pos, target_pos)
+
 	# Create tween for smooth dodge movement
 	var tween = create_tween()
 	tween.tween_property(player, "global_position", target_pos, DODGE_DURATION)
-	tween.tween_callback(_on_dodge_complete)
+	tween.tween_callback(func(): _on_dodge_complete_with_phantom_strike(enemies_in_path))
 
 	# Play dodge sound
 	if SoundManager:
@@ -330,6 +388,55 @@ func _execute_dodge(direction: Vector2) -> void:
 	# Visual effect
 	if player.has_method("spawn_dodge_effect"):
 		player.spawn_dodge_effect()
+
+func _get_enemies_in_dodge_path(start: Vector2, end: Vector2) -> Array:
+	"""Find all enemies along the dodge path for Phantom Strike."""
+	var enemies_hit: Array = []
+	var enemies = player.get_tree().get_nodes_in_group("enemies")
+
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+
+		# Check if enemy is within the dodge path (using line segment distance)
+		var enemy_pos = enemy.global_position
+		var distance_to_line = _point_to_line_distance(enemy_pos, start, end)
+
+		# If enemy is close enough to the line (within ~60 pixels)
+		if distance_to_line < 60.0:
+			# Also check if enemy is between start and end
+			var to_enemy = enemy_pos - start
+			var to_end = end - start
+			var dot = to_enemy.dot(to_end.normalized())
+			if dot > 0 and dot < to_end.length():
+				enemies_hit.append(enemy)
+
+	return enemies_hit
+
+func _point_to_line_distance(point: Vector2, line_start: Vector2, line_end: Vector2) -> float:
+	"""Calculate perpendicular distance from a point to a line segment."""
+	var line_vec = line_end - line_start
+	var point_vec = point - line_start
+	var line_length = line_vec.length()
+
+	if line_length < 0.001:
+		return point_vec.length()
+
+	var line_unit = line_vec / line_length
+	var proj_length = point_vec.dot(line_unit)
+	proj_length = clamp(proj_length, 0, line_length)
+	var closest_point = line_start + line_unit * proj_length
+	return (point - closest_point).length()
+
+func _on_dodge_complete_with_phantom_strike(enemies_hit: Array) -> void:
+	"""Called when dodge movement finishes, applies Phantom Strike if applicable."""
+	is_dodging = false
+	if player and player.has_method("set_invulnerable"):
+		player.set_invulnerable(false)
+
+	# Apply Phantom Strike damage to enemies we passed through
+	if not enemies_hit.is_empty() and AbilityManager:
+		AbilityManager.on_dodge_through_enemy(player, enemies_hit)
 
 func _on_dodge_complete() -> void:
 	"""Called when dodge movement finishes."""
@@ -420,6 +527,8 @@ func calculate_ability_damage(ability: ActiveAbilityData) -> float:
 	var damage_mult = 1.0
 	if AbilityManager:
 		damage_mult = AbilityManager.get_damage_multiplier()
+		# Apply Empowered Abilities bonus (active abilities deal extra damage)
+		damage_mult *= AbilityManager.get_active_ability_damage_multiplier()
 
 	# Apply ability's own damage multiplier
 	return base * ability.damage_multiplier * damage_mult

@@ -33,7 +33,98 @@ static func get_extended_abilities() -> Array[AbilityData]:
 	abilities.append_array(ConditionalPassives.get_abilities())
 	abilities.append_array(LegendaryPassives.get_abilities())
 	abilities.append_array(MythicPassives.get_abilities())
+	abilities.append_array(get_active_synergy_abilities())
 	return abilities
+
+# ============================================
+# ACTIVE ABILITY SYNERGY PASSIVES
+# ============================================
+static func get_active_synergy_abilities() -> Array[AbilityData]:
+	return [
+		# Common - Basic active ability enhancements
+		AbilityData.new(
+			"quick_reflexes",
+			"Quick Reflexes",
+			"Active ability cooldowns reduced by 15%",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.QUICK_REFLEXES, value = 0.15}]
+		),
+		AbilityData.new(
+			"swift_dodge",
+			"Swift Dodge",
+			"Dodging grants +30% move speed for 2s",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.SWIFT_DODGE, value = 0.30}]
+		),
+		# Rare - More impactful synergies
+		AbilityData.new(
+			"adrenaline_surge",
+			"Adrenaline Surge",
+			"Taking damage reduces active cooldowns by 0.5s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.ADRENALINE_SURGE, value = 0.5}]
+		),
+		AbilityData.new(
+			"empowered_abilities",
+			"Empowered Abilities",
+			"Active abilities deal 20% more damage",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.EMPOWERED_ABILITIES, value = 0.20}]
+		),
+		AbilityData.new(
+			"combo_master",
+			"Combo Master",
+			"Using an active grants +15% damage for 3s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.COMBO_MASTER, value = 0.15}]
+		),
+		AbilityData.new(
+			"kill_accelerant",
+			"Kill Accelerant",
+			"Kills reduce ultimate cooldown by 0.5s",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.KILL_ACCELERANT, value = 0.5}]
+		),
+		# Legendary - Powerful active synergies
+		AbilityData.new(
+			"double_charge",
+			"Double Charge",
+			"Dodge gains a second charge",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.DOUBLE_CHARGE, value = 1.0}]
+		),
+		AbilityData.new(
+			"elemental_infusion",
+			"Elemental Infusion",
+			"Active abilities apply your elemental effects",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.ELEMENTAL_INFUSION, value = 1.0}]
+		),
+		AbilityData.new(
+			"phantom_strike",
+			"Phantom Strike",
+			"Dodging through enemies deals area damage",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.PHANTOM_STRIKE, value = 25.0}]  # base damage
+		),
+		AbilityData.new(
+			"ability_echo",
+			"Ability Echo",
+			"10% chance for active abilities to trigger twice",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.ABILITY_ECHO, value = 0.10}]
+		),
+	]
 
 # ============================================
 # COMMON ABILITIES (Stat Boosts)
