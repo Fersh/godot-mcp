@@ -282,6 +282,8 @@ var has_phantom_strike: bool = false
 var phantom_strike_damage: float = 0.0  # Damage dealt when dodging through enemies
 var has_kill_accelerant: bool = false
 var kill_accelerant_reduction: float = 0.0  # Ultimate cooldown reduction per kill
+var has_passive_amplifier: bool = false
+var passive_amplifier_bonus: float = 0.0  # Passive ability damage bonus
 
 # Run tracking
 var run_start_time: float = 0.0
@@ -560,6 +562,8 @@ func reset() -> void:
 	phantom_strike_damage = 0.0
 	has_kill_accelerant = false
 	kill_accelerant_reduction = 0.0
+	has_passive_amplifier = false
+	passive_amplifier_bonus = 0.0
 
 	run_start_time = 0.0
 
@@ -1330,6 +1334,9 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.KILL_ACCELERANT:
 				has_kill_accelerant = true
 				kill_accelerant_reduction = value
+			AbilityData.EffectType.PASSIVE_AMPLIFIER:
+				has_passive_amplifier = true
+				passive_amplifier_bonus += value  # Stacks
 
 	# Apply stat changes to player immediately
 	apply_stats_to_player()

@@ -157,6 +157,9 @@ enum EffectType {
 	SWIFT_DODGE,        # Dodging grants 30% move speed for 2s
 	PHANTOM_STRIKE,     # Dodge through enemies deals area damage
 	KILL_ACCELERANT,    # Kills reduce ultimate cooldown by 0.5s
+
+	# Passive Ability Enhancement
+	PASSIVE_AMPLIFIER,  # Passive abilities deal 20% more damage
 }
 
 # Rarity weights for random selection (out of 100)

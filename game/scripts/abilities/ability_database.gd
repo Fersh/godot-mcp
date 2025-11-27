@@ -124,6 +124,15 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ABILITY_ECHO, value = 0.10}]
 		),
+		# Passive Ability Enhancement
+		AbilityData.new(
+			"passive_amplifier",
+			"Passive Amplifier",
+			"Passive abilities deal 20% more damage",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.PASSIVE_AMPLIFIER, value = 0.20}]
+		),
 	]
 
 # ============================================
@@ -405,7 +414,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"Strikes random enemies with lightning",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PERIODIC,
-			[{effect_type = AbilityData.EffectType.LIGHTNING_STRIKE, value = 12.0}]  # damage
+			[{effect_type = AbilityData.EffectType.LIGHTNING_STRIKE, value = 6.0}]  # damage (halved)
 		),
 		AbilityData.new(
 			"drone_support",
