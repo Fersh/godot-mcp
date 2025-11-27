@@ -236,14 +236,18 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
 	sprite.centered = true
-	# Scale all to same height as mage (32px * 1.3 = 41.6px target)
-	var target_height = 41.6
-	var frame_height = char_data.frame_size.y
-	var sprite_scale = target_height / frame_height
-	sprite.scale = Vector2(sprite_scale, sprite_scale)
+	# Manual scales to match mage visually
+	var sprite_scale = 1.3
 	var sprite_pos = Vector2(23, 23)
-	if char_data.id == "beast":
-		sprite_pos.y = 18  # Beast sprite art is lower in frame
+	match char_data.id:
+		"knight":
+			sprite_scale = 1.1
+		"monk":
+			sprite_scale = 1.0
+		"beast":
+			sprite_scale = 0.75
+			sprite_pos = Vector2(23, 16)
+	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
 
@@ -356,14 +360,18 @@ func _update_preview() -> void:
 	preview_sprite.vframes = char_data.vframes
 	preview_sprite.frame = char_data.row_idle * char_data.hframes
 
-	# Scale all to same height as mage (32px * 2.5 = 80px target)
-	var target_height = 80.0
-	var frame_height = char_data.frame_size.y
-	var preview_scale = target_height / frame_height
-	preview_sprite.scale = Vector2(preview_scale, preview_scale)
+	# Manual scales to match mage visually
+	var preview_scale = 2.5
 	var preview_pos = Vector2(50, 50)
-	if char_data.id == "beast":
-		preview_pos.y = 35  # Beast sprite art is lower in frame
+	match char_data.id:
+		"knight":
+			preview_scale = 2.1
+		"monk":
+			preview_scale = 1.5
+		"beast":
+			preview_scale = 1.15
+			preview_pos = Vector2(55, 38)
+	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 
 	# Update description
