@@ -18,6 +18,7 @@ var selected_character: CharacterData = null
 var archer_texture: Texture2D
 var knight_texture: Texture2D
 var beast_texture: Texture2D
+var mage_texture: Texture2D
 
 func _ready() -> void:
 	_init_characters()
@@ -28,6 +29,7 @@ func _init_characters() -> void:
 	archer_texture = load("res://assets/sprites/archer.png")
 	knight_texture = load("res://assets/sprites/knightred.png")
 	beast_texture = load("res://assets/sprites/The Beast Sprite Sheet v1.1 Fixed.png")
+	mage_texture = load("res://assets/sprites/BlueMage_Sprites.png")
 
 	# Create archer
 	var archer = CharacterData.create_archer()
@@ -43,6 +45,11 @@ func _init_characters() -> void:
 	var beast = CharacterData.create_beast()
 	beast.sprite_texture = beast_texture
 	characters["beast"] = beast
+
+	# Create mage
+	var mage = CharacterData.create_mage()
+	mage.sprite_texture = mage_texture
+	characters["mage"] = mage
 
 	# Set default selection
 	selected_character = characters.get(selected_character_id, characters["archer"])
@@ -127,6 +134,10 @@ func get_passive_bonuses() -> Dictionary:
 			# Bloodlust: +25% attack speed, +10% lifesteal on crit
 			bonuses["attack_speed"] = 0.25
 			bonuses["lifesteal_on_crit"] = 0.10
+		"mage":
+			# Arcane Intellect: +30% damage, +50% crit damage
+			bonuses["damage"] = 0.30
+			bonuses["crit_damage"] = 0.50
 
 	return bonuses
 

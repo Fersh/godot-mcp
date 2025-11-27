@@ -1301,6 +1301,10 @@ func get_damage_multiplier() -> float:
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("damage", 0.0)
 
+	# Add character passive bonus (Mage's Arcane Intellect)
+	if CharacterManager:
+		base += CharacterManager.get_passive_bonuses().get("damage", 0.0)
+
 	# Add equipment bonus
 	base += _get_equipment_stat("damage")
 
@@ -1448,6 +1452,10 @@ func get_crit_damage_multiplier() -> float:
 
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("crit_damage", 0.0)
+
+	# Add character passive bonus (Mage's Arcane Intellect)
+	if CharacterManager:
+		base += CharacterManager.get_passive_bonuses().get("crit_damage", 0.0)
 
 	return base
 

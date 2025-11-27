@@ -4,7 +4,8 @@ class_name CharacterData
 enum CharacterType {
 	ARCHER,
 	KNIGHT,
-	BEAST
+	BEAST,
+	MAGE
 }
 
 enum AttackType {
@@ -70,6 +71,13 @@ enum AttackType {
 @export var frames_attack_alt: int = 8
 @export var frames_damage_hard: int = 5
 @export var has_alt_attack: bool = false  # Whether to randomly pick between attacks
+
+# Mage-specific (death animation uses every-other-frame across 2 rows)
+@export_group("Mage Animations")
+@export var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
+@export var death_spans_rows: bool = false  # Death animation spans multiple rows
+@export var death_row_2: int = -1  # Second row for death if spans rows
+@export var frames_death_row_2: int = 0  # Frames in second death row
 
 # Passive ability (unique to each character)
 @export_group("Passive")
@@ -240,5 +248,62 @@ static func create_beast() -> CharacterData:
 	# Passive
 	data.passive_name = "Bloodlust"
 	data.passive_description = "+25% Attack Speed, +10% Lifesteal on crit"
+
+	return data
+
+static func create_mage() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "mage"
+	data.display_name = "The Smart One"
+	data.description = "Calculating and precise. Slow but devastating magical attacks."
+	data.character_type = CharacterType.MAGE
+	data.attack_type = AttackType.RANGED
+
+	# Slow but powerful - glass cannon caster
+	data.base_health = 20.0
+	data.base_speed = 145.0  # Slowest character
+	data.base_attack_cooldown = 1.4  # Slow attacks
+	data.base_damage = 2.2  # Highest damage multiplier
+	data.attack_range = 480.0  # Longest range
+
+	# Combat stats - High crit damage potential, fragile
+	data.base_crit_rate = 0.10  # 10% base crit
+	data.base_block_rate = 0.0  # No block - squishy
+	data.base_dodge_rate = 0.05  # 5% dodge - slow
+
+	# Sprite config (32x32 per frame, 12x12 grid)
+	data.frame_size = Vector2(32, 32)
+	data.hframes = 12
+	data.vframes = 12
+	data.sprite_scale = Vector2(2.0, 2.0)
+
+	# Animation rows (based on Mage spritesheet)
+	# Row 0: walk, Row 1: idle, Row 2: cast/attack, Row 3: damaged, Row 4-5: death
+	data.row_idle = 1
+	data.row_move = 0
+	data.row_attack = 2  # Cast spell
+	data.row_attack_up = 2  # Mage uses same attack for all directions
+	data.row_attack_down = 2
+	data.row_damage = 3
+	data.row_death = 4
+
+	# Frame counts
+	data.frames_idle = 11
+	data.frames_move = 8
+	data.frames_attack = 5
+	data.frames_attack_up = 5
+	data.frames_attack_down = 5
+	data.frames_damage = 9
+	data.frames_death = 6  # First 6 frames from row 4 (every other)
+
+	# Mage-specific: death uses every-other-frame across 2 rows
+	data.death_frame_skip = 2  # Every other frame
+	data.death_spans_rows = true
+	data.death_row_2 = 5
+	data.frames_death_row_2 = 3  # 3 more frames in row 5
+
+	# Passive
+	data.passive_name = "Arcane Intellect"
+	data.passive_description = "+30% Damage, +50% Crit Damage"
 
 	return data

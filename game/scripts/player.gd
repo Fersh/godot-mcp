@@ -66,6 +66,12 @@ var row_attack_alt: int = -1  # Alternate attack (randomly chosen)
 var has_alt_attack: bool = false
 var current_attack_row: int = 2  # Which attack row to use this attack
 
+# Mage-specific death animation
+var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
+var death_spans_rows: bool = false  # Death animation spans multiple rows
+var death_row_2: int = -1  # Second row for death if spans rows
+var frames_death_row_2: int = 0  # Frames in second death row
+
 var cols_per_row: int = 8
 
 var frame_counts: Dictionary = {}
@@ -178,6 +184,12 @@ func _load_character_data() -> void:
 	# Add alternate attack frames if available
 	if has_alt_attack and row_attack_alt >= 0:
 		frame_counts[row_attack_alt] = character_data.frames_attack_alt
+
+	# Mage-specific death animation properties
+	death_frame_skip = character_data.death_frame_skip
+	death_spans_rows = character_data.death_spans_rows
+	death_row_2 = character_data.death_row_2
+	frames_death_row_2 = character_data.frames_death_row_2
 
 	current_row = row_idle
 
@@ -984,16 +996,37 @@ func update_death_animation(delta: float) -> void:
 	if death_animation_finished:
 		return
 
-	current_row = row_death
 	animation_frame += animation_speed * delta
 
-	var max_frames = frame_counts.get(row_death, 4)
-	if animation_frame >= max_frames - 1:
-		animation_frame = max_frames - 1
-		death_animation_finished = true
+	# Handle Mage's special death animation (frame skipping across 2 rows)
+	if death_spans_rows and death_row_2 >= 0:
+		var total_frames = frame_counts.get(row_death, 4) + frames_death_row_2
+		if animation_frame >= total_frames - 1:
+			animation_frame = total_frames - 1
+			death_animation_finished = true
 
-	# Set the sprite frame
-	sprite.frame = current_row * cols_per_row + int(animation_frame)
+		var frame_index = int(animation_frame)
+		var first_row_frames = frame_counts.get(row_death, 4)
+
+		if frame_index < first_row_frames:
+			# First death row
+			current_row = row_death
+			sprite.frame = current_row * cols_per_row + (frame_index * death_frame_skip)
+		else:
+			# Second death row
+			current_row = death_row_2
+			var second_row_frame = frame_index - first_row_frames
+			sprite.frame = current_row * cols_per_row + (second_row_frame * death_frame_skip)
+	else:
+		# Normal death animation
+		current_row = row_death
+		var max_frames = frame_counts.get(row_death, 4)
+		if animation_frame >= max_frames - 1:
+			animation_frame = max_frames - 1
+			death_animation_finished = true
+
+		# Set the sprite frame
+		sprite.frame = current_row * cols_per_row + int(animation_frame)
 
 func add_xp(amount: float) -> void:
 	# Apply XP multiplier from abilities
