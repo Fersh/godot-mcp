@@ -225,10 +225,11 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.055, 0.09, 0.98)
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 2
+	# Use consistent 3px border so size doesn't change when selected
+	style.border_width_left = 3
+	style.border_width_right = 3
+	style.border_width_top = 3
+	style.border_width_bottom = 3
 	style.border_color = Color(0.15, 0.14, 0.2, 1)
 	style.corner_radius_top_left = 6
 	style.corner_radius_top_right = 6
@@ -287,10 +288,11 @@ func _create_placeholder_button() -> PanelContainer:
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.08, 0.1, 0.7)
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 2
+	# Use consistent 3px border to match character squares
+	style.border_width_left = 3
+	style.border_width_right = 3
+	style.border_width_top = 3
+	style.border_width_bottom = 3
 	style.border_color = Color(0.2, 0.2, 0.25, 0.5)
 	style.corner_radius_top_left = 6
 	style.corner_radius_top_right = 6
@@ -327,23 +329,16 @@ func _set_selected(index: int) -> void:
 	is_playing_attack = false
 
 	# Update selector button highlights
+	# Keep border width constant (3px) so size doesn't change when selected
 	for i in selector_buttons.size():
 		var panel: PanelContainer = selector_buttons[i]
 		var style = panel.get_theme_stylebox("panel").duplicate()
 
 		if i == index:
 			style.border_color = Color(0.95, 0.75, 0.2, 1)  # Gold
-			style.border_width_left = 3
-			style.border_width_right = 3
-			style.border_width_top = 3
-			style.border_width_bottom = 3
 			style.bg_color = Color(0.12, 0.10, 0.08, 0.95)
 		else:
 			style.border_color = Color(0.15, 0.14, 0.2, 1)
-			style.border_width_left = 2
-			style.border_width_right = 2
-			style.border_width_top = 2
-			style.border_width_bottom = 2
 			style.bg_color = Color(0.06, 0.055, 0.09, 0.98)
 
 		panel.add_theme_stylebox_override("panel", style)

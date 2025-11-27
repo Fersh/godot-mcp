@@ -45,7 +45,8 @@ var pixel_font: Font = null
 @onready var stats_panel: PanelContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel
 @onready var stats_container: VBoxContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel/StatsContainer
 @onready var inventory_panel: PanelContainer = $Panel/VBoxContainer/MainRow/InventoryPanel
-@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer/CenterContainer/InventoryGrid
+@onready var inventory_scroll: ScrollContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer
+@onready var inventory_grid: GridContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer/InventoryGrid
 @onready var popup_panel: PanelContainer = $PopupPanel
 @onready var comparison_panel: PanelContainer = $ComparisonPanel
 
@@ -67,6 +68,11 @@ func _setup_ui_style() -> void:
 	_style_header()
 	_style_back_button()
 	_style_panels()
+
+	# Limit inventory scroll height to force scrolling
+	if inventory_scroll:
+		inventory_scroll.custom_minimum_size = Vector2(540, 300)
+		inventory_scroll.set_deferred("size", Vector2(540, 300))
 
 func _style_panels() -> void:
 	var panel_style = StyleBoxFlat.new()
@@ -160,11 +166,20 @@ func _setup_character_tabs() -> void:
 	for child in character_tabs.get_children():
 		child.queue_free()
 
-	# Create tabs for each character
-	for char_id in ["archer", "knight"]:
+	# Create tabs for all characters
+	var char_ids = ["archer", "knight", "monk", "mage", "beast"]
+	var char_names = {
+		"archer": "RANGER",
+		"knight": "KNIGHT",
+		"monk": "MONK",
+		"mage": "MAGE",
+		"beast": "BEAST"
+	}
+
+	for char_id in char_ids:
 		var tab = Button.new()
-		tab.text = char_id.to_upper()
-		tab.custom_minimum_size = Vector2(140, 36)
+		tab.text = char_names.get(char_id, char_id.to_upper())
+		tab.custom_minimum_size = Vector2(110, 36)
 		tab.toggle_mode = true
 		tab.button_pressed = (char_id == selected_character)
 		tab.pressed.connect(_on_character_tab_pressed.bind(char_id))
@@ -174,7 +189,7 @@ func _setup_character_tabs() -> void:
 
 		if pixel_font:
 			tab.add_theme_font_override("font", pixel_font)
-		tab.add_theme_font_size_override("font_size", 24)
+		tab.add_theme_font_size_override("font_size", 18)
 
 func _style_character_tab(button: Button, is_selected: bool) -> void:
 	var style = StyleBoxFlat.new()
@@ -206,10 +221,11 @@ func _on_character_tab_pressed(char_id: String) -> void:
 	_hide_popups()
 
 	# Update tab visuals
+	var char_ids = ["archer", "knight", "monk", "mage", "beast"]
 	var idx = 0
 	for child in character_tabs.get_children():
 		if child is Button:
-			var is_selected = (idx == 0 and char_id == "archer") or (idx == 1 and char_id == "knight")
+			var is_selected = (idx < char_ids.size() and char_ids[idx] == char_id)
 			child.button_pressed = is_selected
 			_style_character_tab(child, is_selected)
 			idx += 1
@@ -411,8 +427,8 @@ func _refresh_inventory() -> void:
 	# Get all inventory items
 	var items = EquipmentManager.inventory
 
-	# Create 48 slots (12 columns x 4 rows for landscape)
-	var total_slots = 48
+	# Create 96 slots (8 columns x 12 rows) - scrollable
+	var total_slots = 96
 
 	for i in range(total_slots):
 		if i < items.size():
