@@ -278,9 +278,9 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 		"monk":
 			sprite_scale = 1.7
 		"mage":
-			sprite_pos = Vector2(38, 35)
+			sprite_pos = Vector2(33, 28)  # Move left 5px and up 5px
 		"beast":
-			sprite_scale = 0.8
+			sprite_scale = 0.88  # 10% bigger (was 0.8)
 			sprite_pos = Vector2(38, 38)
 			# Apply beast's sprite offset to center it properly
 			sprite.offset = char_data.sprite_offset
