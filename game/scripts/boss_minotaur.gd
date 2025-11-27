@@ -48,7 +48,6 @@ const FRAMES = {
 # Attack state
 var current_attack_type: int = 0
 var attack_windup_timer: float = 0.0
-var is_winding_up: bool = false
 const WINDUP_DURATION: float = 0.8  # Big windup for impactful attacks
 
 # Attack rows for random selection

@@ -1681,8 +1681,8 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# Permanent upgrade: HP on kill (Life Leech)
 	if PermanentUpgrades:
 		var bonuses = PermanentUpgrades.get_all_bonuses()
-		if bonuses.hp_on_kill > 0:
-			heal_player(player, bonuses.hp_on_kill)
+		if bonuses.get("hp_on_kill", 0.0) > 0:
+			heal_player(player, bonuses.get("hp_on_kill", 0.0))
 
 	# Vampirism
 	if has_vampirism and randf() < vampirism_chance:

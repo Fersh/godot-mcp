@@ -1005,8 +1005,8 @@ func perform_melee_attack() -> void:
 							# Beast passive: Lifesteal on crit
 							if CharacterManager:
 								var bonuses = CharacterManager.get_passive_bonuses()
-								if bonuses.lifesteal_on_crit > 0:
-									var heal_amount = final_damage * bonuses.lifesteal_on_crit
+								if bonuses.get("lifesteal_on_crit", 0.0) > 0:
+									var heal_amount = final_damage * bonuses.get("lifesteal_on_crit", 0.0)
 									heal(heal_amount)
 
 					# Apply damage
@@ -1665,12 +1665,12 @@ func on_arrow_hit_enemy(enemy: Node2D, is_crit: bool) -> void:
 	# Beast passive: Lifesteal on crit (also applies to ranger arrows)
 	if is_crit and CharacterManager:
 		var bonuses = CharacterManager.get_passive_bonuses()
-		if bonuses.lifesteal_on_crit > 0:
+		if bonuses.get("lifesteal_on_crit", 0.0) > 0:
 			# Estimate damage for lifesteal calculation
 			var estimated_damage = 10.0 * base_damage
 			if AbilityManager:
 				estimated_damage *= AbilityManager.get_damage_multiplier()
-			var heal_amount = estimated_damage * bonuses.lifesteal_on_crit
+			var heal_amount = estimated_damage * bonuses.get("lifesteal_on_crit", 0.0)
 			heal(heal_amount)
 
 func get_heartseeker_damage_multiplier() -> float:
