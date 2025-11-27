@@ -144,13 +144,16 @@ func _setup_preview_panel() -> void:
 	vbox.add_child(spacer2)
 
 	# Description - centered (above stats)
+	var desc_container = MarginContainer.new()
+	desc_container.custom_minimum_size = Vector2(340, 0)
+	desc_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_child(desc_container)
 	preview_desc_label = Label.new()
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	preview_desc_label.custom_minimum_size = Vector2(400, 0)
 	preview_desc_label.add_theme_font_size_override("font_size", 12)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
-	vbox.add_child(preview_desc_label)
+	desc_container.add_child(preview_desc_label)
 
 	# Spacer after description
 	var spacer3 = Control.new()
@@ -178,7 +181,16 @@ func _setup_preview_panel() -> void:
 	vbox.add_child(spacer5)
 
 func _create_selector_buttons() -> void:
-	characters_list = CharacterManager.get_all_characters()
+	var all_chars = CharacterManager.get_all_characters()
+
+	# Reorder to: ranger, knight, mage, monk, beast
+	var order = ["archer", "knight", "mage", "monk", "beast"]
+	characters_list = []
+	for id in order:
+		for char_data in all_chars:
+			if char_data.id == id:
+				characters_list.append(char_data)
+				break
 
 	for i in characters_list.size():
 		var char_data: CharacterData = characters_list[i]
@@ -186,7 +198,9 @@ func _create_selector_buttons() -> void:
 		selector_container.add_child(btn)
 		selector_buttons.append(btn)
 
-	# No more placeholders - all 4 characters available
+	# Add 2 locked placeholder slots
+	selector_container.add_child(_create_placeholder_button())
+	selector_container.add_child(_create_placeholder_button())
 
 func _create_selector_button(char_data: CharacterData, index: int) -> PanelContainer:
 	var panel = PanelContainer.new()
@@ -221,19 +235,16 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	sprite.hframes = char_data.hframes
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
-	match char_data.id:
-		"knight":
-			sprite.scale = Vector2(1.5, 1.5)
-		"beast":
-			sprite.scale = Vector2(0.9, 0.9)  # Beast has larger frames
-		"mage":
-			sprite.scale = Vector2(1.4, 1.4)  # Mage sprite is 32x32
-		"monk":
-			sprite.scale = Vector2(0.55, 0.55)  # Monk has 96x96 frames
-		_:
-			sprite.scale = Vector2(1.3, 1.3)
 	sprite.centered = true
-	sprite.position = Vector2(23, 23)  # Center within the holder
+	# Scale all to same height as mage (32px * 1.3 = 41.6px target)
+	var target_height = 41.6
+	var frame_height = char_data.frame_size.y
+	var sprite_scale = target_height / frame_height
+	sprite.scale = Vector2(sprite_scale, sprite_scale)
+	var sprite_pos = Vector2(23, 23)
+	if char_data.id == "beast":
+		sprite_pos.y = 18  # Beast sprite art is lower in frame
+	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
 
 	# Clickable button overlay
@@ -345,17 +356,15 @@ func _update_preview() -> void:
 	preview_sprite.vframes = char_data.vframes
 	preview_sprite.frame = char_data.row_idle * char_data.hframes
 
-	match char_data.id:
-		"knight":
-			preview_sprite.scale = Vector2(3.0, 3.0)
-		"beast":
-			preview_sprite.scale = Vector2(2.0, 2.0)  # Beast has larger frames
-		"mage":
-			preview_sprite.scale = Vector2(2.8, 2.8)  # Mage sprite is 32x32
-		"monk":
-			preview_sprite.scale = Vector2(1.1, 1.1)  # Monk has 96x96 frames
-		_:
-			preview_sprite.scale = Vector2(2.55, 2.55)  # Archer default
+	# Scale all to same height as mage (32px * 2.5 = 80px target)
+	var target_height = 80.0
+	var frame_height = char_data.frame_size.y
+	var preview_scale = target_height / frame_height
+	preview_sprite.scale = Vector2(preview_scale, preview_scale)
+	var preview_pos = Vector2(50, 50)
+	if char_data.id == "beast":
+		preview_pos.y = 35  # Beast sprite art is lower in frame
+	preview_sprite.position = preview_pos
 
 	# Update description
 	preview_desc_label.text = char_data.description
@@ -387,19 +396,29 @@ func _update_preview() -> void:
 	for child in preview_passive_container.get_children():
 		child.queue_free()
 
+	var passive_title_container = MarginContainer.new()
+	passive_title_container.custom_minimum_size = Vector2(340, 0)
+	passive_title_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	preview_passive_container.add_child(passive_title_container)
 	var passive_title = Label.new()
 	passive_title.text = "PASSIVE: " + char_data.passive_name
 	passive_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	passive_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	passive_title.add_theme_font_size_override("font_size", 12)
 	passive_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3, 1))
-	preview_passive_container.add_child(passive_title)
+	passive_title_container.add_child(passive_title)
 
+	var passive_desc_container = MarginContainer.new()
+	passive_desc_container.custom_minimum_size = Vector2(340, 0)
+	passive_desc_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	preview_passive_container.add_child(passive_desc_container)
 	var passive_desc = Label.new()
 	passive_desc.text = char_data.passive_description
 	passive_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	passive_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	passive_desc.add_theme_font_size_override("font_size", 10)
 	passive_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
-	preview_passive_container.add_child(passive_desc)
+	passive_desc_container.add_child(passive_desc)
 
 func _add_stat_row_to_container(container: VBoxContainer, stat_name: String, stat_value: String, color: Color) -> void:
 	var hbox = HBoxContainer.new()

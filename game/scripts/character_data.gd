@@ -320,8 +320,8 @@ static func create_mage() -> CharacterData:
 static func create_monk() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "monk"
-	data.display_name = "The Really Talkative One"
-	data.description = "Won't shut up. Attacks build Flow, granting speed and dashing strikes."
+	data.display_name = "The One Always Meditating"
+	data.description = "Swift and precise. Chains varied staff strikes into devastating combos."
 	data.character_type = CharacterType.MONK
 	data.attack_type = AttackType.MELEE
 
@@ -378,6 +378,6 @@ static func create_monk() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Flowing Strikes"
-	data.passive_description = "Attacks build Flow. +8% DMG/SPD per stack. Dash at 3+ stacks."
+	data.passive_description = "Each attack builds Flow. Gain 8% damage and speed per stack. At 3 stacks, dash toward enemies."
 
 	return data
