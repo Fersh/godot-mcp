@@ -1152,10 +1152,14 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 	# Set the sprite frame
 	sprite.frame = current_row * cols_per_row + int(animation_frame)
 
-	# Update sprite offset based on flip (for off-center sprites like beast)
-	# When flipped (facing left), negate X offset to compensate for the horizontal flip
-	if sprite.flip_h:
-		sprite.offset = Vector2(-base_sprite_offset.x, base_sprite_offset.y)
+	# Apply sprite offset (for off-center sprites like beast)
+	# When sprite is flipped, we need to negate X offset to keep character centered
+	# because flip_h mirrors around the sprite center, not the character center
+	if base_sprite_offset.x != 0:
+		if sprite.flip_h:
+			sprite.offset = Vector2(-base_sprite_offset.x, base_sprite_offset.y)
+		else:
+			sprite.offset = base_sprite_offset
 	else:
 		sprite.offset = base_sprite_offset
 

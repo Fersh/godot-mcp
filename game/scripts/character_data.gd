@@ -219,18 +219,19 @@ static func create_beast() -> CharacterData:
 	data.base_dodge_rate = 0.15  # 15% dodge - very agile
 
 	# Sprite config (128x128 per frame, 11 cols x 9 rows)
+	# Note: 1408/11=128, 1152/9=128
 	data.frame_size = Vector2(128, 128)
 	data.hframes = 11
 	data.vframes = 9
-	data.sprite_scale = Vector2(0.8721, 0.8721)  # Reduced 20% from 1.08 (was 0.918, now 5% smaller)
-	data.sprite_offset = Vector2(-10, -35)  # Center the off-center beast frames (x: left/right, y: up)
+	data.sprite_scale = Vector2(0.83, 0.83)  # Scaled for visibility (reduced 5% from original 0.918 * 0.95)
+	data.sprite_offset = Vector2(35, -40)  # Center the beast frames
 
 	# Animation rows (based on Beast spritesheet)
 	# Row 0: emerge (8), Row 1: taunt (7), Row 2: idle (6), Row 3: leap (11 - skip)
 	# Row 4: attack (8), Row 5: move (8), Row 6: damage (4), Row 7: damage2 (5), Row 8: death (10)
 	data.row_idle = 2
-	data.row_move = 5  # Move animation
-	data.row_attack = 4  # Attack
+	data.row_move = 5
+	data.row_attack = 4
 	data.row_attack_up = 4  # Beast uses same attack for all directions
 	data.row_attack_down = 4
 	data.row_damage = 6

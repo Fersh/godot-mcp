@@ -247,8 +247,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 		"monk":
 			sprite_scale = 1.1
 		"beast":
-			sprite_scale = 0.75
-			sprite_pos = Vector2(48, -5)
+			sprite_scale = 0.55
+			sprite_pos = Vector2(28, 30)
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -371,8 +371,8 @@ func _update_preview() -> void:
 		"monk":
 			preview_scale = 2.1
 		"beast":
-			preview_scale = 1.4
-			preview_pos = Vector2(100, -10)
+			preview_scale = 1.8
+			preview_pos = Vector2(40, 60)
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 
