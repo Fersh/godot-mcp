@@ -78,7 +78,7 @@ func _on_player_died() -> void:
 	await get_tree().create_timer(3.5).timeout
 	show_game_over()
 
-func show_game_over() -> void:
+func show_game_over(gave_up: bool = false) -> void:
 	get_tree().paused = true
 
 	var game_over = game_over_scene.instantiate()
@@ -90,6 +90,7 @@ func show_game_over() -> void:
 		kill_count = stats_display.get_kill_count()
 
 	game_over.set_stats(level, game_time, kill_count)
+	game_over.set_gave_up(gave_up)
 	add_child(game_over)
 
 func add_kill() -> void:

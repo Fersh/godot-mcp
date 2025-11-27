@@ -52,13 +52,13 @@ func _on_pause_pressed() -> void:
 	pause_menu.show_menu()
 
 func _on_gave_up() -> void:
-	# Trigger game over
+	# Trigger game over with gave_up flag
 	var main = get_tree().get_first_node_in_group("main")
 	if main == null:
 		main = get_node_or_null("/root/Main")
 
 	if main and main.has_method("show_game_over"):
-		main.show_game_over()
+		main.show_game_over(true)  # true = gave up
 	else:
 		# Fallback: just go to game over scene
 		get_tree().paused = false

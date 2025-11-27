@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+@onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var points_label: Label = $Panel/VBoxContainer/StatsContainer/PointsLabel
 @onready var time_label: Label = $Panel/VBoxContainer/StatsContainer/TimeLabel
 @onready var best_time_label: Label = $Panel/VBoxContainer/StatsContainer/BestTimeLabel
@@ -14,6 +15,7 @@ var final_time: float = 0.0
 var final_kills: int = 0
 var final_coins: int = 0
 var final_points: int = 0
+var player_gave_up: bool = false
 
 # Settings dropdown
 var settings_dropdown: PanelContainer = null
@@ -80,6 +82,11 @@ func set_stats(level: int, time: float, kills: int) -> void:
 	final_level = level
 	final_time = time
 	final_kills = kills
+
+func set_gave_up(gave_up: bool) -> void:
+	player_gave_up = gave_up
+	if player_gave_up and title_label:
+		title_label.text = "YOU COWARD"
 
 func format_time(seconds: float) -> String:
 	var mins = int(seconds) / 60

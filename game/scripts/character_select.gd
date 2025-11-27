@@ -3,9 +3,9 @@ extends CanvasLayer
 @onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
 @onready var title_label: Label = $Header/TitleLabel
-@onready var preview_panel: PanelContainer = $CenterContainer/PreviewPanel
-@onready var selector_container: HBoxContainer = $SelectorContainer
-@onready var select_button: Button = $SelectButton
+@onready var preview_panel: PanelContainer = $MainContainer/CenterContainer/PreviewPanel
+@onready var selector_container: GridContainer = $MainContainer/RightSide/SelectorContainer
+@onready var select_button: Button = $MainContainer/RightSide/SelectButton
 
 # Preview elements (created dynamically)
 var preview_sprite: Sprite2D
@@ -16,8 +16,10 @@ var preview_stats_container: VBoxContainer
 var preview_passive_container: VBoxContainer
 
 var selector_buttons: Array = []
+var selector_sprites: Array = []  # Store sprites for animation
 var selected_index: int = 0
 var animation_timer: float = 0.0
+var selector_anim_timer: float = 0.0
 var characters_list: Array = []
 
 # Animation state
@@ -25,6 +27,7 @@ var is_playing_attack: bool = false
 var attack_display_timer: float = 0.0
 const IDLE_DURATION: float = 4.0  # Seconds of idle before attack
 const ATTACK_ANIM_SPEED: float = 12.0
+const SELECTOR_ANIM_SPEED: float = 8.0
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back_pressed)
@@ -76,6 +79,16 @@ func _process(delta: float) -> void:
 			if attack_display_timer >= IDLE_DURATION:
 				is_playing_attack = true
 				animation_timer = 0.0
+
+	# Update animation for selector sprites (idle animation)
+	selector_anim_timer += delta * SELECTOR_ANIM_SPEED
+	for i in selector_sprites.size():
+		if i < characters_list.size():
+			var char_data: CharacterData = characters_list[i]
+			var sprite: Sprite2D = selector_sprites[i]
+			var frame_count = char_data.frames_idle
+			var current_frame = int(selector_anim_timer) % frame_count
+			sprite.frame = char_data.row_idle * char_data.hframes + current_frame
 
 func _setup_preview_panel() -> void:
 	# Style the preview panel - darker and less transparent like equipment screen
@@ -193,19 +206,21 @@ func _create_selector_buttons() -> void:
 				characters_list.append(char_data)
 				break
 
+	selector_sprites = []  # Reset sprites array
 	for i in characters_list.size():
 		var char_data: CharacterData = characters_list[i]
-		var btn = _create_selector_button(char_data, i)
-		selector_container.add_child(btn)
-		selector_buttons.append(btn)
+		var result = _create_selector_button(char_data, i)
+		selector_container.add_child(result.panel)
+		selector_buttons.append(result.panel)
+		selector_sprites.append(result.sprite)
 
-	# Add 2 locked placeholder slots
-	selector_container.add_child(_create_placeholder_button())
-	selector_container.add_child(_create_placeholder_button())
+	# Add 7 locked placeholder slots
+	for i in 7:
+		selector_container.add_child(_create_placeholder_button())
 
-func _create_selector_button(char_data: CharacterData, index: int) -> PanelContainer:
+func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(50, 50)  # Small square
+	panel.custom_minimum_size = Vector2(80, 80)  # 80x80 squares
 	panel.set_meta("index", index)
 
 	var style = StyleBoxFlat.new()
@@ -228,7 +243,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	panel.add_child(center)
 
 	var sprite_holder = Control.new()
-	sprite_holder.custom_minimum_size = Vector2(46, 46)
+	sprite_holder.custom_minimum_size = Vector2(76, 76)
 	sprite_holder.clip_contents = true
 	center.add_child(sprite_holder)
 
@@ -238,19 +253,19 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
 	sprite.centered = true
-	# Manual scales to match mage visually
-	var sprite_scale = 1.3
-	var sprite_pos = Vector2(23, 23)
+	# Manual scales for 80x80 squares
+	var sprite_scale = 2.0
+	var sprite_pos = Vector2(38, 38)
 	match char_data.id:
 		"knight":
-			sprite_scale = 1.1
+			sprite_scale = 1.7
 		"monk":
-			sprite_scale = 1.1
+			sprite_scale = 1.7
 		"mage":
-			sprite_pos = Vector2(23, 20)
+			sprite_pos = Vector2(38, 35)
 		"beast":
-			sprite_scale = 0.5
-			sprite_pos = Vector2(23, 23)
+			sprite_scale = 0.8
+			sprite_pos = Vector2(38, 38)
 			# Apply beast's sprite offset to center it properly
 			sprite.offset = char_data.sprite_offset
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
@@ -264,11 +279,11 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	button.pressed.connect(_on_selector_pressed.bind(index))
 	panel.add_child(button)
 
-	return panel
+	return {"panel": panel, "sprite": sprite}
 
 func _create_placeholder_button() -> PanelContainer:
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(50, 50)
+	panel.custom_minimum_size = Vector2(80, 80)
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.08, 0.1, 0.7)
@@ -291,8 +306,8 @@ func _create_placeholder_button() -> PanelContainer:
 
 	var label = Label.new()
 	label.text = "?"
-	label.add_theme_font_size_override("font_size", 20)
-	label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.35, 0.6))
+	label.add_theme_font_size_override("font_size", 28)
+	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55, 0.8))
 	center.add_child(label)
 
 	return panel
@@ -484,36 +499,36 @@ func _on_select_pressed() -> void:
 
 func _style_golden_button(button: Button) -> void:
 	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = Color(0.85, 0.65, 0.2, 1)
+	style_normal.bg_color = Color(0.8, 0.2, 0.2, 1)
 	style_normal.border_width_left = 3
 	style_normal.border_width_right = 3
 	style_normal.border_width_top = 3
 	style_normal.border_width_bottom = 8
-	style_normal.border_color = Color(0.45, 0.3, 0.15, 1)
+	style_normal.border_color = Color(0.4, 0.1, 0.1, 1)
 	style_normal.corner_radius_top_left = 6
 	style_normal.corner_radius_top_right = 6
 	style_normal.corner_radius_bottom_left = 6
 	style_normal.corner_radius_bottom_right = 6
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.92, 0.72, 0.25, 1)
+	style_hover.bg_color = Color(0.9, 0.25, 0.25, 1)
 	style_hover.border_width_left = 3
 	style_hover.border_width_right = 3
 	style_hover.border_width_top = 3
 	style_hover.border_width_bottom = 8
-	style_hover.border_color = Color(0.5, 0.35, 0.18, 1)
+	style_hover.border_color = Color(0.5, 0.15, 0.15, 1)
 	style_hover.corner_radius_top_left = 6
 	style_hover.corner_radius_top_right = 6
 	style_hover.corner_radius_bottom_left = 6
 	style_hover.corner_radius_bottom_right = 6
 
 	var style_pressed = StyleBoxFlat.new()
-	style_pressed.bg_color = Color(0.75, 0.55, 0.15, 1)
+	style_pressed.bg_color = Color(0.65, 0.15, 0.15, 1)
 	style_pressed.border_width_left = 3
 	style_pressed.border_width_right = 3
 	style_pressed.border_width_top = 6
 	style_pressed.border_width_bottom = 5
-	style_pressed.border_color = Color(0.4, 0.25, 0.1, 1)
+	style_pressed.border_color = Color(0.35, 0.1, 0.1, 1)
 	style_pressed.corner_radius_top_left = 6
 	style_pressed.corner_radius_top_right = 6
 	style_pressed.corner_radius_bottom_left = 6

@@ -55,54 +55,45 @@ theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
 text = "< BACK"
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="MainContainer" type="HBoxContainer" parent="."]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -224.0
-offset_top = -200.0
-offset_right = 224.0
-offset_bottom = 100.0
+offset_left = -350.0
+offset_top = -180.0
+offset_right = 350.0
+offset_bottom = 200.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 30
 
-[node name="PreviewPanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(448, 380)
+[node name="CenterContainer" type="CenterContainer" parent="MainContainer"]
 layout_mode = 2
 
-[node name="SelectorContainer" type="HBoxContainer" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -175.0
-offset_right = 200.0
-offset_bottom = -115.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/separation = 12
-alignment = 1
+[node name="PreviewPanel" type="PanelContainer" parent="MainContainer/CenterContainer"]
+custom_minimum_size = Vector2(380, 380)
+layout_mode = 2
 
-[node name="SelectButton" type="Button" parent="."]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -85.0
-offset_right = 150.0
-offset_bottom = -35.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_pressed_color = Color(0.15, 0.1, 0.05, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.05, 0, 1)
-theme_override_colors/font_focus_color = Color(0.15, 0.1, 0.05, 1)
+[node name="RightSide" type="VBoxContainer" parent="MainContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 20
+
+[node name="SelectorContainer" type="GridContainer" parent="MainContainer/RightSide"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
+[node name="SelectButton" type="Button" parent="MainContainer/RightSide"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "START GAME"
