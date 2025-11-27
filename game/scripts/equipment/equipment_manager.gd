@@ -20,7 +20,10 @@ var pending_items: Array[ItemData] = []
 # Format: { "archer": { Slot.WEAPON: item_id, ... }, "knight": { ... } }
 var equipped_items: Dictionary = {
 	"archer": {},
-	"knight": {}
+	"knight": {},
+	"mage": {},
+	"monk": {},
+	"beast": {}
 }
 
 # Track next unique item ID
@@ -452,13 +455,12 @@ func load_data() -> void:
 
 		if data is Dictionary:
 			next_item_id = data.get("next_item_id", 1)
-			equipped_items = data.get("equipped_items", {"archer": {}, "knight": {}})
+			equipped_items = data.get("equipped_items", {"archer": {}, "knight": {}, "mage": {}, "monk": {}, "beast": {}})
 
-			# Ensure both characters exist
-			if not equipped_items.has("archer"):
-				equipped_items["archer"] = {}
-			if not equipped_items.has("knight"):
-				equipped_items["knight"] = {}
+			# Ensure all characters exist
+			for char_id in ["archer", "knight", "mage", "monk", "beast"]:
+				if not equipped_items.has(char_id):
+					equipped_items[char_id] = {}
 
 			inventory.clear()
 			var inv_data = data.get("inventory", [])
