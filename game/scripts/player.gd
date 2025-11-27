@@ -89,6 +89,21 @@ var arcane_focus_max_stacks: int = 5
 var arcane_focus_per_stack: float = 0.10  # +10% per stack
 var arcane_focus_decay_time: float = 5.0  # Decay over 5s
 
+# Ranger Heartseeker system (consecutive hits on same target)
+var has_heartseeker: bool = false
+var heartseeker_stacks: int = 0
+var heartseeker_max_stacks: int = 5
+var heartseeker_damage_per_stack: float = 0.10
+var heartseeker_last_target: Node2D = null
+
+# Knight Retribution system (damage boost after taking damage)
+var has_retribution: bool = false
+var retribution_ready: bool = false
+var retribution_timer: float = 0.0
+var retribution_duration: float = 2.0
+var retribution_damage_bonus: float = 0.50
+var retribution_stun_duration: float = 0.5
+
 # Mage-specific death animation
 var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
 var death_spans_rows: bool = false  # Death animation spans multiple rows
@@ -287,6 +302,23 @@ func _apply_character_passive() -> void:
 		arcane_focus_decay_time = bonuses.get("arcane_focus_decay_time", 5.0)
 		arcane_focus_stacks = 0.0
 
+	# Initialize Ranger Heartseeker system
+	has_heartseeker = bonuses.get("has_heartseeker", 0.0) > 0.0
+	if has_heartseeker:
+		heartseeker_damage_per_stack = bonuses.get("heartseeker_damage_per_stack", 0.10)
+		heartseeker_max_stacks = int(bonuses.get("heartseeker_max_stacks", 5))
+		heartseeker_stacks = 0
+		heartseeker_last_target = null
+
+	# Initialize Knight Retribution system
+	has_retribution = bonuses.get("has_retribution", 0.0) > 0.0
+	if has_retribution:
+		retribution_damage_bonus = bonuses.get("retribution_damage_bonus", 0.50)
+		retribution_duration = bonuses.get("retribution_duration", 2.0)
+		retribution_stun_duration = bonuses.get("retribution_stun_duration", 0.5)
+		retribution_ready = false
+		retribution_timer = 0.0
+
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
 		return
@@ -395,9 +427,13 @@ func take_damage(amount: float) -> void:
 	else:
 		spawn_damage_number(final_damage)
 
-	# Trigger Retribution explosion when taking damage
+	# Trigger Retribution explosion when taking damage (ability)
 	if AbilityManager:
 		AbilityManager.trigger_retribution(global_position)
+
+	# Trigger Knight Retribution passive (damage boost on next attack)
+	if has_retribution and not retribution_ready:
+		_activate_retribution()
 
 	# Screen shake and damage flash when taking damage
 	if JuiceManager:
@@ -841,6 +877,10 @@ func spawn_single_arrow(direction: Vector2) -> void:
 	if has_arcane_focus and arcane_focus_stacks > 0:
 		arrow.damage_multiplier *= get_arcane_focus_multiplier()
 
+	# Apply Ranger Heartseeker damage bonus
+	if has_heartseeker and heartseeker_stacks > 0:
+		arrow.damage_multiplier *= get_heartseeker_damage_multiplier()
+
 	# Apply elemental tint
 	var elemental_tint = get_elemental_tint()
 	if elemental_tint != Color.WHITE:
@@ -911,6 +951,12 @@ func perform_melee_attack() -> void:
 	if has_flow and flow_stacks > 0:
 		melee_damage *= get_flow_damage_multiplier()
 
+	# Apply Knight Retribution damage bonus
+	var using_retribution = false
+	if has_retribution and retribution_ready:
+		melee_damage *= (1.0 + retribution_damage_bonus)
+		using_retribution = true
+
 	# Get enemies in melee range with arc check
 	var enemies = get_tree().get_nodes_in_group("enemies")
 
@@ -967,8 +1013,11 @@ func perform_melee_attack() -> void:
 					if enemy.has_method("take_damage"):
 						enemy.take_damage(final_damage, is_crit)
 
+					# Apply Retribution stun (longer stun on first hit after taking damage)
+					if using_retribution and enemy.has_method("apply_stun"):
+						enemy.apply_stun(retribution_stun_duration)
 					# Apply stagger on melee hit (0.5s stun)
-					if enemy.has_method("apply_stagger"):
+					elif enemy.has_method("apply_stagger"):
 						enemy.apply_stagger()
 
 					# Knockback
@@ -990,6 +1039,10 @@ func perform_melee_attack() -> void:
 	# Monk Flow: Build stacks on successful hits
 	if has_flow and melee_hit_enemies.size() > 0:
 		_add_flow_stack()
+
+	# Consume Knight Retribution after hitting enemies
+	if using_retribution and melee_hit_enemies.size() > 0:
+		_consume_retribution()
 
 func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 	"""Apply elemental on-hit effects to an enemy."""
@@ -1455,6 +1508,14 @@ func _update_active_ability_timers(delta: float) -> void:
 		if flow_timer <= 0:
 			_decay_flow_stacks()
 
+	# Update Knight Retribution timer
+	if has_retribution and retribution_ready:
+		retribution_timer -= delta
+		if active_buffs.has("retribution"):
+			active_buffs["retribution"].timer = retribution_timer
+		if retribution_timer <= 0:
+			_consume_retribution()
+
 # ============================================
 # MONK FLOW SYSTEM (Flowing Strikes Passive)
 # ============================================
@@ -1577,3 +1638,107 @@ func get_arcane_focus_multiplier() -> float:
 	if not has_arcane_focus or arcane_focus_stacks <= 0:
 		return 1.0
 	return 1.0 + (arcane_focus_stacks * arcane_focus_per_stack)
+
+# ============================================
+# RANGER HEARTSEEKER SYSTEM
+# ============================================
+
+func on_arrow_hit_enemy(enemy: Node2D, is_crit: bool) -> void:
+	"""Called when an arrow hits an enemy. Used for Heartseeker tracking."""
+	if not has_heartseeker:
+		return
+
+	if not is_instance_valid(enemy):
+		return
+
+	# Check if same target as last hit (also check if last target is still valid)
+	if is_instance_valid(heartseeker_last_target) and heartseeker_last_target == enemy:
+		# Build stacks
+		heartseeker_stacks = min(heartseeker_stacks + 1, heartseeker_max_stacks)
+	else:
+		# New target or previous target died, reset stacks to 1
+		heartseeker_stacks = 1
+		heartseeker_last_target = enemy
+
+	_update_heartseeker_buff()
+
+	# Beast passive: Lifesteal on crit (also applies to ranger arrows)
+	if is_crit and CharacterManager:
+		var bonuses = CharacterManager.get_passive_bonuses()
+		if bonuses.lifesteal_on_crit > 0:
+			# Estimate damage for lifesteal calculation
+			var estimated_damage = 10.0 * base_damage
+			if AbilityManager:
+				estimated_damage *= AbilityManager.get_damage_multiplier()
+			var heal_amount = estimated_damage * bonuses.lifesteal_on_crit
+			heal(heal_amount)
+
+func get_heartseeker_damage_multiplier() -> float:
+	"""Get the current Heartseeker damage multiplier."""
+	if not has_heartseeker or heartseeker_stacks <= 0:
+		return 1.0
+	return 1.0 + (heartseeker_stacks * heartseeker_damage_per_stack)
+
+func _update_heartseeker_buff() -> void:
+	"""Update the Heartseeker buff display."""
+	if heartseeker_stacks > 0:
+		var bonus_percent = int(heartseeker_stacks * heartseeker_damage_per_stack * 100)
+		active_buffs["heartseeker"] = {
+			"timer": -1,  # No timer, based on target
+			"duration": -1,
+			"name": "Heartseeker x" + str(heartseeker_stacks),
+			"description": "+" + str(bonus_percent) + "% DMG (same target)",
+			"color": Color(0.2, 0.8, 0.4)  # Green for Ranger
+		}
+		emit_signal("buff_changed", active_buffs)
+	elif active_buffs.has("heartseeker"):
+		active_buffs.erase("heartseeker")
+		emit_signal("buff_changed", active_buffs)
+
+func reset_heartseeker() -> void:
+	"""Reset Heartseeker stacks (called when target dies or changes)."""
+	if not has_heartseeker:
+		return
+	heartseeker_stacks = 0
+	heartseeker_last_target = null
+	if active_buffs.has("heartseeker"):
+		active_buffs.erase("heartseeker")
+		emit_signal("buff_changed", active_buffs)
+
+# ============================================
+# KNIGHT RETRIBUTION SYSTEM
+# ============================================
+
+func _activate_retribution() -> void:
+	"""Activate Retribution after taking damage."""
+	retribution_ready = true
+	retribution_timer = retribution_duration
+	_update_retribution_buff()
+
+	# Visual feedback - slight red tint
+	if JuiceManager:
+		JuiceManager.shake_small()
+
+func _consume_retribution() -> void:
+	"""Consume Retribution after hitting enemies."""
+	retribution_ready = false
+	retribution_timer = 0.0
+	if active_buffs.has("retribution"):
+		active_buffs.erase("retribution")
+		emit_signal("buff_changed", active_buffs)
+
+func _update_retribution_buff() -> void:
+	"""Update the Retribution buff display."""
+	if retribution_ready:
+		var bonus_percent = int(retribution_damage_bonus * 100)
+		active_buffs["retribution"] = {
+			"timer": retribution_timer,
+			"duration": retribution_duration,
+			"name": "Retribution",
+			"description": "+" + str(bonus_percent) + "% DMG + Stun",
+			"color": Color(1.0, 0.3, 0.3)  # Red for Knight
+		}
+		emit_signal("buff_changed", active_buffs)
+	elif active_buffs.has("retribution"):
+		active_buffs.erase("retribution")
+		emit_signal("buff_changed", active_buffs)

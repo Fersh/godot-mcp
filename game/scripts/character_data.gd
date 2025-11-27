@@ -142,8 +142,8 @@ static func create_archer() -> CharacterData:
 	data.frames_death = 4
 
 	# Passive
-	data.passive_name = "Eagle Eye"
-	data.passive_description = "+15% Crit Chance, +10% Projectile Speed"
+	data.passive_name = "Heartseeker"
+	data.passive_description = "Consecutive hits on same target: +10% DMG per hit (max 5 stacks)."
 
 	return data
 
@@ -192,8 +192,8 @@ static func create_knight() -> CharacterData:
 	data.frames_death = 8
 
 	# Passive
-	data.passive_name = "Iron Will"
-	data.passive_description = "+20% Max HP, -10% Damage Taken below 50% HP"
+	data.passive_name = "Retribution"
+	data.passive_description = "After taking damage, next attack within 2s deals +50% DMG and stuns."
 
 	return data
 

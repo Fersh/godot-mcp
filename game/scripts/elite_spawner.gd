@@ -6,7 +6,7 @@ extends Node2D
 @export var cyclops_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
-@export var spawn_interval: float = 300.0  # 5 minutes in seconds
+@export var spawn_interval: float = 150.0  # 2.5 minutes in seconds
 @export var warning_duration: float = 3.0  # How long to show warning
 
 # Arena bounds for spawn positioning
@@ -174,7 +174,9 @@ func _start_warning() -> void:
 	pending_spawn = true
 
 	# Determine if boss or elite based on spawn count
-	var is_boss = (spawn_count % 2 == 0)  # Boss at 0, 2, 4... (5m, 15m, 25m...)
+	# Elite at 2.5m, 7.5m, 12.5m... (spawn 0, 2, 4...)
+	# Boss at 5m, 10m, 15m... (spawn 1, 3, 5...)
+	var is_boss = (spawn_count % 2 == 1)
 
 	# Set notification text
 	if is_boss:

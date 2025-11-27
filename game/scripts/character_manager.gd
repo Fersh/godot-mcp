@@ -129,14 +129,16 @@ func get_passive_bonuses() -> Dictionary:
 
 	match selected_character.id:
 		"archer":
-			# Eagle Eye: +15% crit chance, +10% projectile speed
-			bonuses["crit_chance"] = 0.15
-			bonuses["projectile_speed"] = 0.10
+			# Heartseeker: Consecutive hits on same target +10% DMG per stack (max 5)
+			bonuses["has_heartseeker"] = 1.0
+			bonuses["heartseeker_damage_per_stack"] = 0.10
+			bonuses["heartseeker_max_stacks"] = 5
 		"knight":
-			# Iron Will: +20% max HP, -10% damage taken below 50% HP
-			bonuses["max_hp"] = 0.20
-			bonuses["damage_reduction"] = 0.10
-			bonuses["damage_reduction_threshold"] = 0.50
+			# Retribution: After taking damage, next attack +50% DMG and stuns
+			bonuses["has_retribution"] = 1.0
+			bonuses["retribution_damage_bonus"] = 0.50
+			bonuses["retribution_duration"] = 2.0
+			bonuses["retribution_stun_duration"] = 0.5
 		"beast":
 			# Bloodlust: +25% attack speed, +10% lifesteal on crit
 			bonuses["attack_speed"] = 0.25
