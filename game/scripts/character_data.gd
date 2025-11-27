@@ -375,8 +375,8 @@ static func create_monk() -> CharacterData:
 	# Monk-specific: Triple attack system
 	data.row_attack_2 = 5  # Attack 2 row
 	data.row_attack_3 = 3  # Staff spin (taunt) as Attack 3
-	data.frames_attack_2 = 14
-	data.frames_attack_3 = 8
+	data.frames_attack_2 = 14  # 14 frames total (row has 15 cols but last is empty)
+	data.frames_attack_3 = 6   # 6 frames total (row has 8 cols but last 2 are empty)
 	data.has_triple_attack = true
 
 	# Passive

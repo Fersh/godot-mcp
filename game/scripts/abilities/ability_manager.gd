@@ -1656,11 +1656,76 @@ func try_phoenix_revive(player: Node2D) -> bool:
 	if not has_phoenix or phoenix_used:
 		return false
 	phoenix_used = true
-	if player.has_method("revive_with_percent"):
-		player.revive_with_percent(phoenix_hp_percent)
-	# Trigger explosion on revive
-	trigger_phoenix_explosion(player.global_position)
+
+	# Show phoenix revive screen effect
+	_show_phoenix_revive_effect(player)
+
 	return true
+
+func _show_phoenix_revive_effect(player: Node2D) -> void:
+	# Pause the game
+	get_tree().paused = true
+
+	# Create overlay canvas layer
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().current_scene.add_child(canvas)
+
+	# Black overlay
+	var overlay = ColorRect.new()
+	overlay.color = Color(0, 0, 0, 0.8)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(overlay)
+
+	# Phoenix Revive text
+	var label = Label.new()
+	label.text = "PHOENIX REVIVE"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	# Load pixel font
+	var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1, 1.0))  # Orange/gold phoenix color
+
+	# Shadow for visibility
+	label.add_theme_color_override("font_shadow_color", Color(0.8, 0.2, 0.0, 1.0))
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+
+	canvas.add_child(label)
+
+	# Animate text scale
+	label.pivot_offset = label.size / 2
+	label.scale = Vector2(0.5, 0.5)
+	label.modulate.a = 0.0
+
+	var tween = canvas.create_tween()
+	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.parallel().tween_property(label, "modulate:a", 1.0, 0.2)
+	tween.tween_interval(0.7)  # Hold for 0.7s (total 1s with animation)
+	tween.tween_property(label, "modulate:a", 0.0, 0.3)
+	tween.parallel().tween_property(overlay, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func():
+		# Unpause and cleanup
+		get_tree().paused = false
+		canvas.queue_free()
+
+		# Now revive the player
+		if player and is_instance_valid(player) and player.has_method("revive_with_percent"):
+			player.revive_with_percent(phoenix_hp_percent)
+
+		# Trigger explosion on revive
+		if player and is_instance_valid(player):
+			trigger_phoenix_explosion(player.global_position)
+	)
 
 func trigger_phoenix_explosion(pos: Vector2) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")

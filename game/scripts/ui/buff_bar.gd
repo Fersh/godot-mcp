@@ -307,7 +307,7 @@ func _update_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 			timer_label.visible = false
 		else:
 			timer_label.visible = true
-			timer_label.text = str(ceil(timer)) + "s"
+			timer_label.text = str(int(ceil(timer))) + "s"
 
 	# Update stack label for buffs with stacks
 	var stack_label = icon.get_node_or_null("StackLabel")
@@ -382,7 +382,7 @@ func _show_tooltip(buff_id: String) -> void:
 		desc_label.text = buff_data.get("description", "")
 	if time_label:
 		var timer = buff_data.get("timer", 0.0)
-		time_label.text = "%.1fs remaining" % timer
+		time_label.text = "%ds remaining" % int(ceil(timer))
 
 	# Update border color
 	var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat

@@ -95,10 +95,13 @@ func _setup_notification_ui() -> void:
 	notification_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
 	notification_label.add_theme_constant_override("outline_size", 6)
 
-	# Center exactly in middle of screen
-	notification_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# Position at 33% from top (66% up the screen)
+	notification_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	notification_label.anchor_top = 0.33
+	notification_label.anchor_bottom = 0.33
+	notification_label.offset_top = -30
+	notification_label.offset_bottom = 30
 	notification_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	notification_label.grow_vertical = Control.GROW_DIRECTION_BOTH
 
 	elite_notification.add_child(notification_label)
 	notification_label.visible = false
