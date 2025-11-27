@@ -262,7 +262,11 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	icon_container.set_meta("buff_id", buff_id)
 	icon_container.set_meta("buff_data", buff_data)
 
-	# Connect input
+	# Connect hover signals for tooltip
+	icon_container.mouse_entered.connect(_on_icon_mouse_entered.bind(buff_id))
+	icon_container.mouse_exited.connect(_on_icon_mouse_exited)
+
+	# Connect input for touch/long press (mobile)
 	icon_container.gui_input.connect(_on_icon_input.bind(buff_id))
 
 	buff_container.add_child(icon_container)
@@ -319,7 +323,16 @@ func _update_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	# Update stored data
 	icon.set_meta("buff_data", buff_data)
 
+func _on_icon_mouse_entered(buff_id: String) -> void:
+	# Show tooltip immediately on hover
+	_show_tooltip(buff_id)
+
+func _on_icon_mouse_exited() -> void:
+	# Hide tooltip when mouse leaves
+	_hide_tooltip()
+
 func _on_icon_input(event: InputEvent, buff_id: String) -> void:
+	# Keep long press support for touch/mobile
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var pressed = false
 		if event is InputEventScreenTouch:

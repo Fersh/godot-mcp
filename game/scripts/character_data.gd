@@ -272,8 +272,8 @@ static func create_mage() -> CharacterData:
 	data.base_health = 20.0
 	data.base_speed = 145.0  # Slowest character
 	data.base_attack_cooldown = 1.4  # Slow attacks
-	data.base_damage = 2.2  # Highest damage multiplier
-	data.attack_range = 480.0  # Longest range
+	data.base_damage = 2.5  # Highest damage multiplier
+	data.attack_range = 440.0  # Same as archer
 
 	# Combat stats - High crit damage potential, fragile
 	data.base_crit_rate = 0.10  # 10% base crit

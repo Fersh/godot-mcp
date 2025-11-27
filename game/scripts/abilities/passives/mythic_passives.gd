@@ -6,15 +6,15 @@ class_name MythicPassives
 
 static func get_abilities() -> Array[AbilityData]:
 	return [
-		# Immortal Oath
-		AbilityData.new(
-			"immortal_oath",
-			"Immortal Oath",
-			"On fatal damage: 3s immunity to save yourself",
-			AbilityData.Rarity.MYTHIC,
-			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.IMMORTAL_OATH, value = 3.0}]
-		),
+		# Immortal Oath - DISABLED: Too powerful
+		#AbilityData.new(
+		#	"immortal_oath",
+		#	"Immortal Oath",
+		#	"On fatal damage: 3s immunity to save yourself",
+		#	AbilityData.Rarity.MYTHIC,
+		#	AbilityData.Type.PASSIVE,
+		#	[{effect_type = AbilityData.EffectType.IMMORTAL_OATH, value = 3.0}]
+		#),
 
 		# All-For-One - DISABLED: Not fully implemented
 		#AbilityData.new(
