@@ -80,7 +80,7 @@ func _process(delta: float) -> void:
 func _setup_preview_panel() -> void:
 	# Style the preview panel - darker and less transparent like equipment screen
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.98)
 	style.border_width_left = 4
 	style.border_width_right = 4
 	style.border_width_top = 4
@@ -146,7 +146,7 @@ func _setup_preview_panel() -> void:
 
 	# Description - centered (above stats)
 	var desc_container = MarginContainer.new()
-	desc_container.custom_minimum_size = Vector2(340, 0)
+	desc_container.custom_minimum_size = Vector2(340, 30)  # Min height for 2 lines at font size 12
 	desc_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(desc_container)
 	preview_desc_label = Label.new()
@@ -209,7 +209,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	panel.set_meta("index", index)
 
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.98)
 	style.border_width_left = 2
 	style.border_width_right = 2
 	style.border_width_top = 2
@@ -246,6 +246,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 			sprite_scale = 1.1
 		"monk":
 			sprite_scale = 1.1
+		"mage":
+			sprite_pos = Vector2(23, 20)
 		"beast":
 			sprite_scale = 0.5
 			sprite_pos = Vector2(23, 23)
@@ -327,7 +329,7 @@ func _set_selected(index: int) -> void:
 			style.border_width_right = 2
 			style.border_width_top = 2
 			style.border_width_bottom = 2
-			style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
+			style.bg_color = Color(0.06, 0.055, 0.09, 0.98)
 
 		panel.add_theme_stylebox_override("panel", style)
 
@@ -425,7 +427,7 @@ func _update_preview() -> void:
 	passive_title_container.add_child(passive_title)
 
 	var passive_desc_container = MarginContainer.new()
-	passive_desc_container.custom_minimum_size = Vector2(340, 0)
+	passive_desc_container.custom_minimum_size = Vector2(340, 24)  # Min height for 2 lines at font size 10
 	passive_desc_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview_passive_container.add_child(passive_desc_container)
 	var passive_desc = Label.new()
