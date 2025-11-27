@@ -193,3 +193,7 @@ func damage_flash(intensity: float = 0.7) -> void:
 func update_player_health(health_ratio: float) -> void:
 	low_hp_ratio = health_ratio
 	low_hp_active = health_ratio <= 0.5 and health_ratio > 0
+
+# Ultimate shake - massive epic shake for ultimate activation
+func shake_ultimate() -> void:
+	shake(20.0, 0.06)

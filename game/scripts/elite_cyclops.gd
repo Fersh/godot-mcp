@@ -13,11 +13,11 @@ extends EliteBase
 @export var stomp_range: float = 80.0
 @export var stomp_aoe_radius: float = 100.0
 
-@export var rock_damage: float = 30.0
+@export var rock_damage: float = 22.5  # Reduced 25% from 30
 @export var rock_range: float = 300.0
-@export var rock_speed: float = 200.0
+@export var rock_speed: float = 150.0  # Slower, easier to dodge
 
-@export var laser_damage: float = 20.0  # Per tick
+@export var laser_damage: float = 15.0  # Per tick - reduced 25% from 20
 @export var laser_range: float = 400.0
 @export var laser_duration: float = 2.0
 @export var laser_tick_rate: float = 0.25

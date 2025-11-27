@@ -9,6 +9,10 @@ var active_ability_bar = null
 var active_ability_selection_ui = null
 var buff_bar = null
 
+# Ultimate ability UI components
+var ultimate_selection_ui = null
+var ultimate_activation_overlay = null
+
 # Virtual joystick for movement
 var virtual_joystick = null
 var joystick_scene: PackedScene = preload("res://scenes/ui/virtual_joystick.tscn")
@@ -22,6 +26,9 @@ var nearby_item: Node2D = null
 
 # Levels that grant active abilities (not passive)
 const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
+
+# Level that grants ultimate ability
+const ULTIMATE_ABILITY_LEVEL: int = 15
 
 func _ready() -> void:
 	add_to_group("main")
@@ -64,8 +71,11 @@ func _process(delta: float) -> void:
 	_check_nearby_items()
 
 func _on_player_level_up(new_level: int) -> void:
+	# Check if this level grants the ultimate ability
+	if new_level == ULTIMATE_ABILITY_LEVEL:
+		_show_ultimate_ability_selection()
 	# Check if this level grants an active ability
-	if new_level in ACTIVE_ABILITY_LEVELS:
+	elif new_level in ACTIVE_ABILITY_LEVELS:
 		_show_active_ability_selection(new_level)
 	else:
 		# Regular passive ability selection
@@ -163,6 +173,11 @@ func _setup_active_ability_system() -> void:
 		ActiveAbilityManager.reset_for_new_run()
 		ActiveAbilityManager.register_player(player)
 
+	# Reset UltimateAbilityManager for new run
+	if UltimateAbilityManager:
+		UltimateAbilityManager.reset_for_new_run()
+		UltimateAbilityManager.register_player(player)
+
 	# Create the ability bar UI
 	var bar_script = load("res://scripts/active_abilities/ui/active_ability_bar.gd")
 	if bar_script:
@@ -186,6 +201,25 @@ func _setup_active_ability_system() -> void:
 		buff_bar.set_script(buff_script)
 		buff_bar.name = "BuffBar"
 		add_child(buff_bar)
+
+	# Create ultimate ability selection UI
+	var ultimate_selection_script = load("res://scripts/ultimate_abilities/ui/ultimate_selection_ui.gd")
+	if ultimate_selection_script:
+		ultimate_selection_ui = CanvasLayer.new()
+		ultimate_selection_ui.set_script(ultimate_selection_script)
+		ultimate_selection_ui.name = "UltimateSelectionUI"
+		add_child(ultimate_selection_ui)
+
+	# Create ultimate activation overlay
+	var activation_overlay_script = load("res://scripts/ultimate_abilities/ultimate_activation_overlay.gd")
+	if activation_overlay_script:
+		ultimate_activation_overlay = CanvasLayer.new()
+		ultimate_activation_overlay.set_script(activation_overlay_script)
+		ultimate_activation_overlay.name = "UltimateActivationOverlay"
+		add_child(ultimate_activation_overlay)
+		# Register with manager
+		if UltimateAbilityManager:
+			UltimateAbilityManager.register_activation_overlay(ultimate_activation_overlay)
 
 func _show_initial_ability_selection() -> void:
 	"""Show the level 1 active ability selection at game start."""
@@ -214,6 +248,31 @@ func _show_active_ability_selection(level: int) -> void:
 		active_ability_selection_ui.show_choices(choices, level)
 	else:
 		# No active abilities available, fall back to passive
+		var passive_choices = AbilityManager.get_random_abilities(3)
+		if passive_choices.size() > 0:
+			ability_selection.show_choices(passive_choices)
+
+func _show_ultimate_ability_selection() -> void:
+	"""Show the ultimate ability selection UI at level 15."""
+	if not ultimate_selection_ui:
+		# Fallback to passive if UI not available
+		var choices = AbilityManager.get_random_abilities(3)
+		if choices.size() > 0:
+			ability_selection.show_choices(choices)
+		return
+
+	# Get character ID for class-specific ultimates
+	var character_id = "archer"
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	# Get random ultimate abilities for this character
+	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, 3) if UltimateAbilityManager else []
+
+	if choices.size() > 0:
+		ultimate_selection_ui.show_choices(choices, character_id)
+	else:
+		# No ultimates available, fall back to passive
 		var passive_choices = AbilityManager.get_random_abilities(3)
 		if passive_choices.size() > 0:
 			ability_selection.show_choices(passive_choices)

@@ -4,15 +4,19 @@ class_name ActiveAbilityBar
 # 2x2 Grid layout for landscape mode
 # Bottom-left: Dodge, Bottom-right: Ability 1 (larger)
 # Top-left: Ability 3, Top-right: Ability 2
+# Ultimate button: centered above the 2x2 grid
 
 const BUTTON_SIZE := Vector2(101, 101)  # Standard button size (10% smaller than 112)
 const ABILITY1_SIZE := Vector2(138, 138)  # Ability 1 is larger (25% larger)
+const ULTIMATE_SIZE := Vector2(120, 120)  # Ultimate button size
 const GRID_SPACING := 8  # Space between buttons
 const MARGIN_RIGHT := 80  # 20px more left
 const MARGIN_BOTTOM := 80  # 20px more up
+const ULTIMATE_OFFSET_Y := 20  # Space between ultimate button and grid
 
 var ability_buttons: Array[ActiveAbilityButton] = []
 var dodge_button: ActiveAbilityButton = null
+var ultimate_button: UltimateAbilityButton = null
 var grid_container: Control = null
 
 func _ready() -> void:
@@ -80,6 +84,15 @@ func _create_ui() -> void:
 	btn2.modulate.a = 0.8
 	dodge_button.modulate.a = 0.8
 
+	# Ultimate button - positioned centered above the grid
+	ultimate_button = _create_ultimate_button()
+	# Center it horizontally over the grid
+	var grid_center_x = (BUTTON_SIZE.x + GRID_SPACING + 32 + ABILITY1_SIZE.x) / 2
+	var ultimate_x = grid_center_x - ULTIMATE_SIZE.x / 2
+	var ultimate_y = -ULTIMATE_SIZE.y - ULTIMATE_OFFSET_Y
+	ultimate_button.position = Vector2(ultimate_x, ultimate_y)
+	ultimate_button.modulate.a = 0.9  # Slightly more visible than other buttons
+
 func _create_ability_button(slot: int, size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
 	var button = Control.new()
@@ -102,6 +115,15 @@ func _create_dodge_button(size: Vector2) -> ActiveAbilityButton:
 	grid_container.add_child(button)
 
 	button.setup_dodge()
+
+	return button
+
+func _create_ultimate_button() -> UltimateAbilityButton:
+	var btn_script = load("res://scripts/ultimate_abilities/ui/ultimate_ability_button.gd")
+	var button = Control.new()
+	button.set_script(btn_script)
+	button.name = "UltimateButton"
+	grid_container.add_child(button)
 
 	return button
 
@@ -176,3 +198,8 @@ func reset_for_new_run() -> void:
 		if i > 0:  # Hide ability 2 and 3 again
 			ability_buttons[i].visible = false
 	dodge_button.setup_dodge()
+	if ultimate_button:
+		ultimate_button.reset_for_new_run()
+
+func get_ultimate_button() -> UltimateAbilityButton:
+	return ultimate_button

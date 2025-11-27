@@ -49,3 +49,21 @@ func level_up() -> void:
 	Input.vibrate_handheld(30)
 	await get_tree().create_timer(0.1).timeout
 	Input.vibrate_handheld(60)
+
+func ultimate() -> void:
+	"""Epic haptic pattern for ultimate ability activation."""
+	if not _is_enabled():
+		return
+	# Building anticipation pattern
+	Input.vibrate_handheld(30)
+	await get_tree().create_timer(0.08).timeout
+	Input.vibrate_handheld(50)
+	await get_tree().create_timer(0.08).timeout
+	Input.vibrate_handheld(80)
+
+func ultimate_release() -> void:
+	"""Massive haptic for ultimate release moment."""
+	if not _is_enabled():
+		return
+	# Single powerful pulse
+	Input.vibrate_handheld(250)

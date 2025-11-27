@@ -409,8 +409,11 @@ func take_damage(amount: float) -> void:
 			if health_percent < threshold:
 				total_reduction += passive_reduction
 
-	# Apply total damage reduction (cap at 75% to prevent invincibility)
-	total_reduction = min(total_reduction, 0.75)
+	# Add ultimate ability damage reduction
+	total_reduction += get_damage_reduction()
+
+	# Apply total damage reduction (cap at 90% to allow ultimates to be powerful)
+	total_reduction = min(total_reduction, 0.90)
 	final_damage = damage_after_shields * (1.0 - total_reduction)
 
 	# Block reduces damage by 50%
@@ -455,6 +458,10 @@ func take_damage(amount: float) -> void:
 
 	if current_health <= 0 and not is_dead:
 		current_health = 0
+		# Check for Unbreakable Will (Knight ultimate) first
+		if trigger_unbreakable_will():
+			return  # Death prevented by ultimate
+
 		# Check for phoenix revive before dying
 		if AbilityManager:
 			print("[Phoenix Debug] has_phoenix: ", AbilityManager.has_phoenix, " phoenix_used: ", AbilityManager.phoenix_used)
@@ -1559,6 +1566,9 @@ func _update_active_ability_timers(delta: float) -> void:
 		if retribution_timer <= 0:
 			_consume_retribution()
 
+	# Update ultimate ability timers
+	_update_ultimate_timers(delta)
+
 # ============================================
 # MONK FLOW SYSTEM (Flowing Strikes Passive)
 # ============================================
@@ -1797,3 +1807,432 @@ func _update_retribution_buff() -> void:
 	elif active_buffs.has("retribution"):
 		active_buffs.erase("retribution")
 		emit_signal("buff_changed", active_buffs)
+
+# ============================================
+# ULTIMATE ABILITY SUPPORT METHODS
+# ============================================
+
+# Damage reduction state
+var damage_reduction_percent: float = 0.0
+var damage_reduction_timer: float = 0.0
+
+# Lifesteal state
+var lifesteal_percent: float = 0.0
+var lifesteal_timer: float = 0.0
+
+# Unbreakable Will state (Knight ultimate - death prevention)
+var has_unbreakable_will: bool = false
+var unbreakable_will_duration: float = 10.0
+
+# Feast of Carnage state (Beast ultimate - kill healing/damage stacking)
+var has_feast_of_carnage: bool = false
+var feast_of_carnage_timer: float = 0.0
+var feast_of_carnage_stacks: int = 0
+
+# Savage Instinct state (Beast ultimate - auto-execute low HP enemies)
+var has_savage_instinct: bool = false
+var savage_instinct_timer: float = 0.0
+var savage_instinct_threshold: float = 0.30
+
+# Apex Predator state (Beast ultimate - mark all enemies, dash through = big damage)
+var has_apex_predator: bool = false
+var apex_predator_timer: float = 0.0
+var apex_predator_damage: float = 0.0
+
+# Time Rewind state (Mage ultimate)
+var time_rewind_active: bool = false
+var time_rewind_position: Vector2 = Vector2.ZERO
+var time_rewind_health: float = 0.0
+var time_rewind_timer: float = 0.0
+var time_rewind_triggered: bool = false
+
+# Dragon's Awakening state (Monk ultimate - attacks create shockwaves)
+var has_dragons_awakening: bool = false
+var dragons_awakening_timer: float = 0.0
+var dragons_awakening_range: float = 300.0
+var dragons_awakening_damage: float = 0.0
+
+# Perfect Harmony state (Monk ultimate - every 4th attack triggers all 3 animations)
+var has_perfect_harmony: bool = false
+var perfect_harmony_timer: float = 0.0
+var perfect_harmony_attack_count: int = 0
+
+func apply_speed_boost(multiplier: float, duration: float) -> void:
+	"""Apply a speed boost (wrapper for ultimate abilities)."""
+	apply_temporary_speed_boost(multiplier - 1.0, duration)
+
+func apply_attack_speed_boost(multiplier: float, duration: float) -> void:
+	"""Apply an attack speed boost (wrapper for ultimate abilities)."""
+	apply_temporary_attack_speed_boost(multiplier - 1.0, duration)
+
+func apply_damage_reduction(percent: float, duration: float) -> void:
+	"""Apply temporary damage reduction."""
+	damage_reduction_percent = percent
+	damage_reduction_timer = duration
+	var reduction_display = int(percent * 100)
+	active_buffs["damage_reduction"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Fortified",
+		"description": str(reduction_display) + "% Damage Reduction",
+		"color": Color(0.3, 0.6, 1.0)  # Blue
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func get_damage_reduction() -> float:
+	"""Get current damage reduction from ultimate abilities."""
+	if damage_reduction_timer > 0:
+		return damage_reduction_percent
+	return 0.0
+
+func set_lifesteal(percent: float, duration: float) -> void:
+	"""Set temporary lifesteal."""
+	lifesteal_percent = percent
+	lifesteal_timer = duration
+	var lifesteal_display = int(percent * 100)
+	active_buffs["lifesteal"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Vampiric",
+		"description": str(lifesteal_display) + "% Lifesteal",
+		"color": Color(0.8, 0.2, 0.3)  # Dark red
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func get_lifesteal_percent() -> float:
+	"""Get current lifesteal percent."""
+	if lifesteal_timer > 0:
+		return lifesteal_percent
+	return 0.0
+
+func set_unbreakable_will(active: bool, duration: float = 10.0) -> void:
+	"""Set Unbreakable Will state (prevents next death)."""
+	has_unbreakable_will = active
+	unbreakable_will_duration = duration
+	if active:
+		active_buffs["unbreakable_will"] = {
+			"timer": -1,  # Passive effect
+			"duration": -1,
+			"name": "Unbreakable",
+			"description": "Death prevented once",
+			"color": Color(1.0, 0.84, 0.0)  # Gold
+		}
+	elif active_buffs.has("unbreakable_will"):
+		active_buffs.erase("unbreakable_will")
+	emit_signal("buff_changed", active_buffs)
+
+func trigger_unbreakable_will() -> bool:
+	"""Trigger Unbreakable Will if available. Returns true if triggered."""
+	if has_unbreakable_will:
+		has_unbreakable_will = false
+		current_health = max_health
+		if health_bar:
+			health_bar.set_health(current_health, max_health)
+		emit_signal("health_changed", current_health, max_health)
+
+		# Apply damage reduction for duration
+		apply_damage_reduction(0.50, unbreakable_will_duration)
+
+		# Visual feedback
+		if JuiceManager:
+			JuiceManager.shake_large()
+			JuiceManager.update_player_health(1.0)
+
+		# Update buff
+		if active_buffs.has("unbreakable_will"):
+			active_buffs.erase("unbreakable_will")
+			emit_signal("buff_changed", active_buffs)
+
+		return true
+	return false
+
+func set_feast_of_carnage(active: bool, duration: float) -> void:
+	"""Set Feast of Carnage state (kill = heal + damage stack)."""
+	has_feast_of_carnage = active
+	feast_of_carnage_timer = duration if active else 0.0
+	feast_of_carnage_stacks = 0
+	if active:
+		active_buffs["feast_of_carnage"] = {
+			"timer": duration,
+			"duration": duration,
+			"name": "Carnage",
+			"description": "Kills heal 10% + stack damage",
+			"color": Color(0.8, 0.1, 0.1)  # Blood red
+		}
+	elif active_buffs.has("feast_of_carnage"):
+		active_buffs.erase("feast_of_carnage")
+	emit_signal("buff_changed", active_buffs)
+
+func trigger_feast_of_carnage_kill() -> void:
+	"""Trigger Feast of Carnage on kill."""
+	if not has_feast_of_carnage or feast_of_carnage_timer <= 0:
+		return
+
+	# Heal 10% of max HP
+	heal(max_health * 0.10)
+
+	# Add damage stack
+	feast_of_carnage_stacks += 1
+	var bonus = feast_of_carnage_stacks * 10
+
+	# Update buff display
+	active_buffs["feast_of_carnage"] = {
+		"timer": feast_of_carnage_timer,
+		"duration": 12.0,
+		"name": "Carnage x" + str(feast_of_carnage_stacks),
+		"description": "+" + str(bonus) + "% DMG, heal on kill",
+		"color": Color(0.8, 0.1, 0.1)
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func get_feast_of_carnage_multiplier() -> float:
+	"""Get damage multiplier from Feast of Carnage stacks."""
+	if not has_feast_of_carnage or feast_of_carnage_timer <= 0:
+		return 1.0
+	return 1.0 + (feast_of_carnage_stacks * 0.10)
+
+func set_savage_instinct(active: bool, duration: float) -> void:
+	"""Set Savage Instinct state (auto-execute low HP enemies)."""
+	has_savage_instinct = active
+	savage_instinct_timer = duration if active else 0.0
+	if active:
+		active_buffs["savage_instinct"] = {
+			"timer": duration,
+			"duration": duration,
+			"name": "Savage",
+			"description": "Execute enemies <30% HP",
+			"color": Color(0.9, 0.5, 0.1)  # Orange
+		}
+	elif active_buffs.has("savage_instinct"):
+		active_buffs.erase("savage_instinct")
+	emit_signal("buff_changed", active_buffs)
+
+func extend_savage_instinct(seconds: float) -> void:
+	"""Extend Savage Instinct duration (on kill)."""
+	if has_savage_instinct and savage_instinct_timer > 0:
+		savage_instinct_timer += seconds
+		if active_buffs.has("savage_instinct"):
+			active_buffs["savage_instinct"].timer = savage_instinct_timer
+
+func should_execute_enemy(enemy_hp_percent: float) -> bool:
+	"""Check if enemy should be executed."""
+	if has_savage_instinct and savage_instinct_timer > 0:
+		return enemy_hp_percent < savage_instinct_threshold
+	return false
+
+func set_apex_predator(active: bool, duration: float, damage: float = 0.0) -> void:
+	"""Set Apex Predator state (dash through marked enemies = big damage)."""
+	has_apex_predator = active
+	apex_predator_timer = duration if active else 0.0
+	apex_predator_damage = damage
+	if active:
+		active_buffs["apex_predator"] = {
+			"timer": duration,
+			"duration": duration,
+			"name": "Apex",
+			"description": "Dash through = 500% DMG",
+			"color": Color(1.0, 0.3, 0.0)  # Bright orange
+		}
+	elif active_buffs.has("apex_predator"):
+		active_buffs.erase("apex_predator")
+	emit_signal("buff_changed", active_buffs)
+
+func get_apex_predator_damage() -> float:
+	"""Get Apex Predator dash-through damage."""
+	if has_apex_predator and apex_predator_timer > 0:
+		return apex_predator_damage
+	return 0.0
+
+func set_time_rewind_state(pos: Vector2, hp: float, duration: float) -> void:
+	"""Set Time Rewind state (Mage ultimate)."""
+	time_rewind_active = true
+	time_rewind_position = pos
+	time_rewind_health = hp
+	time_rewind_timer = duration
+	time_rewind_triggered = false
+	active_buffs["time_rewind"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Time Mark",
+		"description": "Will return to marked spot",
+		"color": Color(0.5, 0.3, 1.0)  # Purple
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func trigger_time_rewind() -> bool:
+	"""Manually trigger Time Rewind. Returns true if triggered."""
+	if time_rewind_active and not time_rewind_triggered:
+		time_rewind_triggered = true
+		global_position = time_rewind_position
+
+		# Heal back to recorded HP if higher
+		if time_rewind_health > current_health:
+			var heal_amount = time_rewind_health - current_health
+			heal(heal_amount)
+
+		time_rewind_active = false
+		if active_buffs.has("time_rewind"):
+			active_buffs.erase("time_rewind")
+			emit_signal("buff_changed", active_buffs)
+
+		return true
+	return false
+
+func get_time_rewind_triggered() -> bool:
+	"""Check if Time Rewind was manually triggered."""
+	return time_rewind_triggered
+
+func set_dragons_awakening(active: bool, duration: float, attack_range: float = 300.0, damage: float = 0.0) -> void:
+	"""Set Dragon's Awakening state (attacks create shockwaves)."""
+	has_dragons_awakening = active
+	dragons_awakening_timer = duration if active else 0.0
+	dragons_awakening_range = attack_range
+	dragons_awakening_damage = damage
+	if active:
+		active_buffs["dragons_awakening"] = {
+			"timer": duration,
+			"duration": duration,
+			"name": "Dragon",
+			"description": "Attacks create shockwaves",
+			"color": Color(1.0, 0.6, 0.2)  # Golden orange
+		}
+	elif active_buffs.has("dragons_awakening"):
+		active_buffs.erase("dragons_awakening")
+	emit_signal("buff_changed", active_buffs)
+
+func should_create_shockwave() -> bool:
+	"""Check if attack should create a shockwave."""
+	return has_dragons_awakening and dragons_awakening_timer > 0
+
+func get_shockwave_params() -> Dictionary:
+	"""Get shockwave parameters for Dragon's Awakening."""
+	return {
+		"range": dragons_awakening_range,
+		"damage": dragons_awakening_damage
+	}
+
+func set_perfect_harmony(active: bool, duration: float) -> void:
+	"""Set Perfect Harmony state (every 4th attack = triple strike)."""
+	has_perfect_harmony = active
+	perfect_harmony_timer = duration if active else 0.0
+	perfect_harmony_attack_count = 0
+	if active:
+		active_buffs["perfect_harmony"] = {
+			"timer": duration,
+			"duration": duration,
+			"name": "Harmony",
+			"description": "Every 4th attack = triple",
+			"color": Color(0.8, 0.6, 1.0)  # Light purple
+		}
+	elif active_buffs.has("perfect_harmony"):
+		active_buffs.erase("perfect_harmony")
+	emit_signal("buff_changed", active_buffs)
+
+func check_perfect_harmony_attack() -> bool:
+	"""Check if this attack should trigger Perfect Harmony triple strike."""
+	if not has_perfect_harmony or perfect_harmony_timer <= 0:
+		return false
+
+	perfect_harmony_attack_count += 1
+	if perfect_harmony_attack_count >= 4:
+		perfect_harmony_attack_count = 0
+		return true
+	return false
+
+func cleanse_debuffs() -> void:
+	"""Remove all negative status effects."""
+	# Clear any debuff-related states here
+	# For now, just provide visual feedback
+	if JuiceManager:
+		JuiceManager.shake_small()
+
+func _update_ultimate_timers(delta: float) -> void:
+	"""Update all ultimate ability timers."""
+	# Damage reduction timer
+	if damage_reduction_timer > 0:
+		damage_reduction_timer -= delta
+		if active_buffs.has("damage_reduction"):
+			active_buffs["damage_reduction"].timer = damage_reduction_timer
+		if damage_reduction_timer <= 0:
+			damage_reduction_percent = 0.0
+			if active_buffs.has("damage_reduction"):
+				active_buffs.erase("damage_reduction")
+				emit_signal("buff_changed", active_buffs)
+
+	# Lifesteal timer
+	if lifesteal_timer > 0:
+		lifesteal_timer -= delta
+		if active_buffs.has("lifesteal"):
+			active_buffs["lifesteal"].timer = lifesteal_timer
+		if lifesteal_timer <= 0:
+			lifesteal_percent = 0.0
+			if active_buffs.has("lifesteal"):
+				active_buffs.erase("lifesteal")
+				emit_signal("buff_changed", active_buffs)
+
+	# Feast of Carnage timer
+	if feast_of_carnage_timer > 0:
+		feast_of_carnage_timer -= delta
+		if active_buffs.has("feast_of_carnage"):
+			active_buffs["feast_of_carnage"].timer = feast_of_carnage_timer
+		if feast_of_carnage_timer <= 0:
+			has_feast_of_carnage = false
+			feast_of_carnage_stacks = 0
+			if active_buffs.has("feast_of_carnage"):
+				active_buffs.erase("feast_of_carnage")
+				emit_signal("buff_changed", active_buffs)
+
+	# Savage Instinct timer
+	if savage_instinct_timer > 0:
+		savage_instinct_timer -= delta
+		if active_buffs.has("savage_instinct"):
+			active_buffs["savage_instinct"].timer = savage_instinct_timer
+		if savage_instinct_timer <= 0:
+			has_savage_instinct = false
+			if active_buffs.has("savage_instinct"):
+				active_buffs.erase("savage_instinct")
+				emit_signal("buff_changed", active_buffs)
+
+	# Apex Predator timer
+	if apex_predator_timer > 0:
+		apex_predator_timer -= delta
+		if active_buffs.has("apex_predator"):
+			active_buffs["apex_predator"].timer = apex_predator_timer
+		if apex_predator_timer <= 0:
+			has_apex_predator = false
+			if active_buffs.has("apex_predator"):
+				active_buffs.erase("apex_predator")
+				emit_signal("buff_changed", active_buffs)
+
+	# Time Rewind timer
+	if time_rewind_timer > 0:
+		time_rewind_timer -= delta
+		if active_buffs.has("time_rewind"):
+			active_buffs["time_rewind"].timer = time_rewind_timer
+		if time_rewind_timer <= 0:
+			time_rewind_active = false
+			if active_buffs.has("time_rewind"):
+				active_buffs.erase("time_rewind")
+				emit_signal("buff_changed", active_buffs)
+
+	# Dragon's Awakening timer
+	if dragons_awakening_timer > 0:
+		dragons_awakening_timer -= delta
+		if active_buffs.has("dragons_awakening"):
+			active_buffs["dragons_awakening"].timer = dragons_awakening_timer
+		if dragons_awakening_timer <= 0:
+			has_dragons_awakening = false
+			if active_buffs.has("dragons_awakening"):
+				active_buffs.erase("dragons_awakening")
+				emit_signal("buff_changed", active_buffs)
+
+	# Perfect Harmony timer
+	if perfect_harmony_timer > 0:
+		perfect_harmony_timer -= delta
+		if active_buffs.has("perfect_harmony"):
+			active_buffs["perfect_harmony"].timer = perfect_harmony_timer
+		if perfect_harmony_timer <= 0:
+			has_perfect_harmony = false
+			if active_buffs.has("perfect_harmony"):
+				active_buffs.erase("perfect_harmony")
+				emit_signal("buff_changed", active_buffs)

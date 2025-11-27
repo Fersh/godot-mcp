@@ -5,7 +5,8 @@ enum Rarity {
 	COMMON,
 	RARE,
 	LEGENDARY,
-	MYTHIC
+	MYTHIC,
+	ULTIMATE
 }
 
 enum Type {
@@ -180,6 +181,8 @@ static func get_rarity_color(rarity: Rarity) -> Color:
 			return Color(1.0, 0.8, 0.2)  # Gold
 		Rarity.MYTHIC:
 			return Color(1.0, 0.2, 0.3)  # Red
+		Rarity.ULTIMATE:
+			return Color(1.0, 0.84, 0.0)  # Pure divine gold
 	return Color.WHITE
 
 static func get_rarity_name(rarity: Rarity) -> String:
@@ -192,4 +195,6 @@ static func get_rarity_name(rarity: Rarity) -> String:
 			return "Legendary"
 		Rarity.MYTHIC:
 			return "Mythic"
+		Rarity.ULTIMATE:
+			return "Ultimate"
 	return "Unknown"
