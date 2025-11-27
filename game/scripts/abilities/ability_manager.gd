@@ -521,6 +521,9 @@ func _process(delta: float) -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player == null:
 		return
+	# Don't process passives if player is dead
+	if player.is_dead:
+		return
 
 	process_periodic_effects(delta, player)
 
@@ -1616,6 +1619,8 @@ func should_fire_blade_beam() -> bool:
 
 # Called when player picks up a coin
 func on_coin_pickup(player: Node2D) -> void:
+	if player == null or player.is_dead:
+		return
 	if has_blood_money:
 		heal_player(player, player.max_health * 0.01)
 
@@ -1661,6 +1666,10 @@ func should_boomerang() -> bool:
 
 # Called when enemy dies - handle bloodthirst
 func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
+	# Don't trigger on-kill effects if player is dead
+	if player == null or player.is_dead:
+		return
+
 	# Permanent upgrade: HP on kill (Life Leech)
 	if PermanentUpgrades:
 		var bonuses = PermanentUpgrades.get_all_bonuses()
@@ -2009,6 +2018,8 @@ func spread_status_effects(dead_enemy: Node2D) -> void:
 
 func check_adrenaline_dash_on_hit(player: Node2D) -> void:
 	"""Called when player hits an enemy - 35% chance to dash to nearest enemy."""
+	if player == null or player.is_dead:
+		return
 	if not has_adrenaline_rush:
 		return
 	if randf() > adrenaline_rush_chance:
@@ -2016,6 +2027,8 @@ func check_adrenaline_dash_on_hit(player: Node2D) -> void:
 	trigger_adrenaline_dash(player)
 
 func trigger_adrenaline_dash(player: Node2D) -> void:
+	if player == null or player.is_dead:
+		return
 	if not has_adrenaline_rush:
 		return
 	# Find nearest enemy to dash toward

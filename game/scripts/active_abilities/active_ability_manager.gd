@@ -162,6 +162,9 @@ func can_use_ability(slot: int) -> bool:
 		return false
 	if is_dodging:
 		return false
+	# Can't use abilities when dead
+	if player and player.is_dead:
+		return false
 	return true
 
 func use_ability(slot: int) -> bool:
@@ -227,6 +230,8 @@ func _get_ability_executor() -> Node:
 
 func can_dodge() -> bool:
 	"""Check if dodge is available."""
+	if player and player.is_dead:
+		return false
 	return dodge_cooldown_timer <= 0 and not is_dodging
 
 func perform_dodge() -> bool:

@@ -148,8 +148,8 @@ func get_stat_description() -> String:
 
 	if grants_equipment_ability != "":
 		# Look up the ability details from ItemDatabase
-		if ItemDatabase and ItemDatabase.equipment_ability_effects.has(grants_equipment_ability):
-			var ability_info = ItemDatabase.equipment_ability_effects[grants_equipment_ability]
+		if ItemDatabase and ItemDatabase.EQUIPMENT_ABILITIES.has(grants_equipment_ability):
+			var ability_info = ItemDatabase.EQUIPMENT_ABILITIES[grants_equipment_ability]
 			lines.append("Special: %s" % ability_info.name)
 			lines.append("  %s" % ability_info.description)
 		else:
