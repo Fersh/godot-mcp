@@ -28,9 +28,9 @@ dropped_item_scene = ExtResource("8_dropped_item")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_hit_flash")
-scale = Vector2(4, 4)
+scale = Vector2(2, 2)
 texture = ExtResource("2_texture")
-hframes = 8
+hframes = 10
 vframes = 20
 frame = 0
 

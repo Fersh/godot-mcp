@@ -4,35 +4,38 @@ extends Node2D
 # Used for whirlwind, bladestorm
 
 var sprite: AnimatedSprite2D
-var effect_scale: float = 1.5
+var effect_scale: float = 2.0
 var duration: float = 3.0
 var radius: float = 100.0
 var damage: float = 0.0
 var damage_multiplier: float = 1.0
 var follow_parent: bool = true
-var _setup_done: bool = false
+var _initialized: bool = false
 
 func _ready() -> void:
-	# Defer setup to allow setup() to be called first
-	call_deferred("_deferred_setup")
+	# Defer initialization to allow setup() to be called first
+	call_deferred("_deferred_init")
 
-func _deferred_setup() -> void:
-	if _setup_done:
+func _deferred_init() -> void:
+	if _initialized:
 		return
-	_setup_done = true
+	_initialized = true
 	_setup_sprite()
+	_start_duration_timer()
 
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(effect_scale, effect_scale)
+	sprite.centered = true
+	sprite.z_index = 10  # Draw above other effects
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
 	frames.add_animation("default")
-	frames.set_animation_speed("default", 15.0)
+	frames.set_animation_speed("default", 20.0)  # Faster animation
 	frames.set_animation_loop("default", true)
 
-	# Load TornadoLoop sprite sheet - 96x96 frames
+	# Load TornadoLoop sprite sheet - 96x96 frames, 60 frames total
 	var source_path = "res://assets/sprites/effects/pack2/TornadoLoop_96x96.png"
 	if ResourceLoader.exists(source_path):
 		var source_texture = load(source_path) as Texture2D
@@ -50,12 +53,12 @@ func _setup_sprite() -> void:
 	sprite.sprite_frames = frames
 	sprite.play("default")
 
-	# Auto-remove after duration
+func _start_duration_timer() -> void:
 	get_tree().create_timer(duration).timeout.connect(_on_duration_finished)
 
 func _on_duration_finished() -> void:
 	var tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.2)
+	tween.tween_property(self, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(queue_free)
 
 func setup(ability_duration: float, ability_radius: float, ability_damage: float, ability_multiplier: float = 1.0) -> void:
@@ -63,12 +66,15 @@ func setup(ability_duration: float, ability_radius: float, ability_damage: float
 	radius = ability_radius
 	damage = ability_damage
 	damage_multiplier = ability_multiplier
-	# Adjust scale based on radius
-	effect_scale = radius / 60.0
+	# Adjust scale based on radius - make it visually larger
+	effect_scale = max(radius / 50.0, 1.5)
 
-	# If setup is called before _ready completes, mark as done and setup now
-	if not _setup_done:
-		_setup_done = true
-		_setup_sprite()
-	elif sprite:
+	# If setup called after deferred init, update sprite scale
+	if sprite:
 		sprite.scale = Vector2(effect_scale, effect_scale)
+
+	# If setup called before deferred init, trigger init now
+	if not _initialized:
+		_initialized = true
+		_setup_sprite()
+		_start_duration_timer()

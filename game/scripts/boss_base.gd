@@ -106,6 +106,9 @@ func _update_aura(delta: float) -> void:
 	var pulse = 0.15 + sin(aura_timer * 4.0) * 0.1
 	var base_color = Color(1.0, 1.0, 1.0, 1.0)
 
+	if sprite == null or not is_instance_valid(sprite):
+		return
+
 	if is_enraged:
 		# More intense red when enraged
 		pulse = 0.25 + sin(aura_timer * 6.0) * 0.15
