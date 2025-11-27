@@ -247,8 +247,10 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 		"monk":
 			sprite_scale = 1.1
 		"beast":
-			sprite_scale = 0.55
-			sprite_pos = Vector2(28, 30)
+			sprite_scale = 0.5
+			sprite_pos = Vector2(23, 23)
+			# Apply beast's sprite offset to center it properly
+			sprite.offset = char_data.sprite_offset
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -365,16 +367,20 @@ func _update_preview() -> void:
 	# Manual scales to match mage visually
 	var preview_scale = 2.5
 	var preview_pos = Vector2(50, 50)
+	var preview_offset = Vector2(0, 0)
 	match char_data.id:
 		"knight":
 			preview_scale = 2.1
 		"monk":
 			preview_scale = 2.1
 		"beast":
-			preview_scale = 1.8
-			preview_pos = Vector2(40, 60)
+			preview_scale = 1.2
+			preview_pos = Vector2(50, 50)
+			# Apply beast's sprite offset to center it properly
+			preview_offset = char_data.sprite_offset
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
+	preview_sprite.offset = preview_offset
 
 	# Update description
 	preview_desc_label.text = char_data.description

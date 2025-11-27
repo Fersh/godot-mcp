@@ -110,9 +110,9 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"fortune_favor",
 			"Fortune's Favor",
-			"All loot drops upgraded by one tier",
+			"Chance to get better loot (+25%)",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.FORTUNE_FAVOR, value = 1.0}]
+			[{effect_type = AbilityData.EffectType.FORTUNE_FAVOR, value = 0.25}]
 		),
 	]
