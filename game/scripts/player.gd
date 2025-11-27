@@ -61,6 +61,11 @@ var row_attack_down: int = 4
 var row_damage: int = 5
 var row_death: int = 6
 
+# Beast-specific animation rows
+var row_attack_alt: int = -1  # Alternate attack (randomly chosen)
+var has_alt_attack: bool = false
+var current_attack_row: int = 2  # Which attack row to use this attack
+
 var cols_per_row: int = 8
 
 var frame_counts: Dictionary = {}
@@ -154,6 +159,11 @@ func _load_character_data() -> void:
 	row_death = character_data.row_death
 	cols_per_row = character_data.hframes
 
+	# Beast-specific animations
+	row_attack_alt = character_data.row_attack_alt
+	has_alt_attack = character_data.has_alt_attack
+	current_attack_row = row_attack
+
 	# Setup frame counts
 	frame_counts = {
 		row_idle: character_data.frames_idle,
@@ -164,6 +174,10 @@ func _load_character_data() -> void:
 		row_damage: character_data.frames_damage,
 		row_death: character_data.frames_death,
 	}
+
+	# Add alternate attack frames if available
+	if has_alt_attack and row_attack_alt >= 0:
+		frame_counts[row_attack_alt] = character_data.frames_attack_alt
 
 	current_row = row_idle
 
@@ -197,11 +211,17 @@ func _apply_character_passive() -> void:
 
 	var bonuses = CharacterManager.get_passive_bonuses()
 
-	# Apply max HP bonus from passive
+	# Apply max HP bonus from passive (Knight)
 	var hp_bonus = bonuses.get("max_hp", 0.0)
 	if hp_bonus > 0:
 		base_max_health = base_max_health * (1.0 + hp_bonus)
 		max_health = base_max_health
+
+	# Apply attack speed bonus from passive (Beast)
+	var attack_speed_bonus = bonuses.get("attack_speed", 0.0)
+	if attack_speed_bonus > 0:
+		base_attack_cooldown = base_attack_cooldown / (1.0 + attack_speed_bonus)
+		attack_cooldown = base_attack_cooldown
 
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
@@ -760,6 +780,12 @@ func perform_melee_attack() -> void:
 	melee_hit_enemies.clear()
 	melee_hitbox_active = true
 
+	# Choose attack animation (randomly for Beast with alternate attack)
+	if has_alt_attack and row_attack_alt >= 0:
+		current_attack_row = row_attack if randf() < 0.5 else row_attack_alt
+	else:
+		current_attack_row = row_attack
+
 	# Snap attack direction to 8 directions for cleaner arc attacks
 	attack_direction = snap_to_8_directions(attack_direction)
 
@@ -830,6 +856,12 @@ func perform_melee_attack() -> void:
 							# Tiny screen shake on crit
 							if JuiceManager:
 								JuiceManager.shake_crit()
+							# Beast passive: Lifesteal on crit
+							if CharacterManager:
+								var bonuses = CharacterManager.get_passive_bonuses()
+								if bonuses.lifesteal_on_crit > 0:
+									var heal_amount = final_damage * bonuses.lifesteal_on_crit
+									heal(heal_amount)
 
 					# Apply damage
 					if enemy.has_method("take_damage"):
@@ -898,8 +930,8 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 
 	if is_attacking:
 		if is_melee:
-			# Melee uses single attack animation
-			target_row = row_attack
+			# Melee uses current attack animation (may be alternate for Beast)
+			target_row = current_attack_row
 		else:
 			# Ranged - choose shoot animation based on attack direction
 			var angle = attack_direction.angle()

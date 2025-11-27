@@ -3,7 +3,8 @@ class_name CharacterData
 
 enum CharacterType {
 	ARCHER,
-	KNIGHT
+	KNIGHT,
+	BEAST
 }
 
 enum AttackType {
@@ -57,6 +58,18 @@ enum AttackType {
 @export var frames_attack_down: int = 8
 @export var frames_damage: int = 4
 @export var frames_death: int = 4
+
+# Beast-specific animation rows
+@export_group("Beast Animations")
+@export var row_spawn: int = -1  # Emerge/spawn animation
+@export var row_taunt: int = -1  # Taunt animation
+@export var row_attack_alt: int = -1  # Alternate attack (randomly chosen)
+@export var row_damage_hard: int = -1  # Heavy damage animation
+@export var frames_spawn: int = 8
+@export var frames_taunt: int = 7
+@export var frames_attack_alt: int = 8
+@export var frames_damage_hard: int = 5
+@export var has_alt_attack: bool = false  # Whether to randomly pick between attacks
 
 # Passive ability (unique to each character)
 @export_group("Passive")
@@ -164,5 +177,68 @@ static func create_knight() -> CharacterData:
 	# Passive
 	data.passive_name = "Iron Will"
 	data.passive_description = "+20% Max HP, -10% Damage Taken below 50% HP"
+
+	return data
+
+static func create_beast() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "beast"
+	data.display_name = "The Beast"
+	data.description = "Feral and unhinged. Hits fast and hard, dies faster and harder."
+	data.character_type = CharacterType.BEAST
+	data.attack_type = AttackType.MELEE
+
+	# Glass cannon - very fast, high damage, low health
+	data.base_health = 18.0
+	data.base_speed = 220.0
+	data.base_attack_cooldown = 0.65  # Very fast attacks
+	data.base_damage = 1.8
+	data.attack_range = 65.0  # Slightly longer melee reach
+
+	# Combat stats - High crit, high dodge, no block (too feral to block)
+	data.base_crit_rate = 0.12  # 12% base crit
+	data.base_block_rate = 0.0  # 0% block - doesn't know how to block
+	data.base_dodge_rate = 0.15  # 15% dodge - very agile
+
+	# Sprite config (128x128 per frame, 11 cols x 9 rows)
+	data.frame_size = Vector2(128, 128)
+	data.hframes = 11
+	data.vframes = 9
+	data.sprite_scale = Vector2(1.5, 1.5)
+
+	# Animation rows (based on Beast spritesheet)
+	# Row 0: emerge, Row 1: taunt, Row 2: idle, Row 3: move
+	# Row 4: attack1, Row 5: attack2, Row 6: damage, Row 7: damage hard, Row 8: death
+	data.row_idle = 2
+	data.row_move = 3
+	data.row_attack = 4  # Attack 1
+	data.row_attack_up = 4  # Beast uses same attack for all directions
+	data.row_attack_down = 4
+	data.row_damage = 6
+	data.row_death = 8
+
+	# Frame counts
+	data.frames_idle = 6
+	data.frames_move = 11
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 4
+	data.frames_death = 10
+
+	# Beast-specific animations
+	data.row_spawn = 0
+	data.row_taunt = 1
+	data.row_attack_alt = 5  # Attack 2
+	data.row_damage_hard = 7
+	data.frames_spawn = 8
+	data.frames_taunt = 7
+	data.frames_attack_alt = 8
+	data.frames_damage_hard = 5
+	data.has_alt_attack = true  # Randomly alternate between attack 1 and 2
+
+	# Passive
+	data.passive_name = "Bloodlust"
+	data.passive_description = "+25% Attack Speed, +10% Lifesteal on crit"
 
 	return data

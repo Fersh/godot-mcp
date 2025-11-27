@@ -186,8 +186,8 @@ func _create_selector_buttons() -> void:
 		selector_container.add_child(btn)
 		selector_buttons.append(btn)
 
-	# Add 3 grayed out "coming soon" placeholder squares
-	for i in range(3):
+	# Add 2 grayed out "coming soon" placeholder squares
+	for i in range(2):
 		var placeholder = _create_placeholder_button()
 		selector_container.add_child(placeholder)
 
@@ -224,7 +224,13 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 	sprite.hframes = char_data.hframes
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
-	sprite.scale = Vector2(1.5, 1.5) if char_data.id == "knight" else Vector2(1.3, 1.3)
+	match char_data.id:
+		"knight":
+			sprite.scale = Vector2(1.5, 1.5)
+		"beast":
+			sprite.scale = Vector2(0.9, 0.9)  # Beast has larger frames
+		_:
+			sprite.scale = Vector2(1.3, 1.3)
 	sprite.centered = true
 	sprite.position = Vector2(23, 23)  # Center within the holder
 	sprite_holder.add_child(sprite)
@@ -317,8 +323,15 @@ func _update_preview() -> void:
 	# Update name
 	preview_name_label.text = char_data.display_name
 
-	# Update class label (Ranger for ranged, Knight for melee)
-	var class_type_text = "Ranger" if char_data.attack_type == CharacterData.AttackType.RANGED else "Knight"
+	# Update class label (Ranger for archer, Knight for knight, ??? for beast)
+	var class_type_text = "Ranger"
+	match char_data.id:
+		"archer":
+			class_type_text = "Ranger"
+		"knight":
+			class_type_text = "Knight"
+		"beast":
+			class_type_text = "???"
 	preview_class_label.text = class_type_text
 
 	# Update sprite
@@ -327,10 +340,13 @@ func _update_preview() -> void:
 	preview_sprite.vframes = char_data.vframes
 	preview_sprite.frame = char_data.row_idle * char_data.hframes
 
-	if char_data.id == "knight":
-		preview_sprite.scale = Vector2(3.0, 3.0)
-	else:
-		preview_sprite.scale = Vector2(2.55, 2.55)  # ~15% smaller than knight
+	match char_data.id:
+		"knight":
+			preview_sprite.scale = Vector2(3.0, 3.0)
+		"beast":
+			preview_sprite.scale = Vector2(2.0, 2.0)  # Beast has larger frames
+		_:
+			preview_sprite.scale = Vector2(2.55, 2.55)  # Archer default
 
 	# Update description
 	preview_desc_label.text = char_data.description

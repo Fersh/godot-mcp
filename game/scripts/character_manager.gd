@@ -17,6 +17,7 @@ var selected_character: CharacterData = null
 # Texture references (loaded on demand)
 var archer_texture: Texture2D
 var knight_texture: Texture2D
+var beast_texture: Texture2D
 
 func _ready() -> void:
 	_init_characters()
@@ -26,6 +27,7 @@ func _init_characters() -> void:
 	# Load textures
 	archer_texture = load("res://assets/sprites/archer.png")
 	knight_texture = load("res://assets/sprites/knightred.png")
+	beast_texture = load("res://assets/sprites/The Beast Sprite Sheet v1.1 Fixed.png")
 
 	# Create archer
 	var archer = CharacterData.create_archer()
@@ -36,6 +38,11 @@ func _init_characters() -> void:
 	var knight = CharacterData.create_knight()
 	knight.sprite_texture = knight_texture
 	characters["knight"] = knight
+
+	# Create beast
+	var beast = CharacterData.create_beast()
+	beast.sprite_texture = beast_texture
+	characters["beast"] = beast
 
 	# Set default selection
 	selected_character = characters.get(selected_character_id, characters["archer"])
@@ -98,7 +105,9 @@ func get_passive_bonuses() -> Dictionary:
 		"damage_reduction": 0.0,
 		"damage_reduction_threshold": 0.0,  # HP percentage threshold for damage reduction
 		"block_chance": 0.0,
-		"dodge_chance": 0.0
+		"dodge_chance": 0.0,
+		"attack_speed": 0.0,
+		"lifesteal_on_crit": 0.0
 	}
 
 	if selected_character == null:
@@ -114,6 +123,10 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["max_hp"] = 0.20
 			bonuses["damage_reduction"] = 0.10
 			bonuses["damage_reduction_threshold"] = 0.50
+		"beast":
+			# Bloodlust: +25% attack speed, +10% lifesteal on crit
+			bonuses["attack_speed"] = 0.25
+			bonuses["lifesteal_on_crit"] = 0.10
 
 	return bonuses
 
