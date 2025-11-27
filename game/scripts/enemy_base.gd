@@ -330,10 +330,10 @@ func _take_dot_damage(amount: float, color: Color) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
-	# Spawn colored damage number
+	# Spawn colored damage number (higher up to avoid overlapping normal damage)
 	if damage_number_scene:
 		var dmg_num = damage_number_scene.instantiate()
-		dmg_num.global_position = global_position + Vector2(randf_range(-10, 10), -30)
+		dmg_num.global_position = global_position + Vector2(randf_range(-15, 15), -50)
 		get_parent().add_child(dmg_num)
 		if dmg_num.has_method("set_elemental"):
 			dmg_num.set_elemental(str(int(amount)), color)

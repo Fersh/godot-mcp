@@ -350,6 +350,10 @@ func _apply_permanent_upgrades() -> void:
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
+	# Can't take damage if already dead
+	if is_dead:
+		return
+
 	# Check for invulnerability (from dodge or abilities)
 	if is_invulnerable:
 		return
@@ -452,8 +456,11 @@ func take_damage(amount: float) -> void:
 	if current_health <= 0 and not is_dead:
 		current_health = 0
 		# Check for phoenix revive before dying
-		if AbilityManager and AbilityManager.try_phoenix_revive(self):
-			return  # Phoenix triggered, don't die
+		if AbilityManager:
+			print("[Phoenix Debug] has_phoenix: ", AbilityManager.has_phoenix, " phoenix_used: ", AbilityManager.phoenix_used)
+			if AbilityManager.try_phoenix_revive(self):
+				print("[Phoenix Debug] Phoenix triggered! Reviving...")
+				return  # Phoenix triggered, don't die
 		is_dead = true
 		death_animation_finished = false
 		animation_frame = 0.0

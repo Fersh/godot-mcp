@@ -86,5 +86,5 @@ func set_shield() -> void:
 func set_elemental(text: String, color: Color) -> void:
 	label.text = text
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 20)
-	scale = Vector2(0.9, 0.9)
+	label.add_theme_font_size_override("font_size", 14)
+	scale = Vector2(0.7, 0.7)
