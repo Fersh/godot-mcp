@@ -594,22 +594,33 @@ func _spin_player(player: Node2D, duration: float) -> void:
 	if not sprite:
 		return
 
-	# Store original scale for flip restoration
-	var original_scale = sprite.scale
+	# Store original values
+	var original_scale_x = abs(sprite.scale.x)
+	var original_flip = sprite.flip_h
 
-	# Create spin animation by rapidly flipping and scaling
+	# Create smooth spin animation using scale squash to simulate rotation
 	var tween = sprite.create_tween()
-	var spin_steps = 8
-	var step_duration = duration / spin_steps
+	var spin_count = 2  # Number of full spins
+	var spin_duration = duration / spin_count
 
-	for i in range(spin_steps):
-		# Squash horizontally to simulate rotation
-		tween.tween_property(sprite, "scale:x", 0.0, step_duration * 0.5)
+	for i in range(spin_count):
+		# Each "spin" is a smooth squash-flip-expand cycle
+		# Phase 1: Squash to center
+		tween.tween_property(sprite, "scale:x", 0.1, spin_duration * 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+		# Phase 2: Flip and expand (back facing)
 		tween.tween_callback(func(): sprite.flip_h = not sprite.flip_h)
-		tween.tween_property(sprite, "scale:x", abs(original_scale.x), step_duration * 0.5)
+		tween.tween_property(sprite, "scale:x", original_scale_x, spin_duration * 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		# Phase 3: Squash again
+		tween.tween_property(sprite, "scale:x", 0.1, spin_duration * 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+		# Phase 4: Flip back and expand (front facing)
+		tween.tween_callback(func(): sprite.flip_h = not sprite.flip_h)
+		tween.tween_property(sprite, "scale:x", original_scale_x, spin_duration * 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
 	# Restore original state
-	tween.tween_callback(func(): sprite.scale = original_scale)
+	tween.tween_callback(func():
+		sprite.scale.x = original_scale_x
+		sprite.flip_h = original_flip
+	)
 
 func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
@@ -682,17 +693,38 @@ func _spin_player_continuous(player: Node2D, duration: float) -> void:
 	if not player:
 		return
 
-	var original_scale = player.scale
-	var spin_count = int(duration / 0.15)  # Number of full spins
+	# Find the player's sprite
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		sprite = player.get_node_or_null("AnimatedSprite2D")
+	if not sprite:
+		return
 
-	var spin_tween = create_tween()
+	# Store original values
+	var original_scale_x = abs(sprite.scale.x)
+	var original_flip = sprite.flip_h
+
+	# Calculate spins - each full spin takes 0.3 seconds for smooth look
+	var spin_time = 0.3
+	var spin_count = int(duration / spin_time)
+
+	var spin_tween = sprite.create_tween()
 	for i in range(spin_count):
-		# Each spin: squash horizontally (flip effect)
-		spin_tween.tween_property(player, "scale:x", -original_scale.x, 0.075)
-		spin_tween.tween_property(player, "scale:x", original_scale.x, 0.075)
+		# Smooth squash-flip-expand cycle for each half-spin
+		# First half-spin
+		spin_tween.tween_property(sprite, "scale:x", 0.1, spin_time * 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+		spin_tween.tween_callback(func(): sprite.flip_h = not sprite.flip_h)
+		spin_tween.tween_property(sprite, "scale:x", original_scale_x, spin_time * 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
+		# Second half-spin
+		spin_tween.tween_property(sprite, "scale:x", 0.1, spin_time * 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_SINE)
+		spin_tween.tween_callback(func(): sprite.flip_h = not sprite.flip_h)
+		spin_tween.tween_property(sprite, "scale:x", original_scale_x, spin_time * 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_SINE)
 
-	# Ensure we end at original scale
-	spin_tween.tween_property(player, "scale", original_scale, 0.05)
+	# Restore original state
+	spin_tween.tween_callback(func():
+		sprite.scale.x = original_scale_x
+		sprite.flip_h = original_flip
+	)
 
 func _execute_seismic_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)

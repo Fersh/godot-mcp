@@ -328,7 +328,7 @@ static func create_monk() -> CharacterData:
 	# Monk stats - fast, combo-focused, medium survivability
 	data.base_health = 22.0
 	data.base_speed = 185.0
-	data.base_attack_cooldown = 0.85  # Fast attacks for combos
+	data.base_attack_cooldown = 0.75  # Fast attacks for combos
 	data.base_damage = 1.15
 	data.attack_range = 58.0  # Medium melee reach
 
