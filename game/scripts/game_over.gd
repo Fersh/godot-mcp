@@ -125,15 +125,28 @@ func _display_loot() -> void:
 
 	var pending = EquipmentManager.pending_items
 	if pending.size() == 0:
-		# No loot to display - hide container or show "No loot found"
+		# No loot to display
 		if loot_container:
+			var no_loot_container = VBoxContainer.new()
+			no_loot_container.alignment = BoxContainer.ALIGNMENT_CENTER
+
 			var no_loot = Label.new()
-			no_loot.text = "No loot found this run"
+			no_loot.text = "LOOT: None"
 			no_loot.add_theme_font_size_override("font_size", 12)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 			if pixel_font:
 				no_loot.add_theme_font_override("font", pixel_font)
-			loot_container.add_child(no_loot)
+			no_loot_container.add_child(no_loot)
+
+			var do_better = Label.new()
+			do_better.text = "None this run. Do better."
+			do_better.add_theme_font_size_override("font_size", 10)
+			do_better.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			if pixel_font:
+				do_better.add_theme_font_override("font", pixel_font)
+			no_loot_container.add_child(do_better)
+
+			loot_container.add_child(no_loot_container)
 		return
 
 	# Commit the pending items to permanent inventory

@@ -50,9 +50,9 @@ func _setup_elite() -> void:
 	elite_name = "Cyclops"
 	enemy_type = "cyclops"
 
-	# Cyclops stats - 25x health (elite!), slower, hits hard
+	# Cyclops stats - 37.5x health (elite!), slower, hits hard
 	speed = 60.0  # Slower than most enemies
-	max_health = 500.0  # 25x orc health
+	max_health = 750.0  # 50% more health
 	attack_damage = stomp_damage
 	attack_cooldown = 1.0
 	windup_duration = 0.5
@@ -80,7 +80,7 @@ func _setup_elite() -> void:
 		6: 9,   # DEATH
 		7: 4,   # GUARD
 		8: 6,
-		9: 8,   # LASER/BEAM
+		9: 6,   # LASER/BEAM (reduced from 8 - last 2 frames were empty)
 	}
 
 	current_health = max_health

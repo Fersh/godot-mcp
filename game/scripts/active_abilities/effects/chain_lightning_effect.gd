@@ -14,6 +14,7 @@ func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(2.0, 2.0)
 	sprite.centered = true
+	sprite.offset = Vector2(0, 20)  # Move down 20px to align with target
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()

@@ -237,10 +237,10 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"backstab",
 			"Backstab",
-			"+50% Critical Hit chance",
+			"+25% Critical Hit chance",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.STAT_BOOST,
-			[{effect_type = AbilityData.EffectType.BACKSTAB, value = 0.5}]
+			[{effect_type = AbilityData.EffectType.BACKSTAB, value = 0.25}]
 		),
 	]
 
