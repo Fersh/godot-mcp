@@ -124,7 +124,7 @@ text = "- INVENTORY -"
 horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection"]
-custom_minimum_size = Vector2(540, 300)
+custom_minimum_size = Vector2(540, 320)
 layout_mode = 2
 size_flags_vertical = 0
 horizontal_scroll_mode = 0

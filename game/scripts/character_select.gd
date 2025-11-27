@@ -116,21 +116,23 @@ func _setup_preview_panel() -> void:
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	outer_center.add_child(vbox)
 
-	# Sprite preview - fixed height to match mage (32px * 2.5 = 80px)
+	# Sprite preview - fixed height container for all characters
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(300, 100)
+	sprite_center.custom_minimum_size = Vector2(300, 120)
 	sprite_center.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	sprite_center.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(sprite_center)
 
 	# Use a Control as parent to center the Sprite2D properly
+	# Fixed size so all characters use the same space
 	var sprite_holder = Control.new()
-	sprite_holder.custom_minimum_size = Vector2(100, 100)
+	sprite_holder.custom_minimum_size = Vector2(120, 120)
 	sprite_holder.clip_contents = true
 	sprite_center.add_child(sprite_holder)
 
 	preview_sprite = Sprite2D.new()
 	preview_sprite.centered = true
-	preview_sprite.position = Vector2(50, 50)  # Center within the holder
+	preview_sprite.position = Vector2(60, 60)  # Center within the 120x120 holder
 	sprite_holder.add_child(preview_sprite)
 
 	# Spacer after sprite
@@ -138,32 +140,43 @@ func _setup_preview_panel() -> void:
 	spacer1.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer1)
 
-	# Character name below sprite
+	# Character name below sprite - fixed height
+	var name_container = Control.new()
+	name_container.custom_minimum_size = Vector2(340, 24)
+	vbox.add_child(name_container)
 	preview_name_label = Label.new()
+	preview_name_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	preview_name_label.add_theme_font_size_override("font_size", 18)
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
-	vbox.add_child(preview_name_label)
+	name_container.add_child(preview_name_label)
 
-	# Class label below name (same styling as STATS header)
+	# Class label below name - fixed height
+	var class_container = Control.new()
+	class_container.custom_minimum_size = Vector2(340, 20)
+	vbox.add_child(class_container)
 	preview_class_label = Label.new()
+	preview_class_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	preview_class_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_class_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	preview_class_label.add_theme_font_size_override("font_size", 14)
 	preview_class_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
-	vbox.add_child(preview_class_label)
+	class_container.add_child(preview_class_label)
 
 	# Spacer after class
 	var spacer2 = Control.new()
 	spacer2.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(spacer2)
 
-	# Description - centered (above stats)
-	var desc_container = MarginContainer.new()
-	desc_container.custom_minimum_size = Vector2(340, 30)  # Min height for 2 lines at font size 12
-	desc_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	# Description - fixed height for 2 lines
+	var desc_container = Control.new()
+	desc_container.custom_minimum_size = Vector2(340, 40)
 	vbox.add_child(desc_container)
 	preview_desc_label = Label.new()
+	preview_desc_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	preview_desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	preview_desc_label.add_theme_font_size_override("font_size", 12)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
@@ -174,9 +187,10 @@ func _setup_preview_panel() -> void:
 	spacer3.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer3)
 
-	# Stats section (below description)
+	# Stats section - fixed height for all stats (7 rows * ~16px each)
 	preview_stats_container = VBoxContainer.new()
-	preview_stats_container.add_theme_constant_override("separation", 4)
+	preview_stats_container.custom_minimum_size = Vector2(150, 115)
+	preview_stats_container.add_theme_constant_override("separation", 2)
 	vbox.add_child(preview_stats_container)
 
 	# Spacer after stats
@@ -184,14 +198,15 @@ func _setup_preview_panel() -> void:
 	spacer4.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer4)
 
-	# Passive section
+	# Passive section - fixed height
 	preview_passive_container = VBoxContainer.new()
+	preview_passive_container.custom_minimum_size = Vector2(340, 50)
 	preview_passive_container.add_theme_constant_override("separation", 3)
 	vbox.add_child(preview_passive_container)
 
 	# Spacer after passive (bottom padding)
 	var spacer5 = Control.new()
-	spacer5.custom_minimum_size = Vector2(0, 30)
+	spacer5.custom_minimum_size = Vector2(0, 10)
 	vbox.add_child(spacer5)
 
 func _create_selector_buttons() -> void:
@@ -378,7 +393,7 @@ func _update_preview() -> void:
 
 	# Manual scales to match mage visually
 	var preview_scale = 2.5
-	var preview_pos = Vector2(50, 50)
+	var preview_pos = Vector2(60, 60)  # Center within 120x120 holder
 	var preview_offset = Vector2(0, 0)
 	match char_data.id:
 		"knight":
@@ -387,7 +402,6 @@ func _update_preview() -> void:
 			preview_scale = 2.1
 		"beast":
 			preview_scale = 1.2
-			preview_pos = Vector2(50, 50)
 			# Apply beast's sprite offset to center it properly
 			preview_offset = char_data.sprite_offset
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
