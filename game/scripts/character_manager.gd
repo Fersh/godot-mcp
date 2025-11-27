@@ -142,9 +142,11 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["attack_speed"] = 0.25
 			bonuses["lifesteal_on_crit"] = 0.10
 		"mage":
-			# Arcane Intellect: +30% damage, +50% crit damage
-			bonuses["damage"] = 0.30
-			bonuses["crit_damage"] = 0.50
+			# Arcane Focus: Standing still builds stacks (+10% dmg dealt & taken per stack, max 5)
+			bonuses["has_arcane_focus"] = 1.0
+			bonuses["arcane_focus_per_stack"] = 0.10  # +10% per stack
+			bonuses["arcane_focus_max_stacks"] = 5  # Max 50%
+			bonuses["arcane_focus_decay_time"] = 5.0  # Decay over 5s when moving
 		"monk":
 			# Flowing Strikes: stack-based bonuses handled in player.gd
 			# Flag to enable the flow system

@@ -29,16 +29,15 @@ var game_time: float = 0.0
 # Phase 2: 0:30 - 2:30   - Orcs phase in, ratfolk phase out
 # Phase 3: 2:30 - 4:00   - Primarily orcs, imps start appearing
 # Phase 4: 4:00 - 5:00   - Orcs + imps, slimes start appearing
-# Phase 5: 5:00 - 6:30   - Slimes + skeletons join the mix
-# Phase 6: 6:30 - 8:00   - Kobold priests appear (healers)
-# Phase 7: 8:00+         - Full enemy variety, continuous scaling
+# Phase 5: 5:00 - 8:00   - Slimes + skeletons join the mix
+# Phase 6: 8:00+         - Kobold priests appear (healers), full variety
 
 const PHASE_RATFOLK_START: float = 0.0
 const PHASE_ORC_START: float = 30.0       # 0:30
 const PHASE_IMP_START: float = 150.0      # 2:30
-const PHASE_SLIME_START: float = 240.0    # 4:00 (moved earlier)
+const PHASE_SLIME_START: float = 240.0    # 4:00
 const PHASE_SKELETON_START: float = 300.0 # 5:00
-const PHASE_KOBOLD_START: float = 390.0   # 6:30
+const PHASE_KOBOLD_START: float = 480.0   # 8:00
 
 # Transition durations (how long it takes to fully phase in/out)
 const TRANSITION_DURATION: float = 90.0  # 1.5 minutes for smooth transitions
@@ -193,7 +192,7 @@ func calculate_spawn_weights() -> Dictionary:
 			var progress = (game_time - PHASE_KOBOLD_START) / TRANSITION_DURATION
 			weights["skeleton"] = lerp(0.25, 0.22, clamp(progress, 0.0, 1.0))
 
-	# Kobold Priest: Starts appearing at 6:30, dangerous healer support
+	# Kobold Priest: Starts appearing at 8:00, dangerous healer support
 	if game_time >= PHASE_KOBOLD_START:
 		var progress = (game_time - PHASE_KOBOLD_START) / TRANSITION_DURATION
 		# Kobolds are rare but impactful - they heal other enemies

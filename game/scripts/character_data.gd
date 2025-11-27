@@ -256,7 +256,7 @@ static func create_beast() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Bloodlust"
-	data.passive_description = "+25% Attack Speed, +10% Lifesteal on crit"
+	data.passive_description = "Heal 10% of damage dealt on critical hits"
 
 	return data
 
@@ -312,8 +312,8 @@ static func create_mage() -> CharacterData:
 	data.frames_death_row_2 = 3  # 3 more frames in row 5
 
 	# Passive
-	data.passive_name = "Arcane Intellect"
-	data.passive_description = "+30% Damage, +50% Crit Damage"
+	data.passive_name = "Arcane Focus"
+	data.passive_description = "Standing still: +10% DMG dealt & taken/sec (max 50%). Decays over 5s when moving."
 
 	return data
 

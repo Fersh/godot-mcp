@@ -82,6 +82,13 @@ var flow_damage_per_stack: float = 0.08
 var flow_speed_per_stack: float = 0.05
 var flow_dash_threshold: int = 3
 
+# Mage Arcane Focus system
+var has_arcane_focus: bool = false
+var arcane_focus_stacks: float = 0.0  # Float for smooth buildup/decay
+var arcane_focus_max_stacks: int = 5
+var arcane_focus_per_stack: float = 0.10  # +10% per stack
+var arcane_focus_decay_time: float = 5.0  # Decay over 5s
+
 # Mage-specific death animation
 var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
 var death_spans_rows: bool = false  # Death animation spans multiple rows
@@ -272,6 +279,14 @@ func _apply_character_passive() -> void:
 		flow_stacks = 0
 		flow_timer = 0.0
 
+	# Initialize Mage Arcane Focus system
+	has_arcane_focus = bonuses.get("has_arcane_focus", 0.0) > 0.0
+	if has_arcane_focus:
+		arcane_focus_per_stack = bonuses.get("arcane_focus_per_stack", 0.10)
+		arcane_focus_max_stacks = int(bonuses.get("arcane_focus_max_stacks", 5))
+		arcane_focus_decay_time = bonuses.get("arcane_focus_decay_time", 5.0)
+		arcane_focus_stacks = 0.0
+
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
 		return
@@ -302,6 +317,11 @@ func take_damage(amount: float) -> void:
 	if is_invulnerable:
 		return
 
+	# Apply Mage Arcane Focus damage taken increase
+	var modified_amount = amount
+	if has_arcane_focus and arcane_focus_stacks > 0:
+		modified_amount *= get_arcane_focus_multiplier()
+
 	# Check for dodge first
 	if AbilityManager:
 		var dodge_chance = AbilityManager.get_dodge_chance()
@@ -318,9 +338,9 @@ func take_damage(amount: float) -> void:
 			was_blocked = true
 
 	# Transcendence shields absorb damage first
-	var damage_after_shields = amount
+	var damage_after_shields = modified_amount
 	if AbilityManager:
-		damage_after_shields = AbilityManager.damage_transcendence_shields(amount)
+		damage_after_shields = AbilityManager.damage_transcendence_shields(modified_amount)
 		if damage_after_shields <= 0:
 			# All damage absorbed by shields
 			spawn_shield_text()
@@ -350,7 +370,7 @@ func take_damage(amount: float) -> void:
 
 	# Apply total damage reduction (cap at 75% to prevent invincibility)
 	total_reduction = min(total_reduction, 0.75)
-	final_damage = amount * (1.0 - total_reduction)
+	final_damage = damage_after_shields * (1.0 - total_reduction)
 
 	# Block reduces damage by 50%
 	if was_blocked:
@@ -632,6 +652,10 @@ func _physics_process(delta: float) -> void:
 	velocity = direction * effective_speed
 	move_and_slide()
 
+	# Update Mage Arcane Focus stacks
+	if has_arcane_focus:
+		_update_arcane_focus(delta, direction.length() < 0.1)
+
 	# Keep player within arena bounds (1536x1382)
 	const ARENA_WIDTH = 1536
 	const ARENA_HEIGHT = 1382
@@ -812,6 +836,10 @@ func spawn_single_arrow(direction: Vector2) -> void:
 		arrow.has_knockback = AbilityManager.has_knockback
 		arrow.knockback_force = AbilityManager.knockback_force
 		arrow.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
+
+	# Apply Mage Arcane Focus damage bonus
+	if has_arcane_focus and arcane_focus_stacks > 0:
+		arrow.damage_multiplier *= get_arcane_focus_multiplier()
 
 	# Apply elemental tint
 	var elemental_tint = get_elemental_tint()
@@ -1505,3 +1533,47 @@ func get_flow_attack_speed_multiplier() -> float:
 	if not has_flow or flow_stacks <= 0:
 		return 1.0
 	return 1.0 + (flow_stacks * flow_speed_per_stack)
+
+# ============================================
+# MAGE ARCANE FOCUS SYSTEM
+# ============================================
+
+func _update_arcane_focus(delta: float, is_standing_still: bool) -> void:
+	"""Update Arcane Focus stacks based on movement state."""
+	var prev_stacks = int(arcane_focus_stacks)
+
+	if is_standing_still:
+		# Build stacks: 1 stack per second while standing still
+		arcane_focus_stacks = min(arcane_focus_stacks + delta, float(arcane_focus_max_stacks))
+	else:
+		# Decay stacks over 5 seconds when moving
+		var decay_rate = float(arcane_focus_max_stacks) / arcane_focus_decay_time
+		arcane_focus_stacks = max(arcane_focus_stacks - decay_rate * delta, 0.0)
+
+	# Update buff display when stack count changes
+	var current_stacks = int(arcane_focus_stacks)
+	if current_stacks != prev_stacks or (current_stacks > 0 and not active_buffs.has("arcane_focus")):
+		_update_arcane_focus_buff()
+
+func _update_arcane_focus_buff() -> void:
+	"""Update the Arcane Focus buff display."""
+	var display_stacks = int(arcane_focus_stacks)
+	if display_stacks > 0:
+		var bonus_percent = int(arcane_focus_stacks * arcane_focus_per_stack * 100)
+		active_buffs["arcane_focus"] = {
+			"timer": -1,  # No timer, based on movement
+			"duration": -1,
+			"name": "Focus x" + str(display_stacks),
+			"description": "+" + str(bonus_percent) + "% DMG dealt & taken",
+			"color": Color(0.3, 0.5, 1.0)  # Blue for Mage
+		}
+		emit_signal("buff_changed", active_buffs)
+	elif active_buffs.has("arcane_focus"):
+		active_buffs.erase("arcane_focus")
+		emit_signal("buff_changed", active_buffs)
+
+func get_arcane_focus_multiplier() -> float:
+	"""Get the current Arcane Focus damage multiplier (affects both dealt and taken)."""
+	if not has_arcane_focus or arcane_focus_stacks <= 0:
+		return 1.0
+	return 1.0 + (arcane_focus_stacks * arcane_focus_per_stack)
