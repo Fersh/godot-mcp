@@ -820,14 +820,14 @@ func spawn_swipe_effect() -> void:
 	if AbilityManager:
 		melee_reach *= AbilityManager.get_melee_range_multiplier()
 	swipe.arc_radius = melee_reach
-	# Set arc angle based on melee area
+	# Set arc angle based on melee area - Beast has narrow focus
 	var melee_arc = PI / 2  # Base 90 degrees
+	if character_data and character_data.id == "beast":
+		melee_arc = PI / 6  # Beast: 30 degrees - single target focused
+		swipe.is_claw_attack = true
 	if AbilityManager:
 		melee_arc *= AbilityManager.get_melee_area_multiplier()
 	swipe.arc_angle = melee_arc
-	# Set claw attack visual for beast
-	if character_data and character_data.id == "beast":
-		swipe.is_claw_attack = true
 	# Apply elemental tint
 	var elemental_tint = get_elemental_tint()
 	if elemental_tint != Color.WHITE:
@@ -930,7 +930,9 @@ func perform_melee_attack() -> void:
 		current_attack_row = row_attack
 
 	# Snap attack direction to 8 directions for cleaner arc attacks
-	attack_direction = snap_to_8_directions(attack_direction)
+	# Exception: Beast has narrow arc (30 deg) so snapping (up to 22.5 deg error) causes misses
+	if not (character_data and character_data.id == "beast"):
+		attack_direction = snap_to_8_directions(attack_direction)
 
 	# Monk Flow dash - dash toward enemy at 3+ stacks
 	var closest_enemy = find_closest_enemy()
@@ -972,8 +974,10 @@ func perform_melee_attack() -> void:
 	# Get enemies in melee range with arc check
 	var enemies = get_tree().get_nodes_in_group("enemies")
 
-	# Base melee arc (90 degrees), modified by melee_area ability
-	var melee_arc = PI / 2
+	# Base melee arc - Beast has narrow focus, others have 90 degrees
+	var melee_arc = PI / 2  # Default 90 degrees
+	if character_data and character_data.id == "beast":
+		melee_arc = PI / 6  # Beast: 30 degrees - single target focused
 	if AbilityManager:
 		melee_arc *= AbilityManager.get_melee_area_multiplier()
 
@@ -1149,10 +1153,11 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 	sprite.frame = current_row * cols_per_row + int(animation_frame)
 
 	# Update sprite offset based on flip (for off-center sprites like beast)
+	# When flipped (facing left), negate X offset to compensate for the horizontal flip
 	if sprite.flip_h:
-		sprite.offset = base_sprite_offset
-	else:
 		sprite.offset = Vector2(-base_sprite_offset.x, base_sprite_offset.y)
+	else:
+		sprite.offset = base_sprite_offset
 
 func update_death_animation(delta: float) -> void:
 	# Play death animation once, then hold on last frame
@@ -1311,10 +1316,11 @@ func update_ability_stats(modifiers: Dictionary) -> void:
 			attack_speed_mult += AbilityManager.frenzy_boost
 	attack_cooldown = base_attack_cooldown / attack_speed_mult
 
-	# Update max HP (add flat amount)
-	var hp_change = modifiers.get("max_hp", 0.0)
+	# Update max HP (add flat amount + percentage)
+	var hp_flat = modifiers.get("max_hp", 0.0)
+	var hp_percent = modifiers.get("max_hp_percent", 0.0)
 	var old_max = max_health
-	var new_max = base_max_health + hp_change
+	var new_max = (base_max_health + hp_flat) * (1.0 + hp_percent)
 
 	# When max HP increases, add the bonus to current health too
 	# (so 10/25 + 50 max HP = 60/75, not 30/75)

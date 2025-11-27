@@ -44,9 +44,9 @@ func _apply_totem_effect() -> void:
 			continue
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= totem_radius:
-			# Apply damage first
+			# Apply damage first (totem_damage is DPS, so multiply by tick_interval for damage per tick)
 			if totem_damage > 0 and enemy.has_method("take_damage"):
-				var tick_damage = totem_damage * tick_interval
+				var tick_damage = max(1.0, totem_damage * tick_interval)  # Minimum 1 damage per tick
 				enemy.take_damage(tick_damage, false)
 			# Apply slow
 			if totem_slow_percent > 0 and enemy.has_method("apply_slow"):

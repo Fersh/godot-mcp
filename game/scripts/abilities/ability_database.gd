@@ -62,10 +62,10 @@ static func get_common_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"vitality",
 			"Vitality",
-			"+50 Max HP",
+			"+20% Max HP",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.STAT_BOOST,
-			[{effect_type = AbilityData.EffectType.MAX_HP, value = 50.0}]
+			[{effect_type = AbilityData.EffectType.MAX_HP_PERCENT, value = 0.2}]
 		),
 		AbilityData.new(
 			"fast_learner",
@@ -314,7 +314,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"Strikes random enemies with lightning",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PERIODIC,
-			[{effect_type = AbilityData.EffectType.LIGHTNING_STRIKE, value = 25.0}]  # damage
+			[{effect_type = AbilityData.EffectType.LIGHTNING_STRIKE, value = 12.0}]  # damage
 		),
 		AbilityData.new(
 			"drone_support",

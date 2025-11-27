@@ -291,6 +291,7 @@ func reset() -> void:
 		"attack_speed": 0.0,
 		"damage": 0.0,
 		"max_hp": 0.0,
+		"max_hp_percent": 0.0,
 		"xp_gain": 0.0,
 		"move_speed": 0.0,
 		"pickup_range": 0.0,
@@ -942,6 +943,8 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				stat_modifiers["damage"] += value
 			AbilityData.EffectType.MAX_HP:
 				stat_modifiers["max_hp"] += value
+			AbilityData.EffectType.MAX_HP_PERCENT:
+				stat_modifiers["max_hp_percent"] += value
 			AbilityData.EffectType.XP_GAIN:
 				stat_modifiers["xp_gain"] += value
 			AbilityData.EffectType.MOVE_SPEED:

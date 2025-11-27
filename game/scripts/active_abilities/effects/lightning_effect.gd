@@ -13,6 +13,9 @@ func _ready() -> void:
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
 	sprite.scale = Vector2(effect_scale, effect_scale)
+	# Offset sprite upward so the lightning strike point (bottom of sprite) lands on the target
+	# Sprite is 64x128, scaled by effect_scale, so offset by ~half the scaled height
+	sprite.offset = Vector2(0, -64)  # Move sprite up so bottom aligns with position
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
