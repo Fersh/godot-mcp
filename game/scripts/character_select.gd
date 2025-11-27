@@ -103,15 +103,16 @@ func _setup_preview_panel() -> void:
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	outer_center.add_child(vbox)
 
-	# Sprite preview - centered using SubViewportContainer for proper centering
+	# Sprite preview - fixed height to match mage (32px * 2.5 = 80px)
 	var sprite_center = CenterContainer.new()
-	sprite_center.custom_minimum_size = Vector2(300, 90)
+	sprite_center.custom_minimum_size = Vector2(300, 100)
 	sprite_center.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(sprite_center)
 
 	# Use a Control as parent to center the Sprite2D properly
 	var sprite_holder = Control.new()
 	sprite_holder.custom_minimum_size = Vector2(100, 100)
+	sprite_holder.clip_contents = true
 	sprite_center.add_child(sprite_holder)
 
 	preview_sprite = Sprite2D.new()
@@ -183,8 +184,8 @@ func _setup_preview_panel() -> void:
 func _create_selector_buttons() -> void:
 	var all_chars = CharacterManager.get_all_characters()
 
-	# Reorder to: ranger, knight, mage, monk, beast
-	var order = ["archer", "knight", "mage", "monk", "beast"]
+	# Reorder to: ranger, knight, monk, mage, beast
+	var order = ["archer", "knight", "monk", "mage", "beast"]
 	characters_list = []
 	for id in order:
 		for char_data in all_chars:
@@ -228,6 +229,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 
 	var sprite_holder = Control.new()
 	sprite_holder.custom_minimum_size = Vector2(46, 46)
+	sprite_holder.clip_contents = true
 	center.add_child(sprite_holder)
 
 	var sprite = Sprite2D.new()
@@ -243,10 +245,10 @@ func _create_selector_button(char_data: CharacterData, index: int) -> PanelConta
 		"knight":
 			sprite_scale = 1.1
 		"monk":
-			sprite_scale = 1.0
+			sprite_scale = 1.1
 		"beast":
 			sprite_scale = 0.75
-			sprite_pos = Vector2(23, 16)
+			sprite_pos = Vector2(48, -5)
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -367,10 +369,10 @@ func _update_preview() -> void:
 		"knight":
 			preview_scale = 2.1
 		"monk":
-			preview_scale = 1.5
+			preview_scale = 2.1
 		"beast":
-			preview_scale = 1.15
-			preview_pos = Vector2(55, 38)
+			preview_scale = 1.4
+			preview_pos = Vector2(100, -10)
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 
