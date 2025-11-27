@@ -80,23 +80,25 @@ func _setup_notification_ui() -> void:
 	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
-	# Use pixel font
+	# Use pixel font - very bold and large
 	if pixel_font:
 		notification_label.add_theme_font_override("font", pixel_font)
-	notification_label.add_theme_font_size_override("font_size", 32)
-	notification_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3, 1.0))
+	notification_label.add_theme_font_size_override("font_size", 48)
+	notification_label.add_theme_color_override("font_color", Color(1.0, 0.15, 0.15, 1.0))
 
-	# Add shadow/outline for visibility
-	notification_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	notification_label.add_theme_constant_override("shadow_offset_x", 4)
-	notification_label.add_theme_constant_override("shadow_offset_y", 4)
+	# Heavy shadow/outline for bold visibility
+	notification_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	notification_label.add_theme_constant_override("shadow_offset_x", 5)
+	notification_label.add_theme_constant_override("shadow_offset_y", 5)
 
-	# Center on screen
-	notification_label.set_anchors_preset(Control.PRESET_CENTER)
+	# Add outline for extra boldness
+	notification_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+	notification_label.add_theme_constant_override("outline_size", 6)
+
+	# Center exactly in middle of screen
+	notification_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	notification_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	notification_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	notification_label.size = Vector2(800, 100)
-	notification_label.position = Vector2(-400, -50)
 
 	elite_notification.add_child(notification_label)
 	notification_label.visible = false
@@ -202,19 +204,16 @@ func _start_warning() -> void:
 			JuiceManager.shake_medium()
 
 func _update_notification_fade() -> void:
-	# Pulse effect then fade out
+	# Stay solid on screen, then fade out at the end
 	var progress = 1.0 - (warning_timer / warning_duration)
 
-	if progress < 0.7:
-		# Pulsing phase
-		var pulse = 0.8 + sin(progress * 20.0) * 0.2
-		notification_label.modulate.a = pulse
-		# Scale pulse
-		var scale_pulse = 1.0 + sin(progress * 15.0) * 0.05
-		notification_label.scale = Vector2(scale_pulse, scale_pulse)
+	if progress < 0.8:
+		# Stay fully visible - no pulsing or flashing
+		notification_label.modulate.a = 1.0
+		notification_label.scale = Vector2(1.0, 1.0)
 	else:
-		# Fade out phase
-		var fade_progress = (progress - 0.7) / 0.3
+		# Fade out in final 20%
+		var fade_progress = (progress - 0.8) / 0.2
 		notification_label.modulate.a = 1.0 - fade_progress
 		notification_label.scale = Vector2(1.0, 1.0)
 

@@ -22,12 +22,55 @@ var crit_multiplier: float = 2.0
 var has_knockback: bool = false
 var knockback_force: float = 0.0
 var speed_multiplier: float = 1.0
+var is_mage_orb: bool = false
 
 func _ready() -> void:
 	# Rotate arrow to face direction
 	rotation = direction.angle()
 	start_position = global_position
 	speed *= speed_multiplier
+
+	# Transform into mage orb if needed
+	if is_mage_orb:
+		_setup_mage_orb()
+
+func _setup_mage_orb() -> void:
+	# Remove arrow visuals
+	var sprite = get_node_or_null("Sprite")
+	var tip = get_node_or_null("Tip")
+	if sprite:
+		sprite.queue_free()
+	if tip:
+		tip.queue_free()
+
+	# Create blue pixel orb
+	var orb = Node2D.new()
+	orb.name = "MageOrb"
+	add_child(orb)
+
+	# Core orb (bright blue center)
+	var core = Polygon2D.new()
+	var core_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		core_points.append(Vector2(cos(angle), sin(angle)) * 4)
+	core.polygon = core_points
+	core.color = Color(0.4, 0.7, 1.0, 1.0)  # Light blue
+	orb.add_child(core)
+
+	# Outer glow (darker blue)
+	var glow = Polygon2D.new()
+	var glow_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		glow_points.append(Vector2(cos(angle), sin(angle)) * 7)
+	glow.polygon = glow_points
+	glow.color = Color(0.2, 0.4, 0.9, 0.6)  # Darker blue, semi-transparent
+	glow.z_index = -1
+	orb.add_child(glow)
+
+	# Reset rotation since orb is circular
+	rotation = 0
 
 func _physics_process(delta: float) -> void:
 	position += direction * speed * delta

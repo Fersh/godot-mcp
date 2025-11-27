@@ -1,6 +1,7 @@
 extends Node2D
 
 # Melee swipe arc effect for knight attacks
+# Also supports claw marks for beast attacks
 
 var direction: Vector2 = Vector2.RIGHT
 var arc_angle: float = PI / 2  # 90 degrees base, modified by melee_area
@@ -8,6 +9,7 @@ var arc_radius: float = 80.0  # Modified by melee_range
 var lifetime: float = 0.25
 var timer: float = 0.0
 var tint_color: Color = Color.WHITE  # Elemental tint
+var is_claw_attack: bool = false  # Beast claw marks mode
 
 # Arc animation
 var arc_progress: float = 0.0
@@ -57,16 +59,73 @@ func _process(delta: float) -> void:
 		queue_free()
 
 func _draw() -> void:
+	if is_claw_attack:
+		_draw_claw_marks()
+	else:
+		_draw_arc_sweep()
+
+func _draw_claw_marks() -> void:
+	var sweep_alpha = 1.0 - (timer / lifetime)
+	var claw_color = Color(tint_color.r, tint_color.g, tint_color.b, sweep_alpha)
+
+	# Draw 3 parallel claw slash marks
+	var base_angle = direction.angle()
+	var claw_spread = 0.3  # Angle spread between claws
+	var claw_length = arc_radius * arc_progress
+
+	for i in range(3):
+		var offset_angle = (i - 1) * claw_spread  # -1, 0, 1 for spread
+		var claw_angle = base_angle + offset_angle * 0.4
+
+		# Each claw is a curved slash line
+		var start_dist = arc_radius * 0.2
+		var end_dist = start_dist + claw_length * 0.8
+
+		# Draw multiple segments for curved claw effect
+		var segments = 6
+		var prev_point: Vector2
+		for j in range(segments + 1):
+			var t = float(j) / float(segments)
+			# Curve the claw slightly
+			var curve_offset = sin(t * PI) * 0.15 * (i - 1)
+			var seg_angle = claw_angle + curve_offset
+			var seg_dist = lerp(start_dist, end_dist, t)
+			var point = Vector2(cos(seg_angle), sin(seg_angle)) * seg_dist
+
+			if j > 0:
+				# Thicker at start, thinner at tip
+				var thickness = lerp(4.0, 1.5, t)
+				var line_alpha = sweep_alpha * lerp(0.6, 1.0, t)
+				var line_color = Color(claw_color.r, claw_color.g, claw_color.b, line_alpha)
+				draw_line(prev_point, point, line_color, thickness)
+			prev_point = point
+
+		# Draw claw tip highlight
+		if arc_progress > 0.3:
+			var tip_pos = Vector2(cos(claw_angle), sin(claw_angle)) * end_dist
+			var tip_color = Color(1.0, 0.9, 0.8, sweep_alpha * 0.8)
+			draw_circle(tip_pos, 2.5 * sweep_alpha, tip_color)
+
+	# Draw small blood/impact particles
+	for p in trail_particles:
+		var age = timer - p.spawn_time
+		if age > 0 and p.alpha > 0:
+			var pos = Vector2(cos(p.angle), sin(p.angle)) * p.radius * 0.8
+			var pixel_pos = Vector2(round(pos.x), round(pos.y))
+			# Reddish particles for claw attacks
+			var color = Color(1.0, 0.3, 0.2, p.alpha * 0.5)
+			var rect = Rect2(pixel_pos - Vector2(p.size / 2, p.size / 2), Vector2(p.size, p.size))
+			draw_rect(rect, color)
+
+func _draw_arc_sweep() -> void:
 	var base_angle = direction.angle()
 	var start_angle = base_angle - arc_angle / 2
-	var end_angle = base_angle + arc_angle / 2
 
 	# Calculate current sweep position
 	var sweep_angle = start_angle + arc_progress * arc_angle
 
 	# Draw the main arc sweep line
 	var sweep_alpha = 1.0 - (timer / lifetime)
-	var sweep_color = Color(tint_color.r, tint_color.g, tint_color.b, sweep_alpha * 0.8)
 
 	# Draw arc outline (multiple lines for thickness)
 	var arc_points = 16

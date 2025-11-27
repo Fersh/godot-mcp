@@ -221,22 +221,22 @@ static func create_beast() -> CharacterData:
 	data.frame_size = Vector2(128, 128)
 	data.hframes = 11
 	data.vframes = 9
-	data.sprite_scale = Vector2(1.5, 1.5)
+	data.sprite_scale = Vector2(1.08, 1.08)  # Reduced 20% from 1.35
 
 	# Animation rows (based on Beast spritesheet)
-	# Row 0: emerge, Row 1: taunt, Row 2: idle, Row 3: move
-	# Row 4: attack1, Row 5: attack2, Row 6: damage, Row 7: damage hard, Row 8: death
+	# Row 0: emerge (8), Row 1: taunt (7), Row 2: idle (6), Row 3: leap (11 - skip)
+	# Row 4: attack (8), Row 5: move (8), Row 6: damage (4), Row 7: damage2 (5), Row 8: death (10)
 	data.row_idle = 2
-	data.row_move = 3
-	data.row_attack = 4  # Attack 1
+	data.row_move = 5  # Move animation
+	data.row_attack = 4  # Attack
 	data.row_attack_up = 4  # Beast uses same attack for all directions
 	data.row_attack_down = 4
 	data.row_damage = 6
 	data.row_death = 8
 
-	# Frame counts
+	# Frame counts - adjusted to actual frame counts in spritesheet
 	data.frames_idle = 6
-	data.frames_move = 11
+	data.frames_move = 8
 	data.frames_attack = 8
 	data.frames_attack_up = 8
 	data.frames_attack_down = 8
@@ -244,15 +244,15 @@ static func create_beast() -> CharacterData:
 	data.frames_death = 10
 
 	# Beast-specific animations
-	data.row_spawn = 0
+	data.row_spawn = 0  # Emerge
 	data.row_taunt = 1
-	data.row_attack_alt = 5  # Attack 2
-	data.row_damage_hard = 7
+	data.row_attack_alt = 3  # Leap attack (don't use)
+	data.row_damage_hard = 7  # Damage 2
 	data.frames_spawn = 8
 	data.frames_taunt = 7
-	data.frames_attack_alt = 8
+	data.frames_attack_alt = 11
 	data.frames_damage_hard = 5
-	data.has_alt_attack = true  # Randomly alternate between attack 1 and 2
+	data.has_alt_attack = false  # Disabled - leap attack not used
 
 	# Passive
 	data.passive_name = "Bloodlust"

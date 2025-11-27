@@ -820,6 +820,9 @@ func spawn_swipe_effect() -> void:
 	if AbilityManager:
 		melee_arc *= AbilityManager.get_melee_area_multiplier()
 	swipe.arc_angle = melee_arc
+	# Set claw attack visual for beast
+	if character_data and character_data.id == "beast":
+		swipe.is_claw_attack = true
 	# Apply elemental tint
 	var elemental_tint = get_elemental_tint()
 	if elemental_tint != Color.WHITE:
@@ -859,6 +862,10 @@ func spawn_single_arrow(direction: Vector2) -> void:
 	var arrow = arrow_scene.instantiate()
 	arrow.global_position = global_position
 	arrow.direction = direction
+
+	# Set mage orb visual if playing as mage
+	if character_data and character_data.id == "mage":
+		arrow.is_mage_orb = true
 
 	# Pass ability info to arrow (includes permanent upgrades)
 	if AbilityManager:
