@@ -80,7 +80,7 @@ func _setup_elite() -> void:
 		6: 9,   # DEATH
 		7: 4,   # GUARD
 		8: 6,
-		9: 6,   # LASER/BEAM (reduced from 8 - last 2 frames were empty)
+		9: 4,   # LASER/BEAM (reduced further - frames 5-8 were empty)
 	}
 
 	current_health = max_health
@@ -237,13 +237,15 @@ func _process_special_attack(delta: float) -> void:
 		laser_tick_timer = laser_tick_rate
 		_laser_damage_check()
 
-	# Animate laser pose
+	# Animate laser pose - play through once then hold final frame
 	var dir = current_laser_direction
 	animation_frame += animation_speed * 0.5 * delta
-	var max_frames = FRAME_COUNTS.get(ROW_LASER, 6)
+	var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
+	# Clamp to valid frame range
 	if animation_frame >= max_frames:
-		animation_frame = max_frames - 2  # Hold near end of animation
-	sprite.frame = ROW_LASER * COLS_PER_ROW + int(animation_frame)
+		animation_frame = max_frames - 1
+	var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
+	sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
 	if dir.x != 0:
 		sprite.flip_h = dir.x < 0
 
