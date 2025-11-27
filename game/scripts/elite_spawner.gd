@@ -176,8 +176,8 @@ func _start_warning() -> void:
 	pending_spawn = true
 
 	# Determine if boss or elite based on spawn count
-	# Elite at 2.5m, 7.5m, 12.5m... (spawn 0, 2, 4...)
-	# Boss at 5m, 10m, 15m... (spawn 1, 3, 5...)
+	# Elite at 2.5m, 7.5m, 12.5m... (spawn 0, 2, 4...) - even counts
+	# Boss at 5m, 10m, 15m... (spawn 1, 3, 5...) - odd counts
 	var is_boss = (spawn_count % 2 == 1)
 
 	# Set notification text
@@ -218,7 +218,9 @@ func _update_notification_fade() -> void:
 		notification_label.scale = Vector2(1.0, 1.0)
 
 func _do_spawn() -> void:
-	var is_boss = (spawn_count % 2 == 0)
+	# Elite at 2.5m, 7.5m, 12.5m... (spawn 0, 2, 4...) - even counts
+	# Boss at 5m, 10m, 15m... (spawn 1, 3, 5...) - odd counts
+	var is_boss = (spawn_count % 2 == 1)
 	spawn_count += 1
 
 	if is_boss:
