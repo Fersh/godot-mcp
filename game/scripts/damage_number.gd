@@ -78,21 +78,39 @@ func _process(delta: float) -> void:
 		queue_free()
 
 func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool = false) -> void:
-	label.text = str(int(amount))
-
 	if is_player_damage:
-		# Player taking damage - red
+		# Player taking damage - red with shake animation
+		label.text = str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1))
 		label.add_theme_font_size_override("font_size", 32)
+		# Add outline for visibility
+		label.add_theme_color_override("font_outline_color", Color(0.3, 0, 0, 1))
+		label.add_theme_constant_override("outline_size", 4)
+		# Shake animation for player damage (#22)
+		_animate_shake()
 	elif is_critical:
-		# Critical hit - bigger gold/yellow
+		# ENHANCED Critical hit - much bigger with "CRIT!" prefix and epic effects (#7)
+		label.text = "CRIT! " + str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
-		label.add_theme_font_size_override("font_size", 42)
-		scale = Vector2(1.2, 1.2)
+		label.add_theme_font_size_override("font_size", 38)
+		# Strong outline for crits
+		label.add_theme_color_override("font_outline_color", Color(0.6, 0.3, 0, 1))
+		label.add_theme_constant_override("outline_size", 5)
+		scale = Vector2(0.3, 0.3)  # Start small for bigger pop
+		# Epic crit animation
+		_animate_crit()
+		# Register with JuiceManager for crit streaks
+		if JuiceManager:
+			JuiceManager.register_crit()
 	else:
-		# Normal enemy hit - white
+		# Normal enemy hit - white with subtle bounce (#22)
+		label.text = str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
 		label.add_theme_font_size_override("font_size", 26)
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+		label.add_theme_constant_override("outline_size", 3)
+		# Subtle bounce animation
+		_animate_bounce()
 
 func set_heal(amount: float) -> void:
 	label.text = "+" + str(int(amount))
@@ -132,3 +150,54 @@ func set_elemental(text: String, color: Color) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", 14)
 	scale = Vector2(0.7, 0.7)
+
+# ============================================
+# ENHANCED ANIMATIONS (#22)
+# ============================================
+
+func _animate_bounce() -> void:
+	"""Subtle bounce animation for normal damage numbers."""
+	var tween = create_tween()
+	tween.tween_property(self, "scale", Vector2(1.1, 0.9), 0.05)
+	tween.tween_property(self, "scale", Vector2(0.95, 1.05), 0.05)
+	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.05)
+
+func _animate_crit() -> void:
+	"""Epic crit animation - starts small, pops big, slight rotation."""
+	var tween = create_tween()
+	tween.set_parallel(true)
+	# Scale pop - start small, overshoot, settle
+	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.12).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.chain().tween_property(self, "scale", Vector2(1.2, 1.2), 0.1)
+	# Slight rotation wobble
+	var rot_tween = create_tween()
+	rot_tween.tween_property(self, "rotation", 0.1, 0.05)
+	rot_tween.tween_property(self, "rotation", -0.1, 0.1)
+	rot_tween.tween_property(self, "rotation", 0.0, 0.1)
+	# Brief color flash (white flash then back to gold)
+	var color_tween = create_tween()
+	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
+	color_tween.tween_callback(func():
+		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
+	).set_delay(0.08)
+
+func _animate_shake() -> void:
+	"""Shake animation for player damage numbers."""
+	var tween = create_tween()
+	var original_pos = position
+	tween.tween_property(self, "position", original_pos + Vector2(4, 0), 0.03)
+	tween.tween_property(self, "position", original_pos + Vector2(-4, 0), 0.03)
+	tween.tween_property(self, "position", original_pos + Vector2(2, 0), 0.03)
+	tween.tween_property(self, "position", original_pos, 0.03)
+
+func set_kill_streak(streak: int, tier_name: String, color: Color) -> void:
+	"""Special display for kill streak milestones."""
+	label.text = tier_name + " x" + str(streak)
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	label.add_theme_constant_override("outline_size", 5)
+	scale = Vector2(0.5, 0.5)
+	_animate_crit()
+	# Longer fade for milestones
+	fade_duration = 1.5

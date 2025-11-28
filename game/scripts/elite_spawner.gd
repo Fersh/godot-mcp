@@ -293,28 +293,48 @@ func _start_warning() -> void:
 	# Boss at 5m, 10m, 15m... (spawn 1, 3, 5...) - odd counts
 	var is_boss = (spawn_count % 2 == 1)
 
-	# Set notification text
+	# Set notification text with more dramatic messages (#3)
 	if is_boss:
-		notification_label.text = "BOSS INCOMING"
-		notification_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1.0))
+		notification_label.text = "BOSS APPROACHES"
+		notification_label.add_theme_color_override("font_color", Color(1.0, 0.15, 0.15, 1.0))
+		notification_label.add_theme_font_size_override("font_size", 56)  # Bigger for boss
 	else:
 		notification_label.text = "ELITE INCOMING"
 		notification_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.2, 1.0))
+		notification_label.add_theme_font_size_override("font_size", 48)
 
-	# Show notification
+	# Show notification with slam-in animation (#3)
 	notification_label.visible = true
 	notification_label.modulate.a = 1.0
+	notification_label.scale = Vector2(2.0, 2.0)  # Start big
+	notification_label.pivot_offset = notification_label.size / 2
+
+	var slam_tween = create_tween()
+	slam_tween.tween_property(notification_label, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 	# Play warning sound if available
 	if SoundManager and SoundManager.has_method("play_elite_warning"):
 		SoundManager.play_elite_warning()
 
-	# Screen shake for impact (bigger for boss)
+	# Screen shake for impact (bigger for boss) with chromatic aberration (#3)
 	if JuiceManager:
 		if is_boss:
 			JuiceManager.shake_large()
+			JuiceManager.chromatic_pulse(0.8)
+			JuiceManager.hitstop_small()
 		else:
 			JuiceManager.shake_medium()
+			JuiceManager.chromatic_pulse(0.4)
+
+	# Haptic feedback (#3)
+	if HapticManager:
+		if is_boss:
+			HapticManager.heavy()
+		else:
+			HapticManager.medium()
+
+	# Darken screen briefly for dramatic effect (#3)
+	_flash_screen_dark(is_boss)
 
 func _update_notification_fade() -> void:
 	# Stay solid on screen, then fade out at the end
@@ -523,3 +543,25 @@ func get_active_elite_count() -> int:
 # Debug function to force spawn an elite
 func debug_spawn_elite() -> void:
 	_start_warning()
+
+# Screen darkening effect for dramatic elite/boss announcements (#3)
+var dark_overlay: ColorRect = null
+
+func _flash_screen_dark(is_boss: bool) -> void:
+	"""Briefly darken the screen for dramatic effect."""
+	if dark_overlay == null:
+		# Create overlay if it doesn't exist
+		var overlay_layer = CanvasLayer.new()
+		overlay_layer.layer = 99
+		add_child(overlay_layer)
+
+		dark_overlay = ColorRect.new()
+		dark_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+		dark_overlay.color = Color(0, 0, 0, 0)
+		overlay_layer.add_child(dark_overlay)
+
+	# Flash dark then fade back
+	var intensity = 0.5 if is_boss else 0.3
+	var tween = create_tween()
+	tween.tween_property(dark_overlay, "color:a", intensity, 0.1)
+	tween.tween_property(dark_overlay, "color:a", 0.0, 0.4)

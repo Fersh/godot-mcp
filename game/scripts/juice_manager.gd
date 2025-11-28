@@ -48,6 +48,9 @@ func _process(delta: float) -> void:
 	if get_tree().paused:
 		return
 
+	# Extended processing for new features
+	_process_extended(delta)
+
 	# Update screen shake
 	if shake_intensity > 0:
 		shake_intensity = lerp(shake_intensity, 0.0, shake_decay * delta)
@@ -197,3 +200,109 @@ func update_player_health(health_ratio: float) -> void:
 # Ultimate shake - massive epic shake for ultimate activation
 func shake_ultimate() -> void:
 	shake(20.0, 0.06)
+
+# Level up shake - celebratory shake
+func shake_levelup() -> void:
+	shake(8.0, 0.025)
+
+# Kill streak milestone shake
+func shake_milestone(tier: int) -> void:
+	var intensity = 4.0 + tier * 2.0
+	var rotation_amt = 0.01 + tier * 0.005
+	shake(intensity, rotation_amt)
+
+# ============================================
+# ENHANCED NEAR-DEATH SYSTEM (#11)
+# ============================================
+
+# Near death effects
+var near_death_audio_active: bool = false
+var heartbeat_sound_timer: float = 0.0
+var near_death_shake_timer: float = 0.0
+
+func update_near_death_audio(delta: float) -> void:
+	if low_hp_active and low_hp_ratio <= 0.25:
+		# Calculate urgency based on HP
+		var health_urgency = 1.0 - (low_hp_ratio / 0.25)
+		health_urgency = clamp(health_urgency, 0.0, 1.0)
+		var beat_interval = lerp(1.2, 0.4, health_urgency)
+
+		heartbeat_sound_timer -= delta
+		if heartbeat_sound_timer <= 0:
+			heartbeat_sound_timer = beat_interval
+			# Haptic heartbeat pulse at very low HP
+			if HapticManager and health_urgency > 0.5:
+				HapticManager.light()
+
+		# Subtle screen shake at critical HP (adds tension)
+		near_death_shake_timer -= delta
+		if near_death_shake_timer <= 0 and health_urgency > 0.7:
+			near_death_shake_timer = randf_range(0.8, 1.5)
+			shake(1.5, 0.005)  # Very subtle shake
+	else:
+		heartbeat_sound_timer = 0.0
+		near_death_shake_timer = 0.0
+
+# ============================================
+# LEVEL UP CELEBRATION
+# ============================================
+
+var level_up_overlay: ColorRect = null
+
+func register_level_up_overlay(overlay: ColorRect) -> void:
+	level_up_overlay = overlay
+
+func trigger_level_up_celebration() -> void:
+	"""Epic level up celebration with multiple effects."""
+	# Screen shake
+	shake_levelup()
+
+	# Chromatic pulse
+	chromatic_pulse(0.8)
+
+	# Brief hitstop for impact
+	hitstop_small()
+
+	# Haptic
+	if HapticManager:
+		HapticManager.level_up()
+
+# ============================================
+# PLAYER DAMAGE FREEZE
+# ============================================
+
+func player_damage_freeze() -> void:
+	"""1-frame freeze when player takes damage for impact."""
+	hitstop_micro()
+
+# ============================================
+# CRITICAL HIT EFFECTS
+# ============================================
+
+var crit_streak: int = 0
+var crit_streak_timer: float = 0.0
+const CRIT_STREAK_DECAY: float = 2.0
+
+func register_crit() -> void:
+	"""Track critical hit streaks for escalating effects."""
+	crit_streak += 1
+	crit_streak_timer = CRIT_STREAK_DECAY
+
+	# Escalating effects based on crit streak
+	if crit_streak >= 3:
+		shake_small()
+		chromatic_pulse(0.3)
+	elif crit_streak >= 5:
+		shake_medium()
+		chromatic_pulse(0.5)
+
+func update_crit_streak(delta: float) -> void:
+	if crit_streak > 0:
+		crit_streak_timer -= delta
+		if crit_streak_timer <= 0:
+			crit_streak = 0
+
+func _process_extended(delta: float) -> void:
+	"""Extended processing for new features."""
+	update_crit_streak(delta)
+	update_near_death_audio(delta)

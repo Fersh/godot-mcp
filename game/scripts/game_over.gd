@@ -48,6 +48,9 @@ func _ready() -> void:
 	# Create settings button (top right)
 	_create_settings_button()
 
+	# Polish: Animated stats reveal (#24)
+	_setup_animated_reveal()
+
 	# Get stats from StatsManager
 	if StatsManager:
 		var run = StatsManager.get_run_stats()
@@ -454,3 +457,141 @@ func _input(event: InputEvent) -> void:
 			if not settings_btn_rect.has_point(event.position):
 				settings_visible = false
 				settings_dropdown.visible = false
+
+# ============================================
+# POLISHED DEATH SCREEN ANIMATIONS (#24)
+# ============================================
+
+var reveal_delay: float = 0.0
+var stats_to_animate: Array = []
+
+func _setup_animated_reveal() -> void:
+	"""Setup the staggered animation for stats reveal."""
+	# Hide all stat labels initially
+	stats_to_animate = [points_label, time_label, best_time_label, kills_label, best_kills_label, coins_label]
+
+	for stat in stats_to_animate:
+		if stat:
+			stat.modulate.a = 0.0
+			stat.position.x -= 50  # Start offset to the left
+
+	# Also animate the title
+	if title_label:
+		title_label.modulate.a = 0.0
+		title_label.scale = Vector2(0.5, 0.5)
+		title_label.pivot_offset = title_label.size / 2
+
+	# Start the reveal sequence
+	_animate_title_reveal()
+
+func _animate_title_reveal() -> void:
+	"""Animate the title slamming in."""
+	if not title_label:
+		_animate_stats_reveal()
+		return
+
+	var tween = create_tween()
+	tween.tween_property(title_label, "modulate:a", 1.0, 0.3)
+	tween.parallel().tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_callback(func():
+		# Screen shake on title reveal
+		if JuiceManager:
+			JuiceManager.shake_medium()
+		if HapticManager:
+			HapticManager.medium()
+		_animate_stats_reveal()
+	)
+
+func _animate_stats_reveal() -> void:
+	"""Animate stats flying in one by one."""
+	var delay = 0.0
+	var delay_increment = 0.15
+
+	for i in range(stats_to_animate.size()):
+		var stat = stats_to_animate[i]
+		if stat == null:
+			continue
+
+		var original_x = stat.position.x + 50  # Original position
+
+		var tween = create_tween()
+		tween.tween_interval(delay)
+		tween.tween_property(stat, "modulate:a", 1.0, 0.2)
+		tween.parallel().tween_property(stat, "position:x", original_x, 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+		# Check for personal best on this stat
+		var is_best = _check_if_personal_best(i)
+		if is_best:
+			tween.tween_callback(func():
+				_flash_personal_best(stat)
+			)
+
+		delay += delay_increment
+
+	# Animate loot container after stats
+	if loot_container:
+		loot_container.modulate.a = 0.0
+		var loot_tween = create_tween()
+		loot_tween.tween_interval(delay + 0.2)
+		loot_tween.tween_property(loot_container, "modulate:a", 1.0, 0.3)
+
+	# Animate play again button
+	if play_again_button:
+		play_again_button.modulate.a = 0.0
+		play_again_button.scale = Vector2(0.8, 0.8)
+		play_again_button.pivot_offset = play_again_button.size / 2
+		var btn_tween = create_tween()
+		btn_tween.tween_interval(delay + 0.5)
+		btn_tween.tween_property(play_again_button, "modulate:a", 1.0, 0.2)
+		btn_tween.parallel().tween_property(play_again_button, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+
+func _check_if_personal_best(stat_index: int) -> bool:
+	"""Check if this stat is a personal best."""
+	if not StatsManager:
+		return false
+
+	var lifetime = StatsManager.get_lifetime_stats()
+
+	match stat_index:
+		1:  # Time
+			return final_time >= lifetime.best_time and final_time > 0
+		3:  # Kills
+			return final_kills >= lifetime.best_kills and final_kills > 0
+		_:
+			return false
+
+func _flash_personal_best(stat_label: Label) -> void:
+	"""Flash effect for personal best stats."""
+	if stat_label == null:
+		return
+
+	# Create "NEW BEST!" label next to it
+	var best_label = Label.new()
+	best_label.text = "NEW BEST!"
+	best_label.add_theme_font_size_override("font_size", 10)
+	best_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1))
+	if pixel_font:
+		best_label.add_theme_font_override("font", pixel_font)
+	best_label.position = Vector2(stat_label.size.x + 10, 0)
+	best_label.modulate.a = 0.0
+	stat_label.add_child(best_label)
+
+	# Animate the label
+	var tween = create_tween()
+	tween.tween_property(best_label, "modulate:a", 1.0, 0.2)
+	tween.tween_property(best_label, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.tween_property(best_label, "scale", Vector2(1.0, 1.0), 0.1)
+
+	# Flash the stat itself gold
+	var original_color = stat_label.get_theme_color("font_color")
+	stat_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1))
+
+	var color_tween = create_tween()
+	color_tween.tween_interval(0.5)
+	color_tween.tween_callback(func():
+		stat_label.add_theme_color_override("font_color", original_color)
+	)
+
+	# Haptic feedback
+	if HapticManager:
+		HapticManager.light()

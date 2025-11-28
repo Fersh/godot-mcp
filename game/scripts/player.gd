@@ -525,6 +525,8 @@ func take_damage(amount: float) -> void:
 			JuiceManager.shake_small()  # Less shake when blocked
 		else:
 			JuiceManager.shake_medium()
+			# 1-frame freeze on player damage for impact (#14)
+			JuiceManager.player_damage_freeze()
 		JuiceManager.damage_flash()
 		JuiceManager.update_player_health(current_health / max_health)
 
@@ -1440,6 +1442,11 @@ func add_xp(amount: float) -> void:
 		# Haptic feedback on level up
 		if HapticManager:
 			HapticManager.level_up()
+		# Epic level up celebration effects (#6)
+		if JuiceManager:
+			JuiceManager.trigger_level_up_celebration()
+		# Spawn level up visual effect on player
+		_spawn_level_up_effect()
 		emit_signal("level_up", current_level)
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
@@ -1510,6 +1517,86 @@ func _spawn_heal_particles() -> void:
 		tween.tween_property(particle, "position", end_pos, randf_range(0.6, 1.0))
 		tween.tween_property(circle, "modulate:a", 0.0, randf_range(0.5, 0.8))
 		tween.chain().tween_callback(particle.queue_free)
+
+func _spawn_level_up_effect() -> void:
+	"""Epic level up celebration visual effect on player (#6)."""
+	# Golden light burst from player
+	var burst_container = Node2D.new()
+	burst_container.global_position = global_position
+	get_parent().add_child(burst_container)
+
+	# Central flash
+	var flash = Polygon2D.new()
+	var flash_points: Array[Vector2] = []
+	for i in range(12):
+		var angle = (float(i) / 12) * TAU
+		var radius = 20 if i % 2 == 0 else 40
+		flash_points.append(Vector2(cos(angle), sin(angle)) * radius)
+	flash.polygon = flash_points
+	flash.color = Color(1.0, 0.95, 0.4, 1.0)  # Golden
+	burst_container.add_child(flash)
+
+	# Expanding ring
+	var ring = Node2D.new()
+	ring.name = "Ring"
+	burst_container.add_child(ring)
+
+	var ring_line = Line2D.new()
+	ring_line.width = 6.0
+	ring_line.default_color = Color(1.0, 0.85, 0.2, 0.9)
+	var ring_points: PackedVector2Array = []
+	for i in range(33):
+		var angle = (float(i) / 32) * TAU
+		ring_points.append(Vector2(cos(angle), sin(angle)) * 30)
+	ring_line.points = ring_points
+	ring.add_child(ring_line)
+
+	# Particle burst
+	for i in range(16):
+		var particle = Polygon2D.new()
+		var ppoints: Array[Vector2] = []
+		for j in range(6):
+			var pangle = (float(j) / 6) * TAU
+			ppoints.append(Vector2(cos(pangle), sin(pangle)) * randf_range(4, 8))
+		particle.polygon = ppoints
+		particle.color = Color(1.0, 0.9 + randf() * 0.1, 0.3 + randf() * 0.3, 1.0)
+
+		var angle = (float(i) / 16) * TAU
+		var start_dist = 20.0
+		particle.position = Vector2(cos(angle), sin(angle)) * start_dist
+		burst_container.add_child(particle)
+
+		# Animate particle outward
+		var end_dist = randf_range(80, 140)
+		var end_pos = Vector2(cos(angle), sin(angle)) * end_dist
+
+		var ptween = particle.create_tween()
+		ptween.set_parallel(true)
+		ptween.tween_property(particle, "position", end_pos, randf_range(0.4, 0.7)).set_ease(Tween.EASE_OUT)
+		ptween.tween_property(particle, "modulate:a", 0.0, randf_range(0.3, 0.5)).set_delay(0.2)
+		ptween.tween_property(particle, "scale", Vector2(0.3, 0.3), 0.5)
+
+	# Animate flash and ring
+	var tween = burst_container.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(flash, "scale", Vector2(2.5, 2.5), 0.15).set_ease(Tween.EASE_OUT)
+	tween.tween_property(flash, "modulate:a", 0.0, 0.3)
+	tween.tween_property(ring, "scale", Vector2(5.0, 5.0), 0.4).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ring_line, "modulate:a", 0.0, 0.35).set_delay(0.1)
+	tween.chain().tween_callback(burst_container.queue_free)
+
+	# Brief invulnerability on level up (0.3s)
+	set_invulnerable(true, 0.3)
+
+	# Knock back nearby enemies
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist < 120:  # Knockback radius
+				var direction = (enemy.global_position - global_position).normalized()
+				if enemy.has_method("apply_knockback"):
+					enemy.apply_knockback(direction * 300)
 
 func revive_with_percent(hp_percent: float) -> void:
 	"""Revive player with a percentage of max health (phoenix ability)."""

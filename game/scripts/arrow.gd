@@ -29,11 +29,20 @@ var has_boomerang: bool = false
 var is_returning: bool = false
 var return_target: Node2D = null
 
+var trail_line: Line2D = null
+var trail_points: Array[Vector2] = []
+const MAX_TRAIL_POINTS: int = 12
+const TRAIL_UPDATE_INTERVAL: float = 0.016  # ~60fps
+var trail_timer: float = 0.0
+
 func _ready() -> void:
 	# Rotate arrow to face direction
 	rotation = direction.angle()
 	start_position = global_position
 	speed *= speed_multiplier
+
+	# Setup projectile trail (#19)
+	_setup_trail()
 
 	# Transform into mage orb if needed
 	if is_mage_orb:
@@ -84,6 +93,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	position += direction * speed * delta
+
+	# Update trail (#19)
+	_update_trail(delta)
 
 	lifetime += delta
 	if lifetime >= lifespan:
@@ -259,3 +271,69 @@ func calculate_damage(enemy: Node2D) -> float:
 		final_damage *= (1.0 + sniper_bonus * distance_factor)
 
 	return final_damage
+
+# ============================================
+# PROJECTILE TRAIL SYSTEM (#19)
+# ============================================
+
+func _setup_trail() -> void:
+	"""Setup the trail line for the projectile."""
+	trail_line = Line2D.new()
+	trail_line.width = 3.0
+	trail_line.z_index = -1  # Behind the arrow
+
+	# Determine trail color based on modulate/elemental effects
+	var trail_color = Color(0.8, 0.8, 0.8, 0.6)  # Default white-ish
+
+	# Will be updated based on arrow type
+	if is_mage_orb:
+		trail_color = Color(0.4, 0.7, 1.0, 0.7)  # Blue for mage
+		trail_line.width = 4.0
+
+	trail_line.default_color = trail_color
+
+	# Gradient for fading trail
+	var gradient = Gradient.new()
+	gradient.set_offset(0, 0.0)
+	gradient.set_offset(1, 1.0)
+	gradient.set_color(0, Color(trail_color.r, trail_color.g, trail_color.b, 0.0))
+	gradient.set_color(1, Color(trail_color.r, trail_color.g, trail_color.b, trail_color.a))
+	trail_line.gradient = gradient
+
+	# Add as sibling (not child) so it stays in world space
+	get_parent().call_deferred("add_child", trail_line)
+
+func _update_trail(delta: float) -> void:
+	"""Update the trail with new positions."""
+	if trail_line == null or not is_instance_valid(trail_line):
+		return
+
+	trail_timer += delta
+	if trail_timer >= TRAIL_UPDATE_INTERVAL:
+		trail_timer = 0.0
+
+		# Add current position
+		trail_points.append(global_position)
+
+		# Limit trail length
+		while trail_points.size() > MAX_TRAIL_POINTS:
+			trail_points.pop_front()
+
+		# Update line points
+		trail_line.clear_points()
+		for point in trail_points:
+			trail_line.add_point(point)
+
+	# Update trail color based on arrow modulate (for elemental effects)
+	if modulate != Color.WHITE and trail_line.gradient:
+		var c = modulate
+		trail_line.gradient.set_color(0, Color(c.r, c.g, c.b, 0.0))
+		trail_line.gradient.set_color(1, Color(c.r, c.g, c.b, 0.7))
+
+func _exit_tree() -> void:
+	"""Clean up trail when arrow is freed."""
+	if trail_line and is_instance_valid(trail_line):
+		# Fade out trail then free it
+		var tween = trail_line.create_tween()
+		tween.tween_property(trail_line, "modulate:a", 0.0, 0.15)
+		tween.tween_callback(trail_line.queue_free)

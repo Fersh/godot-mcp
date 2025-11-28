@@ -385,6 +385,10 @@ func die() -> void:
 	if AbilityManager and player and is_instance_valid(player):
 		AbilityManager.on_enemy_killed(self, player)
 
+	# Register kill with KillStreakManager for combo tracking
+	if KillStreakManager:
+		KillStreakManager.register_kill()
+
 	# Remove from group AFTER on_enemy_killed so abilities can find other enemies
 	remove_from_group("enemies")
 

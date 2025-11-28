@@ -32,6 +32,7 @@ EquipmentManager="*res://scripts/equipment/equipment_manager.gd"
 ActiveAbilityManager="*res://scripts/active_abilities/active_ability_manager.gd"
 HapticManager="*res://scripts/haptic_manager.gd"
 UltimateAbilityManager="*res://scripts/ultimate_abilities/ultimate_ability_manager.gd"
+KillStreakManager="*res://scripts/kill_streak_manager.gd"
 
 [display]
 

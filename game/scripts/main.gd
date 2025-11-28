@@ -30,6 +30,8 @@ const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
 # Level that grants ultimate ability
 const ULTIMATE_ABILITY_LEVEL: int = 15
 
+var kill_streak_ui = null
+
 func _ready() -> void:
 	add_to_group("main")
 
@@ -50,11 +52,18 @@ func _ready() -> void:
 	if AbilityManager:
 		AbilityManager.apply_equipment_abilities()
 
+	# Reset kill streak manager for this run
+	if KillStreakManager:
+		KillStreakManager.reset()
+
 	# Setup active ability system
 	_setup_active_ability_system()
 
 	# Setup virtual joystick
 	_setup_virtual_joystick()
+
+	# Setup kill streak UI (#1)
+	_setup_kill_streak_ui()
 
 	# Show level 1 active ability selection after a short delay
 	# (allows UI to initialize first)
@@ -276,3 +285,16 @@ func _show_ultimate_ability_selection() -> void:
 		var passive_choices = AbilityManager.get_random_abilities(3)
 		if passive_choices.size() > 0:
 			ability_selection.show_choices(passive_choices)
+
+# ============================================
+# KILL STREAK UI SETUP (#1)
+# ============================================
+
+func _setup_kill_streak_ui() -> void:
+	"""Initialize the kill streak UI display."""
+	var ui_script = load("res://scripts/ui/kill_streak_ui.gd")
+	if ui_script:
+		kill_streak_ui = CanvasLayer.new()
+		kill_streak_ui.set_script(ui_script)
+		kill_streak_ui.name = "KillStreakUI"
+		add_child(kill_streak_ui)

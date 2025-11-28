@@ -240,8 +240,11 @@ func _load_dodge_icon() -> void:
 		cooldown_label.visible = true
 		cooldown_label.add_theme_color_override("font_color", DODGE_COLOR)
 
+var was_on_cooldown: bool = false  # Track previous state for ready flash (#8)
+
 func update_cooldown(percent: float) -> void:
 	"""Update the cooldown display. percent is 0 (ready) to 1 (just used)."""
+	var was_cooling = cooldown_percent > 0
 	cooldown_percent = percent
 	is_ready = percent <= 0
 
@@ -250,7 +253,14 @@ func update_cooldown(percent: float) -> void:
 
 		# Restore icon color
 		icon_texture.modulate = READY_COLOR
+
+		# ABILITY READY FLASH (#8) - Flash when ability becomes ready
+		if was_on_cooldown and was_cooling:
+			_flash_ability_ready()
+		was_on_cooldown = false
 	else:
+		was_on_cooldown = true
+
 		# Show remaining time
 		var remaining = _get_remaining_cooldown()
 		if remaining > 0:
@@ -529,3 +539,37 @@ func _on_mouse_entered() -> void:
 
 func _on_mouse_exited() -> void:
 	_hide_tooltip()
+
+# ============================================
+# ABILITY READY FLASH (#8)
+# ============================================
+
+func _flash_ability_ready() -> void:
+	"""Flash effect when ability comes off cooldown and is ready to use."""
+	# Scale pulse
+	var tween = create_tween()
+	tween.tween_property(self, "scale", Vector2(1.3, 1.3), 0.1).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15).set_ease(Tween.EASE_IN_OUT)
+
+	# Brief glow effect - temporarily brighten the border
+	var original_border = border_color
+	var flash_color = Color(1.0, 1.0, 1.0, 1.0)  # White flash
+	if is_dodge:
+		flash_color = Color(0.6, 1.0, 1.0, 1.0)  # Cyan flash for dodge
+
+	border_color = flash_color
+	queue_redraw()
+
+	var color_tween = create_tween()
+	color_tween.tween_callback(func():
+		border_color = original_border
+		queue_redraw()
+	).set_delay(0.15)
+
+	# Play ready sound (subtle)
+	if SoundManager and SoundManager.has_method("play_ding"):
+		SoundManager.play_ding()
+
+	# Light haptic feedback
+	if HapticManager:
+		HapticManager.light()
