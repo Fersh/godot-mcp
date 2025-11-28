@@ -91,10 +91,10 @@ func _on_level_up(new_level: int) -> void:
 		StatsManager.set_points(points)
 
 func update_display() -> void:
-	points_label.text = "POINTS  " + str(points)
-	coins_label.text = "COINS   " + str(coins)
+	points_label.text = str(points) + "  POINTS"
+	coins_label.text = str(coins) + "  COINS"
 
 func update_wave_display() -> void:
 	var minutes = int(time_survived) / 60
 	var seconds = int(time_survived) % 60
-	wave_label.text = "WAVE    " + str(minutes).pad_zeros(2) + ":" + str(seconds).pad_zeros(2)
+	wave_label.text = str(minutes).pad_zeros(2) + ":" + str(seconds).pad_zeros(2) + "  WAVE"

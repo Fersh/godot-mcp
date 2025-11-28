@@ -7,14 +7,15 @@
 script = ExtResource("1_script")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
-anchors_preset = 0
-anchor_left = 0.0
-anchor_right = 0.0
-offset_right = 350.0
-offset_bottom = 180.0
-grow_horizontal = 1
-theme_override_constants/margin_top = 60
-theme_override_constants/margin_left = 60
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_right = 0.0
+offset_bottom = 120.0
+grow_horizontal = 0
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
@@ -28,8 +29,8 @@ theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "POINTS  0"
-horizontal_alignment = 0
+text = "0  POINTS"
+horizontal_alignment = 2
 
 [node name="CoinsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -39,8 +40,8 @@ theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "COINS   0"
-horizontal_alignment = 0
+text = "0  COINS"
+horizontal_alignment = 2
 
 [node name="WaveLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -50,5 +51,5 @@ theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
-text = "WAVE    00:00"
-horizontal_alignment = 0
+text = "00:00  WAVE"
+horizontal_alignment = 2
