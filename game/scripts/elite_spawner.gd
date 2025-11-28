@@ -1,12 +1,12 @@
 extends Node2D
 
 # Elite/Boss Spawner - Spawns elite and boss enemies on a timer
-# Alternates: Boss at 5m, Elite at 10m, Boss at 15m, etc.
+# Alternates: Elite at 2.5m, Boss at 5m, Elite at 7.5m, Boss at 10m, etc.
 
 @export var cyclops_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
-@export var spawn_interval: float = 30.0  # TEMP: 30s for testing (was 150.0 / 2.5 minutes)
+@export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
 @export var warning_duration: float = 3.0  # How long to show warning
 
 # Arena bounds for spawn positioning

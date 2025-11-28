@@ -213,7 +213,7 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	letter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon_container.add_child(letter)
 
-	# Stack counter (for buffs with stacks like "Flow x3")
+	# Stack counter (for buffs with stacks like "Flow x3") - positioned top-right
 	var stack_label = Label.new()
 	stack_label.name = "StackLabel"
 	stack_label.add_theme_font_size_override("font_size", 10)
@@ -225,8 +225,8 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 		stack_label.add_theme_font_override("font", pixel_font)
 	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	stack_label.position = Vector2(0, 2)
-	stack_label.size = Vector2(ICON_SIZE.x - 4, 14)
+	stack_label.position = Vector2(ICON_SIZE.x - 22, 2)  # Top-right corner
+	stack_label.size = Vector2(20, 14)
 	stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Extract stack count from name like "Flow x3"
 	if " x" in buff_name:

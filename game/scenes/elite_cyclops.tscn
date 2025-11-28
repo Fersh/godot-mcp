@@ -30,7 +30,7 @@ rock_projectile_scene = ExtResource("9_rock_projectile")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_hit_flash")
-scale = Vector2(2.5, 2.5)
+scale = Vector2(2.125, 2.125)
 texture = ExtResource("2_texture")
 hframes = 15
 vframes = 20
