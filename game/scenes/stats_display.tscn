@@ -10,17 +10,17 @@ script = ExtResource("1_script")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -200.0
+offset_left = -220.0
 offset_right = 0.0
-offset_top = 20.0
-offset_bottom = 84.0
+offset_top = 42.0
+offset_bottom = 105.0
 grow_horizontal = 0
 theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 16
+theme_override_constants/margin_right = 40
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 9
 
 [node name="PointsLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -29,7 +29,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 text = "0  POINTS"
 horizontal_alignment = 2
 
@@ -40,7 +40,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 text = "0  COINS"
 horizontal_alignment = 2
 
@@ -51,6 +51,6 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 3
 theme_override_constants/shadow_offset_y = 3
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 text = "00:00  WAVE"
 horizontal_alignment = 2

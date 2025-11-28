@@ -7,15 +7,31 @@ const JOYSTICK_RADIUS := 80.0
 const KNOB_RADIUS := 35.0
 const DEADZONE := 0.15
 const TRANSPARENCY := 0.5
+const SMOOTHING := 12.0  # Lower = smoother/slower response
 
 var is_active: bool = false
 var touch_index: int = -1
 var current_direction: Vector2 = Vector2.ZERO
+var target_direction: Vector2 = Vector2.ZERO  # Raw input direction
 var knob_offset: Vector2 = Vector2.ZERO
+var target_knob_offset: Vector2 = Vector2.ZERO  # Raw knob position
 
 func _ready() -> void:
 	modulate.a = TRANSPARENCY
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	set_process(true)
+
+func _process(delta: float) -> void:
+	# Smoothly interpolate knob position and direction
+	knob_offset = knob_offset.lerp(target_knob_offset, SMOOTHING * delta)
+	current_direction = current_direction.lerp(target_direction, SMOOTHING * delta)
+
+	# Snap to zero if very close (avoid tiny movements)
+	if current_direction.length() < 0.01:
+		current_direction = Vector2.ZERO
+
+	queue_redraw()
+	emit_signal("direction_changed", current_direction)
 
 func _draw() -> void:
 	# Draw outer ring background
@@ -51,25 +67,21 @@ func _update_knob(touch_pos: Vector2) -> void:
 	if distance > JOYSTICK_RADIUS:
 		delta = delta.normalized() * JOYSTICK_RADIUS
 
-	# Update knob visual position
-	knob_offset = delta
-	queue_redraw()
+	# Set target knob position (smoothing happens in _process)
+	target_knob_offset = delta
 
-	# Calculate direction with deadzone
+	# Calculate target direction with deadzone
 	if distance > DEADZONE * JOYSTICK_RADIUS:
-		current_direction = delta.normalized()
+		target_direction = delta.normalized()
 	else:
-		current_direction = Vector2.ZERO
-
-	emit_signal("direction_changed", current_direction)
+		target_direction = Vector2.ZERO
 
 func _reset() -> void:
 	is_active = false
 	touch_index = -1
-	current_direction = Vector2.ZERO
-	knob_offset = Vector2.ZERO
-	queue_redraw()
-	emit_signal("direction_changed", Vector2.ZERO)
+	target_direction = Vector2.ZERO
+	target_knob_offset = Vector2.ZERO
+	# Don't instantly reset - let smoothing bring it back to center
 
 func get_direction() -> Vector2:
 	return current_direction

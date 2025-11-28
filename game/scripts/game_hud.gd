@@ -3,15 +3,15 @@ extends CanvasLayer
 # Game HUD - Top-left portrait with health bar and progress bar
 # Clicking portrait opens pause menu
 
-const PORTRAIT_SIZE := 60
-const HEALTH_BAR_WIDTH := 150
-const HEALTH_BAR_HEIGHT := 22
-const PROGRESS_BAR_WIDTH := 150
-const PROGRESS_BAR_HEIGHT := 22
-const MARGIN := 16
-const SPACING := 8
-const ICON_SIZE := 22  # Same as bar height
-const ICON_MARGIN_RIGHT := 10
+const PORTRAIT_SIZE := 66  # 60 * 1.1
+const HEALTH_BAR_WIDTH := 165  # 150 * 1.1
+const HEALTH_BAR_HEIGHT := 24  # 22 * 1.1
+const PROGRESS_BAR_WIDTH := 165  # 150 * 1.1
+const PROGRESS_BAR_HEIGHT := 24  # 22 * 1.1
+const MARGIN := 40  # Distance from edge of screen
+const SPACING := 9  # 8 * 1.1
+const ICON_SIZE := 24  # Same as bar height (22 * 1.1)
+const ICON_MARGIN_RIGHT := 11  # 10 * 1.1
 
 const HEALTH_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb659.png"
 const XP_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb101.png"
@@ -152,6 +152,9 @@ func _create_ui() -> void:
 	health_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
 	var icon_style = StyleBoxFlat.new()
 	icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
+	icon_style.shadow_color = Color(0, 0, 0, 0.8)
+	icon_style.shadow_size = 3
+	icon_style.shadow_offset = Vector2(3, 3)
 	health_icon_panel.add_theme_stylebox_override("panel", icon_style)
 	container.add_child(health_icon_panel)
 
@@ -178,6 +181,9 @@ func _create_ui() -> void:
 	health_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	health_bg_style.set_border_width_all(2)
 	health_bg_style.set_corner_radius_all(2)
+	health_bg_style.shadow_color = Color(0, 0, 0, 0.8)
+	health_bg_style.shadow_size = 3
+	health_bg_style.shadow_offset = Vector2(3, 3)
 	health_bar_bg.add_theme_stylebox_override("panel", health_bg_style)
 	container.add_child(health_bar_bg)
 
@@ -230,6 +236,9 @@ func _create_ui() -> void:
 	xp_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
 	var xp_icon_style = StyleBoxFlat.new()
 	xp_icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
+	xp_icon_style.shadow_color = Color(0, 0, 0, 0.8)
+	xp_icon_style.shadow_size = 3
+	xp_icon_style.shadow_offset = Vector2(3, 3)
 	xp_icon_panel.add_theme_stylebox_override("panel", xp_icon_style)
 	container.add_child(xp_icon_panel)
 
@@ -255,6 +264,9 @@ func _create_ui() -> void:
 	progress_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	progress_bg_style.set_border_width_all(2)
 	progress_bg_style.set_corner_radius_all(2)
+	progress_bg_style.shadow_color = Color(0, 0, 0, 0.8)
+	progress_bg_style.shadow_size = 3
+	progress_bg_style.shadow_offset = Vector2(3, 3)
 	progress_bar_bg.add_theme_stylebox_override("panel", progress_bg_style)
 	container.add_child(progress_bar_bg)
 
