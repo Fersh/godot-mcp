@@ -1522,155 +1522,148 @@ func _spawn_heal_particles() -> void:
 		tween.chain().tween_callback(particle.queue_free)
 
 func _spawn_level_up_effect() -> void:
-	"""WoW-style pixelated golden beam level up effect."""
+	"""Holy light beam level up effect - ethereal, soft, divine."""
 	var effect_container = Node2D.new()
 	effect_container.global_position = global_position
 	get_parent().add_child(effect_container)
 
-	# === PIXELATED BEAM COLUMN (WoW style) ===
-	var beam_height = 500.0
-	var beam_segments = 25  # Number of pixel blocks in the beam
-
-	# Create beam as stacked pixelated rectangles for that retro look
+	# === ETHEREAL LIGHT BEAM ===
 	var beam_container = Node2D.new()
-	beam_container.modulate.a = 0.0  # Start invisible
+	beam_container.modulate.a = 0.0
 	effect_container.add_child(beam_container)
 
-	# Outer glow beam (wider, more transparent)
-	for i in range(beam_segments):
-		var segment = ColorRect.new()
-		var seg_height = beam_height / beam_segments
-		var y_pos = -beam_height + (i * seg_height)
+	# Soft outer glow (wide, very transparent)
+	var outer_glow = Polygon2D.new()
+	outer_glow.polygon = [
+		Vector2(-70, -600), Vector2(70, -600),
+		Vector2(45, 0), Vector2(-45, 0)
+	]
+	outer_glow.color = Color(1.0, 0.98, 0.85, 0.15)
+	beam_container.add_child(outer_glow)
 
-		# Width varies - wider at top, narrower at bottom (cone of light)
-		var width_factor = 1.0 - (float(i) / beam_segments) * 0.4
-		var seg_width = 80 * width_factor
+	# Middle beam layer
+	var mid_beam = Polygon2D.new()
+	mid_beam.polygon = [
+		Vector2(-40, -600), Vector2(40, -600),
+		Vector2(28, 0), Vector2(-28, 0)
+	]
+	mid_beam.color = Color(1.0, 0.97, 0.8, 0.3)
+	beam_container.add_child(mid_beam)
 
-		segment.size = Vector2(seg_width, seg_height + 2)  # +2 for overlap
-		segment.position = Vector2(-seg_width / 2, y_pos)
+	# Bright core beam
+	var core_beam = Polygon2D.new()
+	core_beam.polygon = [
+		Vector2(-18, -600), Vector2(18, -600),
+		Vector2(12, 0), Vector2(-12, 0)
+	]
+	core_beam.color = Color(1.0, 1.0, 0.95, 0.7)
+	beam_container.add_child(core_beam)
 
-		# Color gradient - brighter yellow at bottom, more golden at top
-		var brightness = 0.7 + (float(i) / beam_segments) * 0.3
-		segment.color = Color(1.0, 0.85 * brightness, 0.2 * brightness, 0.5)
-		beam_container.add_child(segment)
+	# Innermost white-hot center
+	var inner_core = Polygon2D.new()
+	inner_core.polygon = [
+		Vector2(-6, -600), Vector2(6, -600),
+		Vector2(4, 0), Vector2(-4, 0)
+	]
+	inner_core.color = Color(1.0, 1.0, 1.0, 0.9)
+	beam_container.add_child(inner_core)
 
-	# Inner bright core beam (pixelated blocks)
-	for i in range(beam_segments):
-		var segment = ColorRect.new()
-		var seg_height = beam_height / beam_segments
-		var y_pos = -beam_height + (i * seg_height)
+	# Floating light motes rising through beam
+	for i in range(20):
+		var mote = Polygon2D.new()
+		var mote_size = randf_range(2, 5)
+		var points: Array[Vector2] = []
+		for j in range(6):
+			var angle = (float(j) / 6) * TAU
+			points.append(Vector2(cos(angle), sin(angle)) * mote_size)
+		mote.polygon = points
+		mote.color = Color(1.0, 1.0, 0.9, 0.0)
 
-		# Core is narrower
-		var width_factor = 1.0 - (float(i) / beam_segments) * 0.3
-		var seg_width = 35 * width_factor
+		var start_x = randf_range(-30, 30)
+		var start_y = randf_range(0, 100)
+		mote.position = Vector2(start_x, start_y)
+		beam_container.add_child(mote)
 
-		segment.size = Vector2(seg_width, seg_height + 2)
-		segment.position = Vector2(-seg_width / 2, y_pos)
-
-		# Bright white-yellow core
-		segment.color = Color(1.0, 1.0, 0.8, 0.9)
-		beam_container.add_child(segment)
-
-	# Rising pixelated sparkles inside the beam
-	for i in range(15):
-		var sparkle = ColorRect.new()
-		var sparkle_size = randi_range(4, 10)
-		sparkle.size = Vector2(sparkle_size, sparkle_size)
-		sparkle.color = Color(1.0, 1.0, 0.9, 0.0)  # Start invisible
-
-		var start_x = randf_range(-25, 25)
-		var start_y = randf_range(-50, 50)
-		sparkle.position = Vector2(start_x - sparkle_size/2, start_y)
-		beam_container.add_child(sparkle)
-
-		# Animate sparkle rising up through beam
-		var sparkle_tween = sparkle.create_tween()
-		sparkle_tween.tween_interval(randf_range(0.0, 0.4))
-		sparkle_tween.tween_property(sparkle, "modulate:a", 1.0, 0.1)
-		sparkle_tween.tween_property(sparkle, "position:y", start_y - randf_range(150, 300), randf_range(0.4, 0.7))
-		sparkle_tween.parallel().tween_property(sparkle, "modulate:a", 0.0, 0.3).set_delay(0.2)
+		var mote_tween = mote.create_tween()
+		mote_tween.tween_interval(randf_range(0.0, 0.5))
+		mote_tween.tween_property(mote, "modulate:a", randf_range(0.5, 1.0), 0.15)
+		mote_tween.tween_property(mote, "position:y", start_y - randf_range(200, 450), randf_range(0.5, 0.9)).set_ease(Tween.EASE_OUT)
+		mote_tween.parallel().tween_property(mote, "modulate:a", 0.0, 0.4).set_delay(0.3)
+		mote_tween.parallel().tween_property(mote, "scale", Vector2(0.3, 0.3), 0.6)
 
 	# === BEAM ANIMATION ===
-	# Beam fades in quickly (like light descending)
 	var beam_tween = beam_container.create_tween()
-	beam_tween.tween_property(beam_container, "modulate:a", 1.0, 0.15)
-	beam_tween.tween_interval(0.3)  # Hold the beam visible
+	beam_tween.tween_property(beam_container, "modulate:a", 1.0, 0.12).set_ease(Tween.EASE_OUT)
+	beam_tween.tween_interval(0.4)
 
-	# === IMPACT EFFECT (after beam appears) ===
+	# === HOLY IMPACT ===
 	beam_tween.tween_callback(func():
-		# Ground impact circle (pixelated expanding ring)
-		var ring_segments = 16
-		for r in range(3):  # 3 rings
-			var ring_container = Node2D.new()
-			ring_container.scale = Vector2(0.3 + r * 0.2, 0.3 + r * 0.2)
-			effect_container.add_child(ring_container)
+		# Soft radial burst of light
+		for r in range(3):
+			var ring = Polygon2D.new()
+			var ring_points: Array[Vector2] = []
+			var segments = 24
+			for i in range(segments + 1):
+				var angle = (float(i) / segments) * TAU
+				ring_points.append(Vector2(cos(angle), sin(angle)) * 25)
+			ring.polygon = ring_points
+			ring.color = Color(1.0, 1.0, 0.9, 0.4 - r * 0.1)
+			effect_container.add_child(ring)
 
-			for i in range(ring_segments):
-				var block = ColorRect.new()
-				var block_size = 12 - r * 2
-				block.size = Vector2(block_size, block_size)
-
-				var angle = (float(i) / ring_segments) * TAU
-				var radius = 30.0
-				block.position = Vector2(cos(angle) * radius - block_size/2, sin(angle) * radius - block_size/2)
-				block.color = Color(1.0, 0.9 - r * 0.1, 0.3, 1.0)
-				ring_container.add_child(block)
-
-			# Expand and fade ring
-			var ring_tween = ring_container.create_tween()
-			ring_tween.tween_interval(r * 0.08)
+			var ring_tween = ring.create_tween()
+			ring_tween.tween_interval(r * 0.06)
 			ring_tween.set_parallel(true)
-			ring_tween.tween_property(ring_container, "scale", Vector2(5.0 + r, 5.0 + r), 0.4).set_ease(Tween.EASE_OUT)
-			ring_tween.tween_property(ring_container, "modulate:a", 0.0, 0.35)
+			ring_tween.tween_property(ring, "scale", Vector2(6.0 + r * 2, 6.0 + r * 2), 0.5).set_ease(Tween.EASE_OUT)
+			ring_tween.tween_property(ring, "modulate:a", 0.0, 0.4)
 
-		# Bright flash at center
-		var flash = ColorRect.new()
-		flash.size = Vector2(60, 60)
-		flash.position = Vector2(-30, -30)
-		flash.color = Color(1.0, 1.0, 0.9, 1.0)
+		# Central divine flash
+		var flash = Polygon2D.new()
+		var flash_points: Array[Vector2] = []
+		for i in range(12):
+			var angle = (float(i) / 12) * TAU
+			var radius = 30 if i % 2 == 0 else 15
+			flash_points.append(Vector2(cos(angle), sin(angle)) * radius)
+		flash.polygon = flash_points
+		flash.color = Color(1.0, 1.0, 0.95, 1.0)
 		effect_container.add_child(flash)
 
 		var flash_tween = flash.create_tween()
 		flash_tween.set_parallel(true)
-		flash_tween.tween_property(flash, "scale", Vector2(3, 3), 0.15).set_ease(Tween.EASE_OUT)
+		flash_tween.tween_property(flash, "scale", Vector2(2.5, 2.5), 0.12).set_ease(Tween.EASE_OUT)
 		flash_tween.tween_property(flash, "modulate:a", 0.0, 0.2)
 
-		# Pixelated particle burst outward
-		for i in range(24):
-			var particle = ColorRect.new()
-			var p_size = randi_range(6, 14)
-			particle.size = Vector2(p_size, p_size)
-			particle.position = Vector2(-p_size/2, -p_size/2)
-
-			# Golden yellow colors
-			var color_var = randf()
-			if color_var < 0.3:
-				particle.color = Color(1.0, 1.0, 0.8, 1.0)  # White-yellow
-			elif color_var < 0.7:
-				particle.color = Color(1.0, 0.9, 0.3, 1.0)  # Golden
-			else:
-				particle.color = Color(1.0, 0.7, 0.1, 1.0)  # Orange-gold
-
+		# Soft light particles drifting outward
+		for i in range(16):
+			var particle = Polygon2D.new()
+			var p_points: Array[Vector2] = []
+			var p_size = randf_range(3, 7)
+			for j in range(6):
+				var a = (float(j) / 6) * TAU
+				p_points.append(Vector2(cos(a), sin(a)) * p_size)
+			particle.polygon = p_points
+			particle.color = Color(1.0, 1.0, 0.92, 0.8)
 			effect_container.add_child(particle)
 
-			var angle = (float(i) / 24) * TAU + randf_range(-0.15, 0.15)
-			var dist = randf_range(80, 160)
-			var end_pos = Vector2(cos(angle) * dist, sin(angle) * dist)
+			var angle = (float(i) / 16) * TAU + randf_range(-0.2, 0.2)
+			particle.position = Vector2(cos(angle), sin(angle)) * 10
+
+			var end_dist = randf_range(70, 130)
+			var end_pos = Vector2(cos(angle), sin(angle)) * end_dist
 
 			var p_tween = particle.create_tween()
 			p_tween.set_parallel(true)
-			p_tween.tween_property(particle, "position", end_pos, randf_range(0.25, 0.45)).set_ease(Tween.EASE_OUT)
-			p_tween.tween_property(particle, "modulate:a", 0.0, randf_range(0.2, 0.35)).set_delay(0.1)
-			p_tween.tween_property(particle, "scale", Vector2(0.3, 0.3), 0.4)
+			p_tween.tween_property(particle, "position", end_pos, randf_range(0.35, 0.55)).set_ease(Tween.EASE_OUT)
+			p_tween.tween_property(particle, "modulate:a", 0.0, randf_range(0.3, 0.45)).set_delay(0.1)
+			p_tween.tween_property(particle, "scale", Vector2(0.2, 0.2), 0.5)
 
-		# Fade out beam
+		# Fade beam gracefully
 		var beam_fade = beam_container.create_tween()
-		beam_fade.tween_property(beam_container, "modulate:a", 0.0, 0.25)
+		beam_fade.tween_property(beam_container, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_IN)
 	)
 
-	# Cleanup after all animations
+	# Cleanup
 	var cleanup_tween = effect_container.create_tween()
-	cleanup_tween.tween_interval(1.2)
+	cleanup_tween.tween_interval(1.3)
 	cleanup_tween.tween_callback(effect_container.queue_free)
 
 	# Brief invulnerability on level up (0.3s)
@@ -1681,7 +1674,7 @@ func _spawn_level_up_effect() -> void:
 	for enemy in enemies:
 		if is_instance_valid(enemy):
 			var dist = global_position.distance_to(enemy.global_position)
-			if dist < 120:  # Knockback radius
+			if dist < 120:
 				var direction = (enemy.global_position - global_position).normalized()
 				if enemy.has_method("apply_knockback"):
 					enemy.apply_knockback(direction * 300)

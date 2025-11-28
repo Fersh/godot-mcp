@@ -5,7 +5,7 @@ extends CanvasLayer
 
 const ICON_SIZE := Vector2(40, 40)
 const ICON_SPACING := 8
-const MARGIN_TOP := 16  # Top of screen (was below XP bar)
+const MARGIN_TOP := 90  # Below portrait/HP/XP bar area (aligned with top HUD)
 const LONG_PRESS_TIME := 0.3
 const RUNE_BG_PATH := "res://assets/sprites/runes/Background/runes+bricks+effects/"
 const RUNE_BG_COUNT := 48
