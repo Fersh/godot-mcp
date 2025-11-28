@@ -273,10 +273,28 @@ func _style_play_again_button() -> void:
 
 func _create_home_button() -> void:
 	var home_btn = Button.new()
-	home_btn.text = "🏠"
 	home_btn.custom_minimum_size = Vector2(50, 50)
-	home_btn.add_theme_font_size_override("font_size", 24)
 	home_btn.pressed.connect(_on_main_menu_pressed)
+
+	# Create icon from spritesheet (6 cols x 19 rows, 16x16 per icon)
+	# Home icon is at row 1, column 2 (0-indexed)
+	var icons_texture = load("res://assets/sprites/icons.png")
+	if icons_texture:
+		var atlas = AtlasTexture.new()
+		atlas.atlas = icons_texture
+		atlas.region = Rect2(2 * 16, 1 * 16, 16, 16)  # col 2, row 1
+
+		var icon_rect = TextureRect.new()
+		icon_rect.texture = atlas
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.custom_minimum_size = Vector2(32, 32)
+		icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
+		var center = CenterContainer.new()
+		center.set_anchors_preset(Control.PRESET_FULL_RECT)
+		center.add_child(icon_rect)
+		home_btn.add_child(center)
 
 	# Style the button
 	var style = StyleBoxFlat.new()

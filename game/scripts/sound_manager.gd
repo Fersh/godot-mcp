@@ -28,6 +28,7 @@ var music_player: AudioStreamPlayer
 var music1: AudioStream
 var music2: AudioStream
 var play_music2_on_finish: bool = false
+var in_game_music_loop: bool = false  # When true, cycle music1 -> music2 -> music1...
 
 func _ready() -> void:
 	_load_sounds()
@@ -86,13 +87,24 @@ func _setup_music_player() -> void:
 	music2 = load("res://assets/sounds/music2.mp3")
 
 func _on_music_finished() -> void:
-	# When game over music ends, play music2 in a loop
+	if GameSettings and not GameSettings.music_enabled:
+		return
+
+	# In-game music loop: cycle music1 -> music2 -> music1...
+	if in_game_music_loop:
+		if music_player.stream == music1 and music2:
+			music_player.stream = music2
+			music_player.play()
+		elif music_player.stream == music2 and music1:
+			music_player.stream = music1
+			music_player.play()
+		return
+
+	# Game over: play music1 once, then switch to music2
 	if play_music2_on_finish and music2:
-		if GameSettings and not GameSettings.music_enabled:
-			return
 		music_player.stream = music2
 		music_player.play()
-		play_music2_on_finish = false  # Only trigger once, music2 will loop
+		play_music2_on_finish = false
 
 func _get_available_player() -> AudioStreamPlayer:
 	for player in audio_players:
@@ -176,6 +188,7 @@ func play_music() -> void:
 		if GameSettings and not GameSettings.music_enabled:
 			return
 		play_music2_on_finish = false
+		in_game_music_loop = true  # Enable cycling between music1 and music2
 		music_player.stream = music1
 		music_player.play()
 
@@ -184,6 +197,7 @@ func play_game_over_music() -> void:
 	if music_player and music1:
 		if GameSettings and not GameSettings.music_enabled:
 			return
+		in_game_music_loop = false  # Stop the game loop cycling
 		play_music2_on_finish = true
 		music_player.stream = music1
 		music_player.play()

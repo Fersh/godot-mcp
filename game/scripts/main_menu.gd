@@ -4,9 +4,6 @@ extends CanvasLayer
 @onready var gear_button: Button = $ButtonContainer/GearButton
 @onready var shop_button: Button = $ButtonContainer/ShopButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
-@onready var music_player: AudioStreamPlayer = $MusicPlayer
-
-var menu_music: AudioStream = null
 
 func _ready() -> void:
 	# Connect button signals
@@ -22,18 +19,9 @@ func _ready() -> void:
 	# Update displays
 	_update_coin_display()
 
-	# Play background music
-	_play_menu_music()
-
-func _play_menu_music() -> void:
-	# Try to load and play menu music
-	var music_path = "res://assets/sounds/play menu.mp3"
-	if ResourceLoader.exists(music_path):
-		menu_music = load(music_path)
-		if menu_music and music_player:
-			music_player.stream = menu_music
-			music_player.volume_db = -10.0
-			music_player.play()
+	# Stop any music from previous game session
+	if SoundManager:
+		SoundManager.stop_music()
 
 func _style_golden_button(button: Button) -> void:
 	# Golden/yellow button with wooden bottom border (matching reference image)
