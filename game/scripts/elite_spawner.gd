@@ -6,7 +6,7 @@ extends Node2D
 @export var cyclops_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
-@export var spawn_interval: float = 150.0  # 2.5 minutes in seconds
+@export var spawn_interval: float = 30.0  # TEMP: 30s for testing (was 150.0 / 2.5 minutes)
 @export var warning_duration: float = 3.0  # How long to show warning
 
 # Arena bounds for spawn positioning
@@ -309,10 +309,8 @@ func _on_boss_health_changed(current: float, max_hp: float) -> void:
 
 func _on_boss_died(_boss: Node) -> void:
 	active_boss = null
-	# Fade out health bar
-	var tween = create_tween()
-	tween.tween_property(boss_health_bar_container, "modulate:a", 0.0, 1.0)
-	tween.tween_callback(func(): boss_health_bar_container.visible = false; boss_health_bar_container.modulate.a = 1.0)
+	# Hide health bar (CanvasLayer doesn't support modulate)
+	boss_health_bar_container.visible = false
 
 func _get_spawn_position() -> Vector2:
 	# Spawn at a random edge of the arena

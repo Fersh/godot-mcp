@@ -15,8 +15,8 @@ extends BossBase
 @export var slam_aoe_radius: float = 150.0
 @export var melee_range: float = 90.0
 
-# Spritesheet config: 128x96 frames, 8 cols x 20 rows (10 right + 10 left facing rows)
-const SPRITE_COLS: int = 8
+# Spritesheet config: 64x96 frames, 16 cols x 20 rows (10 right + 10 left facing rows)
+const SPRITE_COLS: int = 16
 const SPRITE_ROWS: int = 20
 
 # Animation rows (right-facing, top half of sheet)
@@ -31,18 +31,18 @@ const ANIM_DAMAGE: int = 7
 const ANIM_DAMAGE2: int = 8
 const ANIM_DEATH: int = 9
 
-# Frame counts per animation (max 8 per row)
+# Frame counts per animation (max 16 per row)
 const FRAMES = {
-	0: 5,   # Idle
-	1: 8,   # Move
-	2: 5,   # Taunt
-	3: 8,   # Attack 1 (AOE) - capped at 8
-	4: 5,   # Attack 2
-	5: 6,   # Attack 3
-	6: 8,   # Attack 4 - capped at 8
-	7: 3,   # Damage
-	8: 3,   # Damage 2
-	9: 6,   # Death
+	0: 10,   # Idle
+	1: 16,   # Move
+	2: 10,   # Taunt
+	3: 16,   # Attack 1 (AOE)
+	4: 10,   # Attack 2
+	5: 12,   # Attack 3
+	6: 16,   # Attack 4
+	7: 6,    # Damage
+	8: 6,    # Damage 2
+	9: 12,   # Death
 }
 
 # Attack state
@@ -183,11 +183,12 @@ func _process_windup(delta: float) -> void:
 	var windup_frames = int(max_frames * 0.4)  # Only show first 40% during windup
 
 	if animation_frame > windup_frames:
-		animation_frame = windup_frames
+		animation_frame = float(windup_frames)
 
 	# Use left-facing rows when facing left
 	var actual_row = _get_actual_row(current_attack_type)
-	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
+	var frame_index = clampi(int(animation_frame), 0, max_frames - 1)
+	sprite.frame = actual_row * COLS_PER_ROW + frame_index
 
 	# Face player during windup
 	if player and is_instance_valid(player):
@@ -318,7 +319,9 @@ func _play_attack_followthrough() -> void:
 
 func _update_attack_frame(frame: float) -> void:
 	var actual_row = _get_actual_row(current_attack_type)
-	sprite.frame = actual_row * COLS_PER_ROW + int(frame)
+	var max_frames = FRAME_COUNTS.get(current_attack_type, 8)
+	var frame_index = clampi(int(frame), 0, max_frames - 1)
+	sprite.frame = actual_row * COLS_PER_ROW + frame_index
 
 func _on_attack_complete() -> void:
 	is_attack_animating = false  # Allow normal animation updates again
@@ -330,14 +333,15 @@ func _process_death_animation(delta: float) -> void:
 	var max_frames = FRAME_COUNTS.get(ROW_DEATH, 6)
 
 	if animation_frame >= max_frames - 1:
-		animation_frame = max_frames - 1
+		animation_frame = float(max_frames - 1)
 		if not death_processed:
 			death_processed = true
 			spawn_gold_coin()
 			queue_free()
 
 	var actual_row = _get_actual_row(ROW_DEATH)
-	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
+	var frame_index = clampi(int(animation_frame), 0, max_frames - 1)
+	sprite.frame = actual_row * COLS_PER_ROW + frame_index
 
 # Override to use appropriate damage animation
 func take_damage(amount: float, is_crit: bool = false) -> void:
@@ -364,13 +368,16 @@ func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 	animation_frame += animation_speed * delta
 	var max_frames = FRAME_COUNTS.get(current_row, 8)
 	if animation_frame >= max_frames:
-		animation_frame = 0.0
+		animation_frame = fmod(animation_frame, float(max_frames))
 
 	# Use left-facing rows (offset by 10) when facing left
 	var actual_row = current_row
 	if facing_left:
 		actual_row += LEFT_FACING_OFFSET
-	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
+
+	# Calculate frame index with bounds checking
+	var frame_index = clampi(int(animation_frame), 0, max_frames - 1)
+	sprite.frame = actual_row * COLS_PER_ROW + frame_index
 
 func _get_actual_row(base_row: int) -> int:
 	"""Get the actual sprite row accounting for facing direction."""
@@ -384,7 +391,7 @@ func _process_taunt(delta: float) -> void:
 	var max_frames = FRAMES_TAUNT
 
 	if animation_frame >= max_frames:
-		animation_frame = 0.0
+		animation_frame = fmod(animation_frame, float(max_frames))
 		taunt_plays_remaining -= 1
 
 		if taunt_plays_remaining <= 0:
@@ -393,4 +400,5 @@ func _process_taunt(delta: float) -> void:
 			return
 
 	var actual_row = _get_actual_row(ROW_TAUNT)
-	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
+	var frame_index = clampi(int(animation_frame), 0, max_frames - 1)
+	sprite.frame = actual_row * COLS_PER_ROW + frame_index

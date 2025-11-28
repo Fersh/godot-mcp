@@ -226,11 +226,23 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_child(name_label)
 
-	# Pixel separator
+	# Spacer above separator
+	var sep_spacer_top = Control.new()
+	sep_spacer_top.custom_minimum_size = Vector2(0, 10)
+	card.add_child(sep_spacer_top)
+
+	# Pixel separator (20% opacity)
 	var separator = ColorRect.new()
-	separator.color = item.get_rarity_color()
+	var sep_color = item.get_rarity_color()
+	sep_color.a = 0.2
+	separator.color = sep_color
 	separator.custom_minimum_size = Vector2(0, 2)
 	card.add_child(separator)
+
+	# Spacer below separator
+	var sep_spacer_bottom = Control.new()
+	sep_spacer_bottom.custom_minimum_size = Vector2(0, 10)
+	card.add_child(sep_spacer_bottom)
 
 	# Stats container with comparison arrows
 	var stats_container = VBoxContainer.new()
@@ -270,6 +282,19 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 	return card
 
 func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictionary) -> Control:
+	var container = VBoxContainer.new()
+	container.add_theme_constant_override("separation", 0)
+
+	# Check if this is a Special line or descriptive text
+	var is_special = stat_line.begins_with("Special:")
+	var is_descriptive = stat_line.begins_with("  ") or stat_line.contains("not included") or stat_line.contains("RGB")
+
+	# Add 20px margin above Special lines or descriptive text
+	if is_special or is_descriptive:
+		var spacer = Control.new()
+		spacer.custom_minimum_size = Vector2(0, 20)
+		container.add_child(spacer)
+
 	var row = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 
@@ -297,7 +322,13 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 	if pixel_font:
 		stat_label.add_theme_font_override("font", pixel_font)
 	stat_label.add_theme_font_size_override("font_size", 24)
-	stat_label.add_theme_color_override("font_color", COLOR_TEXT)
+
+	# Color Special lines and descriptive text yellow
+	if is_special or is_descriptive:
+		stat_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))  # Yellow
+	else:
+		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
+
 	row.add_child(stat_label)
 
 	if arrow_text != "":
@@ -309,7 +340,8 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 		arrow_label.add_theme_color_override("font_color", arrow_color)
 		row.add_child(arrow_label)
 
-	return row
+	container.add_child(row)
+	return container
 
 func _update_buttons() -> void:
 	if current_item == null:

@@ -604,10 +604,10 @@ static func get_melee_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"quick_slash",
 			"Quick Slash",
-			"+30% Attack Speed",
+			"+20% Attack Speed",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.MELEE_ONLY,
-			[{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.3}]
+			[{effect_type = AbilityData.EffectType.ATTACK_SPEED, value = 0.2}]
 		),
 		AbilityData.new(
 			"iron_skin",
