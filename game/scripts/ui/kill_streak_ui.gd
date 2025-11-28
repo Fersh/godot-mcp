@@ -90,11 +90,22 @@ func _create_ui() -> void:
 	container.add_child(combo_label)
 
 func _process(delta: float) -> void:
-	# Update visibility with fade out
-	if is_visible_state:
+	# Update visibility - gradual fade over the full display time
+	if is_visible_state and display_timer > 0:
 		display_timer -= delta
+
+		# Gradual opacity fade over the 5 seconds
+		# Full opacity for first 2 seconds, then fade out over remaining 3 seconds
+		var fade_start_time = 2.0
+		var total_display_time = 5.0
+		if display_timer < (total_display_time - fade_start_time):
+			var fade_progress = display_timer / (total_display_time - fade_start_time)
+			container.modulate.a = fade_progress
+		else:
+			container.modulate.a = 1.0
+
 		if display_timer <= 0:
-			_start_fade_out()
+			_on_fade_complete()
 
 	# Pulse animation for high tiers
 	if current_tier >= 3 and is_visible_state:
@@ -117,7 +128,7 @@ func _on_streak_changed(streak: int, tier: int) -> void:
 	if streak > 0:
 		_show_ui()
 		_update_display()
-		display_timer = 3.0
+		display_timer = 5.0  # Match the combo timer duration
 
 		# Rotating shake animation when streak changes
 		if old_streak != streak:
@@ -134,8 +145,14 @@ func _on_streak_milestone(tier: int, tier_name: String) -> void:
 	display_timer = 5.0
 
 func _on_streak_ended(_final_streak: int) -> void:
-	# Just fade out
-	_start_fade_out()
+	# Quick fade out when streak ends
+	is_visible_state = false
+	var tween = create_tween()
+	tween.tween_property(container, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func():
+		current_streak = 0
+		current_tier = 0
+	)
 
 func _update_display() -> void:
 	# Format: "x15 COMBO" or "x25 RAMPAGE"
@@ -178,12 +195,9 @@ func _show_ui() -> void:
 		var tween = create_tween()
 		tween.tween_property(container, "modulate:a", 1.0, 0.15)
 
-func _start_fade_out() -> void:
-	if is_visible_state:
-		is_visible_state = false
-		var tween = create_tween()
-		tween.tween_property(container, "modulate:a", 0.0, fade_duration)
-		tween.tween_callback(func():
-			current_streak = 0
-			current_tier = 0
-		)
+func _on_fade_complete() -> void:
+	"""Called when the gradual fade completes."""
+	is_visible_state = false
+	container.modulate.a = 0.0
+	current_streak = 0
+	current_tier = 0

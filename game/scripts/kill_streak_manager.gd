@@ -10,7 +10,7 @@ signal streak_ended(final_streak: int)
 # Streak tracking
 var current_streak: int = 0
 var streak_timer: float = 0.0
-var streak_decay_time: float = 2.5  # Time between kills to maintain streak
+var streak_decay_time: float = 5.0  # Time between kills to maintain streak
 
 # Tier thresholds and names
 const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100]
