@@ -53,7 +53,7 @@ var rock_target_pos: Vector2 = Vector2.ZERO
 var rock_landing_indicator: Node2D = null
 
 func _setup_elite() -> void:
-	elite_name = "Cyclops"
+	elite_name = "One Eyed Monster"
 	enemy_type = "cyclops"
 
 	# Cyclops stats - elite, slower, hits hard
@@ -289,6 +289,10 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
 func _process_special_attack(delta: float) -> void:
+	# Ensure sprite is always visible during beam attack
+	if sprite:
+		sprite.visible = true
+
 	# Handle telegraph phase
 	if laser_telegraphing:
 		laser_telegraph_timer -= delta
@@ -297,14 +301,14 @@ func _process_special_attack(delta: float) -> void:
 		if player and is_instance_valid(player):
 			current_laser_direction = (player.global_position - global_position).normalized()
 
-		# Animate during telegraph using beam animation
+		# Use IDLE animation during telegraph (ROW_LASER may have empty frames)
 		var dir = current_laser_direction
-		animation_frame += animation_speed * 0.5 * delta
-		var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
+		animation_frame += animation_speed * 0.3 * delta
+		var max_frames = FRAME_COUNTS.get(ROW_IDLE, 15)
 		if animation_frame >= max_frames:
 			animation_frame = 0.0
 		var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
-		sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
+		sprite.frame = ROW_IDLE * COLS_PER_ROW + clamped_frame
 		if dir.x != 0:
 			sprite.flip_h = dir.x < 0
 
@@ -343,15 +347,14 @@ func _process_special_attack(delta: float) -> void:
 		laser_tick_timer = laser_tick_rate
 		_laser_damage_check()
 
-	# Animate beam pose during laser - loop the beam animation
+	# Use IDLE animation during beam firing (ROW_LASER may have empty frames)
 	var dir = current_laser_direction
-	animation_frame += animation_speed * 0.5 * delta
-	var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
-	# Loop the beam animation
+	animation_frame += animation_speed * 0.3 * delta
+	var max_frames = FRAME_COUNTS.get(ROW_IDLE, 15)
 	if animation_frame >= max_frames:
 		animation_frame = 0.0
 	var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
-	sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
+	sprite.frame = ROW_IDLE * COLS_PER_ROW + clamped_frame
 	if dir.x != 0:
 		sprite.flip_h = dir.x < 0
 
