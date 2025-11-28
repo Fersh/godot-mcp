@@ -705,12 +705,12 @@ static func get_melee_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"titans_grip",
 			"Titan's Grip",
-			"+100% Damage, -20% Move Speed",
+			"+100% Damage, -50% Move Speed",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.MELEE_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.DAMAGE, value = 1.0},
-				{effect_type = AbilityData.EffectType.MOVE_SPEED, value = -0.2}
+				{effect_type = AbilityData.EffectType.MOVE_SPEED, value = -0.5}
 			]
 		),
 		AbilityData.new(

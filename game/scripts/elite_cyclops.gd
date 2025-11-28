@@ -17,10 +17,11 @@ extends EliteBase
 @export var rock_range: float = 300.0
 @export var rock_speed: float = 150.0  # Slower, easier to dodge
 
-@export var laser_damage: float = 15.0  # Per tick - reduced 25% from 20
+@export var laser_damage: float = 10.0  # Per tick - reduced further
 @export var laser_range: float = 300.0  # Reduced 25% from 400
 @export var laser_duration: float = 2.0
 @export var laser_tick_rate: float = 0.25
+@export var laser_telegraph_time: float = 1.0  # Telegraph duration before beam fires
 
 # Animation rows for Cyclops spritesheet (15 cols x 20 rows, 64x64 per frame)
 var ROW_GUARD: int = 7
@@ -35,6 +36,9 @@ var laser_tick_timer: float = 0.0
 var laser_target_pos: Vector2 = Vector2.ZERO
 var laser_line: Line2D = null
 var current_laser_direction: Vector2 = Vector2.ZERO
+var laser_telegraphing: bool = false
+var laser_telegraph_timer: float = 0.0
+var beam_warning_label: Label = null
 
 # Stomp state
 var stomp_active: bool = false
@@ -142,22 +146,71 @@ func _start_rock_throw() -> void:
 func _start_laser_beam() -> void:
 	show_warning()
 	is_using_special = true
-	laser_active = true
-	laser_timer = laser_duration
-	laser_tick_timer = 0.0
-	special_timer = laser_duration + 0.5  # Extra time for animation
+
+	# Start telegraph phase - show "BEAM!" warning
+	laser_telegraphing = true
+	laser_telegraph_timer = laser_telegraph_time
+	special_timer = laser_telegraph_time + laser_duration + 0.5  # Telegraph + beam + extra time
 
 	if player and is_instance_valid(player):
 		current_laser_direction = (player.global_position - global_position).normalized()
 		laser_target_pos = player.global_position
 
-	# Use attack animation (stomp) during eye beam, not laser pose
+	# Show BEAM! warning above head
+	_show_beam_warning()
+
+	# Use attack animation during telegraph
 	var dir = current_laser_direction
 	update_animation(0, ROW_ATTACK, dir)
 	animation_frame = 0
 
+func _activate_laser() -> void:
+	# Called after telegraph finishes
+	laser_telegraphing = false
+	laser_active = true
+	laser_timer = laser_duration
+	laser_tick_timer = 0.0
+
+	# Hide warning label
+	_hide_beam_warning()
+
 	# Create laser visual
 	_create_laser_line()
+
+func _show_beam_warning() -> void:
+	if beam_warning_label == null:
+		beam_warning_label = Label.new()
+		beam_warning_label.text = "BEAM!"
+		beam_warning_label.add_theme_font_size_override("font_size", 16)
+		beam_warning_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1.0))
+		beam_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
+		beam_warning_label.add_theme_constant_override("shadow_offset_x", 2)
+		beam_warning_label.add_theme_constant_override("shadow_offset_y", 2)
+		beam_warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		beam_warning_label.z_index = 100
+
+		# Load pixel font if available
+		if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+			var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+			beam_warning_label.add_theme_font_override("font", pixel_font)
+
+		add_child(beam_warning_label)
+
+	beam_warning_label.position = Vector2(-30, -80)  # Above the cyclops head
+	beam_warning_label.visible = true
+
+	# Pulsing animation
+	var tween = create_tween().set_loops()
+	tween.tween_property(beam_warning_label, "modulate:a", 0.5, 0.15)
+	tween.tween_property(beam_warning_label, "modulate:a", 1.0, 0.15)
+
+func _hide_beam_warning() -> void:
+	if beam_warning_label:
+		beam_warning_label.visible = false
+		# Stop any tweens on the label
+		for child in get_children():
+			if child is Tween:
+				child.kill()
 
 func _create_laser_line() -> void:
 	if laser_line == null:
@@ -210,6 +263,30 @@ func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
 
 func _process_special_attack(delta: float) -> void:
+	# Handle telegraph phase
+	if laser_telegraphing:
+		laser_telegraph_timer -= delta
+
+		# Track player during telegraph
+		if player and is_instance_valid(player):
+			current_laser_direction = (player.global_position - global_position).normalized()
+
+		# Animate during telegraph
+		var dir = current_laser_direction
+		animation_frame += animation_speed * 0.5 * delta
+		var max_frames = FRAME_COUNTS.get(ROW_ATTACK, 13)
+		if animation_frame >= max_frames:
+			animation_frame = 0.0
+		var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
+		sprite.frame = ROW_ATTACK * COLS_PER_ROW + clamped_frame
+		if dir.x != 0:
+			sprite.flip_h = dir.x < 0
+
+		# Telegraph finished - activate the laser
+		if laser_telegraph_timer <= 0:
+			_activate_laser()
+		return
+
 	if not laser_active:
 		return
 
@@ -280,7 +357,9 @@ func _laser_damage_check() -> void:
 
 func _end_laser() -> void:
 	laser_active = false
+	laser_telegraphing = false
 	hide_warning()
+	_hide_beam_warning()
 	if laser_line:
 		laser_line.visible = false
 

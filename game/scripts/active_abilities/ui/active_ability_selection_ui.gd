@@ -19,6 +19,7 @@ var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
 @onready var panel: PanelContainer
 @onready var title_label: Label
 @onready var subtitle_label: Label
+@onready var subtitle_prefix_label: Label
 @onready var choices_container: HBoxContainer
 
 var pixel_font: Font = null
@@ -73,12 +74,14 @@ func _create_ui() -> void:
 	subtitle_container.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var subtitle_prefix = Label.new()
-	subtitle_prefix.text = "Choose an "
+	subtitle_prefix.name = "SubtitlePrefix"
+	subtitle_prefix.text = "Choose your first "
 	subtitle_prefix.add_theme_font_size_override("font_size", 14)
 	subtitle_prefix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		subtitle_prefix.add_theme_font_override("font", pixel_font)
 	subtitle_container.add_child(subtitle_prefix)
+	subtitle_prefix_label = subtitle_prefix
 
 	var subtitle_active = Label.new()
 	subtitle_active.text = "ACTIVE"
@@ -156,16 +159,24 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	if all_abilities_pool.is_empty():
 		all_abilities_pool = abilities
 
-	# Update title based on level
+	# Update title and subtitle based on level
 	match level:
 		1:
 			title_label.text = "FIRST ABILITY!"
+			if subtitle_prefix_label:
+				subtitle_prefix_label.text = "Choose your first "
 		5:
 			title_label.text = "NEW ABILITY!"
+			if subtitle_prefix_label:
+				subtitle_prefix_label.text = "Choose your second "
 		10:
 			title_label.text = "ULTIMATE ABILITY!"
+			if subtitle_prefix_label:
+				subtitle_prefix_label.text = "Choose your third "
 		_:
 			title_label.text = "NEW ABILITY!"
+			if subtitle_prefix_label:
+				subtitle_prefix_label.text = "Choose your "
 
 	# Clear previous buttons
 	for button in ability_buttons:
