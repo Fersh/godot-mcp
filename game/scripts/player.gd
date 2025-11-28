@@ -135,6 +135,11 @@ var melee_hit_enemies: Array = []  # Track enemies hit this attack
 var is_dead: bool = false
 var death_animation_finished: bool = false
 
+# Target indicator (shows nearest enemy)
+var target_indicator: Node2D = null
+var target_indicator_pulse: float = 0.0
+var current_target: Node2D = null
+
 # XP System
 var current_xp: float = 0.0
 var xp_to_next_level: float = 526.24  # Base XP required (10% increase from 478.4)
@@ -170,6 +175,50 @@ func _ready() -> void:
 		JuiceManager.register_camera(camera)
 		# Disable camera position smoothing since we do it manually
 		camera.position_smoothing_enabled = false
+
+	# Create target indicator
+	_create_target_indicator()
+
+func _create_target_indicator() -> void:
+	target_indicator = Node2D.new()
+	target_indicator.z_index = -1  # Below enemies
+
+	# Create 4 corner brackets using Line2D
+	var bracket_size: float = 12.0
+	var bracket_length: float = 6.0
+	var bracket_color: Color = Color(0.6, 0.6, 0.6, 0.7)  # Gray
+	var line_width: float = 2.0
+
+	# Top-left bracket
+	var tl = Line2D.new()
+	tl.width = line_width
+	tl.default_color = bracket_color
+	tl.points = [Vector2(-bracket_size, -bracket_size + bracket_length), Vector2(-bracket_size, -bracket_size), Vector2(-bracket_size + bracket_length, -bracket_size)]
+	target_indicator.add_child(tl)
+
+	# Top-right bracket
+	var tr = Line2D.new()
+	tr.width = line_width
+	tr.default_color = bracket_color
+	tr.points = [Vector2(bracket_size - bracket_length, -bracket_size), Vector2(bracket_size, -bracket_size), Vector2(bracket_size, -bracket_size + bracket_length)]
+	target_indicator.add_child(tr)
+
+	# Bottom-left bracket
+	var bl = Line2D.new()
+	bl.width = line_width
+	bl.default_color = bracket_color
+	bl.points = [Vector2(-bracket_size, bracket_size - bracket_length), Vector2(-bracket_size, bracket_size), Vector2(-bracket_size + bracket_length, bracket_size)]
+	target_indicator.add_child(bl)
+
+	# Bottom-right bracket
+	var br = Line2D.new()
+	br.width = line_width
+	br.default_color = bracket_color
+	br.points = [Vector2(bracket_size - bracket_length, bracket_size), Vector2(bracket_size, bracket_size), Vector2(bracket_size, bracket_size + bracket_length)]
+	target_indicator.add_child(br)
+
+	target_indicator.visible = false
+	get_parent().call_deferred("add_child", target_indicator)
 
 func _load_character_data() -> void:
 	if not CharacterManager:
@@ -747,6 +796,43 @@ func _physics_process(delta: float) -> void:
 
 	# Update active ability timers
 	_update_active_ability_timers(delta)
+
+	# Update target indicator
+	_update_target_indicator(delta)
+
+func _update_target_indicator(delta: float) -> void:
+	if target_indicator == null or not is_instance_valid(target_indicator):
+		return
+
+	# Find nearest enemy (use existing function but without range limit)
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest: Node2D = null
+	var closest_dist: float = INF
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist < closest_dist:
+				closest_dist = dist
+				closest = enemy
+
+	current_target = closest
+
+	if current_target == null or not is_instance_valid(current_target):
+		target_indicator.visible = false
+		return
+
+	# Position indicator below the enemy
+	target_indicator.visible = true
+	target_indicator.global_position = current_target.global_position + Vector2(0, 35)
+
+	# Pulse animation (scale and slight vertical movement)
+	target_indicator_pulse += delta * 3.0
+	var pulse_value = sin(target_indicator_pulse)
+	var scale_pulse = 1.0 + pulse_value * 0.15  # Scale between 0.85 and 1.15
+	var y_offset = pulse_value * 3.0  # Move up/down by 3 pixels
+	target_indicator.scale = Vector2(scale_pulse, scale_pulse)
+	target_indicator.global_position.y += y_offset
 
 func try_attack() -> void:
 	var closest_enemy = find_closest_enemy()

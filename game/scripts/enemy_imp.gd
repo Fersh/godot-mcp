@@ -14,7 +14,7 @@ func _on_ready() -> void:
 	speed = 75.0           # Slower than orc (90) - doesn't need to close distance
 	max_health = 8.0       # Very fragile (40% of orc)
 	attack_damage = 6.0    # Good damage per hit
-	attack_cooldown = 1.5  # Slower attack rate than melee
+	attack_cooldown = 1.875  # Reduced 20% from 1.5 (slower attack rate)
 	attack_range = 250.0   # Long attack range for ranged combat
 	windup_duration = 0.4  # Longer windup - telegraphed attack
 	animation_speed = 10.0
