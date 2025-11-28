@@ -869,6 +869,10 @@ func _update_target_indicator(delta: float) -> void:
 				var frame_height = (total_height / vframes) * enemy_sprite.scale.y
 				y_pos = min(frame_height / 2.0, 50.0)  # Cap at 50px
 
+	# Special offset for specific enemy types
+	if current_target.has_method("get") and current_target.get("enemy_type") == "ratfolk":
+		y_pos += 20.0  # Lower indicator for rat enemies
+
 	target_indicator.global_position = current_target.global_position + Vector2(0, y_pos)
 
 	# Pulse animation (scale and slight vertical movement)
