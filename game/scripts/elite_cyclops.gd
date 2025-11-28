@@ -48,7 +48,9 @@ const STOMP_WINDUP: float = 0.6
 # Throw state
 var throw_active: bool = false
 var throw_windup_timer: float = 0.0
-const THROW_WINDUP: float = 0.4
+const THROW_WINDUP: float = 0.6  # Increased to give more warning time
+var rock_target_pos: Vector2 = Vector2.ZERO
+var rock_landing_indicator: Node2D = null
 
 func _setup_elite() -> void:
 	elite_name = "Cyclops"
@@ -140,8 +142,36 @@ func _start_rock_throw() -> void:
 	var dir = Vector2.ZERO
 	if player and is_instance_valid(player):
 		dir = (player.global_position - global_position).normalized()
+		rock_target_pos = player.global_position
+		_show_rock_landing_indicator()
 	update_animation(0, ROW_THROW, dir)
 	animation_frame = 0
+
+func _show_rock_landing_indicator() -> void:
+	_clear_rock_landing_indicator()
+
+	rock_landing_indicator = Node2D.new()
+	rock_landing_indicator.global_position = rock_target_pos
+	rock_landing_indicator.z_index = 5
+
+	# Create warning circle
+	var circle = ColorRect.new()
+	circle.size = Vector2(60, 60)
+	circle.position = Vector2(-30, -30)
+	circle.color = Color(0.6, 0.4, 0.2, 0.5)  # Brown/rock color, semi-transparent
+	rock_landing_indicator.add_child(circle)
+
+	get_parent().add_child(rock_landing_indicator)
+
+	# Pulsing animation for indicator
+	var tween = create_tween().set_loops()
+	tween.tween_property(circle, "color:a", 0.2, 0.15)
+	tween.tween_property(circle, "color:a", 0.6, 0.15)
+
+func _clear_rock_landing_indicator() -> void:
+	if rock_landing_indicator and is_instance_valid(rock_landing_indicator):
+		rock_landing_indicator.queue_free()
+	rock_landing_indicator = null
 
 func _start_laser_beam() -> void:
 	show_warning()
@@ -378,14 +408,18 @@ func _execute_stomp() -> void:
 		JuiceManager.shake_large()
 
 func _execute_rock_throw() -> void:
-	if rock_projectile_scene == null or player == null or not is_instance_valid(player):
+	# Clear the landing indicator
+	_clear_rock_landing_indicator()
+
+	if rock_projectile_scene == null:
 		return
 
 	var projectile = rock_projectile_scene.instantiate()
 	projectile.global_position = global_position + Vector2(0, -20)  # Throw from above head
 
-	var direction = (player.global_position - global_position).normalized()
-	projectile.direction = direction
+	# Use the locked target position
+	projectile.target_position = rock_target_pos
+	projectile.has_target = true
 	projectile.speed = rock_speed
 	projectile.damage = rock_damage
 
@@ -394,4 +428,5 @@ func _execute_rock_throw() -> void:
 # Override to handle cleanup
 func die() -> void:
 	_end_laser()
+	_clear_rock_landing_indicator()
 	super.die()

@@ -59,9 +59,13 @@ func _process(delta: float) -> void:
 			# Play ding sound when settling
 			if SoundManager:
 				SoundManager.play_ding()
-			# Play flash effect for non-common rarities
+			# Play flash effect and frame freeze for non-common rarities
 			if current_choices[i].rarity != AbilityData.Rarity.COMMON:
 				_play_rarity_reveal_effect(ability_buttons[i], current_choices[i].rarity)
+				# Frame freeze based on rarity (more frames for higher rarity)
+				var freeze_frames = _get_rarity_freeze_frames(current_choices[i].rarity)
+				if freeze_frames > 0:
+					_do_frame_freeze(freeze_frames)
 		else:
 			# Still rolling - cycle through random abilities
 			roll_tick_timers[i] += delta
@@ -543,69 +547,115 @@ func _animate_entrance() -> void:
 		card_tween.tween_property(button, "position:y", original_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		card_tween.tween_property(button, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
 
+func _get_rarity_freeze_frames(rarity: AbilityData.Rarity) -> int:
+	match rarity:
+		AbilityData.Rarity.RARE:
+			return 2
+		AbilityData.Rarity.LEGENDARY:
+			return 4
+		AbilityData.Rarity.MYTHIC:
+			return 6
+		_:
+			return 0
+
+func _do_frame_freeze(frames: int) -> void:
+	# Brief pause effect - since we're already paused, we use Engine.time_scale
+	var freeze_duration = frames / 60.0  # Convert frames to seconds at 60fps
+	Engine.time_scale = 0.0
+
+	# Use a timer that ignores time scale
+	var timer = get_tree().create_timer(freeze_duration, true, false, true)  # process_always = true
+	timer.timeout.connect(func(): Engine.time_scale = 1.0)
+
 func _play_rarity_reveal_effect(button: Button, rarity: AbilityData.Rarity) -> void:
 	var rarity_color = AbilityData.get_rarity_color(rarity)
 
-	# Create flash overlay
+	# Get intensity multiplier based on rarity
+	var intensity = 1.0
+	match rarity:
+		AbilityData.Rarity.RARE:
+			intensity = 1.0
+		AbilityData.Rarity.LEGENDARY:
+			intensity = 1.5
+		AbilityData.Rarity.MYTHIC:
+			intensity = 2.0
+
+	# Create flash overlay - brighter for higher rarity
 	var flash = ColorRect.new()
 	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
-	flash.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.8)
+	flash.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, min(0.9 * intensity, 1.0))
 	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	flash.z_index = 10
 	button.add_child(flash)
 
-	# Create expanding glow ring
+	# Create expanding glow ring - larger for higher rarity
 	var glow = ColorRect.new()
 	glow.set_anchors_preset(Control.PRESET_CENTER)
 	glow.anchor_left = 0.5
 	glow.anchor_right = 0.5
 	glow.anchor_top = 0.5
 	glow.anchor_bottom = 0.5
-	glow.offset_left = -150
-	glow.offset_right = 150
-	glow.offset_top = -175
-	glow.offset_bottom = 175
+	var base_size = 150 * intensity
+	glow.offset_left = -base_size
+	glow.offset_right = base_size
+	glow.offset_top = -base_size * 1.15
+	glow.offset_bottom = base_size * 1.15
 	glow.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.0)
 	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	glow.z_index = 9
 	button.add_child(glow)
 
-	# Animate flash - quick bright flash then fade
+	# Animate flash - quick bright flash then fade (longer for higher rarity)
 	var flash_tween = create_tween()
 	flash_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	flash_tween.tween_property(flash, "color:a", 0.0, 0.4).set_ease(Tween.EASE_OUT)
+	flash_tween.tween_property(flash, "color:a", 0.0, 0.3 + 0.15 * intensity).set_ease(Tween.EASE_OUT)
 	flash_tween.tween_callback(flash.queue_free)
 
-	# Animate glow ring expanding outward
+	# Animate glow ring expanding outward - faster and larger for higher rarity
+	var expand_size = 200 * intensity
 	var glow_tween = create_tween()
 	glow_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	glow_tween.set_parallel(true)
-	glow_tween.tween_property(glow, "color:a", 0.6, 0.1).set_ease(Tween.EASE_OUT)
-	glow_tween.tween_property(glow, "offset_left", -200, 0.3).set_ease(Tween.EASE_OUT)
-	glow_tween.tween_property(glow, "offset_right", 200, 0.3).set_ease(Tween.EASE_OUT)
-	glow_tween.tween_property(glow, "offset_top", -225, 0.3).set_ease(Tween.EASE_OUT)
-	glow_tween.tween_property(glow, "offset_bottom", 225, 0.3).set_ease(Tween.EASE_OUT)
-	glow_tween.chain().tween_property(glow, "color:a", 0.0, 0.3).set_ease(Tween.EASE_IN)
+	glow_tween.tween_property(glow, "color:a", 0.5 + 0.2 * intensity, 0.08).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_left", -expand_size, 0.25).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_right", expand_size, 0.25).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_top", -expand_size * 1.15, 0.25).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_bottom", expand_size * 1.15, 0.25).set_ease(Tween.EASE_OUT)
+	glow_tween.chain().tween_property(glow, "color:a", 0.0, 0.25).set_ease(Tween.EASE_IN)
 	glow_tween.tween_callback(glow.queue_free)
 
-	# Scale punch effect on the card
+	# Scale punch effect on the card - bigger punch for higher rarity
 	button.pivot_offset = button.size / 2
+	var scale_amount = 1.05 + 0.03 * intensity
 	var scale_tween = create_tween()
 	scale_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	scale_tween.tween_property(button, "scale", Vector2(1.08, 1.08), 0.1).set_ease(Tween.EASE_OUT)
-	scale_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+	scale_tween.tween_property(button, "scale", Vector2(scale_amount, scale_amount), 0.08).set_ease(Tween.EASE_OUT)
+	scale_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
 
-	# Create sparkle particles around the card for legendary/mythic
-	if rarity == AbilityData.Rarity.LEGENDARY or rarity == AbilityData.Rarity.MYTHIC:
-		_spawn_sparkles(button, rarity_color)
+	# Create sparkle particles for rare and above
+	if rarity != AbilityData.Rarity.COMMON:
+		var sparkle_count = 4
+		match rarity:
+			AbilityData.Rarity.RARE:
+				sparkle_count = 6
+			AbilityData.Rarity.LEGENDARY:
+				sparkle_count = 10
+			AbilityData.Rarity.MYTHIC:
+				sparkle_count = 16
+		_spawn_sparkles_count(button, rarity_color, sparkle_count)
 
-	# Screen shake for mythic
-	if rarity == AbilityData.Rarity.MYTHIC and JuiceManager:
+	# Screen shake for legendary and mythic
+	if rarity == AbilityData.Rarity.LEGENDARY and JuiceManager:
+		JuiceManager.shake_small()
+	elif rarity == AbilityData.Rarity.MYTHIC and JuiceManager:
 		JuiceManager.shake_medium()
 
 func _spawn_sparkles(button: Button, color: Color) -> void:
-	# Spawn several sparkle particles around the card
-	for i in range(8):
+	_spawn_sparkles_count(button, color, 8)
+
+func _spawn_sparkles_count(button: Button, color: Color, count: int) -> void:
+	# Spawn sparkle particles around the card
+	for i in range(count):
 		var sparkle = ColorRect.new()
 		sparkle.custom_minimum_size = Vector2(6, 6)
 		sparkle.size = Vector2(6, 6)
@@ -614,8 +664,8 @@ func _spawn_sparkles(button: Button, color: Color) -> void:
 		sparkle.z_index = 11
 
 		# Random position around the card edges
-		var angle = (i / 8.0) * TAU + randf() * 0.5
-		var radius = 130.0 + randf() * 20.0
+		var angle = (float(i) / float(count)) * TAU + randf() * 0.5
+		var radius = 130.0 + randf() * 30.0
 		var start_pos = Vector2(
 			button.size.x / 2 + cos(angle) * radius,
 			button.size.y / 2 + sin(angle) * radius
@@ -628,7 +678,7 @@ func _spawn_sparkles(button: Button, color: Color) -> void:
 		var sparkle_tween = create_tween()
 		sparkle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 		sparkle_tween.set_parallel(true)
-		sparkle_tween.tween_property(sparkle, "position:y", start_pos.y - 40 - randf() * 30, 0.6).set_ease(Tween.EASE_OUT)
-		sparkle_tween.tween_property(sparkle, "color:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
-		sparkle_tween.tween_property(sparkle, "scale", Vector2(0.3, 0.3), 0.6).set_ease(Tween.EASE_IN)
+		sparkle_tween.tween_property(sparkle, "position:y", start_pos.y - 50 - randf() * 40, 0.7).set_ease(Tween.EASE_OUT)
+		sparkle_tween.tween_property(sparkle, "color:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
+		sparkle_tween.tween_property(sparkle, "scale", Vector2(0.2, 0.2), 0.7).set_ease(Tween.EASE_IN)
 		sparkle_tween.chain().tween_callback(sparkle.queue_free)

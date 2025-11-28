@@ -1160,24 +1160,111 @@ func _start_turret_shooting(position: Vector2, ability: ActiveAbilityData) -> vo
 
 func _execute_arrow_storm(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
+	var duration = ability.duration
+	var radius = ability.radius
 
-	# Spawn continuous arrows everywhere for duration
-	var effect = _spawn_effect("arrow_storm", player.global_position)
-	if effect and effect.has_method("setup"):
-		effect.setup(ability.duration, ability.radius, damage)
-	else:
-		# Manual: spawn arrows at random positions
-		var arrow_count = int(ability.duration * 20)  # ~20 arrows per second
-		for i in range(arrow_count):
-			get_tree().create_timer(ability.duration * i / arrow_count).timeout.connect(func():
-				var random_pos = player.global_position + Vector2(randf_range(-ability.radius, ability.radius), randf_range(-ability.radius, ability.radius))
-				var enemies = _get_enemies_in_radius(random_pos, 30)
-				for enemy in enemies:
-					_deal_damage_to_enemy(enemy, damage / 10.0)
-			)
+	# Spawn raining arrows for the duration
+	var arrows_per_second = 15
+	var total_arrows = int(duration * arrows_per_second)
+
+	for i in range(total_arrows):
+		var delay = duration * float(i) / float(total_arrows)
+		get_tree().create_timer(delay).timeout.connect(func():
+			if not is_instance_valid(player):
+				return
+			_spawn_storm_arrow(player.global_position, radius, damage)
+		)
 
 	_play_sound("arrow_storm")
 	_screen_shake("medium")
+
+func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
+	# Random target position within radius of player
+	var target_pos = center + Vector2(randf_range(-radius, radius), randf_range(-radius, radius))
+
+	# Clamp to arena bounds
+	target_pos.x = clamp(target_pos.x, 50, 1486)
+	target_pos.y = clamp(target_pos.y, 50, 1332)
+
+	# Arrow starts from above and falls down at an angle
+	var start_offset = Vector2(randf_range(-50, 50), -400)
+	var start_pos = target_pos + start_offset
+
+	# Create visual arrow
+	var arrow = Node2D.new()
+	arrow.global_position = start_pos
+	arrow.z_index = 20
+
+	# Arrow body (white rectangle)
+	var body = ColorRect.new()
+	body.size = Vector2(16, 3)
+	body.position = Vector2(-8, -1.5)
+	body.color = Color(1.0, 0.95, 0.8, 1.0)
+	arrow.add_child(body)
+
+	# Arrow tip (dark triangle)
+	var tip = Polygon2D.new()
+	tip.position = Vector2(8, 0)
+	tip.color = Color(0.2, 0.2, 0.2, 1.0)
+	tip.polygon = PackedVector2Array([Vector2(0, -2), Vector2(5, 0), Vector2(0, 2)])
+	arrow.add_child(tip)
+
+	# Rotate arrow to face direction of travel
+	var direction = (target_pos - start_pos).normalized()
+	arrow.rotation = direction.angle()
+
+	var main_node = _player.get_parent()
+	if main_node:
+		main_node.add_child(arrow)
+
+	# Animate arrow falling to target
+	var tween = arrow.create_tween()
+	tween.tween_property(arrow, "global_position", target_pos, 0.2).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		# Deal damage at impact point
+		var enemies = _get_enemies_in_radius(target_pos, 35)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		# Spawn impact effect
+		_spawn_arrow_impact(target_pos)
+
+		arrow.queue_free()
+	)
+
+func _spawn_arrow_impact(pos: Vector2) -> void:
+	# Small dust/impact effect
+	var impact = Node2D.new()
+	impact.global_position = pos
+	impact.z_index = 5
+
+	# Create small particles
+	for i in range(4):
+		var particle = ColorRect.new()
+		particle.size = Vector2(4, 4)
+		particle.position = Vector2(-2, -2)
+		particle.color = Color(0.8, 0.7, 0.5, 0.8)
+		impact.add_child(particle)
+
+		# Animate particle spreading out
+		var angle = i * TAU / 4 + randf() * 0.5
+		var dist = 15 + randf() * 10
+		var end_pos = Vector2(cos(angle) * dist, sin(angle) * dist)
+
+		var ptween = particle.create_tween()
+		ptween.set_parallel(true)
+		ptween.tween_property(particle, "position", end_pos, 0.2)
+		ptween.tween_property(particle, "color:a", 0.0, 0.2)
+
+	var main_node = _player.get_parent() if _player else null
+	if main_node:
+		main_node.add_child(impact)
+
+	# Clean up after animation
+	get_tree().create_timer(0.3).timeout.connect(func():
+		if is_instance_valid(impact):
+			impact.queue_free()
+	)
 
 func _execute_ballista_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target = _get_nearest_enemy(player.global_position)
