@@ -159,9 +159,9 @@ func _start_laser_beam() -> void:
 	# Show BEAM! warning above head
 	_show_beam_warning()
 
-	# Use attack animation during telegraph
+	# Use laser/beam animation during telegraph
 	var dir = current_laser_direction
-	update_animation(0, ROW_ATTACK, dir)
+	update_animation(0, ROW_LASER, dir)
 	animation_frame = 0
 
 func _activate_laser() -> void:
@@ -267,14 +267,14 @@ func _process_special_attack(delta: float) -> void:
 		if player and is_instance_valid(player):
 			current_laser_direction = (player.global_position - global_position).normalized()
 
-		# Animate during telegraph
+		# Animate during telegraph using beam animation
 		var dir = current_laser_direction
 		animation_frame += animation_speed * 0.5 * delta
-		var max_frames = FRAME_COUNTS.get(ROW_ATTACK, 13)
+		var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
 		if animation_frame >= max_frames:
 			animation_frame = 0.0
 		var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
-		sprite.frame = ROW_ATTACK * COLS_PER_ROW + clamped_frame
+		sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
 		if dir.x != 0:
 			sprite.flip_h = dir.x < 0
 
@@ -311,15 +311,15 @@ func _process_special_attack(delta: float) -> void:
 		laser_tick_timer = laser_tick_rate
 		_laser_damage_check()
 
-	# Animate attack pose during laser - loop the attack animation
+	# Animate beam pose during laser - loop the beam animation
 	var dir = current_laser_direction
 	animation_frame += animation_speed * 0.5 * delta
-	var max_frames = FRAME_COUNTS.get(ROW_ATTACK, 13)
-	# Loop the attack animation
+	var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
+	# Loop the beam animation
 	if animation_frame >= max_frames:
 		animation_frame = 0.0
 	var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
-	sprite.frame = ROW_ATTACK * COLS_PER_ROW + clamped_frame
+	sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
 	if dir.x != 0:
 		sprite.flip_h = dir.x < 0
 
