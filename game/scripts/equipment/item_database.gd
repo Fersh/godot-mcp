@@ -151,34 +151,34 @@ const BASE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_3.png"
 	},
 
-	# HELMETS - Using wands as helmet icons (magical headgear)
+	# HELMETS - Using helmet icons (icon1-8 for common base items)
 	"helm_basic": {
 		"display_name": "Helm",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.05},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_1.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon1.png"
 	},
 	"cap_basic": {
 		"display_name": "Cap",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.03},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_2.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon2.png"
 	},
 	"hood_basic": {
 		"display_name": "Hood",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.03},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_3.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon3.png"
 	},
 	"crown_basic": {
 		"display_name": "Crown",
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.05},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon4.png"
 	},
 
 	# CHEST - Common chest armor
@@ -368,7 +368,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_1.png"
 	},
 
-	# Helmets
+	# Helmets (Unique - icons 31-40)
 	"thinking_cap": {
 		"display_name": "Thinking Cap",
 		"description": "It's not much but it's honest work.",
@@ -376,7 +376,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.20, "crit_chance": 0.05},
 		"grants_equipment_ability": "eureka",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_5.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon31.png"
 	},
 	"tin_foil_hat": {
 		"display_name": "Tin Foil Hat",
@@ -385,7 +385,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.10, "max_hp": 0.05},
 		"grants_equipment_ability": "paranoia",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_1.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon32.png"
 	},
 	"bucket_helm": {
 		"display_name": "Bucket",
@@ -394,7 +394,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.15, "damage_reduction": 0.05},
 		"grants_equipment_ability": "tunnel_vision",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_2.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon33.png"
 	},
 
 	# Chest - Rare
@@ -588,7 +588,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_1.png"
 	},
 
-	# Helmets
+	# Helmets (Legendary - icons 41-48)
 	"galaxy_brain_helm": {
 		"display_name": "Galaxy Brain Helm",
 		"description": "IQ: Yes",
@@ -596,7 +596,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.30, "crit_chance": 0.15, "damage": 0.10},
 		"grants_equipment_ability": "big_brain_plays",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_3.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon45.png"
 	},
 	"anime_protagonist_hair": {
 		"display_name": "Protagonist Hair",
@@ -606,7 +606,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.20, "max_hp": 0.15, "crit_chance": 0.10},
 		"grants_ability": "frenzy",
 		"grants_equipment_ability": "power_of_friendship",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
+		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon48.png"
 	},
 
 	# Chest - Epic

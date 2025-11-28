@@ -169,6 +169,11 @@ func _generate_magic_item(item: ItemData, slot: ItemData.Slot) -> void:
 		item.suffix = suffix_data.name
 		item.magic_stats = suffix_data.stats.duplicate()
 
+	# Upgrade helmet icon for magic rarity (icons 9-18)
+	if slot == ItemData.Slot.HELMET:
+		var icon_num = randi_range(9, 18)
+		item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
+
 func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 	# Start with common base
 	_generate_common_item(item, slot)
@@ -187,6 +192,11 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 			item.magic_stats[stat] += suffix_data.stats[stat]
 		else:
 			item.magic_stats[stat] = suffix_data.stats[stat]
+
+	# Upgrade helmet icon for rare rarity (icons 19-30)
+	if slot == ItemData.Slot.HELMET:
+		var icon_num = randi_range(19, 30)
+		item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
 
 func _generate_unique_item(item: ItemData, slot: ItemData.Slot) -> void:
 	var unique_ids = ItemDatabase.get_unique_items_for_slot(slot)

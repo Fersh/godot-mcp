@@ -4,6 +4,7 @@ extends Node2D
 # Alternates: Elite at 2.5m, Boss at 5m, Elite at 7.5m, Boss at 10m, etc.
 
 @export var cyclops_scene: PackedScene
+@export var goblin_king_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
 @export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
@@ -21,6 +22,13 @@ var warning_timer: float = 0.0
 var pending_spawn: bool = false
 var spawn_count: int = 0  # Track how many spawns (0=boss, 1=elite, 2=boss...)
 
+# Elite alternation tracking
+# First 2 elites alternate (0=Cyclops, 1=GoblinKing or vice versa based on random start)
+# Then 3rd is random, 4th is the other, and repeat
+var elite_spawn_count: int = 0
+var last_elite_type: int = -1  # -1=none, 0=Cyclops, 1=GoblinKing
+var initial_elite_chosen: bool = false
+
 # Track active elites/bosses
 var active_elites: Array[Node] = []
 var active_boss: Node = null
@@ -37,10 +45,10 @@ var boss_name_label: Label = null
 # Pixel font
 var pixel_font: Font = null
 
-# Available elite types (for future expansion)
-enum EliteType { CYCLOPS }
+# Available elite types
+enum EliteType { CYCLOPS, GOBLIN_KING }
 enum BossType { MINOTAUR }
-var elite_pool: Array[EliteType] = [EliteType.CYCLOPS]
+var elite_pool: Array[EliteType] = [EliteType.CYCLOPS, EliteType.GOBLIN_KING]
 var boss_pool: Array[BossType] = [BossType.MINOTAUR]
 
 func _ready() -> void:
@@ -289,7 +297,39 @@ func _spawn_elite() -> void:
 		JuiceManager.shake_large()
 
 func _select_elite_type() -> EliteType:
-	return EliteType.CYCLOPS
+	# Elite spawn pattern:
+	# 1st elite: random (Cyclops or Goblin King)
+	# 2nd elite: the other one
+	# 3rd elite: random
+	# 4th elite: the other one
+	# ... and so on
+
+	var selected_type: EliteType
+
+	if elite_spawn_count == 0:
+		# First elite: random choice
+		selected_type = EliteType.CYCLOPS if randi() % 2 == 0 else EliteType.GOBLIN_KING
+	elif elite_spawn_count == 1:
+		# Second elite: must be the other one
+		selected_type = EliteType.GOBLIN_KING if last_elite_type == EliteType.CYCLOPS else EliteType.CYCLOPS
+	else:
+		# From 3rd onwards: odd positions (2, 4, 6...) are random, even positions (3, 5, 7...) are the other
+		# elite_spawn_count 2 = 3rd elite (random)
+		# elite_spawn_count 3 = 4th elite (other)
+		# elite_spawn_count 4 = 5th elite (random)
+		# etc.
+		var position_in_cycle = (elite_spawn_count - 2) % 2
+		if position_in_cycle == 0:
+			# Random choice
+			selected_type = EliteType.CYCLOPS if randi() % 2 == 0 else EliteType.GOBLIN_KING
+		else:
+			# Must be the other one
+			selected_type = EliteType.GOBLIN_KING if last_elite_type == EliteType.CYCLOPS else EliteType.CYCLOPS
+
+	last_elite_type = selected_type
+	elite_spawn_count += 1
+
+	return selected_type
 
 func _select_boss_type() -> BossType:
 	return BossType.MINOTAUR
@@ -298,6 +338,8 @@ func _get_scene_for_elite(elite_type: EliteType) -> PackedScene:
 	match elite_type:
 		EliteType.CYCLOPS:
 			return cyclops_scene
+		EliteType.GOBLIN_KING:
+			return goblin_king_scene
 		_:
 			return cyclops_scene
 
