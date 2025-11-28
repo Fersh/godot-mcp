@@ -21,6 +21,13 @@ const POINTS_PER_ITEM = 200  # Points for picking up items
 
 func _ready() -> void:
 	add_to_group("stats_display")
+
+	# Apply slight rotation with right side down (~2 degrees)
+	var margin_container = $MarginContainer
+	if margin_container:
+		margin_container.pivot_offset = Vector2(margin_container.size.x, 0)  # Rotate from top-right corner
+		margin_container.rotation = -0.035  # ~2 degrees, opposite direction from left HUD
+
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("player")
 	if player:

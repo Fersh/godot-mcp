@@ -1522,10 +1522,31 @@ func _spawn_heal_particles() -> void:
 		tween.chain().tween_callback(particle.queue_free)
 
 func _spawn_level_up_effect() -> void:
-	"""Holy light beam level up effect - ethereal, soft, divine."""
+	"""Holy light beam level up effect - ethereal, soft, divine with sun strike sprite."""
 	var effect_container = Node2D.new()
 	effect_container.global_position = global_position
 	get_parent().add_child(effect_container)
+
+	# === SUN STRIKE SPRITE ANIMATION ===
+	var sun_strike_texture = load("res://assets/sprites/effects/pack/4 sun strike/sun-strike.png")
+	if sun_strike_texture:
+		var sun_strike = Sprite2D.new()
+		sun_strike.texture = sun_strike_texture
+		sun_strike.hframes = 8  # 8 frames in the spritesheet
+		sun_strike.vframes = 1
+		sun_strike.frame = 0
+		sun_strike.scale = Vector2(3.0, 3.0)  # Scale up for visibility
+		sun_strike.position = Vector2(0, -100)  # Position above player
+		sun_strike.modulate.a = 0.9
+		effect_container.add_child(sun_strike)
+
+		# Animate through frames
+		var frame_tween = sun_strike.create_tween()
+		frame_tween.tween_property(sun_strike, "modulate:a", 1.0, 0.05)
+		for f in range(1, 8):
+			frame_tween.tween_callback(func(): sun_strike.frame = f)
+			frame_tween.tween_interval(0.06)  # ~16fps animation
+		frame_tween.tween_property(sun_strike, "modulate:a", 0.0, 0.15)
 
 	# === ETHEREAL LIGHT BEAM ===
 	var beam_container = Node2D.new()

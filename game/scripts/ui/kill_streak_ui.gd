@@ -74,7 +74,7 @@ func _create_ui() -> void:
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		combo_label.add_theme_font_override("font", pixel_font)
-	combo_label.add_theme_font_size_override("font_size", 20)
+	combo_label.add_theme_font_size_override("font_size", 24)  # Increased by 20%
 	combo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	# Drop shadow matching wave/coins text
 	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -107,13 +107,7 @@ func _process(delta: float) -> void:
 		if display_timer <= 0:
 			_on_fade_complete()
 
-	# Pulse animation for high tiers
-	if current_tier >= 3 and is_visible_state:
-		pulse_time += delta * (2.0 + current_tier * 0.5)
-		var pulse = 1.0 + sin(pulse_time) * 0.02 * current_tier
-		combo_label.scale = Vector2(pulse, pulse)
-
-	# Rainbow effect for max tier
+	# Rainbow effect for max tier (color only, no pulsing)
 	if current_tier >= 6 and is_visible_state:
 		rainbow_time += delta * 2.0
 		var hue = fmod(rainbow_time, 1.0)
@@ -163,8 +157,8 @@ func _update_display() -> void:
 	var color = TIER_COLORS[current_tier]
 	combo_label.add_theme_color_override("font_color", color)
 
-	# Scale font size slightly based on tier
-	var base_size = 16
+	# Scale font size slightly based on tier (base size increased by 20%)
+	var base_size = 20
 	var size_bonus = min(current_tier, 4) * 2
 	combo_label.add_theme_font_size_override("font_size", base_size + size_bonus)
 

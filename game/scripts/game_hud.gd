@@ -49,9 +49,10 @@ var previous_xp: float = 0.0
 var current_tween: Tween = null
 
 # Animation constants (matching combo style)
-const BAR_BASE_ROTATION: float = 0.02  # Slight tilt
+const BAR_BASE_ROTATION: float = 0.0  # Return to no rotation (original position)
 const BAR_SHAKE_AMOUNT: float = 0.06
 const BAR_PULSE_SCALE: float = 1.08
+const BAR_FILL_PULSE_SCALE: float = 1.04  # Slightly smaller pulse for fill bar
 
 # Kill streak fire effect
 var fire_container: Control = null
@@ -99,6 +100,9 @@ func _create_ui() -> void:
 	container.offset_top = MARGIN
 	container.offset_right = MARGIN + PORTRAIT_SIZE + SPACING + HEALTH_BAR_WIDTH
 	container.offset_bottom = MARGIN + PORTRAIT_SIZE + SPACING + PROGRESS_BAR_HEIGHT
+	# Slight rotation with left side down (~2 degrees)
+	container.pivot_offset = Vector2(0, 0)  # Rotate from top-left corner
+	container.rotation = 0.035  # ~2 degrees
 	add_child(container)
 
 	# Portrait button (clickable for pause)
@@ -364,9 +368,10 @@ func _on_health_changed(current: float, maximum: float) -> void:
 	max_health = maximum
 	_update_health_bar()
 
-	# Animate health bar on change
+	# Animate health bar on change (both bg and fill)
 	if health_changed and health_bar_bg:
 		_animate_bar_shake(health_bar_bg)
+		_animate_bar_fill_shake(health_bar_fill)
 
 func _update_health_bar() -> void:
 	if health_bar_fill == null:
@@ -433,9 +438,10 @@ func _on_xp_changed(current_xp: float, xp_needed: float, level: int) -> void:
 		0.3
 	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 
-	# Animate XP bar on gain
+	# Animate XP bar on gain (both bg and fill)
 	if xp_increased and progress_bar_bg:
 		_animate_bar_shake(progress_bar_bg)
+		_animate_bar_fill_shake(progress_bar_fill)
 
 func _update_progress_bar(current_xp: float, xp_needed: float) -> void:
 	if progress_bar_fill == null:
@@ -503,7 +509,7 @@ func _input(event: InputEvent) -> void:
 # ============================================
 
 func _animate_bar_shake(bar: Panel) -> void:
-	"""Rotating shake and pulse animation for HP/XP bars."""
+	"""Rotating shake and pulse animation for HP/XP bar background."""
 	if bar == null:
 		return
 
@@ -518,15 +524,44 @@ func _animate_bar_shake(bar: Panel) -> void:
 	tween.tween_property(bar, "scale", Vector2(BAR_PULSE_SCALE, BAR_PULSE_SCALE), 0.06).set_ease(Tween.EASE_OUT)
 
 	# Rotation shake
-	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION + BAR_SHAKE_AMOUNT, 0.04)
+	tween.tween_property(bar, "rotation", BAR_SHAKE_AMOUNT, 0.04)
 
 	tween.set_parallel(false)
-	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION - BAR_SHAKE_AMOUNT * 0.7, 0.04)
-	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION + BAR_SHAKE_AMOUNT * 0.3, 0.03)
+	tween.tween_property(bar, "rotation", -BAR_SHAKE_AMOUNT * 0.7, 0.04)
+	tween.tween_property(bar, "rotation", BAR_SHAKE_AMOUNT * 0.3, 0.03)
 	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION, 0.03)
 
 	# Return scale to normal
 	tween.tween_property(bar, "scale", Vector2(1.0, 1.0), 0.1).set_ease(Tween.EASE_OUT)
+
+func _animate_bar_fill_shake(fill_bar: Panel) -> void:
+	"""Smaller rotating shake and pulse for the fill bar inside."""
+	if fill_bar == null:
+		return
+
+	# Set pivot to center of fill bar
+	fill_bar.pivot_offset = fill_bar.size / 2
+
+	# Slight delay to offset from bg animation
+	var tween = create_tween()
+	tween.tween_interval(0.02)
+
+	tween.set_parallel(true)
+
+	# Smaller pulse scale for fill
+	tween.tween_property(fill_bar, "scale", Vector2(BAR_FILL_PULSE_SCALE, BAR_FILL_PULSE_SCALE), 0.05).set_ease(Tween.EASE_OUT)
+
+	# Smaller rotation shake
+	var fill_shake = BAR_SHAKE_AMOUNT * 0.5
+	tween.tween_property(fill_bar, "rotation", fill_shake, 0.03)
+
+	tween.set_parallel(false)
+	tween.tween_property(fill_bar, "rotation", -fill_shake * 0.6, 0.03)
+	tween.tween_property(fill_bar, "rotation", fill_shake * 0.2, 0.02)
+	tween.tween_property(fill_bar, "rotation", BAR_BASE_ROTATION, 0.02)
+
+	# Return scale to normal
+	tween.tween_property(fill_bar, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_OUT)
 
 # ============================================
 # KILL STREAK FIRE EFFECT
