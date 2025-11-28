@@ -147,7 +147,30 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	icon_container.custom_minimum_size = ICON_SIZE
 	icon_container.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# Background - use rune texture if available
+	# Border panel with rounded corners (colored by buff)
+	var border = Panel.new()
+	border.name = "Border"
+	border.size = ICON_SIZE
+	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var border_style = StyleBoxFlat.new()
+	border_style.bg_color = buff_data.get("color", Color.WHITE)
+	border_style.set_corner_radius_all(4)
+	border.add_theme_stylebox_override("panel", border_style)
+	icon_container.add_child(border)
+
+	# Inner panel with rounded corners
+	var inner = Panel.new()
+	inner.name = "Inner"
+	inner.position = Vector2(3, 3)
+	inner.size = ICON_SIZE - Vector2(6, 6)
+	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var inner_style = StyleBoxFlat.new()
+	inner_style.bg_color = buff_data.get("color", Color.WHITE).darkened(0.5)
+	inner_style.set_corner_radius_all(2)
+	inner.add_theme_stylebox_override("panel", inner_style)
+	icon_container.add_child(inner)
+
+	# Background texture overlay (rune) if available
 	var rune_texture = _get_random_rune_texture()
 	if rune_texture:
 		var bg = TextureRect.new()
@@ -155,48 +178,12 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 		bg.texture = rune_texture
 		bg.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		bg.size = ICON_SIZE
+		bg.position = Vector2(3, 3)
+		bg.size = ICON_SIZE - Vector2(6, 6)
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		# Tint with buff color
-		bg.modulate = buff_data.get("color", Color.WHITE).lerp(Color.WHITE, 0.5)
+		bg.modulate = buff_data.get("color", Color.WHITE).lerp(Color.WHITE, 0.3)
+		bg.modulate.a = 0.5
 		icon_container.add_child(bg)
-	else:
-		# Fallback to ColorRect
-		var bg = ColorRect.new()
-		bg.name = "Background"
-		bg.color = Color(0.1, 0.1, 0.15, 0.9)
-		bg.size = ICON_SIZE
-		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_container.add_child(bg)
-
-	# Border (colored by buff)
-	var border = ColorRect.new()
-	border.name = "Border"
-	border.color = buff_data.get("color", Color.WHITE)
-	border.size = ICON_SIZE
-	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon_container.add_child(border)
-
-	# Inner - use same rune texture with darker tint
-	if rune_texture:
-		var inner = TextureRect.new()
-		inner.name = "Inner"
-		inner.texture = rune_texture
-		inner.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		inner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		inner.position = Vector2(3, 3)
-		inner.size = ICON_SIZE - Vector2(6, 6)
-		inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		inner.modulate = buff_data.get("color", Color.WHITE).darkened(0.3)
-		icon_container.add_child(inner)
-	else:
-		var inner = ColorRect.new()
-		inner.name = "Inner"
-		inner.color = Color(0.15, 0.15, 0.2, 0.95)
-		inner.position = Vector2(3, 3)
-		inner.size = ICON_SIZE - Vector2(6, 6)
-		inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		icon_container.add_child(inner)
 
 	# Letter label (first letter of buff name)
 	var letter = Label.new()

@@ -70,7 +70,7 @@ func _setup_elite() -> void:
 	enemy_type = "goblin_king"
 
 	# Goblin King stats - tankier and slower than Cyclops
-	speed = 45.0  # Slower than Cyclops (reduced 10%)
+	speed = 40.5  # Slower than Cyclops (reduced 20%)
 	max_health = 800.0  # More HP than Cyclops (675)
 	attack_damage = stomp_damage
 	attack_cooldown = 1.0

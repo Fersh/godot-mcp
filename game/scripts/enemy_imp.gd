@@ -11,7 +11,7 @@ func _on_ready() -> void:
 	enemy_type = "imp"
 
 	# Imp stats - glass cannon ranged attacker
-	speed = 67.5           # Slower ranged (reduced 10%)
+	speed = 61.0           # Slower ranged (reduced 20%)
 	max_health = 8.0       # Very fragile (40% of orc)
 	attack_damage = 6.0    # Good damage per hit
 	attack_cooldown = 1.875  # Reduced 20% from 1.5 (slower attack rate)

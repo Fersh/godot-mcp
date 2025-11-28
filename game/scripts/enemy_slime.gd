@@ -7,7 +7,7 @@ func _on_ready() -> void:
 	enemy_type = "slime"
 
 	# Slime stats - slow tank
-	speed = 49.5           # Much slower (reduced 10%)
+	speed = 44.5           # Much slower (reduced 20%)
 	max_health = 100.0     # 5x orc health (doubled from 50)
 	attack_damage = 12.0   # 2.4x orc damage
 	attack_cooldown = 1.2  # Slower attack than orc (0.8)

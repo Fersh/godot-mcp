@@ -22,7 +22,7 @@ func _on_ready() -> void:
 	enemy_type = "kobold_priest"
 
 	# Kobold Priest stats - squishy caster
-	speed = 63.0           # Slow caster (reduced 10%)
+	speed = 57.0           # Slow caster (reduced 20%)
 	max_health = 25.0      # Squishy (slightly more than orc)
 	attack_damage = 12.0   # High spell damage
 	attack_cooldown = 2.0  # Slow attack rate

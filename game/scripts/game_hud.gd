@@ -3,18 +3,21 @@ extends CanvasLayer
 # Game HUD - Top-left portrait with health bar and progress bar
 # Clicking portrait opens pause menu
 
-const PORTRAIT_SIZE := 64
+const PORTRAIT_SIZE := 60
 const HEALTH_BAR_WIDTH := 150
-const HEALTH_BAR_HEIGHT := 20
+const HEALTH_BAR_HEIGHT := 22
 const PROGRESS_BAR_WIDTH := 150
-const PROGRESS_BAR_HEIGHT := 20
+const PROGRESS_BAR_HEIGHT := 22
 const MARGIN := 16
 const SPACING := 8
-const ICON_SIZE := 20
-const ICON_SPACING := 4
+const ICON_SIZE := 22  # Same as bar height
+const ICON_MARGIN_RIGHT := 10
 
 const HEALTH_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb659.png"
-const XP_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb663.png"
+const XP_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb101.png"
+
+var health_icon_texture: Texture2D = null
+var xp_icon_texture: Texture2D = null
 
 var player: Node2D = null
 var pixel_font: Font = null
@@ -49,6 +52,12 @@ func _ready() -> void:
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load icon textures
+	if ResourceLoader.exists(HEALTH_ICON_PATH):
+		health_icon_texture = load(HEALTH_ICON_PATH)
+	if ResourceLoader.exists(XP_ICON_PATH):
+		xp_icon_texture = load(XP_ICON_PATH)
 
 	_create_ui()
 
@@ -130,22 +139,33 @@ func _create_ui() -> void:
 	pause_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_button.add_child(pause_overlay)
 
-	# Health bar row (icon + bar)
+	# Health bar row (icon + bar) - vertically centered with portrait
 	var health_row_x = PORTRAIT_SIZE + SPACING
-	var health_row_y = 2  # Slight offset from top
+	# Total height of both bars + spacing between them
+	var total_bars_height = HEALTH_BAR_HEIGHT + SPACING + PROGRESS_BAR_HEIGHT
+	var health_row_y = (PORTRAIT_SIZE - total_bars_height) / 2  # Center vertically
 
-	# Health icon
+	# Health icon (vertically centered with bar)
+	var icon_offset_y = (HEALTH_BAR_HEIGHT - ICON_SIZE) / 2
+	var health_icon_panel = Panel.new()
+	health_icon_panel.position = Vector2(health_row_x, health_row_y + icon_offset_y)
+	health_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
+	var icon_style = StyleBoxFlat.new()
+	icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
+	health_icon_panel.add_theme_stylebox_override("panel", icon_style)
+	container.add_child(health_icon_panel)
+
 	health_icon = TextureRect.new()
 	health_icon.name = "HealthIcon"
-	health_icon.texture = load(HEALTH_ICON_PATH)
-	health_icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
-	health_icon.position = Vector2(health_row_x, health_row_y + (HEALTH_BAR_HEIGHT - ICON_SIZE) / 2)
+	if health_icon_texture:
+		health_icon.texture = health_icon_texture
+	health_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
 	health_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	health_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	container.add_child(health_icon)
+	health_icon.stretch_mode = TextureRect.STRETCH_SCALE
+	health_icon_panel.add_child(health_icon)
 
-	# Health bar (to the right of icon)
-	var health_bar_x = health_row_x + ICON_SIZE + ICON_SPACING
+	# Health bar (to the right of icon with margin)
+	var health_bar_x = health_row_x + ICON_SIZE + ICON_MARGIN_RIGHT
 	var health_bar_y = health_row_y
 
 	# Health bar background
@@ -167,7 +187,7 @@ func _create_ui() -> void:
 	health_bar_fill.size = Vector2(HEALTH_BAR_WIDTH - 4, HEALTH_BAR_HEIGHT - 4)
 	health_bar_fill.position = Vector2(health_bar_x + 2, health_bar_y + 2)
 	var health_fill_style = StyleBoxFlat.new()
-	health_fill_style.bg_color = Color(0.8, 0.2, 0.2, 1.0)  # Red
+	health_fill_style.bg_color = Color(0.2, 0.8, 0.2, 1.0)  # Green (will change based on health)
 	health_fill_style.set_corner_radius_all(1)
 	health_bar_fill.add_theme_stylebox_override("panel", health_fill_style)
 	container.add_child(health_bar_fill)
@@ -201,32 +221,40 @@ func _create_ui() -> void:
 	health_label.add_theme_font_size_override("font_size", 10)
 	container.add_child(health_label)
 
-	# Progress bar row (icon + bar)
+	# Progress bar row (icon + bar) - aligned with health bar
 	var progress_row_y = health_row_y + HEALTH_BAR_HEIGHT + SPACING
 
-	# XP icon
+	# XP icon (vertically centered with bar)
+	var xp_icon_panel = Panel.new()
+	xp_icon_panel.position = Vector2(health_row_x, progress_row_y + icon_offset_y)
+	xp_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
+	var xp_icon_style = StyleBoxFlat.new()
+	xp_icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
+	xp_icon_panel.add_theme_stylebox_override("panel", xp_icon_style)
+	container.add_child(xp_icon_panel)
+
 	xp_icon = TextureRect.new()
 	xp_icon.name = "XPIcon"
-	xp_icon.texture = load(XP_ICON_PATH)
-	xp_icon.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
-	xp_icon.position = Vector2(health_row_x, progress_row_y + (PROGRESS_BAR_HEIGHT - ICON_SIZE) / 2)
+	if xp_icon_texture:
+		xp_icon.texture = xp_icon_texture
+	xp_icon.set_anchors_preset(Control.PRESET_FULL_RECT)
 	xp_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	xp_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	container.add_child(xp_icon)
+	xp_icon.stretch_mode = TextureRect.STRETCH_SCALE
+	xp_icon_panel.add_child(xp_icon)
 
-	# Progress bar (to the right of icon)
-	var progress_bar_x = health_row_x + ICON_SIZE + ICON_SPACING
+	# Progress bar (to the right of icon with margin - same x as health bar)
+	var progress_bar_x = health_bar_x
 
-	# Progress bar background
+	# Progress bar background (same radius as health bar)
 	progress_bar_bg = Panel.new()
 	progress_bar_bg.name = "ProgressBarBG"
 	progress_bar_bg.size = Vector2(HEALTH_BAR_WIDTH, PROGRESS_BAR_HEIGHT)
 	progress_bar_bg.position = Vector2(progress_bar_x, progress_row_y)
 	var progress_bg_style = StyleBoxFlat.new()
-	progress_bg_style.bg_color = Color(0.15, 0.15, 0.2, 0.9)
-	progress_bg_style.border_color = Color(0.1, 0.15, 0.35, 1.0)
+	progress_bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
+	progress_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	progress_bg_style.set_border_width_all(2)
-	progress_bg_style.set_corner_radius_all(4)
+	progress_bg_style.set_corner_radius_all(2)
 	progress_bar_bg.add_theme_stylebox_override("panel", progress_bg_style)
 	container.add_child(progress_bar_bg)
 
@@ -237,7 +265,7 @@ func _create_ui() -> void:
 	progress_bar_fill.position = Vector2(progress_bar_x + 2, progress_row_y + 2)
 	var progress_fill_style = StyleBoxFlat.new()
 	progress_fill_style.bg_color = Color(0.3, 0.7, 1.0, 1.0)  # Blue
-	progress_fill_style.set_corner_radius_all(2)
+	progress_fill_style.set_corner_radius_all(1)
 	progress_bar_fill.add_theme_stylebox_override("panel", progress_fill_style)
 	container.add_child(progress_bar_fill)
 
@@ -308,6 +336,21 @@ func _update_health_bar() -> void:
 	var ratio = clamp(current_health / max_health, 0.0, 1.0)
 	var fill_width = (HEALTH_BAR_WIDTH - 4) * ratio
 	health_bar_fill.size.x = fill_width
+
+	# Update health bar color based on percentage (green > yellow > orange > red)
+	var health_color: Color
+	if current_shield > 0:
+		health_color = Color(0.3, 0.5, 0.9, 1.0)  # Blue when shielded
+	elif ratio > 0.5:
+		health_color = Color(0.2, 0.8, 0.2, 1.0)  # Green
+	elif ratio > 0.25:
+		health_color = Color(0.9, 0.7, 0.1, 1.0)  # Yellow
+	else:
+		health_color = Color(0.9, 0.2, 0.2, 1.0)  # Red
+
+	var style = health_bar_fill.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+	style.bg_color = health_color
+	health_bar_fill.add_theme_stylebox_override("panel", style)
 
 	# Update health label
 	if health_label:
