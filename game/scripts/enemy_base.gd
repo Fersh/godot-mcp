@@ -13,6 +13,7 @@ extends CharacterBody2D
 @export var damage_number_scene: PackedScene
 @export var death_particles_scene: PackedScene
 @export var dropped_item_scene: PackedScene
+@export var health_potion_scene: PackedScene
 
 # Enemy type identifier
 @export var enemy_type: String = "base"
@@ -419,8 +420,35 @@ func spawn_gold_coin() -> void:
 	coin.global_position = global_position
 	get_parent().add_child(coin)
 
+	# Try to drop a health potion
+	try_drop_health_potion()
+
 	# Try to drop an item
 	try_drop_item()
+
+func try_drop_health_potion() -> void:
+	if health_potion_scene == null:
+		return
+
+	# Get game time from StatsDisplay
+	var game_time: float = 0.0
+	var stats = get_node_or_null("/root/Main/StatsDisplay")
+	if stats and "time_survived" in stats:
+		game_time = stats.time_survived
+
+	# Use the static method from health_potion script to check drop
+	var HealthPotion = load("res://scripts/health_potion.gd")
+	var drop_result = HealthPotion.should_drop_potion(game_time)
+
+	if not drop_result.drop:
+		return
+
+	# Spawn health potion with the appropriate tier
+	var potion = health_potion_scene.instantiate()
+	potion.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
+	if potion.has_method("setup_tier"):
+		potion.setup_tier(drop_result.tier)
+	get_parent().add_child(potion)
 
 func try_drop_item() -> void:
 	if dropped_item_scene == null:

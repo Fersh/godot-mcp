@@ -107,3 +107,31 @@ func _update_shield_display() -> void:
 		shield_fill.size.x = bar_width * shield_ratio
 	else:
 		shield_fill.visible = false
+
+func show_heal_text(amount: float) -> void:
+	"""Show +HP text above the health bar."""
+	var label = Label.new()
+	label.text = "+" + str(int(amount))
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4, 1.0))  # Green
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	label.add_theme_constant_override("shadow_offset_x", 1)
+	label.add_theme_constant_override("shadow_offset_y", 1)
+
+	# Load pixel font if available
+	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+		var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+		label.add_theme_font_override("font", pixel_font)
+
+	# Position above health bar
+	label.position = Vector2(-bar_width / 2, -20)
+	label.size = Vector2(bar_width, 20)
+	add_child(label)
+
+	# Animate floating up and fading
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(label, "position:y", label.position.y - 15, 0.8)
+	tween.tween_property(label, "modulate:a", 0.0, 0.6).set_delay(0.3)
+	tween.chain().tween_callback(label.queue_free)

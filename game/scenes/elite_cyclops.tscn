@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/elite_cyclops.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/Cyclops Sprite Sheet.png" id="2_texture"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/death_particles.tscn" id="7_death_particles"]
 [ext_resource type="PackedScene" path="res://scenes/equipment/dropped_item.tscn" id="8_dropped_item"]
 [ext_resource type="PackedScene" path="res://scenes/rock_projectile.tscn" id="9_rock_projectile"]
+[ext_resource type="PackedScene" path="res://scenes/health_potion.tscn" id="10_health_potion"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hit_flash"]
 shader = ExtResource("6_hit_flash")
@@ -26,6 +27,7 @@ gold_coin_scene = ExtResource("3_coin")
 damage_number_scene = ExtResource("5_damage_number")
 death_particles_scene = ExtResource("7_death_particles")
 dropped_item_scene = ExtResource("8_dropped_item")
+health_potion_scene = ExtResource("10_health_potion")
 rock_projectile_scene = ExtResource("9_rock_projectile")
 
 [node name="Sprite" type="Sprite2D" parent="."]

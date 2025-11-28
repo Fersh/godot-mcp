@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/gold_coin.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/icons/raven/32x32/fb171.png" id="2_texture"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_coin"]
 radius = 12.0
@@ -11,23 +12,8 @@ collision_layer = 8
 collision_mask = 1
 script = ExtResource("1_script")
 
-[node name="Shadow" type="Polygon2D" parent="."]
-position = Vector2(1, 1)
-color = Color(0.6, 0.5, 0.0, 1)
-polygon = PackedVector2Array(-9, 0, -6.4, -6.4, 0, -9, 6.4, -6.4, 9, 0, 6.4, 6.4, 0, 9, -6.4, 6.4)
-
-[node name="CoinBase" type="Polygon2D" parent="."]
-color = Color(1.0, 0.84, 0.0, 1)
-polygon = PackedVector2Array(-9, 0, -6.4, -6.4, 0, -9, 6.4, -6.4, 9, 0, 6.4, 6.4, 0, 9, -6.4, 6.4)
-
-[node name="CoinInner" type="Polygon2D" parent="."]
-color = Color(1.0, 0.9, 0.3, 1)
-polygon = PackedVector2Array(-6, 0, -4.2, -4.2, 0, -6, 4.2, -4.2, 6, 0, 4.2, 4.2, 0, 6, -4.2, 4.2)
-
-[node name="Shine" type="Polygon2D" parent="."]
-position = Vector2(-2, -2)
-color = Color(1.0, 1.0, 0.7, 0.8)
-polygon = PackedVector2Array(-2, 0, -1.4, -1.4, 0, -2, 1.4, -1.4, 2, 0, 1.4, 1.4, 0, 2, -1.4, 1.4)
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_coin")

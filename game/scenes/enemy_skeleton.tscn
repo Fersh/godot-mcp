@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_skeleton.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/SkeletalWarrior_Sprites.png" id="2_texture"]
@@ -8,6 +8,7 @@
 [ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="6_hit_flash"]
 [ext_resource type="PackedScene" path="res://scenes/death_particles.tscn" id="7_death_particles"]
 [ext_resource type="PackedScene" path="res://scenes/equipment/dropped_item.tscn" id="8_dropped_item"]
+[ext_resource type="PackedScene" path="res://scenes/health_potion.tscn" id="9_health_potion"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hit_flash"]
 shader = ExtResource("6_hit_flash")
@@ -25,6 +26,7 @@ gold_coin_scene = ExtResource("3_coin")
 damage_number_scene = ExtResource("5_damage_number")
 death_particles_scene = ExtResource("7_death_particles")
 dropped_item_scene = ExtResource("8_dropped_item")
+health_potion_scene = ExtResource("9_health_potion")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_hit_flash")
