@@ -196,7 +196,24 @@ func get_upgrade_cost(id: String) -> int:
 		return 0  # Already maxed
 
 	# Cost = baseCost × (costMultiplier ^ currentRank)
-	return int(upgrade.base_cost * pow(upgrade.cost_multiplier, current_rank))
+	var base_calculated_cost = upgrade.base_cost * pow(upgrade.cost_multiplier, current_rank)
+
+	# Apply additional rank multiplier for rank 2+ (next rank is current_rank + 1)
+	# Rank 2: +50%, Rank 3: +45%, Rank 4: +40%, Rank 5+: +35%
+	var next_rank = current_rank + 1
+	var rank_multiplier = 1.0
+	if next_rank >= 2:
+		match next_rank:
+			2:
+				rank_multiplier = 1.50  # +50%
+			3:
+				rank_multiplier = 1.45  # +45%
+			4:
+				rank_multiplier = 1.40  # +40%
+			_:
+				rank_multiplier = 1.35  # +35% for rank 5+
+
+	return int(base_calculated_cost * rank_multiplier)
 
 # Check if upgrade can be purchased
 func can_purchase(id: String) -> bool:
