@@ -234,11 +234,12 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 	var scene = _effect_scenes.get(mapped_effect)
 	if scene:
 		var effect = scene.instantiate()
-		effect.global_position = position
 		if parent:
 			parent.add_child(effect)
+			effect.position = Vector2.ZERO  # Local position relative to parent
 		else:
 			get_tree().current_scene.add_child(effect)
+			effect.global_position = position
 		# Configure effect based on type
 		_configure_spawned_effect(effect, effect_id)
 		return effect

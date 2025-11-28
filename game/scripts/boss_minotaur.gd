@@ -15,8 +15,8 @@ extends BossBase
 @export var slam_aoe_radius: float = 150.0
 @export var melee_range: float = 90.0
 
-# Spritesheet config: 64x96 frames, 16 cols x 20 rows (10 right + 10 left facing rows)
-const SPRITE_COLS: int = 16
+# Spritesheet config: 96x96 frames, 10 cols x 20 rows (10 right + 10 left facing rows)
+const SPRITE_COLS: int = 10
 const SPRITE_ROWS: int = 20
 
 # Animation rows (right-facing, top half of sheet)
@@ -31,18 +31,18 @@ const ANIM_DAMAGE: int = 7
 const ANIM_DAMAGE2: int = 8
 const ANIM_DEATH: int = 9
 
-# Frame counts per animation (max 16 per row)
+# Frame counts per animation (max 10 per row)
 const FRAMES = {
-	0: 10,   # Idle
-	1: 16,   # Move
-	2: 10,   # Taunt
-	3: 16,   # Attack 1 (AOE)
-	4: 10,   # Attack 2
-	5: 12,   # Attack 3
-	6: 16,   # Attack 4
-	7: 6,    # Damage
-	8: 6,    # Damage 2
-	9: 12,   # Death
+	0: 5,   # Idle
+	1: 8,   # Move
+	2: 5,   # Taunt
+	3: 10,  # Attack 1 (AOE)
+	4: 6,   # Attack 2
+	5: 6,   # Attack 3
+	6: 10,  # Attack 4
+	7: 3,   # Damage
+	8: 3,   # Damage 2
+	9: 6,   # Death
 }
 
 # Attack state

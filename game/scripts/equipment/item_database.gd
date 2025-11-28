@@ -181,34 +181,34 @@ const BASE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
 	},
 
-	# CHEST - Using shields as chest armor icons
+	# CHEST - Common chest armor
 	"armor_basic": {
 		"display_name": "Armor",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.08},
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon1.png"
 	},
 	"robe_basic": {
 		"display_name": "Robe",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.03, "move_speed": 0.03},
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon2.png"
 	},
 	"vest_basic": {
 		"display_name": "Vest",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.04},
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_3.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon3.png"
 	},
 	"plate_basic": {
 		"display_name": "Plate",
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.12, "damage_reduction": 0.03},
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon4.png"
 	},
 
 	# BOOTS - Using staves as boot icons (magical footwear)
@@ -397,7 +397,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_2.png"
 	},
 
-	# Chest
+	# Chest - Rare
 	"dad_bod_armor": {
 		"display_name": "Dad Bod Plate",
 		"description": "Peak performance. This is it.",
@@ -405,7 +405,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "damage_reduction": 0.08},
 		"grants_equipment_ability": "dad_reflexes",
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon20.png"
 	},
 	"hoodie_of_gaming": {
 		"display_name": "Gamer Hoodie",
@@ -414,7 +414,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"attack_speed": 0.10, "crit_chance": 0.08},
 		"grants_equipment_ability": "gamer_mode",
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon25.png"
 	},
 	"plot_armor_vest": {
 		"display_name": "Plot Armor",
@@ -423,7 +423,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.10, "dodge_chance": 0.08},
 		"grants_equipment_ability": "plot_convenience",
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_3.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon30.png"
 	},
 
 	# Boots
@@ -609,7 +609,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Wands/wand_4.png"
 	},
 
-	# Chest
+	# Chest - Epic
 	"gamer_chair": {
 		"display_name": "Gaming Chair Armor",
 		"description": "100% skill, trust me.",
@@ -617,7 +617,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.25, "damage": 0.15, "attack_speed": 0.10},
 		"grants_equipment_ability": "gaming_posture",
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_1.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon45.png"
 	},
 	"mithril_hoodie": {
 		"display_name": "Mithril Hoodie",
@@ -627,7 +627,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"max_hp": 0.20, "dodge_chance": 0.15, "move_speed": 0.10},
 		"grants_ability": "deflect",
 		"grants_equipment_ability": "ethereal",
-		"icon_path": "res://assets/sprites/items/Defense/TRANSPARENT/shields/shield_2.png"
+		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon48.png"
 	},
 
 	# Boots

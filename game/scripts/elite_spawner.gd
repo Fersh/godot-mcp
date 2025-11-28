@@ -162,6 +162,11 @@ func _setup_boss_health_bar() -> void:
 
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = Color(0.8, 0.15, 0.15, 1.0)
+	fill_style.border_width_left = 6
+	fill_style.border_width_top = 6
+	fill_style.border_width_bottom = 6
+	fill_style.border_width_right = 6
+	fill_style.border_color = Color(0.4, 0.08, 0.08, 1.0)
 	fill_style.corner_radius_top_left = 3
 	fill_style.corner_radius_top_right = 3
 	fill_style.corner_radius_bottom_left = 3

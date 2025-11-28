@@ -181,40 +181,40 @@ func _ready() -> void:
 
 func _create_target_indicator() -> void:
 	target_indicator = Node2D.new()
-	target_indicator.z_index = -1  # Below enemies
+	target_indicator.z_index = -10  # Well below enemies
 
 	# Create 4 corner brackets using Line2D
 	var bracket_size: float = 12.0
 	var bracket_length: float = 6.0
-	var bracket_color: Color = Color(0.6, 0.6, 0.6, 0.7)  # Gray
+	var bracket_color: Color = Color(1.0, 0.9, 0.3, 0.8)  # Yellow
 	var line_width: float = 2.0
 
-	# Top-left bracket
+	# Top-left bracket: vertical down, then horizontal right
 	var tl = Line2D.new()
 	tl.width = line_width
 	tl.default_color = bracket_color
 	tl.points = [Vector2(-bracket_size, -bracket_size + bracket_length), Vector2(-bracket_size, -bracket_size), Vector2(-bracket_size + bracket_length, -bracket_size)]
 	target_indicator.add_child(tl)
 
-	# Top-right bracket
+	# Top-right bracket: horizontal left, then vertical down
 	var tr = Line2D.new()
 	tr.width = line_width
 	tr.default_color = bracket_color
 	tr.points = [Vector2(bracket_size - bracket_length, -bracket_size), Vector2(bracket_size, -bracket_size), Vector2(bracket_size, -bracket_size + bracket_length)]
 	target_indicator.add_child(tr)
 
-	# Bottom-left bracket
+	# Bottom-left bracket: vertical up, then horizontal right
 	var bl = Line2D.new()
 	bl.width = line_width
 	bl.default_color = bracket_color
 	bl.points = [Vector2(-bracket_size, bracket_size - bracket_length), Vector2(-bracket_size, bracket_size), Vector2(-bracket_size + bracket_length, bracket_size)]
 	target_indicator.add_child(bl)
 
-	# Bottom-right bracket
+	# Bottom-right bracket: horizontal left, then vertical up
 	var br = Line2D.new()
 	br.width = line_width
 	br.default_color = bracket_color
-	br.points = [Vector2(bracket_size - bracket_length, bracket_size), Vector2(bracket_size, bracket_size), Vector2(bracket_size, bracket_size + bracket_length)]
+	br.points = [Vector2(bracket_size - bracket_length, bracket_size), Vector2(bracket_size, bracket_size), Vector2(bracket_size, bracket_size - bracket_length)]
 	target_indicator.add_child(br)
 
 	target_indicator.visible = false
@@ -822,14 +822,25 @@ func _update_target_indicator(delta: float) -> void:
 		target_indicator.visible = false
 		return
 
-	# Position indicator below the enemy
+	# Position indicator at bottom of enemy sprite (half above, half below frame bottom)
 	target_indicator.visible = true
-	target_indicator.global_position = current_target.global_position + Vector2(0, 35)
+	var enemy_sprite = current_target.get_node_or_null("Sprite")
+	var frame_height: float = 48.0  # Default fallback
+	if enemy_sprite and enemy_sprite is Sprite2D:
+		var texture = enemy_sprite.texture
+		if texture:
+			var total_height = texture.get_height()
+			var vframes = enemy_sprite.vframes if enemy_sprite.vframes > 0 else 1
+			frame_height = (total_height / vframes) * enemy_sprite.scale.y
+
+	# Position: at frame bottom edge (half above, half below)
+	var y_pos = frame_height / 2.0
+	target_indicator.global_position = current_target.global_position + Vector2(0, y_pos)
 
 	# Pulse animation (scale and slight vertical movement)
 	target_indicator_pulse += delta * 3.0
 	var pulse_value = sin(target_indicator_pulse)
-	var scale_pulse = 1.0 + pulse_value * 0.15  # Scale between 0.85 and 1.15
+	var scale_pulse = 0.75 + pulse_value * 0.05  # Scale between 0.70 and 0.80 (25% smaller, less variance)
 	var y_offset = pulse_value * 3.0  # Move up/down by 3 pixels
 	target_indicator.scale = Vector2(scale_pulse, scale_pulse)
 	target_indicator.global_position.y += y_offset
