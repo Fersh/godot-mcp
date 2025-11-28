@@ -184,10 +184,10 @@ func _create_target_indicator() -> void:
 	target_indicator.z_index = -10  # Well below enemies
 
 	# Create 4 corner brackets using Line2D
-	var bracket_size: float = 12.0
-	var bracket_length: float = 6.0
-	var bracket_color: Color = Color(1.0, 0.9, 0.3, 0.8)  # Yellow
-	var line_width: float = 2.0
+	var bracket_size: float = 14.0
+	var bracket_length: float = 7.0
+	var bracket_color: Color = Color(1.0, 0.9, 0.3, 0.9)  # Yellow
+	var line_width: float = 4.0
 
 	# Top-left bracket: vertical down, then horizontal right
 	var tl = Line2D.new()
