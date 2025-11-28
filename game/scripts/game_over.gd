@@ -31,6 +31,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	play_again_button.pressed.connect(_on_play_again_pressed)
 
+	# Set title based on whether player gave up (set before _ready via set_gave_up)
+	if player_gave_up and title_label:
+		title_label.text = "YOU COWARD"
+
 	# Play game over music (will switch to music2 when it ends)
 	if SoundManager:
 		SoundManager.play_game_over_music()
@@ -132,6 +136,7 @@ func _display_loot() -> void:
 
 			var no_loot = Label.new()
 			no_loot.text = "LOOT:"
+			no_loot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			no_loot.add_theme_font_size_override("font_size", 12)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 			if pixel_font:
@@ -140,6 +145,7 @@ func _display_loot() -> void:
 
 			var do_better = Label.new()
 			do_better.text = "None this run. Do better."
+			do_better.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			do_better.add_theme_font_size_override("font_size", 10)
 			do_better.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 			if pixel_font:
