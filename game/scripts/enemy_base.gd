@@ -166,7 +166,7 @@ func _on_attack_complete() -> void:
 		if dist_to_player <= attack_range * 1.0:  # Exact range check
 			player.take_damage(attack_damage)
 			if AbilityManager and AbilityManager.has_thorns:
-				take_damage(AbilityManager.thorns_damage, false)
+				take_damage(AbilityManager.thorns_damage * AbilityManager.get_passive_damage_multiplier(), false)
 	can_attack = false
 
 func handle_hit_flash(delta: float) -> void:

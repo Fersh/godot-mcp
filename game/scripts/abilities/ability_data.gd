@@ -62,6 +62,7 @@ enum EffectType {
 	BLEEDING,
 	DEFLECT,
 	WHIRLWIND,
+	DOUBLE_STRIKE,      # Trigger a second melee attack
 
 	# New effects
 	ARMOR,              # Flat damage reduction

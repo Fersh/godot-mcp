@@ -71,6 +71,7 @@ var has_deflect: bool = false
 var has_whirlwind: bool = false
 var whirlwind_cooldown: float = 3.0
 var whirlwind_timer: float = 0.0
+var has_double_strike: bool = false
 
 # New ability effects
 var armor: float = 0.0  # Flat damage reduction
@@ -254,6 +255,7 @@ var all_for_one_multiplier: float = 2.0
 var has_transcendence: bool = false
 var transcendence_shields: float = 0.0
 var transcendence_max: float = 0.0
+var transcendence_accumulated_regen: float = 0.0  # Track accumulated shield regen for display
 var has_symbiosis: bool = false
 var has_pandemonium: bool = false
 var pandemonium_multiplier: float = 2.0
@@ -376,6 +378,7 @@ func reset() -> void:
 	has_whirlwind = false
 	whirlwind_cooldown = 3.0
 	whirlwind_timer = 0.0
+	has_double_strike = false
 
 	# Reset new ability effects
 	armor = 0.0
@@ -534,6 +537,7 @@ func reset() -> void:
 	has_transcendence = false
 	transcendence_shields = 0.0
 	transcendence_max = 0.0
+	transcendence_accumulated_regen = 0.0
 	has_symbiosis = false
 	has_pandemonium = false
 	pandemonium_multiplier = 2.0
@@ -719,7 +723,14 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 
 	# Transcendence shield regen
 	if has_transcendence and transcendence_shields < transcendence_max:
-		transcendence_shields = minf(transcendence_shields + delta * 5.0, transcendence_max)
+		var regen_amount = minf(delta * 5.0, transcendence_max - transcendence_shields)
+		transcendence_shields += regen_amount
+		transcendence_accumulated_regen += regen_amount
+		# Show +x every time we accumulate 1 or more
+		if transcendence_accumulated_regen >= 1.0:
+			var display_amount = floor(transcendence_accumulated_regen)
+			spawn_shield_gain_number(player, display_amount)
+			transcendence_accumulated_regen -= display_amount
 
 func heal_player(player: Node2D, amount: float, play_sound: bool = false) -> void:
 	if player.has_method("heal"):
@@ -738,7 +749,7 @@ func fire_tesla_coil(player: Node2D) -> void:
 				closest = enemy
 
 	if closest and closest.has_method("take_damage"):
-		closest.take_damage(tesla_damage)
+		closest.take_damage(tesla_damage * get_passive_damage_multiplier())
 		spawn_lightning_effect(player.global_position, closest.global_position)
 
 func fire_ring_of_fire(player: Node2D) -> void:
@@ -789,12 +800,12 @@ func strike_lightning(player: Node2D) -> void:
 
 	var target = visible_enemies[randi() % visible_enemies.size()]
 	if is_instance_valid(target) and target.has_method("take_damage"):
-		target.take_damage(lightning_damage)
+		target.take_damage(lightning_damage * get_passive_damage_multiplier())
 		spawn_lightning_bolt(target.global_position)
 
 func apply_toxic_damage(player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
-	var damage_per_tick = toxic_dps * TOXIC_INTERVAL
+	var damage_per_tick = toxic_dps * TOXIC_INTERVAL * get_passive_damage_multiplier()
 
 	for enemy in enemies:
 		if is_instance_valid(enemy):
@@ -844,12 +855,13 @@ func apply_adrenaline_buff(player: Node2D) -> void:
 func trigger_death_explosion(enemy: Node2D) -> void:
 	var explosion_radius = 80.0
 	var enemies = get_tree().get_nodes_in_group("enemies")
+	var actual_damage = explosion_damage * get_passive_damage_multiplier()
 
 	for other_enemy in enemies:
 		if other_enemy != enemy and is_instance_valid(other_enemy):
 			var dist = enemy.global_position.distance_to(other_enemy.global_position)
 			if dist <= explosion_radius and other_enemy.has_method("take_damage"):
-				other_enemy.take_damage(explosion_damage)
+				other_enemy.take_damage(actual_damage)
 
 	# Visual effect
 	spawn_explosion_effect(enemy.global_position)
@@ -860,6 +872,18 @@ func spawn_explosion_effect(pos: Vector2) -> void:
 	get_tree().current_scene.add_child(circle)
 
 	circle.set_script(load("res://scripts/abilities/explosion_effect.gd"))
+
+func spawn_shield_gain_number(player: Node2D, amount: float) -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var damage_number_scene = load("res://scenes/damage_number.tscn")
+	if damage_number_scene == null:
+		return
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = player.global_position + Vector2(0, -40)
+	get_tree().current_scene.add_child(dmg_num)
+	if dmg_num.has_method("set_shield_gain"):
+		dmg_num.set_shield_gain(amount)
 
 # Get random abilities for level up selection
 func get_random_abilities(count: int = 3) -> Array[AbilityData]:
@@ -1091,6 +1115,8 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.WHIRLWIND:
 				has_whirlwind = true
 				whirlwind_cooldown = value
+			AbilityData.EffectType.DOUBLE_STRIKE:
+				has_double_strike = true
 
 			# New ability effects
 			AbilityData.EffectType.ARMOR:
@@ -1659,11 +1685,12 @@ func trigger_retribution(player_pos: Vector2) -> void:
 		return
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var explosion_radius = 100.0
+	var actual_damage = retribution_damage * get_passive_damage_multiplier()
 	for enemy in enemies:
 		if is_instance_valid(enemy):
 			var dist = player_pos.distance_to(enemy.global_position)
 			if dist <= explosion_radius and enemy.has_method("take_damage"):
-				enemy.take_damage(retribution_damage)
+				enemy.take_damage(actual_damage)
 	spawn_explosion_effect(player_pos)
 
 # Get time dilation slow factor for enemies
@@ -1722,6 +1749,10 @@ func get_point_blank_bonus(distance: float) -> float:
 func should_fire_blade_beam() -> bool:
 	return has_blade_beam
 
+# Check if double strike should trigger
+func should_double_strike() -> bool:
+	return has_double_strike
+
 # Called when player picks up a coin
 func on_coin_pickup(player: Node2D) -> void:
 	if player == null or player.is_dead:
@@ -1742,6 +1773,12 @@ func is_divine_shield_active() -> bool:
 # Get ricochet bounce count
 func get_ricochet_bounces() -> int:
 	return ricochet_bounces
+
+# Get passive ability damage multiplier
+func get_passive_damage_multiplier() -> float:
+	if has_passive_amplifier:
+		return 1.0 + passive_amplifier_bonus
+	return 1.0
 
 # Check and trigger phoenix revive
 func try_phoenix_revive(player: Node2D) -> bool:

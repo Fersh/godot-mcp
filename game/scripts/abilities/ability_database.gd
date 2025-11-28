@@ -729,4 +729,12 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.BLADE_BEAM, value = 1.0}]
 		),
+		AbilityData.new(
+			"double_strike",
+			"Double Strike",
+			"Auto attacks hit twice",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.DOUBLE_STRIKE, value = 1.0}]
+		),
 	]

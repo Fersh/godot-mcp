@@ -114,10 +114,17 @@ func set_dodge() -> void:
 	scale = Vector2(1.1, 1.1)
 
 func set_shield() -> void:
-	label.text = "SHIELDED!"
-	# Shield - purple/violet color for transcendence
-	label.add_theme_color_override("font_color", Color(0.7, 0.4, 1.0, 1))
+	label.text = "BLOCKED"
+	# Blocked by shield - cyan/blue color
+	label.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0, 1))
 	label.add_theme_font_size_override("font_size", 18)
+	scale = Vector2(0.9, 0.9)
+
+func set_shield_gain(amount: float) -> void:
+	label.text = "+" + str(int(amount))
+	# Shield gain - blue color matching shield bar
+	label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
+	label.add_theme_font_size_override("font_size", 24)
 	scale = Vector2(0.9, 0.9)
 
 func set_elemental(text: String, color: Color) -> void:

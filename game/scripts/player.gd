@@ -1084,6 +1084,60 @@ func perform_melee_attack() -> void:
 	if using_retribution and melee_hit_enemies.size() > 0:
 		_consume_retribution()
 
+	# Double Strike - trigger a second attack after a brief delay
+	if AbilityManager and AbilityManager.should_double_strike():
+		_queue_double_strike()
+
+var _double_strike_queued: bool = false
+
+func _queue_double_strike() -> void:
+	if _double_strike_queued:
+		return
+	_double_strike_queued = true
+	get_tree().create_timer(0.15).timeout.connect(_perform_double_strike)
+
+func _perform_double_strike() -> void:
+	_double_strike_queued = false
+	if is_dead:
+		return
+	# Perform a second melee attack hit (damage only, no animations/sounds)
+	var melee_damage = 10.0 * base_damage
+	if AbilityManager:
+		melee_damage *= AbilityManager.get_damage_multiplier()
+	if has_flow and flow_stacks > 0:
+		melee_damage *= get_flow_damage_multiplier()
+
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var melee_arc = PI / 2
+	if character_data and character_data.id == "beast":
+		melee_arc = PI / 6
+	if AbilityManager:
+		melee_arc *= AbilityManager.get_melee_area_multiplier()
+	var melee_reach = fire_range
+	if AbilityManager:
+		melee_reach *= AbilityManager.get_melee_range_multiplier()
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var to_enemy = enemy.global_position - global_position
+			var dist = to_enemy.length()
+			if dist <= melee_reach:
+				var angle_to_enemy = to_enemy.angle()
+				var attack_angle = attack_direction.angle()
+				var angle_diff = abs(angle_to_enemy - attack_angle)
+				if angle_diff > PI:
+					angle_diff = TAU - angle_diff
+				if angle_diff <= melee_arc / 2:
+					var final_damage = melee_damage
+					var is_crit = false
+					if AbilityManager:
+						var crit_chance = AbilityManager.get_crit_chance()
+						if randf() < crit_chance:
+							is_crit = true
+							final_damage *= AbilityManager.get_crit_damage_multiplier()
+					if enemy.has_method("take_damage"):
+						enemy.take_damage(final_damage, is_crit)
+
 func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 	"""Apply elemental on-hit effects to an enemy."""
 	if not AbilityManager:

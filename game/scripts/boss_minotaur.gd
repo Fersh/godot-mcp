@@ -53,6 +53,11 @@ const WINDUP_DURATION: float = 0.8  # Big windup for impactful attacks
 # Attack rows for random selection
 var melee_attack_rows: Array[int] = [ANIM_ATTACK2, ANIM_ATTACK3, ANIM_ATTACK4]
 
+# Direction tracking - use row offset instead of flip_h
+# Left-facing rows are offset by 10 (rows 10-19)
+const LEFT_FACING_OFFSET: int = 10
+var facing_left: bool = false
+
 func _setup_boss() -> void:
 	boss_name = "Minotaur"
 	display_name = "BULLSH*T"
@@ -137,7 +142,7 @@ func _start_slam_attack() -> void:
 	# Face player
 	if player and is_instance_valid(player):
 		var dir = (player.global_position - global_position).normalized()
-		sprite.flip_h = dir.x < 0
+		facing_left = dir.x < 0
 
 func _start_melee_attack() -> void:
 	is_winding_up = true
@@ -150,7 +155,7 @@ func _start_melee_attack() -> void:
 	# Face player
 	if player and is_instance_valid(player):
 		var dir = (player.global_position - global_position).normalized()
-		sprite.flip_h = dir.x < 0
+		facing_left = dir.x < 0
 
 func _physics_process(delta: float) -> void:
 	if is_dying:
@@ -175,12 +180,14 @@ func _process_windup(delta: float) -> void:
 	if animation_frame > windup_frames:
 		animation_frame = windup_frames
 
-	sprite.frame = current_attack_type * COLS_PER_ROW + int(animation_frame)
+	# Use left-facing rows when facing left
+	var actual_row = _get_actual_row(current_attack_type)
+	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
 
 	# Face player during windup
 	if player and is_instance_valid(player):
 		var dir = (player.global_position - global_position).normalized()
-		sprite.flip_h = dir.x < 0
+		facing_left = dir.x < 0
 
 	if attack_windup_timer <= 0:
 		is_winding_up = false
@@ -302,7 +309,8 @@ func _play_attack_followthrough() -> void:
 	tween.tween_callback(_on_attack_complete)
 
 func _update_attack_frame(frame: float) -> void:
-	sprite.frame = current_attack_type * COLS_PER_ROW + int(frame)
+	var actual_row = _get_actual_row(current_attack_type)
+	sprite.frame = actual_row * COLS_PER_ROW + int(frame)
 
 func _on_attack_complete() -> void:
 	can_attack = false  # Reset for cooldown system
@@ -319,7 +327,8 @@ func _process_death_animation(delta: float) -> void:
 			spawn_gold_coin()
 			queue_free()
 
-	sprite.frame = ROW_DEATH * COLS_PER_ROW + int(animation_frame)
+	var actual_row = _get_actual_row(ROW_DEATH)
+	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
 
 # Override to use appropriate damage animation
 func take_damage(amount: float, is_crit: bool = false) -> void:
@@ -331,3 +340,48 @@ func take_damage(amount: float, is_crit: bool = false) -> void:
 		pass
 
 var death_processed: bool = false
+
+# Override update_animation to use left-facing rows instead of flip_h
+func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
+	if current_row != new_row:
+		current_row = new_row
+		animation_frame = 0.0
+
+	# Update facing direction but DON'T use flip_h
+	if direction.x != 0:
+		facing_left = direction.x < 0
+		sprite.flip_h = false  # Never flip - use row offset instead
+
+	animation_frame += animation_speed * delta
+	var max_frames = FRAME_COUNTS.get(current_row, 8)
+	if animation_frame >= max_frames:
+		animation_frame = 0.0
+
+	# Use left-facing rows (offset by 10) when facing left
+	var actual_row = current_row
+	if facing_left:
+		actual_row += LEFT_FACING_OFFSET
+	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)
+
+func _get_actual_row(base_row: int) -> int:
+	"""Get the actual sprite row accounting for facing direction."""
+	if facing_left:
+		return base_row + LEFT_FACING_OFFSET
+	return base_row
+
+# Override taunt processing to use correct row
+func _process_taunt(delta: float) -> void:
+	animation_frame += animation_speed * taunt_speed_multiplier * delta
+	var max_frames = FRAMES_TAUNT
+
+	if animation_frame >= max_frames:
+		animation_frame = 0.0
+		taunt_plays_remaining -= 1
+
+		if taunt_plays_remaining <= 0:
+			is_taunting = false
+			can_attack = true
+			return
+
+	var actual_row = _get_actual_row(ROW_TAUNT)
+	sprite.frame = actual_row * COLS_PER_ROW + int(animation_frame)

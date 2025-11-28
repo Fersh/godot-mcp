@@ -23,6 +23,11 @@ func _ready() -> void:
 	fill.size = Vector2(bar_width, bar_height)
 	fill.position = Vector2(-bar_width / 2, -bar_height / 2)
 
+	# Set background to black (missing health portion)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.1, 0.1, 0.1, 1.0)  # Dark/black background
+	background.add_theme_stylebox_override("panel", bg_style)
+
 	# Create highlight (top 1px)
 	highlight = ColorRect.new()
 	highlight.size = Vector2(bar_width, 1)
