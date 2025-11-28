@@ -1,10 +1,10 @@
 extends CanvasLayer
 
 # Kill Streak UI - Minimal combo display on right side
-# Shows streak counter with fade out instead of progress bar
+# Shows streak counter with tier name on same line
 
 const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100]
-const TIER_NAMES: Array[String] = ["", "KILLING SPREE", "RAMPAGE", "UNSTOPPABLE", "DOMINATING", "GODLIKE", "LEGENDARY", "BEYOND GODLIKE"]
+const TIER_NAMES: Array[String] = ["COMBO", "KILLING SPREE", "RAMPAGE", "UNSTOPPABLE", "DOMINATING", "GODLIKE", "LEGENDARY", "BEYOND GODLIKE"]
 const TIER_COLORS: Array[Color] = [
 	Color(1.0, 1.0, 1.0),       # White (0)
 	Color(1.0, 0.9, 0.3),       # Yellow (5)
@@ -18,8 +18,7 @@ const TIER_COLORS: Array[Color] = [
 
 var pixel_font: Font = null
 var container: Control = null
-var streak_label: Label = null
-var tier_label: Label = null
+var combo_label: Label = null  # Single label for "x15 COMBO" or "x25 RAMPAGE"
 
 var current_streak: int = 0
 var current_tier: int = 0
@@ -29,9 +28,8 @@ var is_visible_state: bool = false
 var pulse_time: float = 0.0
 var rainbow_time: float = 0.0
 
-# Animation state
-var milestone_animation_active: bool = false
-var milestone_scale: float = 1.0
+# Base rotation (slight tilt with left side down)
+const BASE_ROTATION: float = 0.03  # ~1.7 degrees
 
 func _ready() -> void:
 	layer = 60
@@ -54,55 +52,42 @@ func _create_ui() -> void:
 	container = Control.new()
 	container.name = "StreakContainer"
 	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	container.anchor_left = 0.75
+	container.anchor_left = 0.6
 	container.anchor_right = 1.0
 	container.anchor_top = 0.12  # Below points/coins/wave
-	container.anchor_bottom = 0.25
+	container.anchor_bottom = 0.18
 	container.offset_right = -20
 	container.modulate.a = 0.0
 	add_child(container)
 
-	# Tier name label (RAMPAGE, GODLIKE, etc.) - shown above streak
-	tier_label = Label.new()
-	tier_label.name = "TierLabel"
-	tier_label.text = ""
-	tier_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	tier_label.anchor_left = 0.0
-	tier_label.anchor_right = 1.0
-	tier_label.anchor_top = 0.0
-	tier_label.anchor_bottom = 0.5
-	tier_label.offset_right = -10
-	tier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	tier_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	# Single combo label (e.g., "x15 COMBO" or "x25 RAMPAGE")
+	combo_label = Label.new()
+	combo_label.name = "ComboLabel"
+	combo_label.text = "x0 COMBO"
+	combo_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	combo_label.anchor_left = 0.0
+	combo_label.anchor_right = 1.0
+	combo_label.anchor_top = 0.0
+	combo_label.anchor_bottom = 1.0
+	combo_label.offset_right = -10
+	combo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
-		tier_label.add_theme_font_override("font", pixel_font)
-	tier_label.add_theme_font_size_override("font_size", 14)
-	tier_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-	tier_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
-	tier_label.add_theme_constant_override("outline_size", 3)
-	tier_label.pivot_offset = Vector2(100, 15)
-	container.add_child(tier_label)
-
-	# Streak count (e.g., "x15") - main display
-	streak_label = Label.new()
-	streak_label.name = "StreakLabel"
-	streak_label.text = "x0"
-	streak_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	streak_label.anchor_left = 0.0
-	streak_label.anchor_right = 1.0
-	streak_label.anchor_top = 0.5
-	streak_label.anchor_bottom = 1.0
-	streak_label.offset_right = -10
-	streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	streak_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	if pixel_font:
-		streak_label.add_theme_font_override("font", pixel_font)
-	streak_label.add_theme_font_size_override("font_size", 28)
-	streak_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
-	streak_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
-	streak_label.add_theme_constant_override("outline_size", 4)
-	streak_label.pivot_offset = Vector2(100, 20)
-	container.add_child(streak_label)
+		combo_label.add_theme_font_override("font", pixel_font)
+	combo_label.add_theme_font_size_override("font_size", 16)
+	combo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	# Drop shadow matching wave/coins text
+	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	combo_label.add_theme_constant_override("shadow_offset_x", 3)
+	combo_label.add_theme_constant_override("shadow_offset_y", 3)
+	# Outline for visibility
+	combo_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+	combo_label.add_theme_constant_override("outline_size", 3)
+	# Set pivot for rotation (right side)
+	combo_label.pivot_offset = Vector2(200, 15)
+	# Apply base rotation (left side slightly down)
+	combo_label.rotation = BASE_ROTATION
+	container.add_child(combo_label)
 
 func _process(delta: float) -> void:
 	# Update visibility with fade out
@@ -114,25 +99,18 @@ func _process(delta: float) -> void:
 	# Pulse animation for high tiers
 	if current_tier >= 3 and is_visible_state:
 		pulse_time += delta * (2.0 + current_tier * 0.5)
-		var pulse = 1.0 + sin(pulse_time) * 0.03 * current_tier
-		streak_label.scale = Vector2(pulse, pulse) * milestone_scale
-		tier_label.scale = Vector2(pulse * 0.9, pulse * 0.9)
+		var pulse = 1.0 + sin(pulse_time) * 0.02 * current_tier
+		combo_label.scale = Vector2(pulse, pulse)
 
 	# Rainbow effect for max tier
 	if current_tier >= 6 and is_visible_state:
 		rainbow_time += delta * 2.0
 		var hue = fmod(rainbow_time, 1.0)
 		var rainbow_color = Color.from_hsv(hue, 0.8, 1.0)
-		streak_label.add_theme_color_override("font_color", rainbow_color)
-
-	# Milestone animation
-	if milestone_animation_active:
-		milestone_scale = lerp(milestone_scale, 1.0, delta * 8.0)
-		if milestone_scale < 1.05:
-			milestone_animation_active = false
-			milestone_scale = 1.0
+		combo_label.add_theme_color_override("font_color", rainbow_color)
 
 func _on_streak_changed(streak: int, tier: int) -> void:
+	var old_streak = current_streak
 	current_streak = streak
 	current_tier = tier
 
@@ -141,44 +119,58 @@ func _on_streak_changed(streak: int, tier: int) -> void:
 		_update_display()
 		display_timer = 3.0
 
+		# Rotating shake animation when streak changes
+		if old_streak != streak:
+			_animate_shake()
+
 func _on_streak_milestone(tier: int, tier_name: String) -> void:
-	# Epic milestone animation
-	milestone_animation_active = true
-	milestone_scale = 1.5  # Start big, shrink down
+	# Update display with new tier name
+	_update_display()
 
-	# Update tier label with animation
-	tier_label.text = tier_name
-	tier_label.scale = Vector2(0.5, 0.5)
-
-	var tween = create_tween()
-	tween.tween_property(tier_label, "scale", Vector2(1.1, 1.1), 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(tier_label, "scale", Vector2(1.0, 1.0), 0.1).set_ease(Tween.EASE_IN)
+	# Bigger shake for milestones
+	_animate_milestone_shake()
 
 	# Extend display time for milestones
 	display_timer = 5.0
 
-func _on_streak_ended(final_streak: int) -> void:
-	# Just fade out - no "STREAK ENDED" text
+func _on_streak_ended(_final_streak: int) -> void:
+	# Just fade out
 	_start_fade_out()
 
 func _update_display() -> void:
-	streak_label.text = "x" + str(current_streak)
+	# Format: "x15 COMBO" or "x25 RAMPAGE"
+	var tier_name = TIER_NAMES[current_tier]
+	combo_label.text = "x" + str(current_streak) + " " + tier_name
 
-	# Update colors based on tier
+	# Update color based on tier
 	var color = TIER_COLORS[current_tier]
-	streak_label.add_theme_color_override("font_color", color)
-	tier_label.add_theme_color_override("font_color", color)
+	combo_label.add_theme_color_override("font_color", color)
 
-	# Update tier name (empty for tier 0)
-	if current_tier > 0:
-		tier_label.text = TIER_NAMES[current_tier]
-	else:
-		tier_label.text = "COMBO"
+	# Scale font size slightly based on tier
+	var base_size = 16
+	var size_bonus = min(current_tier, 4) * 2
+	combo_label.add_theme_font_size_override("font_size", base_size + size_bonus)
 
-	# Scale font size based on streak (subtle)
-	var base_size = 28
-	var size_bonus = min(current_streak / 10, 6) * 2
-	streak_label.add_theme_font_size_override("font_size", base_size + int(size_bonus))
+func _animate_shake() -> void:
+	"""Rotating shake animation that returns to base rotation."""
+	var tween = create_tween()
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION + 0.08, 0.04)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION - 0.06, 0.04)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION + 0.03, 0.03)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION, 0.03)
+
+func _animate_milestone_shake() -> void:
+	"""Bigger rotating shake for tier milestones."""
+	var tween = create_tween()
+	# Scale pop
+	tween.set_parallel(true)
+	tween.tween_property(combo_label, "scale", Vector2(1.3, 1.3), 0.1).set_ease(Tween.EASE_OUT)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION + 0.12, 0.05)
+	tween.set_parallel(false)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION - 0.1, 0.05)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION + 0.05, 0.04)
+	tween.tween_property(combo_label, "rotation", BASE_ROTATION, 0.04)
+	tween.tween_property(combo_label, "scale", Vector2(1.0, 1.0), 0.15).set_ease(Tween.EASE_OUT)
 
 func _show_ui() -> void:
 	if not is_visible_state:

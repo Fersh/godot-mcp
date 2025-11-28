@@ -45,15 +45,25 @@ func _draw() -> void:
 func _input(event: InputEvent) -> void:
 	var viewport_size = get_viewport().get_visible_rect().size
 
+	# Exclude top HUD area (portrait, health bars, etc.) - approximately top 120px
+	const HUD_EXCLUSION_HEIGHT := 120.0
+	const HUD_EXCLUSION_WIDTH := 320.0  # Left side HUD width
+
 	if event is InputEventScreenTouch:
-		# Only respond to left half of screen
-		if event.position.x < viewport_size.x / 2:
+		# Only respond to left half of screen, excluding HUD area at top-left
+		var in_left_half = event.position.x < viewport_size.x / 2
+		var in_hud_area = event.position.x < HUD_EXCLUSION_WIDTH and event.position.y < HUD_EXCLUSION_HEIGHT
+
+		if in_left_half and not in_hud_area:
 			if event.pressed and not is_active:
 				is_active = true
 				touch_index = event.index
 				_update_knob(event.position)
 			elif not event.pressed and event.index == touch_index:
 				_reset()
+		elif not event.pressed and event.index == touch_index:
+			# Always allow release even if finger moved to HUD area
+			_reset()
 
 	elif event is InputEventScreenDrag:
 		if event.index == touch_index and is_active:

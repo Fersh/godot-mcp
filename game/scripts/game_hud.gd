@@ -8,7 +8,7 @@ const HEALTH_BAR_WIDTH := 165  # 150 * 1.1
 const HEALTH_BAR_HEIGHT := 24  # 22 * 1.1
 const PROGRESS_BAR_WIDTH := 165  # 150 * 1.1
 const PROGRESS_BAR_HEIGHT := 24  # 22 * 1.1
-const MARGIN := 40  # Distance from edge of screen
+const MARGIN := 20  # Distance from edge of screen (moved up 20px from 40)
 const SPACING := 9  # 8 * 1.1
 const ICON_SIZE := 24  # Same as bar height (22 * 1.1)
 const ICON_MARGIN_RIGHT := 11  # 10 * 1.1
@@ -492,11 +492,11 @@ const FIRE_TIER_COLORS: Array[Array] = [
 ]
 
 func _setup_fire_effect() -> void:
-	"""Create the container for fire particles around portrait."""
+	"""Create the container for fire particles ABOVE portrait (not on it)."""
 	fire_container = Control.new()
 	fire_container.name = "FireContainer"
-	fire_container.size = Vector2(PORTRAIT_SIZE + 20, PORTRAIT_SIZE + 30)
-	fire_container.position = Vector2(-10, -20)  # Extend above and around portrait
+	fire_container.size = Vector2(PORTRAIT_SIZE + 30, 50)  # Wide enough, height for flames above
+	fire_container.position = Vector2(-15, -50)  # Position ABOVE the portrait
 	fire_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fire_container.clip_contents = false
 	portrait_button.add_child(fire_container)
@@ -583,17 +583,17 @@ func _update_fire_particles() -> void:
 		p["node"].size = Vector2(size_base + size_var, size_base + size_var)
 
 func _reset_fire_particle(p: Dictionary) -> void:
-	"""Reset a fire particle to start position."""
-	# Position along top edge of portrait, concentrated at top
-	var spawn_spread = PORTRAIT_SIZE * (0.5 + current_fire_tier * 0.1)
-	var center_x = PORTRAIT_SIZE / 2.0 + 10
+	"""Reset a fire particle to start position (at bottom of fire container, rises up)."""
+	# Position along width of container (centered over portrait)
+	var spawn_spread = PORTRAIT_SIZE * (0.4 + current_fire_tier * 0.08)
+	var center_x = (PORTRAIT_SIZE + 30) / 2.0  # Center of fire container
 
 	p["x"] = center_x + randf_range(-spawn_spread / 2, spawn_spread / 2)
-	p["y"] = PORTRAIT_SIZE + randf_range(-5, 10)  # Start at/near bottom of portrait
-	p["speed"] = randf_range(30 + current_fire_tier * 10, 60 + current_fire_tier * 15)
-	p["wobble"] = randf_range(-1.5, 1.5)
+	p["y"] = 45 + randf_range(-5, 5)  # Start at bottom of fire container (which is above portrait)
+	p["speed"] = randf_range(40 + current_fire_tier * 8, 70 + current_fire_tier * 12)
+	p["wobble"] = randf_range(-1.0, 1.0)
 	p["lifetime"] = 0.0
-	p["max_lifetime"] = randf_range(0.3, 0.6)
+	p["max_lifetime"] = randf_range(0.25, 0.5)
 
 	# Start with base fire color
 	var tier_colors = FIRE_TIER_COLORS[min(current_fire_tier, FIRE_TIER_COLORS.size() - 1)]

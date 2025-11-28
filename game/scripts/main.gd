@@ -80,6 +80,9 @@ func _process(delta: float) -> void:
 	_check_nearby_items()
 
 func _on_player_level_up(new_level: int) -> void:
+	# Delay ability selection to let level up animation play (1.25s)
+	await get_tree().create_timer(1.25).timeout
+
 	# Check if this level grants the ultimate ability
 	if new_level == ULTIMATE_ABILITY_LEVEL:
 		_show_ultimate_ability_selection()
