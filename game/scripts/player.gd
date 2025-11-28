@@ -1519,71 +1519,137 @@ func _spawn_heal_particles() -> void:
 		tween.chain().tween_callback(particle.queue_free)
 
 func _spawn_level_up_effect() -> void:
-	"""Epic level up celebration visual effect on player (#6)."""
-	# Golden light burst from player
-	var burst_container = Node2D.new()
-	burst_container.global_position = global_position
-	get_parent().add_child(burst_container)
+	"""Holy beam level up effect - beam comes down onto player then explodes outward (#6)."""
+	var effect_container = Node2D.new()
+	effect_container.global_position = global_position
+	get_parent().add_child(effect_container)
 
-	# Central flash
-	var flash = Polygon2D.new()
-	var flash_points: Array[Vector2] = []
-	for i in range(12):
-		var angle = (float(i) / 12) * TAU
-		var radius = 20 if i % 2 == 0 else 40
-		flash_points.append(Vector2(cos(angle), sin(angle)) * radius)
-	flash.polygon = flash_points
-	flash.color = Color(1.0, 0.95, 0.4, 1.0)  # Golden
-	burst_container.add_child(flash)
+	# === PHASE 1: Holy beam descending from above ===
+	var beam_height = 400.0
+	var beam_width = 60.0
 
-	# Expanding ring
-	var ring = Node2D.new()
-	ring.name = "Ring"
-	burst_container.add_child(ring)
+	# Main beam (rectangle descending)
+	var beam = Polygon2D.new()
+	beam.polygon = [
+		Vector2(-beam_width / 2, -beam_height),
+		Vector2(beam_width / 2, -beam_height),
+		Vector2(beam_width / 2, 0),
+		Vector2(-beam_width / 2, 0)
+	]
+	beam.color = Color(1.0, 0.95, 0.5, 0.9)  # Bright golden yellow
+	beam.position.y = -beam_height  # Start above screen
+	effect_container.add_child(beam)
 
-	var ring_line = Line2D.new()
-	ring_line.width = 6.0
-	ring_line.default_color = Color(1.0, 0.85, 0.2, 0.9)
-	var ring_points: PackedVector2Array = []
-	for i in range(33):
-		var angle = (float(i) / 32) * TAU
-		ring_points.append(Vector2(cos(angle), sin(angle)) * 30)
-	ring_line.points = ring_points
-	ring.add_child(ring_line)
+	# Inner brighter beam core
+	var beam_core = Polygon2D.new()
+	var core_width = beam_width * 0.4
+	beam_core.polygon = [
+		Vector2(-core_width / 2, -beam_height),
+		Vector2(core_width / 2, -beam_height),
+		Vector2(core_width / 2, 0),
+		Vector2(-core_width / 2, 0)
+	]
+	beam_core.color = Color(1.0, 1.0, 0.9, 1.0)  # Pure white-yellow
+	beam_core.position.y = -beam_height
+	effect_container.add_child(beam_core)
 
-	# Particle burst
-	for i in range(16):
-		var particle = Polygon2D.new()
-		var ppoints: Array[Vector2] = []
-		for j in range(6):
-			var pangle = (float(j) / 6) * TAU
-			ppoints.append(Vector2(cos(pangle), sin(pangle)) * randf_range(4, 8))
-		particle.polygon = ppoints
-		particle.color = Color(1.0, 0.9 + randf() * 0.1, 0.3 + randf() * 0.3, 1.0)
+	# Beam descending animation
+	var beam_tween = effect_container.create_tween()
+	beam_tween.set_parallel(true)
+	beam_tween.tween_property(beam, "position:y", 0.0, 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	beam_tween.tween_property(beam_core, "position:y", 0.0, 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
 
-		var angle = (float(i) / 16) * TAU
-		var start_dist = 20.0
-		particle.position = Vector2(cos(angle), sin(angle)) * start_dist
-		burst_container.add_child(particle)
+	# === PHASE 2: Impact flash and holy explosion (after beam lands) ===
+	beam_tween.chain().tween_callback(func():
+		# Bright impact flash at player center
+		var flash = Polygon2D.new()
+		var flash_points: Array[Vector2] = []
+		for i in range(16):
+			var angle = (float(i) / 16) * TAU
+			var radius = 25 if i % 2 == 0 else 50
+			flash_points.append(Vector2(cos(angle), sin(angle)) * radius)
+		flash.polygon = flash_points
+		flash.color = Color(1.0, 1.0, 0.8, 1.0)
+		effect_container.add_child(flash)
 
-		# Animate particle outward
-		var end_dist = randf_range(80, 140)
-		var end_pos = Vector2(cos(angle), sin(angle)) * end_dist
+		# Flash pop and fade
+		var flash_tween = flash.create_tween()
+		flash_tween.set_parallel(true)
+		flash_tween.tween_property(flash, "scale", Vector2(2.0, 2.0), 0.15).set_ease(Tween.EASE_OUT)
+		flash_tween.tween_property(flash, "modulate:a", 0.0, 0.25)
 
-		var ptween = particle.create_tween()
-		ptween.set_parallel(true)
-		ptween.tween_property(particle, "position", end_pos, randf_range(0.4, 0.7)).set_ease(Tween.EASE_OUT)
-		ptween.tween_property(particle, "modulate:a", 0.0, randf_range(0.3, 0.5)).set_delay(0.2)
-		ptween.tween_property(particle, "scale", Vector2(0.3, 0.3), 0.5)
+		# Expanding holy ring
+		var ring = Node2D.new()
+		effect_container.add_child(ring)
+		var ring_line = Line2D.new()
+		ring_line.width = 8.0
+		ring_line.default_color = Color(1.0, 0.9, 0.3, 1.0)
+		var ring_points: PackedVector2Array = []
+		for i in range(33):
+			var angle = (float(i) / 32) * TAU
+			ring_points.append(Vector2(cos(angle), sin(angle)) * 20)
+		ring_line.points = ring_points
+		ring.add_child(ring_line)
 
-	# Animate flash and ring
-	var tween = burst_container.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(flash, "scale", Vector2(2.5, 2.5), 0.15).set_ease(Tween.EASE_OUT)
-	tween.tween_property(flash, "modulate:a", 0.0, 0.3)
-	tween.tween_property(ring, "scale", Vector2(5.0, 5.0), 0.4).set_ease(Tween.EASE_OUT)
-	tween.tween_property(ring_line, "modulate:a", 0.0, 0.35).set_delay(0.1)
-	tween.chain().tween_callback(burst_container.queue_free)
+		var ring_tween = ring.create_tween()
+		ring_tween.set_parallel(true)
+		ring_tween.tween_property(ring, "scale", Vector2(8.0, 8.0), 0.5).set_ease(Tween.EASE_OUT)
+		ring_tween.tween_property(ring_line, "modulate:a", 0.0, 0.4).set_delay(0.1)
+
+		# Second ring (slightly delayed)
+		var ring2 = Node2D.new()
+		effect_container.add_child(ring2)
+		var ring2_line = Line2D.new()
+		ring2_line.width = 5.0
+		ring2_line.default_color = Color(1.0, 0.85, 0.2, 0.8)
+		ring2_line.points = ring_points
+		ring2.add_child(ring2_line)
+		ring2.scale = Vector2(0.5, 0.5)
+
+		var ring2_tween = ring2.create_tween()
+		ring2_tween.tween_interval(0.1)
+		ring2_tween.set_parallel(true)
+		ring2_tween.tween_property(ring2, "scale", Vector2(6.0, 6.0), 0.4).set_ease(Tween.EASE_OUT)
+		ring2_tween.tween_property(ring2_line, "modulate:a", 0.0, 0.35)
+
+		# Radial particle burst (holy sparks flying outward)
+		for i in range(20):
+			var spark = Polygon2D.new()
+			var spark_points: Array[Vector2] = []
+			# Diamond shape for sparks
+			var spark_size = randf_range(4, 8)
+			spark_points.append(Vector2(0, -spark_size))
+			spark_points.append(Vector2(spark_size * 0.5, 0))
+			spark_points.append(Vector2(0, spark_size))
+			spark_points.append(Vector2(-spark_size * 0.5, 0))
+			spark.polygon = spark_points
+			spark.color = Color(1.0, 0.95 + randf() * 0.05, 0.4 + randf() * 0.3, 1.0)
+
+			var angle = (float(i) / 20) * TAU + randf_range(-0.1, 0.1)
+			spark.position = Vector2(cos(angle), sin(angle)) * 15
+			spark.rotation = angle
+			effect_container.add_child(spark)
+
+			var end_dist = randf_range(100, 180)
+			var end_pos = Vector2(cos(angle), sin(angle)) * end_dist
+
+			var spark_tween = spark.create_tween()
+			spark_tween.set_parallel(true)
+			spark_tween.tween_property(spark, "position", end_pos, randf_range(0.3, 0.5)).set_ease(Tween.EASE_OUT)
+			spark_tween.tween_property(spark, "modulate:a", 0.0, randf_range(0.25, 0.4)).set_delay(0.1)
+			spark_tween.tween_property(spark, "scale", Vector2(0.2, 0.2), 0.4)
+
+		# Fade out the beam
+		var beam_fade = beam.create_tween()
+		beam_fade.set_parallel(true)
+		beam_fade.tween_property(beam, "modulate:a", 0.0, 0.2)
+		beam_fade.tween_property(beam_core, "modulate:a", 0.0, 0.15)
+	)
+
+	# Cleanup after all animations
+	var cleanup_tween = effect_container.create_tween()
+	cleanup_tween.tween_interval(1.0)
+	cleanup_tween.tween_callback(effect_container.queue_free)
 
 	# Brief invulnerability on level up (0.3s)
 	set_invulnerable(true, 0.3)

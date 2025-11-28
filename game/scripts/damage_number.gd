@@ -89,14 +89,14 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# Shake animation for player damage (#22)
 		_animate_shake()
 	elif is_critical:
-		# ENHANCED Critical hit - much bigger with "CRIT!" prefix and epic effects (#7)
+		# ENHANCED Critical hit - gold with "CRIT!" prefix (#7)
 		label.text = "CRIT! " + str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
-		label.add_theme_font_size_override("font_size", 38)
+		label.add_theme_font_size_override("font_size", 30)
 		# Strong outline for crits
 		label.add_theme_color_override("font_outline_color", Color(0.6, 0.3, 0, 1))
-		label.add_theme_constant_override("outline_size", 5)
-		scale = Vector2(0.3, 0.3)  # Start small for bigger pop
+		label.add_theme_constant_override("outline_size", 4)
+		scale = Vector2(0.5, 0.5)  # Start small for pop
 		# Epic crit animation
 		_animate_crit()
 		# Register with JuiceManager for crit streaks
@@ -163,23 +163,23 @@ func _animate_bounce() -> void:
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.05)
 
 func _animate_crit() -> void:
-	"""Epic crit animation - starts small, pops big, slight rotation."""
+	"""Crit animation - starts small, pops, slight rotation."""
 	var tween = create_tween()
 	tween.set_parallel(true)
 	# Scale pop - start small, overshoot, settle
-	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.12).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.chain().tween_property(self, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.chain().tween_property(self, "scale", Vector2(1.0, 1.0), 0.08)
 	# Slight rotation wobble
 	var rot_tween = create_tween()
-	rot_tween.tween_property(self, "rotation", 0.1, 0.05)
-	rot_tween.tween_property(self, "rotation", -0.1, 0.1)
-	rot_tween.tween_property(self, "rotation", 0.0, 0.1)
+	rot_tween.tween_property(self, "rotation", 0.08, 0.04)
+	rot_tween.tween_property(self, "rotation", -0.08, 0.08)
+	rot_tween.tween_property(self, "rotation", 0.0, 0.08)
 	# Brief color flash (white flash then back to gold)
 	var color_tween = create_tween()
 	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
 	color_tween.tween_callback(func():
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
-	).set_delay(0.08)
+	).set_delay(0.06)
 
 func _animate_shake() -> void:
 	"""Shake animation for player damage numbers."""

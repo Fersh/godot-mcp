@@ -46,6 +46,13 @@ var max_shield: float = 0.0
 var displayed_xp: float = 0.0
 var current_tween: Tween = null
 
+# Kill streak fire effect
+var fire_container: Control = null
+var fire_particles: Array[Dictionary] = []
+var current_fire_tier: int = 0
+const FIRE_PARTICLE_COUNT: int = 12
+const FIRE_UPDATE_RATE: float = 0.08  # Update every ~12fps for pixelated look
+
 func _ready() -> void:
 	layer = 50
 
@@ -152,9 +159,6 @@ func _create_ui() -> void:
 	health_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
 	var icon_style = StyleBoxFlat.new()
 	icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
-	icon_style.shadow_color = Color(0, 0, 0, 0.8)
-	icon_style.shadow_size = 3
-	icon_style.shadow_offset = Vector2(3, 3)
 	health_icon_panel.add_theme_stylebox_override("panel", icon_style)
 	container.add_child(health_icon_panel)
 
@@ -181,9 +185,6 @@ func _create_ui() -> void:
 	health_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	health_bg_style.set_border_width_all(2)
 	health_bg_style.set_corner_radius_all(2)
-	health_bg_style.shadow_color = Color(0, 0, 0, 0.8)
-	health_bg_style.shadow_size = 3
-	health_bg_style.shadow_offset = Vector2(3, 3)
 	health_bar_bg.add_theme_stylebox_override("panel", health_bg_style)
 	container.add_child(health_bar_bg)
 
@@ -236,9 +237,6 @@ func _create_ui() -> void:
 	xp_icon_panel.size = Vector2(ICON_SIZE, ICON_SIZE)
 	var xp_icon_style = StyleBoxFlat.new()
 	xp_icon_style.bg_color = Color(0, 0, 0, 0)  # Transparent
-	xp_icon_style.shadow_color = Color(0, 0, 0, 0.8)
-	xp_icon_style.shadow_size = 3
-	xp_icon_style.shadow_offset = Vector2(3, 3)
 	xp_icon_panel.add_theme_stylebox_override("panel", xp_icon_style)
 	container.add_child(xp_icon_panel)
 
@@ -264,9 +262,6 @@ func _create_ui() -> void:
 	progress_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	progress_bg_style.set_border_width_all(2)
 	progress_bg_style.set_corner_radius_all(2)
-	progress_bg_style.shadow_color = Color(0, 0, 0, 0.8)
-	progress_bg_style.shadow_size = 3
-	progress_bg_style.shadow_offset = Vector2(3, 3)
 	progress_bar_bg.add_theme_stylebox_override("panel", progress_bg_style)
 	container.add_child(progress_bar_bg)
 
@@ -326,7 +321,12 @@ func _setup_portrait() -> void:
 
 	portrait_texture.texture = atlas
 
-func _process(_delta: float) -> void:
+	# Setup fire effect container for kill streaks
+	_setup_fire_effect()
+
+var fire_update_timer: float = 0.0
+
+func _process(delta: float) -> void:
 	# Update shield display from AbilityManager
 	if AbilityManager and AbilityManager.has_transcendence:
 		var new_shield = AbilityManager.transcendence_shields
@@ -335,6 +335,20 @@ func _process(_delta: float) -> void:
 			current_shield = new_shield
 			max_shield = new_max
 			_update_health_bar()
+
+	# Update kill streak fire effect
+	if KillStreakManager:
+		var new_tier = KillStreakManager.get_current_tier()
+		if new_tier != current_fire_tier:
+			current_fire_tier = new_tier
+			_update_fire_intensity()
+
+		# Update fire particles at low framerate for pixelated look
+		if current_fire_tier > 0:
+			fire_update_timer += delta
+			if fire_update_timer >= FIRE_UPDATE_RATE:
+				fire_update_timer = 0.0
+				_update_fire_particles()
 
 func _on_health_changed(current: float, maximum: float) -> void:
 	current_health = current
@@ -460,3 +474,129 @@ func _input(event: InputEvent) -> void:
 			_on_pause_pressed()
 
 		get_viewport().set_input_as_handled()
+
+# ============================================
+# KILL STREAK FIRE EFFECT
+# ============================================
+
+# Fire colors per tier (more intense at higher tiers)
+const FIRE_TIER_COLORS: Array[Array] = [
+	[],  # Tier 0 - no fire
+	[Color(1.0, 0.9, 0.3), Color(1.0, 0.6, 0.1), Color(1.0, 0.3, 0.0)],  # Tier 1 - Yellow/Orange
+	[Color(1.0, 0.7, 0.2), Color(1.0, 0.4, 0.0), Color(0.9, 0.2, 0.0)],  # Tier 2 - Orange/Red
+	[Color(1.0, 0.3, 0.1), Color(0.9, 0.1, 0.0), Color(0.6, 0.0, 0.0)],  # Tier 3 - Red
+	[Color(0.9, 0.2, 0.9), Color(0.7, 0.1, 0.7), Color(0.4, 0.0, 0.4)],  # Tier 4 - Purple
+	[Color(0.3, 0.8, 1.0), Color(0.2, 0.5, 1.0), Color(0.1, 0.2, 0.8)],  # Tier 5 - Cyan/Blue
+	[Color(1.0, 0.95, 0.5), Color(1.0, 0.85, 0.2), Color(1.0, 0.7, 0.0)],  # Tier 6 - Gold
+	[Color(1.0, 1.0, 1.0), Color(0.9, 0.9, 1.0), Color(0.8, 0.8, 1.0)],  # Tier 7 - White/Prismatic
+]
+
+func _setup_fire_effect() -> void:
+	"""Create the container for fire particles around portrait."""
+	fire_container = Control.new()
+	fire_container.name = "FireContainer"
+	fire_container.size = Vector2(PORTRAIT_SIZE + 20, PORTRAIT_SIZE + 30)
+	fire_container.position = Vector2(-10, -20)  # Extend above and around portrait
+	fire_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fire_container.clip_contents = false
+	portrait_button.add_child(fire_container)
+
+	# Initialize fire particles (hidden initially)
+	for i in range(FIRE_PARTICLE_COUNT):
+		var particle = ColorRect.new()
+		particle.name = "FireParticle" + str(i)
+		particle.size = Vector2(6, 6)  # Pixelated square blocks
+		particle.color = Color(1.0, 0.5, 0.0, 0.0)  # Start invisible
+		particle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fire_container.add_child(particle)
+
+		fire_particles.append({
+			"node": particle,
+			"x": randf_range(5, PORTRAIT_SIZE + 5),
+			"y": float(PORTRAIT_SIZE),  # Start at bottom
+			"speed": randf_range(40, 80),
+			"wobble": randf_range(-1.0, 1.0),
+			"lifetime": 0.0,
+			"max_lifetime": randf_range(0.4, 0.8)
+		})
+
+func _update_fire_intensity() -> void:
+	"""Update fire visibility based on kill streak tier."""
+	if fire_container == null:
+		return
+
+	if current_fire_tier <= 0:
+		# Hide all fire particles
+		for p in fire_particles:
+			p["node"].color.a = 0.0
+	else:
+		# Reset particles for new intensity
+		for p in fire_particles:
+			_reset_fire_particle(p)
+
+func _update_fire_particles() -> void:
+	"""Update fire particle positions and colors (called at low framerate for pixelated look)."""
+	if current_fire_tier <= 0 or fire_container == null:
+		return
+
+	var tier_colors = FIRE_TIER_COLORS[min(current_fire_tier, FIRE_TIER_COLORS.size() - 1)]
+	if tier_colors.size() == 0:
+		return
+
+	for p in fire_particles:
+		# Move particle upward
+		p["y"] -= p["speed"] * FIRE_UPDATE_RATE
+		p["x"] += p["wobble"] * 3.0  # Slight horizontal wobble
+		p["lifetime"] += FIRE_UPDATE_RATE
+
+		# Check if particle should reset
+		if p["lifetime"] >= p["max_lifetime"] or p["y"] < -10:
+			_reset_fire_particle(p)
+			continue
+
+		# Calculate color based on lifetime (hotter at bottom, cooler at top)
+		var life_ratio = p["lifetime"] / p["max_lifetime"]
+		var color_index = int(life_ratio * (tier_colors.size() - 1))
+		color_index = clamp(color_index, 0, tier_colors.size() - 1)
+
+		var base_color = tier_colors[color_index]
+
+		# Fade out near end of lifetime
+		var alpha = 1.0
+		if life_ratio > 0.7:
+			alpha = 1.0 - ((life_ratio - 0.7) / 0.3)
+
+		# Higher tiers = more particles visible and brighter
+		var tier_brightness = 0.6 + (current_fire_tier * 0.06)
+		alpha *= tier_brightness
+
+		p["node"].color = Color(base_color.r, base_color.g, base_color.b, alpha)
+
+		# Snap position to grid for pixelated look (4px grid)
+		var snapped_x = int(p["x"] / 4) * 4
+		var snapped_y = int(p["y"] / 4) * 4
+		p["node"].position = Vector2(snapped_x, snapped_y)
+
+		# Vary particle size slightly based on tier
+		var size_base = 5 + current_fire_tier
+		var size_var = randi_range(-1, 1)
+		p["node"].size = Vector2(size_base + size_var, size_base + size_var)
+
+func _reset_fire_particle(p: Dictionary) -> void:
+	"""Reset a fire particle to start position."""
+	# Position along top edge of portrait, concentrated at top
+	var spawn_spread = PORTRAIT_SIZE * (0.5 + current_fire_tier * 0.1)
+	var center_x = PORTRAIT_SIZE / 2.0 + 10
+
+	p["x"] = center_x + randf_range(-spawn_spread / 2, spawn_spread / 2)
+	p["y"] = PORTRAIT_SIZE + randf_range(-5, 10)  # Start at/near bottom of portrait
+	p["speed"] = randf_range(30 + current_fire_tier * 10, 60 + current_fire_tier * 15)
+	p["wobble"] = randf_range(-1.5, 1.5)
+	p["lifetime"] = 0.0
+	p["max_lifetime"] = randf_range(0.3, 0.6)
+
+	# Start with base fire color
+	var tier_colors = FIRE_TIER_COLORS[min(current_fire_tier, FIRE_TIER_COLORS.size() - 1)]
+	if tier_colors.size() > 0:
+		p["node"].color = tier_colors[0]
+		p["node"].color.a = 0.8

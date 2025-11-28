@@ -473,7 +473,8 @@ func _setup_animated_reveal() -> void:
 	for stat in stats_to_animate:
 		if stat:
 			stat.modulate.a = 0.0
-			stat.position.x -= 50  # Start offset to the left
+			# Store original position and offset using custom position property
+			stat.set_meta("original_pos", stat.position)
 
 	# Also animate the title
 	if title_label:
@@ -503,7 +504,7 @@ func _animate_title_reveal() -> void:
 	)
 
 func _animate_stats_reveal() -> void:
-	"""Animate stats flying in one by one."""
+	"""Animate stats flying in one by one with center alignment preserved."""
 	var delay = 0.0
 	var delay_increment = 0.15
 
@@ -512,12 +513,14 @@ func _animate_stats_reveal() -> void:
 		if stat == null:
 			continue
 
-		var original_x = stat.position.x + 50  # Original position
+		# Use scale animation instead of position to maintain center alignment
+		stat.pivot_offset = stat.size / 2
+		stat.scale = Vector2(0.0, 1.0)  # Start squished horizontally
 
 		var tween = create_tween()
 		tween.tween_interval(delay)
 		tween.tween_property(stat, "modulate:a", 1.0, 0.2)
-		tween.parallel().tween_property(stat, "position:x", original_x, 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+		tween.parallel().tween_property(stat, "scale", Vector2(1.0, 1.0), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 		# Check for personal best on this stat
 		var is_best = _check_if_personal_best(i)
