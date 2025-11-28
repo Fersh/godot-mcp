@@ -131,7 +131,7 @@ func _display_loot() -> void:
 			no_loot_container.alignment = BoxContainer.ALIGNMENT_CENTER
 
 			var no_loot = Label.new()
-			no_loot.text = "LOOT: None"
+			no_loot.text = "LOOT:"
 			no_loot.add_theme_font_size_override("font_size", 12)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 			if pixel_font:

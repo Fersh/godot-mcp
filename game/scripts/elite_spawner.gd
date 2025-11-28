@@ -146,26 +146,26 @@ func _setup_boss_health_bar() -> void:
 	boss_health_bar.value = 100
 	boss_health_bar.show_percentage = false
 
-	# Style the health bar
+	# Style the health bar - doubled border width, corner radius, darker border
 	var bg_style = StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
-	bg_style.border_width_left = 3
-	bg_style.border_width_right = 3
-	bg_style.border_width_top = 3
-	bg_style.border_width_bottom = 3
-	bg_style.border_color = Color(0.6, 0.1, 0.1, 1.0)
-	bg_style.corner_radius_top_left = 4
-	bg_style.corner_radius_top_right = 4
-	bg_style.corner_radius_bottom_left = 4
-	bg_style.corner_radius_bottom_right = 4
+	bg_style.border_width_left = 6
+	bg_style.border_width_right = 6
+	bg_style.border_width_top = 6
+	bg_style.border_width_bottom = 6
+	bg_style.border_color = Color(0.4, 0.08, 0.08, 1.0)  # Darker border
+	bg_style.corner_radius_top_left = 6
+	bg_style.corner_radius_top_right = 6
+	bg_style.corner_radius_bottom_left = 6
+	bg_style.corner_radius_bottom_right = 6
 	boss_health_bar.add_theme_stylebox_override("background", bg_style)
 
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = Color(0.8, 0.15, 0.15, 1.0)
-	fill_style.corner_radius_top_left = 2
-	fill_style.corner_radius_top_right = 2
-	fill_style.corner_radius_bottom_left = 2
-	fill_style.corner_radius_bottom_right = 2
+	fill_style.corner_radius_top_left = 3
+	fill_style.corner_radius_top_right = 3
+	fill_style.corner_radius_bottom_left = 3
+	fill_style.corner_radius_bottom_right = 3
 	boss_health_bar.add_theme_stylebox_override("fill", fill_style)
 
 	vbox.add_child(boss_health_bar)

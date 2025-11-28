@@ -9,7 +9,7 @@ extends EliteBase
 @export var laser_beam_scene: PackedScene
 
 # Attack-specific stats
-@export var stomp_damage: float = 40.0
+@export var stomp_damage: float = 30.0  # Reduced from 40
 @export var stomp_range: float = 80.0
 @export var stomp_aoe_radius: float = 100.0
 
@@ -18,7 +18,7 @@ extends EliteBase
 @export var rock_speed: float = 150.0  # Slower, easier to dodge
 
 @export var laser_damage: float = 15.0  # Per tick - reduced 25% from 20
-@export var laser_range: float = 400.0
+@export var laser_range: float = 300.0  # Reduced 25% from 400
 @export var laser_duration: float = 2.0
 @export var laser_tick_rate: float = 0.25
 
@@ -151,8 +151,9 @@ func _start_laser_beam() -> void:
 		current_laser_direction = (player.global_position - global_position).normalized()
 		laser_target_pos = player.global_position
 
+	# Use attack animation (stomp) during eye beam, not laser pose
 	var dir = current_laser_direction
-	update_animation(0, ROW_LASER, dir)
+	update_animation(0, ROW_ATTACK, dir)
 	animation_frame = 0
 
 	# Create laser visual
@@ -237,15 +238,15 @@ func _process_special_attack(delta: float) -> void:
 		laser_tick_timer = laser_tick_rate
 		_laser_damage_check()
 
-	# Animate laser pose - play through once then hold final frame
+	# Animate attack pose during laser - loop the attack animation
 	var dir = current_laser_direction
 	animation_frame += animation_speed * 0.5 * delta
-	var max_frames = FRAME_COUNTS.get(ROW_LASER, 4)
-	# Clamp to valid frame range
+	var max_frames = FRAME_COUNTS.get(ROW_ATTACK, 13)
+	# Loop the attack animation
 	if animation_frame >= max_frames:
-		animation_frame = max_frames - 1
+		animation_frame = 0.0
 	var clamped_frame = clampi(int(animation_frame), 0, max_frames - 1)
-	sprite.frame = ROW_LASER * COLS_PER_ROW + clamped_frame
+	sprite.frame = ROW_ATTACK * COLS_PER_ROW + clamped_frame
 	if dir.x != 0:
 		sprite.flip_h = dir.x < 0
 
