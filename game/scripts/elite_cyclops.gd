@@ -54,9 +54,9 @@ func _setup_elite() -> void:
 	elite_name = "Cyclops"
 	enemy_type = "cyclops"
 
-	# Cyclops stats - 37.5x health (elite!), slower, hits hard
+	# Cyclops stats - elite, slower, hits hard
 	speed = 60.0  # Slower than most enemies
-	max_health = 750.0  # 50% more health
+	max_health = 675.0  # Reduced 10% from 750
 	attack_damage = stomp_damage
 	attack_cooldown = 1.0
 	windup_duration = 0.5
@@ -207,10 +207,6 @@ func _show_beam_warning() -> void:
 func _hide_beam_warning() -> void:
 	if beam_warning_label:
 		beam_warning_label.visible = false
-		# Stop any tweens on the label
-		for child in get_children():
-			if child is Tween:
-				child.kill()
 
 func _create_laser_line() -> void:
 	if laser_line == null:

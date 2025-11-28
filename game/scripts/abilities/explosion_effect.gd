@@ -2,22 +2,20 @@ extends Node2D
 
 # Animated pixel explosion effect using Explosion sprite sheets from pack2
 
-var sprite: AnimatedSprite2D
+var sprite: Sprite2D
 var scale_multiplier: float = 1.5
 var explosion_size: String = "medium"  # "small", "medium", "large"
+var current_frame: int = 0
+var frame_count: int = 12
+var animation_speed: float = 24.0
+var frame_timer: float = 0.0
 
 func _ready() -> void:
-	_create_animated_sprite()
+	_create_sprite()
 
-func _create_animated_sprite() -> void:
-	sprite = AnimatedSprite2D.new()
+func _create_sprite() -> void:
+	sprite = Sprite2D.new()
 	add_child(sprite)
-
-	# Create SpriteFrames resource
-	var frames = SpriteFrames.new()
-	frames.add_animation("explode")
-	frames.set_animation_speed("explode", 20.0)
-	frames.set_animation_loop("explode", false)
 
 	var source_path: String
 	var frame_size: int
@@ -26,44 +24,37 @@ func _create_animated_sprite() -> void:
 		"small":
 			source_path = "res://assets/sprites/effects/pack2/Explosion_2_64x64.png"
 			frame_size = 64
-			scale_multiplier = 1.2
+			scale_multiplier = 1.5
 		"large":
 			source_path = "res://assets/sprites/effects/pack2/Explosion_3_133x133.png"
 			frame_size = 133
-			scale_multiplier = 1.8
+			scale_multiplier = 2.0
 		_:  # medium (default)
 			source_path = "res://assets/sprites/effects/pack2/Explosion_96x96.png"
 			frame_size = 96
-			scale_multiplier = 1.5
+			scale_multiplier = 1.8
 
 	sprite.scale = Vector2(scale_multiplier, scale_multiplier)
 
-	# Try to load pack2 explosion first
 	if ResourceLoader.exists(source_path):
-		var source_texture = load(source_path) as Texture2D
-		if source_texture:
-			var img = source_texture.get_image()
-			var total_width = img.get_width()
-			var frame_count = total_width / frame_size
+		var texture = load(source_path) as Texture2D
+		if texture:
+			sprite.texture = texture
+			var total_width = texture.get_width()
+			frame_count = int(total_width / frame_size)
+			sprite.hframes = frame_count
+			sprite.vframes = 1
+			sprite.frame = 0
 
-			for i in range(frame_count):
-				var frame_img = Image.create(frame_size, frame_size, false, img.get_format())
-				frame_img.blit_rect(img, Rect2i(i * frame_size, 0, frame_size, frame_size), Vector2i.ZERO)
-				frames.add_frame("explode", ImageTexture.create_from_image(frame_img))
-	else:
-		# Fallback to FireBomb frames
-		for i in range(1, 16):
-			var path = "res://assets/sprites/effects/FireBomb/Fire-bomb%d.png" % i
-			if ResourceLoader.exists(path):
-				var texture = load(path)
-				frames.add_frame("explode", texture)
-
-	sprite.sprite_frames = frames
-	sprite.animation_finished.connect(_on_animation_finished)
-	sprite.play("explode")
-
-func _on_animation_finished() -> void:
-	queue_free()
+func _process(delta: float) -> void:
+	frame_timer += delta
+	if frame_timer >= 1.0 / animation_speed:
+		frame_timer = 0.0
+		current_frame += 1
+		if current_frame >= frame_count:
+			queue_free()
+		elif sprite:
+			sprite.frame = current_frame
 
 func set_explosion_scale(new_scale: float) -> void:
 	scale_multiplier = new_scale

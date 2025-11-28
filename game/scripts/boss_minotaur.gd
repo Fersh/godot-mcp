@@ -6,17 +6,17 @@ extends BossBase
 
 @export var slam_effect_scene: PackedScene  # Ground slam AOE visual
 
-# Attack damage values (3x skeleton damage of 15 = 45 base)
+# Attack damage values
 @export var slam_damage: float = 50.0  # AOE attack
-@export var melee_damage: float = 45.0  # Regular melee
+@export var melee_damage: float = 35.0  # Regular melee (reduced)
 
 # Attack ranges (slightly longer due to size)
 @export var slam_range: float = 100.0
 @export var slam_aoe_radius: float = 150.0
 @export var melee_range: float = 90.0
 
-# Spritesheet config: 96x96 frames, 10 cols x 20 rows (10 right + 10 left facing)
-const SPRITE_COLS: int = 10
+# Spritesheet config: 128x96 frames, 8 cols x 20 rows (10 right + 10 left facing rows)
+const SPRITE_COLS: int = 8
 const SPRITE_ROWS: int = 20
 
 # Animation rows (right-facing, top half of sheet)
@@ -31,15 +31,15 @@ const ANIM_DAMAGE: int = 7
 const ANIM_DAMAGE2: int = 8
 const ANIM_DEATH: int = 9
 
-# Frame counts per animation
+# Frame counts per animation (max 8 per row)
 const FRAMES = {
 	0: 5,   # Idle
 	1: 8,   # Move
 	2: 5,   # Taunt
-	3: 9,   # Attack 1 (AOE)
+	3: 8,   # Attack 1 (AOE) - capped at 8
 	4: 5,   # Attack 2
 	5: 6,   # Attack 3
-	6: 9,   # Attack 4
+	6: 8,   # Attack 4 - capped at 8
 	7: 3,   # Damage
 	8: 3,   # Damage 2
 	9: 6,   # Death
@@ -49,6 +49,7 @@ const FRAMES = {
 var current_attack_type: int = 0
 var attack_windup_timer: float = 0.0
 const WINDUP_DURATION: float = 0.8  # Big windup for impactful attacks
+var is_attack_animating: bool = false  # Prevents conflicting animation updates
 
 # Attack rows for random selection
 var melee_attack_rows: Array[int] = [ANIM_ATTACK2, ANIM_ATTACK3, ANIM_ATTACK4]
@@ -65,8 +66,8 @@ func _setup_boss() -> void:
 	enemy_type = "minotaur"
 
 	# Boss stats
-	speed = 135.0  # 50% faster than normal (~90)
-	max_health = 1500.0
+	speed = 103.5  # Reduced 25% from 135 (was 115, now -10% more)
+	max_health = 1350.0  # Reduced 10% from 1500
 	attack_damage = melee_damage
 	base_damage = melee_damage
 	attack_cooldown = 4.0  # 3-5s range
@@ -165,6 +166,10 @@ func _physics_process(delta: float) -> void:
 	# Handle attack windup
 	if is_winding_up:
 		_process_windup(delta)
+		return
+
+	# Skip parent behavior during attack follow-through (tween handles animation)
+	if is_attack_animating:
 		return
 
 	super._physics_process(delta)
@@ -300,6 +305,9 @@ func _play_attack_followthrough() -> void:
 	var start_frame = int(max_frames * 0.4)
 	animation_frame = start_frame
 
+	# Prevent conflicting animation updates during tween
+	is_attack_animating = true
+
 	# Create tween to play through rest of animation
 	var tween = create_tween()
 	var remaining_frames = max_frames - start_frame
@@ -313,6 +321,7 @@ func _update_attack_frame(frame: float) -> void:
 	sprite.frame = actual_row * COLS_PER_ROW + int(frame)
 
 func _on_attack_complete() -> void:
+	is_attack_animating = false  # Allow normal animation updates again
 	can_attack = false  # Reset for cooldown system
 	current_row = ROW_IDLE
 
