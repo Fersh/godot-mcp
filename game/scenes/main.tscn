@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=21 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy_skeleton.tscn" id="16_skeleton"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_kobold_priest.tscn" id="17_kobold_priest"]
 [ext_resource type="PackedScene" path="res://scenes/boss_minotaur.tscn" id="18_minotaur"]
+[ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
@@ -44,6 +45,7 @@ kobold_priest_scene = ExtResource("17_kobold_priest")
 [node name="EliteSpawner" type="Node2D" parent="."]
 script = ExtResource("14_elite_spawner")
 cyclops_scene = ExtResource("15_cyclops")
+goblin_king_scene = ExtResource("19_goblin_king")
 minotaur_scene = ExtResource("18_minotaur")
 
 [node name="XPBar" parent="." instance=ExtResource("4_xp_bar")]
