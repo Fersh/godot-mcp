@@ -352,7 +352,7 @@ static func _create_quick_roll() -> ActiveAbilityData:
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
-		4.0
+		3.0
 	).with_movement().with_invulnerability(0.3).with_range(100.0)
 
 static func _create_throw_net() -> ActiveAbilityData:

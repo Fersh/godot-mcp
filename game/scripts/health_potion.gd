@@ -92,7 +92,7 @@ func collect_potion() -> void:
 	collected = true
 
 	if player and player.has_method("heal"):
-		player.heal(heal_amount)
+		player.heal(heal_amount, true, true)  # show_particles = true
 
 	# Play heal sound
 	if SoundManager and SoundManager.has_method("play_heal"):

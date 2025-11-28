@@ -994,8 +994,8 @@ func _execute_multi_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 	_screen_shake("small")
 
 func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
-	# Similar to dodge but uses ability direction
-	var direction = _get_attack_direction(player)
+	# Works like dodge - away from nearest enemy if no direction, otherwise in that direction
+	var direction = _calculate_dodge_direction(player)
 
 	if player.has_method("set_invulnerable"):
 		player.set_invulnerable(true)
@@ -1012,6 +1012,45 @@ func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
 	)
 
 	_play_sound("dodge")
+
+func _calculate_dodge_direction(player: Node2D) -> Vector2:
+	"""Calculate dodge direction - uses player input direction if moving, otherwise away from nearest enemy."""
+	if not player:
+		return Vector2.DOWN
+
+	# First priority: Use player's current movement direction if they're moving
+	var input_direction = Vector2.ZERO
+
+	# Check joystick direction
+	if "joystick_direction" in player and player.joystick_direction.length() > 0.1:
+		input_direction = player.joystick_direction.normalized()
+
+	# Check velocity as fallback (if player is actively moving)
+	if input_direction.length() < 0.1 and "velocity" in player and player.velocity.length() > 10:
+		input_direction = player.velocity.normalized()
+
+	# If player is actively holding a direction, dodge in that direction
+	if input_direction.length() > 0.1:
+		return input_direction
+
+	# Fallback: Dodge away from nearest enemy when no input is being held
+	var enemies = player.get_tree().get_nodes_in_group("enemies")
+	var closest_enemy: Node2D = null
+	var closest_dist: float = INF
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = player.global_position.distance_to(enemy.global_position)
+			if dist < closest_dist:
+				closest_dist = dist
+				closest_enemy = enemy
+
+	if closest_enemy:
+		# Dodge away from the closest enemy
+		return (player.global_position - closest_enemy.global_position).normalized()
+
+	# Final fallback: dodge downward
+	return Vector2.DOWN
 
 func _execute_throw_net(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target = _get_nearest_enemy(player.global_position, ability.range_distance)

@@ -297,8 +297,10 @@ func _process_special_attack(delta: float) -> void:
 	# Update laser line
 	if laser_line:
 		laser_line.clear_points()
-		laser_line.add_point(Vector2.ZERO)  # Start at cyclops
-		var end_point = current_laser_direction * laser_range
+		# Start beam from cyclops eye area (offset upward from center)
+		var eye_offset = Vector2(0, -30)
+		laser_line.add_point(eye_offset)
+		var end_point = eye_offset + current_laser_direction * laser_range
 		laser_line.add_point(end_point)
 
 		# Pulse effect

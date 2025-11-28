@@ -9,8 +9,13 @@ var speed: float = 400.0
 var turn_speed: float = 8.0
 var lifetime: float = 3.0
 var direction: Vector2 = Vector2.RIGHT
+var max_distance: float = 200.0  # Max travel distance in pixels
+var start_position: Vector2 = Vector2.ZERO
+var distance_traveled: float = 0.0
 
 func _ready() -> void:
+	start_position = global_position
+
 	# Create visual
 	var sprite = Sprite2D.new()
 	sprite.modulate = Color(1.0, 0.8, 0.3, 1.0)
@@ -39,6 +44,12 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	lifetime -= delta
 	if lifetime <= 0:
+		queue_free()
+		return
+
+	# Check max distance traveled
+	distance_traveled = global_position.distance_to(start_position)
+	if distance_traveled >= max_distance:
 		queue_free()
 		return
 

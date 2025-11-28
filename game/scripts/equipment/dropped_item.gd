@@ -38,37 +38,52 @@ func setup(data: ItemData) -> void:
 	item_data = data
 	var rarity_color = data.get_rarity_color()
 
+	# Hide the polygon shapes - we'll show the actual item icon instead
+	if glow_outer:
+		glow_outer.visible = false
+	if glow_inner:
+		glow_inner.visible = false
+	if item_base:
+		item_base.visible = false
+	if item_inner:
+		item_inner.visible = false
+	if shine:
+		shine.visible = false
+
 	# Load icon if available
 	if data.icon_path != "" and ResourceLoader.exists(data.icon_path):
 		var texture = load(data.icon_path)
 		if texture and sprite:
 			sprite.texture = texture
-			sprite.scale = Vector2(2.0, 2.0)
+			sprite.scale = Vector2(1.5, 1.5)
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			sprite.visible = true
+			# Add rarity-colored glow/outline effect using modulate
+			sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	else:
-		# Hide sprite if no icon
+		# Fallback to polygon shapes if no icon
 		if sprite:
 			sprite.visible = false
-
-	# Color the item based on rarity
-	if glow_outer:
-		glow_outer.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
-	if glow_inner:
-		glow_inner.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.5)
-	if item_base:
-		# Darker version of rarity color
-		item_base.color = Color(rarity_color.r * 0.5, rarity_color.g * 0.5, rarity_color.b * 0.5, 1.0)
-	if item_inner:
-		# Lighter version of rarity color
-		item_inner.color = Color(rarity_color.r * 0.8, rarity_color.g * 0.8, rarity_color.b * 0.8, 1.0)
-	if shine:
-		# White shine with slight rarity tint
-		shine.color = Color(
-			0.7 + rarity_color.r * 0.3,
-			0.7 + rarity_color.g * 0.3,
-			0.7 + rarity_color.b * 0.3,
-			0.7
-		)
+		if glow_outer:
+			glow_outer.visible = true
+			glow_outer.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+		if glow_inner:
+			glow_inner.visible = true
+			glow_inner.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.5)
+		if item_base:
+			item_base.visible = true
+			item_base.color = Color(rarity_color.r * 0.5, rarity_color.g * 0.5, rarity_color.b * 0.5, 1.0)
+		if item_inner:
+			item_inner.visible = true
+			item_inner.color = Color(rarity_color.r * 0.8, rarity_color.g * 0.8, rarity_color.b * 0.8, 1.0)
+		if shine:
+			shine.visible = true
+			shine.color = Color(
+				0.7 + rarity_color.r * 0.3,
+				0.7 + rarity_color.g * 0.3,
+				0.7 + rarity_color.b * 0.3,
+				0.7
+			)
 
 	# Set rarity label
 	if rarity_label:

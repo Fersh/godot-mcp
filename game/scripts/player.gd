@@ -577,65 +577,6 @@ func spawn_shield_text() -> void:
 		# Fallback - just show 0 damage with shield color
 		dmg_num.set_damage(0, false, true)
 
-func heal(amount: float) -> void:
-	"""Heal the player by the given amount."""
-	if is_dead:
-		return
-
-	var old_health = current_health
-	current_health = min(current_health + amount, max_health)
-	var actual_heal = current_health - old_health
-
-	if actual_heal <= 0:
-		return  # Already at full health
-
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-		# Show +HP text on health bar
-		if health_bar.has_method("show_heal_text"):
-			health_bar.show_heal_text(actual_heal)
-	emit_signal("health_changed", current_health, max_health)
-
-	# Spawn green heal particles
-	_spawn_heal_particles()
-
-	# Play heal sound
-	if SoundManager and SoundManager.has_method("play_heal"):
-		SoundManager.play_heal()
-
-func _spawn_heal_particles() -> void:
-	"""Spawn green healing particle effect around the player."""
-	var particle_count = 8
-	for i in range(particle_count):
-		var particle = Node2D.new()
-		particle.global_position = global_position
-		get_parent().add_child(particle)
-
-		# Create a small green circle
-		var circle = Polygon2D.new()
-		var points: Array[Vector2] = []
-		var segments = 6
-		var size = randf_range(3, 6)
-		for j in range(segments):
-			var angle = (float(j) / segments) * TAU
-			points.append(Vector2(cos(angle), sin(angle)) * size)
-		circle.polygon = points
-		circle.color = Color(0.3, 1.0, 0.4, 0.9)  # Green
-		particle.add_child(circle)
-
-		# Random angle for this particle
-		var angle = randf() * TAU
-		var start_offset = Vector2(cos(angle), sin(angle)) * randf_range(15, 30)
-		particle.position = start_offset
-
-		# Animate floating up and fading
-		var tween = particle.create_tween()
-		tween.set_parallel(true)
-		var end_pos = start_offset + Vector2(randf_range(-10, 10), randf_range(-40, -60))
-		tween.tween_property(particle, "position", end_pos, randf_range(0.6, 1.0))
-		tween.tween_property(circle, "modulate:a", 0.0, randf_range(0.5, 0.8))
-		tween.chain().tween_callback(particle.queue_free)
-
 func register_joystick(js: Control) -> void:
 	joystick = js
 	if joystick.has_signal("direction_changed"):
@@ -1470,7 +1411,7 @@ func give_kill_xp(enemy_max_hp: float = 100.0) -> void:
 	add_xp(xp_gain)
 
 # Ability system helper functions
-func heal(amount: float, _play_sound: bool = true) -> void:
+func heal(amount: float, _play_sound: bool = true, show_particles: bool = false) -> void:
 	var actual_heal = min(amount, max_health - current_health)
 	if actual_heal <= 0:
 		return  # Already at full health
@@ -1478,11 +1419,18 @@ func heal(amount: float, _play_sound: bool = true) -> void:
 	current_health += actual_heal
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+		# Show +HP text on health bar for potion heals
+		if show_particles and health_bar.has_method("show_heal_text"):
+			health_bar.show_heal_text(actual_heal)
 	emit_signal("health_changed", current_health, max_health)
 
 	# Update low HP vignette
 	if JuiceManager:
 		JuiceManager.update_player_health(current_health / max_health)
+
+	# Spawn green heal particles for potion heals
+	if show_particles:
+		_spawn_heal_particles()
 
 	# Accumulate heal for display - only show when >= 1
 	accumulated_heal += actual_heal
@@ -1490,6 +1438,39 @@ func heal(amount: float, _play_sound: bool = true) -> void:
 		var display_amount = floor(accumulated_heal)
 		spawn_heal_number(display_amount)
 		accumulated_heal -= display_amount
+
+func _spawn_heal_particles() -> void:
+	"""Spawn green healing particle effect around the player."""
+	var particle_count = 8
+	for i in range(particle_count):
+		var particle = Node2D.new()
+		particle.global_position = global_position
+		get_parent().add_child(particle)
+
+		# Create a small green circle
+		var circle = Polygon2D.new()
+		var points: Array[Vector2] = []
+		var segments = 6
+		var psize = randf_range(3, 6)
+		for j in range(segments):
+			var angle = (float(j) / segments) * TAU
+			points.append(Vector2(cos(angle), sin(angle)) * psize)
+		circle.polygon = points
+		circle.color = Color(0.3, 1.0, 0.4, 0.9)  # Green
+		particle.add_child(circle)
+
+		# Random angle for this particle
+		var pangle = randf() * TAU
+		var start_offset = Vector2(cos(pangle), sin(pangle)) * randf_range(15, 30)
+		particle.position = start_offset
+
+		# Animate floating up and fading
+		var tween = particle.create_tween()
+		tween.set_parallel(true)
+		var end_pos = start_offset + Vector2(randf_range(-10, 10), randf_range(-40, -60))
+		tween.tween_property(particle, "position", end_pos, randf_range(0.6, 1.0))
+		tween.tween_property(circle, "modulate:a", 0.0, randf_range(0.5, 0.8))
+		tween.chain().tween_callback(particle.queue_free)
 
 func revive_with_percent(hp_percent: float) -> void:
 	"""Revive player with a percentage of max health (phoenix ability)."""

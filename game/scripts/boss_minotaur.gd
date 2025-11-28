@@ -67,7 +67,7 @@ func _setup_boss() -> void:
 
 	# Boss stats
 	speed = 103.5  # Reduced 25% from 135 (was 115, now -10% more)
-	max_health = 1215.0  # Reduced 20% from 1500 (was 1350, now -10% more)
+	max_health = 1336.5  # 1215 + 10%
 	attack_damage = melee_damage
 	base_damage = melee_damage
 	attack_cooldown = 4.0  # 3-5s range
