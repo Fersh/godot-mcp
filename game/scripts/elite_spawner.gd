@@ -42,6 +42,12 @@ var boss_health_bar_container: CanvasLayer = null
 var boss_health_bar: ProgressBar = null
 var boss_name_label: Label = null
 
+# Elite health bar UI
+var elite_health_bar_container: CanvasLayer = null
+var elite_health_bar: ProgressBar = null
+var elite_name_label: Label = null
+var current_tracked_elite: Node = null
+
 # Pixel font
 var pixel_font: Font = null
 
@@ -55,6 +61,7 @@ func _ready() -> void:
 	_load_pixel_font()
 	_setup_notification_ui()
 	_setup_boss_health_bar()
+	_setup_elite_health_bar()
 
 func _load_pixel_font() -> void:
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
@@ -124,44 +131,30 @@ func _setup_boss_health_bar() -> void:
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	boss_health_bar_container.add_child(container)
 
-	# VBox for name + health bar
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	vbox.anchor_top = 0.92
-	vbox.anchor_bottom = 0.98
-	vbox.offset_left = 200
-	vbox.offset_right = -200
-	vbox.add_theme_constant_override("separation", 4)
-	container.add_child(vbox)
+	# Health bar container positioned at bottom
+	var bar_container = Control.new()
+	bar_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_container.anchor_top = 0.94
+	bar_container.anchor_bottom = 0.98
+	bar_container.offset_left = 200
+	bar_container.offset_right = -200
+	container.add_child(bar_container)
 
-	# Boss name label
-	boss_name_label = Label.new()
-	boss_name_label.text = "BULLSH*T"
-	boss_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		boss_name_label.add_theme_font_override("font", pixel_font)
-	boss_name_label.add_theme_font_size_override("font_size", 16)
-	boss_name_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3, 1.0))
-	boss_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	boss_name_label.add_theme_constant_override("shadow_offset_x", 2)
-	boss_name_label.add_theme_constant_override("shadow_offset_y", 2)
-	vbox.add_child(boss_name_label)
-
-	# Health bar
+	# Health bar - taller with name inside
 	boss_health_bar = ProgressBar.new()
-	boss_health_bar.custom_minimum_size = Vector2(0, 24)
+	boss_health_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
 	boss_health_bar.max_value = 100
 	boss_health_bar.value = 100
 	boss_health_bar.show_percentage = false
 
-	# Style the health bar - doubled border width, corner radius, darker border
+	# Style the health bar - reduced border width (4px instead of 6px)
 	var bg_style = StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
-	bg_style.border_width_left = 6
-	bg_style.border_width_right = 6
-	bg_style.border_width_top = 6
-	bg_style.border_width_bottom = 6
-	bg_style.border_color = Color(0.4, 0.08, 0.08, 1.0)  # Darker border
+	bg_style.border_width_left = 4
+	bg_style.border_width_right = 4
+	bg_style.border_width_top = 4
+	bg_style.border_width_bottom = 4
+	bg_style.border_color = Color(0.5, 0.1, 0.1, 1.0)
 	bg_style.corner_radius_top_left = 6
 	bg_style.corner_radius_top_right = 6
 	bg_style.corner_radius_bottom_left = 6
@@ -170,21 +163,125 @@ func _setup_boss_health_bar() -> void:
 
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = Color(0.8, 0.15, 0.15, 1.0)
-	fill_style.border_width_left = 6
-	fill_style.border_width_top = 6
-	fill_style.border_width_bottom = 6
-	fill_style.border_width_right = 6
-	fill_style.border_color = Color(0.4, 0.08, 0.08, 1.0)
-	fill_style.corner_radius_top_left = 3
-	fill_style.corner_radius_top_right = 3
-	fill_style.corner_radius_bottom_left = 3
-	fill_style.corner_radius_bottom_right = 3
+	fill_style.border_width_left = 4
+	fill_style.border_width_top = 4
+	fill_style.border_width_bottom = 4
+	fill_style.border_width_right = 4
+	fill_style.border_color = Color(0.5, 0.1, 0.1, 1.0)
+	fill_style.corner_radius_top_left = 4
+	fill_style.corner_radius_top_right = 4
+	fill_style.corner_radius_bottom_left = 4
+	fill_style.corner_radius_bottom_right = 4
 	boss_health_bar.add_theme_stylebox_override("fill", fill_style)
 
-	vbox.add_child(boss_health_bar)
+	bar_container.add_child(boss_health_bar)
+
+	# Boss name label - centered inside the health bar
+	boss_name_label = Label.new()
+	boss_name_label.text = "BOSS"
+	boss_name_label.set_anchors_preset(Control.PRESET_CENTER)
+	boss_name_label.anchor_left = 0.5
+	boss_name_label.anchor_right = 0.5
+	boss_name_label.anchor_top = 0.5
+	boss_name_label.anchor_bottom = 0.5
+	boss_name_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	boss_name_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	boss_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	boss_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		boss_name_label.add_theme_font_override("font", pixel_font)
+	boss_name_label.add_theme_font_size_override("font_size", 14)
+	boss_name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	boss_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	boss_name_label.add_theme_constant_override("shadow_offset_x", 2)
+	boss_name_label.add_theme_constant_override("shadow_offset_y", 2)
+	boss_name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+	boss_name_label.add_theme_constant_override("outline_size", 3)
+	bar_container.add_child(boss_name_label)
 
 	# Hide initially
 	boss_health_bar_container.visible = false
+
+func _setup_elite_health_bar() -> void:
+	elite_health_bar_container = CanvasLayer.new()
+	elite_health_bar_container.layer = 49  # Just below boss bar
+	add_child(elite_health_bar_container)
+
+	# Container for positioning at bottom (above boss bar position)
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	elite_health_bar_container.add_child(container)
+
+	# Health bar container positioned at bottom (slightly higher than boss)
+	var bar_container = Control.new()
+	bar_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_container.anchor_top = 0.89
+	bar_container.anchor_bottom = 0.93
+	bar_container.offset_left = 250
+	bar_container.offset_right = -250
+	container.add_child(bar_container)
+
+	# Health bar - taller with name inside
+	elite_health_bar = ProgressBar.new()
+	elite_health_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	elite_health_bar.max_value = 100
+	elite_health_bar.value = 100
+	elite_health_bar.show_percentage = false
+
+	# Style the health bar - orange theme for elites, reduced border width (4px)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
+	bg_style.border_width_left = 4
+	bg_style.border_width_right = 4
+	bg_style.border_width_top = 4
+	bg_style.border_width_bottom = 4
+	bg_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
+	bg_style.corner_radius_top_left = 6
+	bg_style.corner_radius_top_right = 6
+	bg_style.corner_radius_bottom_left = 6
+	bg_style.corner_radius_bottom_right = 6
+	elite_health_bar.add_theme_stylebox_override("background", bg_style)
+
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.9, 0.5, 0.1, 1.0)  # Orange for elites
+	fill_style.border_width_left = 4
+	fill_style.border_width_top = 4
+	fill_style.border_width_bottom = 4
+	fill_style.border_width_right = 4
+	fill_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
+	fill_style.corner_radius_top_left = 4
+	fill_style.corner_radius_top_right = 4
+	fill_style.corner_radius_bottom_left = 4
+	fill_style.corner_radius_bottom_right = 4
+	elite_health_bar.add_theme_stylebox_override("fill", fill_style)
+
+	bar_container.add_child(elite_health_bar)
+
+	# Elite name label - centered inside the health bar
+	elite_name_label = Label.new()
+	elite_name_label.text = "ELITE"
+	elite_name_label.set_anchors_preset(Control.PRESET_CENTER)
+	elite_name_label.anchor_left = 0.5
+	elite_name_label.anchor_right = 0.5
+	elite_name_label.anchor_top = 0.5
+	elite_name_label.anchor_bottom = 0.5
+	elite_name_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	elite_name_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	elite_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	elite_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		elite_name_label.add_theme_font_override("font", pixel_font)
+	elite_name_label.add_theme_font_size_override("font_size", 12)
+	elite_name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	elite_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	elite_name_label.add_theme_constant_override("shadow_offset_x", 2)
+	elite_name_label.add_theme_constant_override("shadow_offset_y", 2)
+	elite_name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+	elite_name_label.add_theme_constant_override("outline_size", 3)
+	bar_container.add_child(elite_name_label)
+
+	# Hide initially
+	elite_health_bar_container.visible = false
 
 func _start_warning() -> void:
 	warning_active = true
@@ -291,6 +388,21 @@ func _spawn_elite() -> void:
 	get_parent().add_child(elite)
 
 	active_elites.append(elite)
+	current_tracked_elite = elite
+
+	# Connect to elite signals for health bar
+	if elite.has_signal("elite_health_changed"):
+		elite.elite_health_changed.connect(_on_elite_health_changed)
+	if elite.has_signal("elite_died"):
+		elite.elite_died.connect(_on_elite_died)
+
+	# Update elite name on health bar
+	if elite.get("elite_name"):
+		elite_name_label.text = elite.elite_name
+
+	# Show elite health bar
+	elite_health_bar_container.visible = true
+	elite_health_bar.value = 100
 
 	# Screen shake on spawn
 	if JuiceManager:
@@ -358,6 +470,15 @@ func _on_boss_died(_boss: Node) -> void:
 	active_boss = null
 	# Hide health bar (CanvasLayer doesn't support modulate)
 	boss_health_bar_container.visible = false
+
+func _on_elite_health_changed(current: float, max_hp: float) -> void:
+	if max_hp > 0:
+		elite_health_bar.value = (current / max_hp) * 100.0
+
+func _on_elite_died(_elite: Node) -> void:
+	current_tracked_elite = null
+	# Hide health bar
+	elite_health_bar_container.visible = false
 
 func _get_spawn_position() -> Vector2:
 	# Spawn at a random edge of the arena

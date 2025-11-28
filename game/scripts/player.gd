@@ -843,19 +843,32 @@ func _update_target_indicator(delta: float) -> void:
 		target_indicator.visible = false
 		return
 
-	# Position indicator at bottom of enemy sprite (half above, half below frame bottom)
+	# Position indicator at bottom of enemy sprite
 	target_indicator.visible = true
-	var enemy_sprite = current_target.get_node_or_null("Sprite")
-	var frame_height: float = 48.0  # Default fallback
-	if enemy_sprite and enemy_sprite is Sprite2D:
-		var texture = enemy_sprite.texture
-		if texture:
-			var total_height = texture.get_height()
-			var vframes = enemy_sprite.vframes if enemy_sprite.vframes > 0 else 1
-			frame_height = (total_height / vframes) * enemy_sprite.scale.y
 
-	# Position: at frame bottom edge (half above, half below)
-	var y_pos = frame_height / 2.0
+	# Use collision shape to determine proper positioning
+	var collision_shape = current_target.get_node_or_null("CollisionShape2D")
+	var y_pos: float = 30.0  # Default fallback
+
+	if collision_shape and collision_shape.shape:
+		# Get the bottom of the collision shape
+		if collision_shape.shape is RectangleShape2D:
+			y_pos = collision_shape.shape.size.y / 2.0 + 5.0
+		elif collision_shape.shape is CircleShape2D:
+			y_pos = collision_shape.shape.radius + 5.0
+		elif collision_shape.shape is CapsuleShape2D:
+			y_pos = collision_shape.shape.height / 2.0 + 5.0
+	else:
+		# Fallback: check sprite but cap the offset to a reasonable value
+		var enemy_sprite = current_target.get_node_or_null("Sprite")
+		if enemy_sprite and enemy_sprite is Sprite2D:
+			var texture = enemy_sprite.texture
+			if texture:
+				var total_height = texture.get_height()
+				var vframes = enemy_sprite.vframes if enemy_sprite.vframes > 0 else 1
+				var frame_height = (total_height / vframes) * enemy_sprite.scale.y
+				y_pos = min(frame_height / 2.0, 50.0)  # Cap at 50px
+
 	target_indicator.global_position = current_target.global_position + Vector2(0, y_pos)
 
 	# Pulse animation (scale and slight vertical movement)

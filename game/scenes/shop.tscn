@@ -130,6 +130,10 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 12
 columns = 5
 
+[node name="BottomSpacer" type="Control" parent="MainContainer/ScrollContainer/MarginContainer/ContentVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+
 [node name="FloatingTooltip" type="PanelContainer" parent="MainContainer/ScrollContainer"]
 visible = false
 custom_minimum_size = Vector2(280, 0)

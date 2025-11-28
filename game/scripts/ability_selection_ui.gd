@@ -16,17 +16,25 @@ var slot_settle_times: Array[float] = [0.6, 0.8, 1.0]  # When each slot settles 
 var current_roll_speed: float = 0.05  # Time between ability changes during roll
 var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
 
+# Particle effect containers for each card
+var particle_containers: Array[Control] = []
+
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
 var pixel_font: Font = null
+var rarity_particle_shader: Shader = null
 
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Process even when paused
 	# Use the same font as points/coins display
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load rarity particle shader
+	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
+		rarity_particle_shader = load("res://shaders/rarity_particles.gdshader")
 
 	# Apply pixel font to title
 	if pixel_font and title_label:
@@ -51,6 +59,9 @@ func _process(delta: float) -> void:
 			# Play ding sound when settling
 			if SoundManager:
 				SoundManager.play_ding()
+			# Play flash effect for non-common rarities
+			if current_choices[i].rarity != AbilityData.Rarity.COMMON:
+				_play_rarity_reveal_effect(ability_buttons[i], current_choices[i].rarity)
 		else:
 			# Still rolling - cycle through random abilities
 			roll_tick_timers[i] += delta
@@ -80,10 +91,11 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 	if all_abilities_pool.is_empty():
 		all_abilities_pool = abilities  # Fallback
 
-	# Clear previous buttons
+	# Clear previous buttons and particle containers
 	for button in ability_buttons:
 		button.queue_free()
 	ability_buttons.clear()
+	particle_containers.clear()
 
 	# Reset slot machine state
 	is_rolling = true
@@ -168,6 +180,12 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	rarity_tag.name = "RarityTag"
 	button.add_child(rarity_tag)
 
+	# Add particle effect container for non-common rarities
+	var particle_container = _create_particle_container(ability.rarity)
+	particle_container.name = "ParticleContainer"
+	button.add_child(particle_container)
+	particle_containers.append(particle_container)
+
 	# Style the button
 	style_button(button, ability.rarity)
 
@@ -212,6 +230,146 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 
 	center.add_child(tag)
 	return center
+
+func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.z_index = 5  # Render above card content for fire effect
+	container.clip_contents = false
+
+	# Only add particles for non-common rarities
+	if rarity == AbilityData.Rarity.COMMON:
+		container.visible = false
+		return container
+
+	# Get rarity color and settings based on rarity
+	var rarity_color = AbilityData.get_rarity_color(rarity)
+	var intensity = _get_particle_intensity(rarity)
+	var density = _get_particle_density(rarity)
+
+	# Create top particle strip (main fire effect rising above card)
+	var top_particles = ColorRect.new()
+	top_particles.anchor_left = 0.0
+	top_particles.anchor_right = 1.0
+	top_particles.anchor_top = 0.0
+	top_particles.anchor_bottom = 0.0
+	top_particles.offset_left = 5
+	top_particles.offset_right = -5
+	top_particles.offset_top = -80  # Extend above the card
+	top_particles.offset_bottom = 60  # Overlap into card
+	top_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var top_mat = ShaderMaterial.new()
+		top_mat.shader = rarity_particle_shader
+		top_mat.set_shader_parameter("rarity_color", rarity_color)
+		top_mat.set_shader_parameter("intensity", intensity)
+		top_mat.set_shader_parameter("speed", 1.0)
+		top_mat.set_shader_parameter("particle_density", density)
+		top_particles.material = top_mat
+	else:
+		top_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(top_particles)
+
+	# Create left particle strip
+	var left_particles = ColorRect.new()
+	left_particles.anchor_left = 0.0
+	left_particles.anchor_right = 0.0
+	left_particles.anchor_top = 0.0
+	left_particles.anchor_bottom = 1.0
+	left_particles.offset_left = -40
+	left_particles.offset_right = 30
+	left_particles.offset_top = 20
+	left_particles.offset_bottom = -20
+	left_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var left_mat = ShaderMaterial.new()
+		left_mat.shader = rarity_particle_shader
+		left_mat.set_shader_parameter("rarity_color", rarity_color)
+		left_mat.set_shader_parameter("intensity", intensity * 0.7)
+		left_mat.set_shader_parameter("speed", 1.2)
+		left_mat.set_shader_parameter("particle_density", density * 0.6)
+		left_particles.material = left_mat
+	else:
+		left_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(left_particles)
+
+	# Create right particle strip
+	var right_particles = ColorRect.new()
+	right_particles.anchor_left = 1.0
+	right_particles.anchor_right = 1.0
+	right_particles.anchor_top = 0.0
+	right_particles.anchor_bottom = 1.0
+	right_particles.offset_left = -30
+	right_particles.offset_right = 40
+	right_particles.offset_top = 20
+	right_particles.offset_bottom = -20
+	right_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var right_mat = ShaderMaterial.new()
+		right_mat.shader = rarity_particle_shader
+		right_mat.set_shader_parameter("rarity_color", rarity_color)
+		right_mat.set_shader_parameter("intensity", intensity * 0.7)
+		right_mat.set_shader_parameter("speed", 1.3)
+		right_mat.set_shader_parameter("particle_density", density * 0.6)
+		right_particles.material = right_mat
+	else:
+		right_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(right_particles)
+
+	return container
+
+func _get_particle_intensity(rarity: AbilityData.Rarity) -> float:
+	match rarity:
+		AbilityData.Rarity.RARE:
+			return 1.2
+		AbilityData.Rarity.LEGENDARY:
+			return 1.8
+		AbilityData.Rarity.MYTHIC:
+			return 2.5
+		_:
+			return 0.0
+
+func _get_particle_density(rarity: AbilityData.Rarity) -> float:
+	match rarity:
+		AbilityData.Rarity.RARE:
+			return 10.0
+		AbilityData.Rarity.LEGENDARY:
+			return 16.0
+		AbilityData.Rarity.MYTHIC:
+			return 24.0
+		_:
+			return 0.0
+
+func _update_particle_container(container: Control, rarity: AbilityData.Rarity) -> void:
+	if rarity == AbilityData.Rarity.COMMON:
+		container.visible = false
+		return
+
+	container.visible = true
+	var rarity_color = AbilityData.get_rarity_color(rarity)
+	var intensity = _get_particle_intensity(rarity)
+	var density = _get_particle_density(rarity)
+
+	# Update all particle strips (top, left, right)
+	var child_index = 0
+	for child in container.get_children():
+		if child is ColorRect and child.material is ShaderMaterial:
+			child.material.set_shader_parameter("rarity_color", rarity_color)
+			# Top strip gets full intensity, sides get reduced
+			if child_index == 0:
+				child.material.set_shader_parameter("intensity", intensity)
+				child.material.set_shader_parameter("particle_density", density)
+			else:
+				child.material.set_shader_parameter("intensity", intensity * 0.7)
+				child.material.set_shader_parameter("particle_density", density * 0.6)
+			child_index += 1
 
 func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 	var style = StyleBoxFlat.new()
@@ -287,6 +445,11 @@ func update_card_content(button: Button, ability: AbilityData) -> void:
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
 				rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
+
+	# Update particle container (child 2 of button)
+	var particle_container = button.get_node_or_null("ParticleContainer") as Control
+	if particle_container:
+		_update_particle_container(particle_container, ability.rarity)
 
 	# Update button style
 	style_button(button, ability.rarity)
@@ -368,3 +531,93 @@ func _animate_entrance() -> void:
 		card_tween.set_parallel(true)
 		card_tween.tween_property(button, "position:y", original_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		card_tween.tween_property(button, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+func _play_rarity_reveal_effect(button: Button, rarity: AbilityData.Rarity) -> void:
+	var rarity_color = AbilityData.get_rarity_color(rarity)
+
+	# Create flash overlay
+	var flash = ColorRect.new()
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.8)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 10
+	button.add_child(flash)
+
+	# Create expanding glow ring
+	var glow = ColorRect.new()
+	glow.set_anchors_preset(Control.PRESET_CENTER)
+	glow.anchor_left = 0.5
+	glow.anchor_right = 0.5
+	glow.anchor_top = 0.5
+	glow.anchor_bottom = 0.5
+	glow.offset_left = -150
+	glow.offset_right = 150
+	glow.offset_top = -175
+	glow.offset_bottom = 175
+	glow.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.0)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	glow.z_index = 9
+	button.add_child(glow)
+
+	# Animate flash - quick bright flash then fade
+	var flash_tween = create_tween()
+	flash_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	flash_tween.tween_property(flash, "color:a", 0.0, 0.4).set_ease(Tween.EASE_OUT)
+	flash_tween.tween_callback(flash.queue_free)
+
+	# Animate glow ring expanding outward
+	var glow_tween = create_tween()
+	glow_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	glow_tween.set_parallel(true)
+	glow_tween.tween_property(glow, "color:a", 0.6, 0.1).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_left", -200, 0.3).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_right", 200, 0.3).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_top", -225, 0.3).set_ease(Tween.EASE_OUT)
+	glow_tween.tween_property(glow, "offset_bottom", 225, 0.3).set_ease(Tween.EASE_OUT)
+	glow_tween.chain().tween_property(glow, "color:a", 0.0, 0.3).set_ease(Tween.EASE_IN)
+	glow_tween.tween_callback(glow.queue_free)
+
+	# Scale punch effect on the card
+	button.pivot_offset = button.size / 2
+	var scale_tween = create_tween()
+	scale_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	scale_tween.tween_property(button, "scale", Vector2(1.08, 1.08), 0.1).set_ease(Tween.EASE_OUT)
+	scale_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+
+	# Create sparkle particles around the card for legendary/mythic
+	if rarity == AbilityData.Rarity.LEGENDARY or rarity == AbilityData.Rarity.MYTHIC:
+		_spawn_sparkles(button, rarity_color)
+
+	# Screen shake for mythic
+	if rarity == AbilityData.Rarity.MYTHIC and JuiceManager:
+		JuiceManager.shake_medium()
+
+func _spawn_sparkles(button: Button, color: Color) -> void:
+	# Spawn several sparkle particles around the card
+	for i in range(8):
+		var sparkle = ColorRect.new()
+		sparkle.custom_minimum_size = Vector2(6, 6)
+		sparkle.size = Vector2(6, 6)
+		sparkle.color = Color(color.r, color.g, color.b, 1.0)
+		sparkle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sparkle.z_index = 11
+
+		# Random position around the card edges
+		var angle = (i / 8.0) * TAU + randf() * 0.5
+		var radius = 130.0 + randf() * 20.0
+		var start_pos = Vector2(
+			button.size.x / 2 + cos(angle) * radius,
+			button.size.y / 2 + sin(angle) * radius
+		)
+		sparkle.position = start_pos
+
+		button.add_child(sparkle)
+
+		# Animate sparkle floating up and fading
+		var sparkle_tween = create_tween()
+		sparkle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		sparkle_tween.set_parallel(true)
+		sparkle_tween.tween_property(sparkle, "position:y", start_pos.y - 40 - randf() * 30, 0.6).set_ease(Tween.EASE_OUT)
+		sparkle_tween.tween_property(sparkle, "color:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
+		sparkle_tween.tween_property(sparkle, "scale", Vector2(0.3, 0.3), 0.6).set_ease(Tween.EASE_IN)
+		sparkle_tween.chain().tween_callback(sparkle.queue_free)

@@ -4,6 +4,10 @@ extends EnemyBase
 # Elite Base - Extends EnemyBase for elite enemies with multiple attack types
 # Designed to be modular for different elite types (Cyclops, future elites, etc.)
 
+# Signals for health bar UI
+signal elite_health_changed(current: float, max_hp: float)
+signal elite_died(elite: Node)
+
 # Elite-specific properties
 @export var elite_name: String = "Elite"
 @export var xp_multiplier: float = 5.0
@@ -167,6 +171,9 @@ func die() -> void:
 	animation_frame = 0.0
 	velocity = Vector2.ZERO
 
+	# Emit elite died signal for UI
+	elite_died.emit(self)
+
 	if SoundManager:
 		SoundManager.play_enemy_death()
 
@@ -226,3 +233,9 @@ func _drop_guaranteed_item() -> void:
 	dropped.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
 	dropped.setup(item)
 	get_parent().add_child(dropped)
+
+# Override take_damage to emit health changed signal
+func take_damage(amount: float, is_critical: bool = false) -> void:
+	super.take_damage(amount, is_critical)
+	# Emit health changed signal for UI
+	elite_health_changed.emit(current_health, max_health)
