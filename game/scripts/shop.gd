@@ -429,48 +429,48 @@ func _position_tooltip(upgrade_id: String) -> void:
 	if tooltip_size.x <= 0 or tooltip_size.y <= 0:
 		tooltip_size = Vector2(280, 200)  # Fallback size
 
-	# Get the tile's position in scroll content coordinates
-	# The tile is a child of the scroll content, so we need its position relative to that
-	var tile_pos_in_content = tile.get_global_position() - scroll_container.get_global_position()
-	tile_pos_in_content.y += scroll_container.scroll_vertical  # Account for scroll
-
-	# Get the tile's position in the visible viewport (for space calculations)
+	# Get tile's global rect and scroll container's global rect
 	var tile_rect = tile.get_global_rect()
-	var scroll_rect = scroll_container.get_global_rect()
-	var tile_in_viewport_y = tile_rect.position.y - scroll_rect.position.y
+	var scroll_global = scroll_container.get_global_rect()
 
-	# Current scroll offset
+	# Calculate tile position relative to scroll container's content area
+	# The tooltip is a child of ScrollContainer, so we position in scroll content space
 	var scroll_offset = scroll_container.scroll_vertical
 
-	# Center tooltip horizontally on the tile
-	var tooltip_x = tile_pos_in_content.x + (tile_rect.size.x / 2) - (tooltip_size.x / 2)
+	# Get the tile's position relative to the scroll container origin
+	var tile_local_x = tile_rect.position.x - scroll_global.position.x
+	var tile_local_y = tile_rect.position.y - scroll_global.position.y + scroll_offset
 
-	# Determine if tooltip should go above or below the tile based on visible viewport space
-	var space_below = scroll_container.size.y - (tile_in_viewport_y + tile_rect.size.y)
-	var space_above = tile_in_viewport_y
+	# Center tooltip horizontally on the tile
+	var tooltip_x = tile_local_x + (tile_rect.size.x / 2) - (tooltip_size.x / 2)
+
+	# Calculate visible space above and below the tile in viewport
+	var tile_viewport_y = tile_rect.position.y - scroll_global.position.y
+	var space_above = tile_viewport_y
+	var space_below = scroll_container.size.y - (tile_viewport_y + tile_rect.size.y)
 
 	var tooltip_y: float
-	if space_below >= tooltip_size.y + 20:
-		# Position below tile (in scroll content coordinates)
-		tooltip_y = tile_pos_in_content.y + tile_rect.size.y + 10
-	elif space_above >= tooltip_size.y + 20:
+	if space_below >= tooltip_size.y + 15:
+		# Position below tile
+		tooltip_y = tile_local_y + tile_rect.size.y + 8
+	elif space_above >= tooltip_size.y + 15:
 		# Position above tile
-		tooltip_y = tile_pos_in_content.y - tooltip_size.y - 10
+		tooltip_y = tile_local_y - tooltip_size.y - 8
 	else:
-		# Not enough space either way, prefer above if more space there
+		# Not enough space - position above if more room there, otherwise below
 		if space_above > space_below:
-			tooltip_y = tile_pos_in_content.y - tooltip_size.y - 10
+			tooltip_y = tile_local_y - tooltip_size.y - 8
 		else:
-			tooltip_y = tile_pos_in_content.y + tile_rect.size.y + 10
+			tooltip_y = tile_local_y + tile_rect.size.y + 8
 
-	# Clamp X position to stay within scroll container bounds
-	var max_x = scroll_container.size.x - tooltip_size.x - 20
-	tooltip_x = clamp(tooltip_x, 20, max_x)
+	# Clamp X to stay within scroll container
+	var max_x = scroll_container.size.x - tooltip_size.x - 15
+	tooltip_x = clamp(tooltip_x, 15, max_x)
 
 	# Clamp Y to stay within visible scroll area
-	var min_visible_y = scroll_offset + 10
-	var max_visible_y = scroll_offset + scroll_container.size.y - tooltip_size.y - 10
-	tooltip_y = clamp(tooltip_y, min_visible_y, max_visible_y)
+	var min_y = scroll_offset + 10
+	var max_y = scroll_offset + scroll_container.size.y - tooltip_size.y - 10
+	tooltip_y = clamp(tooltip_y, min_y, max_y)
 
 	floating_tooltip.position = Vector2(tooltip_x, tooltip_y)
 

@@ -82,17 +82,20 @@ func _init_upgrade_definitions() -> void:
 	_add_upgrade("split_chamber", "Multishot", "Fire additional projectiles", "multishot",
 		Category.COMBAT, 6, 1000, 2.5, 5, 1.0, "projectile_count", "+%d projectile")
 
+	_add_upgrade("twin_blades", "Multistrike", "Chance for attacks to hit twice", "double",
+		Category.COMBAT, 7, 500, 1.8, 5, 0.05, "double_strike_chance", "+%d%% double strike")
+
 	_add_upgrade("elemental_mastery", "Elemental", "Increase elemental effect chance", "element",
-		Category.COMBAT, 7, 300, 1.5, 5, 0.05, "elemental_chance", "+%d%% elemental procs")
+		Category.COMBAT, 8, 300, 1.5, 5, 0.05, "elemental_chance", "+%d%% elemental procs")
 
 	_add_upgrade("status_amplifier", "Status", "Status effects last longer", "status",
-		Category.COMBAT, 8, 250, 1.5, 5, 0.15, "status_duration", "+%d%% status duration")
+		Category.COMBAT, 9, 250, 1.5, 5, 0.15, "status_duration", "+%d%% status duration")
 
 	_add_upgrade("summoner_bond", "Summons", "Summons deal more damage", "summon",
-		Category.COMBAT, 9, 350, 1.6, 5, 0.15, "summon_damage", "+%d%% summon damage")
+		Category.COMBAT, 10, 350, 1.6, 5, 0.15, "summon_damage", "+%d%% summon damage")
 
 	_add_upgrade("viral_payload", "Weaken", "Enemies have reduced health", "virus",
-		Category.COMBAT, 10, 400, 1.6, 5, 0.05, "enemy_health_reduction", "-%d%% enemy health")
+		Category.COMBAT, 11, 400, 1.6, 5, 0.05, "enemy_health_reduction", "-%d%% enemy health")
 
 	# Survival Upgrades - ordered by importance/commonality
 	_add_upgrade("core_integrity", "Health", "Increase maximum health", "health",
@@ -321,6 +324,7 @@ func get_all_bonuses() -> Dictionary:
 		"daredevil": 0.0,
 		"revive": 0,
 		"starting_abilities": 0,
+		"double_strike_chance": 0.0,
 	}
 
 	for id in upgrade_ranks:

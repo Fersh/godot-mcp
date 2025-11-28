@@ -1751,7 +1751,15 @@ func should_fire_blade_beam() -> bool:
 
 # Check if double strike should trigger
 func should_double_strike() -> bool:
-	return has_double_strike
+	# Passive ability gives guaranteed double strike
+	if has_double_strike:
+		return true
+	# Permanent upgrade gives a chance for double strike
+	if PermanentUpgrades:
+		var chance = PermanentUpgrades.get_all_bonuses().get("double_strike_chance", 0.0)
+		if chance > 0 and randf() < chance:
+			return true
+	return false
 
 # Called when player picks up a coin
 func on_coin_pickup(player: Node2D) -> void:
