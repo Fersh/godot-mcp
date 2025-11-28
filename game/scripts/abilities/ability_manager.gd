@@ -1893,7 +1893,7 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 
 	# Vampirism
 	if has_vampirism and randf() < vampirism_chance:
-		heal_player(player, player.max_health * 0.01)
+		heal_player(player, player.max_health * 0.05)
 
 	# Adrenaline
 	if has_adrenaline:

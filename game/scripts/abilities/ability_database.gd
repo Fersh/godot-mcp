@@ -289,7 +289,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"vampirism",
 			"Vampirism",
-			"5% Chance to heal 1% HP on kill",
+			"5% Chance to heal 5% HP on kill",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.VAMPIRISM, value = 0.05}]
