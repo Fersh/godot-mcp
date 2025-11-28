@@ -183,38 +183,59 @@ func _create_target_indicator() -> void:
 	target_indicator = Node2D.new()
 	target_indicator.z_index = -10  # Well below enemies
 
-	# Create 4 corner brackets using Line2D
+	# Create 4 corner brackets using Line2D with pixelated curved corners
 	var bracket_size: float = 14.0
 	var bracket_length: float = 7.0
 	var bracket_color: Color = Color(1.0, 0.9, 0.3, 0.9)  # Yellow
 	var line_width: float = 4.0
+	var corner_step: float = 2.0  # Pixel step for curved corner effect
 
-	# Top-left bracket: vertical down, then horizontal right
+	# Top-left bracket: vertical down, diagonal, then horizontal right
 	var tl = Line2D.new()
 	tl.width = line_width
 	tl.default_color = bracket_color
-	tl.points = [Vector2(-bracket_size, -bracket_size + bracket_length), Vector2(-bracket_size, -bracket_size), Vector2(-bracket_size + bracket_length, -bracket_size)]
+	tl.points = [
+		Vector2(-bracket_size, -bracket_size + bracket_length),
+		Vector2(-bracket_size, -bracket_size + corner_step),
+		Vector2(-bracket_size + corner_step, -bracket_size),
+		Vector2(-bracket_size + bracket_length, -bracket_size)
+	]
 	target_indicator.add_child(tl)
 
-	# Top-right bracket: horizontal left, then vertical down
+	# Top-right bracket: horizontal left, diagonal, then vertical down
 	var tr = Line2D.new()
 	tr.width = line_width
 	tr.default_color = bracket_color
-	tr.points = [Vector2(bracket_size - bracket_length, -bracket_size), Vector2(bracket_size, -bracket_size), Vector2(bracket_size, -bracket_size + bracket_length)]
+	tr.points = [
+		Vector2(bracket_size - bracket_length, -bracket_size),
+		Vector2(bracket_size - corner_step, -bracket_size),
+		Vector2(bracket_size, -bracket_size + corner_step),
+		Vector2(bracket_size, -bracket_size + bracket_length)
+	]
 	target_indicator.add_child(tr)
 
-	# Bottom-left bracket: vertical up, then horizontal right
+	# Bottom-left bracket: vertical up, diagonal, then horizontal right
 	var bl = Line2D.new()
 	bl.width = line_width
 	bl.default_color = bracket_color
-	bl.points = [Vector2(-bracket_size, bracket_size - bracket_length), Vector2(-bracket_size, bracket_size), Vector2(-bracket_size + bracket_length, bracket_size)]
+	bl.points = [
+		Vector2(-bracket_size, bracket_size - bracket_length),
+		Vector2(-bracket_size, bracket_size - corner_step),
+		Vector2(-bracket_size + corner_step, bracket_size),
+		Vector2(-bracket_size + bracket_length, bracket_size)
+	]
 	target_indicator.add_child(bl)
 
-	# Bottom-right bracket: horizontal left, then vertical up
+	# Bottom-right bracket: horizontal left, diagonal, then vertical up
 	var br = Line2D.new()
 	br.width = line_width
 	br.default_color = bracket_color
-	br.points = [Vector2(bracket_size - bracket_length, bracket_size), Vector2(bracket_size, bracket_size), Vector2(bracket_size, bracket_size - bracket_length)]
+	br.points = [
+		Vector2(bracket_size - bracket_length, bracket_size),
+		Vector2(bracket_size - corner_step, bracket_size),
+		Vector2(bracket_size, bracket_size - corner_step),
+		Vector2(bracket_size, bracket_size - bracket_length)
+	]
 	target_indicator.add_child(br)
 
 	target_indicator.visible = false
