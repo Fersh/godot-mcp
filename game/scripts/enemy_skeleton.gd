@@ -7,7 +7,7 @@ func _on_ready() -> void:
 	enemy_type = "skeleton"
 
 	# Skeleton stats - fast, hits hard, tanky
-	speed = 110.0          # Decently fast (faster than orc 90, slower than ratfolk 120)
+	speed = 99.0           # Decently fast (reduced 10%)
 	max_health = 80.0      # Tanky (4x orc, less than slime 100)
 	attack_damage = 15.0   # Hits hard (3x orc damage)
 	attack_cooldown = 0.9  # Slightly slower than orc

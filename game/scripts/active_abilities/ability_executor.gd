@@ -1213,7 +1213,7 @@ func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 	var direction = (target_pos - start_pos).normalized()
 	arrow.rotation = direction.angle()
 
-	var main_node = _player.get_parent()
+	var main_node = get_tree().current_scene
 	if main_node:
 		main_node.add_child(arrow)
 
@@ -1256,7 +1256,7 @@ func _spawn_arrow_impact(pos: Vector2) -> void:
 		ptween.tween_property(particle, "position", end_pos, 0.2)
 		ptween.tween_property(particle, "color:a", 0.0, 0.2)
 
-	var main_node = _player.get_parent() if _player else null
+	var main_node = get_tree().current_scene
 	if main_node:
 		main_node.add_child(impact)
 

@@ -7,7 +7,7 @@ func _on_ready() -> void:
 	enemy_type = "ratfolk"
 
 	# Ratfolk stats - fast and aggressive but fragile
-	speed = 120.0          # 33% faster than orc (90)
+	speed = 108.0          # Fast and agile (reduced 10%)
 	max_health = 12.0      # 40% less health than orc (20)
 	attack_damage = 4.0    # Slightly less damage than orc (5)
 	attack_cooldown = 0.5  # 37% faster attack speed than orc (0.8)

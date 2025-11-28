@@ -134,30 +134,30 @@ columns = 5
 layout_mode = 2
 custom_minimum_size = Vector2(0, 120)
 
-[node name="FloatingTooltip" type="PanelContainer" parent="MainContainer/ScrollContainer"]
+[node name="FloatingTooltip" type="PanelContainer" parent="."]
 visible = false
 custom_minimum_size = Vector2(280, 0)
 z_index = 100
 mouse_filter = 1
 
-[node name="TooltipContent" type="VBoxContainer" parent="MainContainer/ScrollContainer/FloatingTooltip"]
+[node name="TooltipContent" type="VBoxContainer" parent="FloatingTooltip"]
 theme_override_constants/separation = 16
 
-[node name="UpgradeName" type="Label" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="UpgradeName" type="Label" parent="FloatingTooltip/TooltipContent"]
 theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 12
 text = "Upgrade Name"
 horizontal_alignment = 1
 
-[node name="CategoryLabel" type="Label" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="CategoryLabel" type="Label" parent="FloatingTooltip/TooltipContent"]
 theme_override_colors/font_color = Color(0.6, 0.55, 0.5, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 9
 text = "COMBAT"
 horizontal_alignment = 1
 
-[node name="Description" type="Label" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="Description" type="Label" parent="FloatingTooltip/TooltipContent"]
 theme_override_colors/font_color = Color(0.8, 0.75, 0.7, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 9
@@ -165,19 +165,19 @@ text = "Description"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="CurrentLabel" type="Label" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="CurrentLabel" type="Label" parent="FloatingTooltip/TooltipContent"]
 theme_override_colors/font_color = Color(0.5, 0.9, 0.4, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 10
 text = "Current: +10%"
 horizontal_alignment = 1
 
-[node name="RankContainer" type="HBoxContainer" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="RankContainer" type="HBoxContainer" parent="FloatingTooltip/TooltipContent"]
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 6
 
-[node name="UpgradeButton" type="Button" parent="MainContainer/ScrollContainer/FloatingTooltip/TooltipContent"]
+[node name="UpgradeButton" type="Button" parent="FloatingTooltip/TooltipContent"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 35)
 theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)

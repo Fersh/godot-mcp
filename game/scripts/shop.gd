@@ -8,13 +8,13 @@ var pixel_font = preload("res://assets/fonts/Press_Start_2P/PressStart2P-Regular
 @onready var coin_amount: Label = $MainContainer/Header/CoinsContainer/CoinAmount
 @onready var grid_container: GridContainer = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/CenterContainer/GridContainer
 @onready var scroll_container: ScrollContainer = $MainContainer/ScrollContainer
-@onready var floating_tooltip: PanelContainer = $MainContainer/ScrollContainer/FloatingTooltip
-@onready var upgrade_name_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/UpgradeName
-@onready var category_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/CategoryLabel
-@onready var description_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/Description
-@onready var current_label: Label = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/CurrentLabel
-@onready var tooltip_rank_container: HBoxContainer = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/RankContainer
-@onready var upgrade_button: Button = $MainContainer/ScrollContainer/FloatingTooltip/TooltipContent/UpgradeButton
+@onready var floating_tooltip: PanelContainer = $FloatingTooltip
+@onready var upgrade_name_label: Label = $FloatingTooltip/TooltipContent/UpgradeName
+@onready var category_label: Label = $FloatingTooltip/TooltipContent/CategoryLabel
+@onready var description_label: Label = $FloatingTooltip/TooltipContent/Description
+@onready var current_label: Label = $FloatingTooltip/TooltipContent/CurrentLabel
+@onready var tooltip_rank_container: HBoxContainer = $FloatingTooltip/TooltipContent/RankContainer
+@onready var upgrade_button: Button = $FloatingTooltip/TooltipContent/UpgradeButton
 @onready var refund_button: Button = $MainContainer/ScrollContainer/MarginContainer/ContentVBox/RefundButton
 @onready var confirm_dialog: ConfirmationDialog = $ConfirmDialog
 
@@ -413,7 +413,7 @@ func _position_tooltip(upgrade_id: String) -> void:
 	var tile = upgrade_tiles[upgrade_id]
 
 	# Move tooltip offscreen first, then make visible so it can layout
-	floating_tooltip.position = Vector2(-1000, -1000)
+	floating_tooltip.global_position = Vector2(-1000, -1000)
 	floating_tooltip.visible = true
 
 	# Wait two frames for tooltip to fully layout and get its actual size
@@ -429,50 +429,36 @@ func _position_tooltip(upgrade_id: String) -> void:
 	if tooltip_size.x <= 0 or tooltip_size.y <= 0:
 		tooltip_size = Vector2(280, 200)  # Fallback size
 
-	# Get tile's global rect and scroll container's global rect
+	# Get tile's global position - tooltip is now outside scroll container so use global coords
 	var tile_rect = tile.get_global_rect()
-	var scroll_global = scroll_container.get_global_rect()
-
-	# Calculate tile position relative to scroll container's content area
-	# The tooltip is a child of ScrollContainer, so we position in scroll content space
-	var scroll_offset = scroll_container.scroll_vertical
-
-	# Get the tile's position relative to the scroll container origin
-	var tile_local_x = tile_rect.position.x - scroll_global.position.x
-	var tile_local_y = tile_rect.position.y - scroll_global.position.y + scroll_offset
+	var viewport_size = get_viewport().get_visible_rect().size
 
 	# Center tooltip horizontally on the tile
-	var tooltip_x = tile_local_x + (tile_rect.size.x / 2) - (tooltip_size.x / 2)
+	var tooltip_x = tile_rect.position.x + (tile_rect.size.x / 2) - (tooltip_size.x / 2)
 
-	# Calculate visible space above and below the tile in viewport
-	var tile_viewport_y = tile_rect.position.y - scroll_global.position.y
-	var space_above = tile_viewport_y
-	var space_below = scroll_container.size.y - (tile_viewport_y + tile_rect.size.y)
+	# Calculate space above and below tile
+	var space_above = tile_rect.position.y
+	var space_below = viewport_size.y - (tile_rect.position.y + tile_rect.size.y)
 
 	var tooltip_y: float
-	if space_below >= tooltip_size.y + 15:
+	if space_below >= tooltip_size.y + 10:
 		# Position below tile
-		tooltip_y = tile_local_y + tile_rect.size.y + 8
-	elif space_above >= tooltip_size.y + 15:
+		tooltip_y = tile_rect.position.y + tile_rect.size.y + 8
+	elif space_above >= tooltip_size.y + 10:
 		# Position above tile
-		tooltip_y = tile_local_y - tooltip_size.y - 8
+		tooltip_y = tile_rect.position.y - tooltip_size.y - 8
 	else:
-		# Not enough space - position above if more room there, otherwise below
+		# Not enough space - prefer above if more room
 		if space_above > space_below:
-			tooltip_y = tile_local_y - tooltip_size.y - 8
+			tooltip_y = tile_rect.position.y - tooltip_size.y - 8
 		else:
-			tooltip_y = tile_local_y + tile_rect.size.y + 8
+			tooltip_y = tile_rect.position.y + tile_rect.size.y + 8
 
-	# Clamp X to stay within scroll container
-	var max_x = scroll_container.size.x - tooltip_size.x - 15
-	tooltip_x = clamp(tooltip_x, 15, max_x)
+	# Clamp to screen bounds
+	tooltip_x = clamp(tooltip_x, 10, viewport_size.x - tooltip_size.x - 10)
+	tooltip_y = clamp(tooltip_y, 10, viewport_size.y - tooltip_size.y - 10)
 
-	# Clamp Y to stay within visible scroll area
-	var min_y = scroll_offset + 10
-	var max_y = scroll_offset + scroll_container.size.y - tooltip_size.y - 10
-	tooltip_y = clamp(tooltip_y, min_y, max_y)
-
-	floating_tooltip.position = Vector2(tooltip_x, tooltip_y)
+	floating_tooltip.global_position = Vector2(tooltip_x, tooltip_y)
 
 func _apply_selected_style(tile: Button, upgrade) -> void:
 	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)

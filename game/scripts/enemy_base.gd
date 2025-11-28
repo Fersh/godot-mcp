@@ -2,7 +2,7 @@ class_name EnemyBase
 extends CharacterBody2D
 
 # Base stats - override in subclasses or set via exported properties
-@export var speed: float = 90.0
+@export var speed: float = 81.0  # Base orc speed (reduced 10%)
 @export var attack_range: float = 50.0
 @export var animation_speed: float = 10.0
 @export var max_health: float = 20.0

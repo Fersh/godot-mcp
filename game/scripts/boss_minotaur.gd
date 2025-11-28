@@ -66,7 +66,7 @@ func _setup_boss() -> void:
 	enemy_type = "minotaur"
 
 	# Boss stats
-	speed = 103.5  # Reduced 25% from 135 (was 115, now -10% more)
+	speed = 93.0  # Reduced 10% from 103.5
 	max_health = 1336.5  # 1215 + 10%
 	attack_damage = melee_damage
 	base_damage = melee_damage

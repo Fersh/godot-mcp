@@ -57,7 +57,7 @@ func _setup_elite() -> void:
 	enemy_type = "cyclops"
 
 	# Cyclops stats - elite, slower, hits hard
-	speed = 60.0  # Slower than most enemies
+	speed = 54.0  # Slower than most enemies (reduced 10%)
 	max_health = 675.0  # Reduced 10% from 750
 	attack_damage = stomp_damage
 	attack_cooldown = 1.0
