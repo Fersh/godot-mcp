@@ -8,7 +8,7 @@ extends BossBase
 
 # Attack damage values
 @export var slam_damage: float = 50.0  # AOE attack
-@export var melee_damage: float = 35.0  # Regular melee (reduced)
+@export var melee_damage: float = 22.0  # Regular melee (reduced further)
 
 # Attack ranges (slightly longer due to size)
 @export var slam_range: float = 100.0

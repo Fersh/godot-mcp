@@ -438,7 +438,7 @@ static func _create_arrow_storm() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
-	).with_damage(5.0, 1.0).with_aoe(500.0).with_duration(3.0)
+	).with_damage(15.0, 1.0).with_aoe(500.0).with_duration(3.0)
 
 static func _create_ballista_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
