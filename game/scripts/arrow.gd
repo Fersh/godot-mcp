@@ -15,6 +15,10 @@ var can_bounce: bool = false
 var bounce_count: int = 0
 var max_bounces: int = 3
 var has_sniper: bool = false
+# Ricochet - bounces to nearby enemies on hit
+var has_ricochet: bool = false
+var ricochet_count: int = 0
+var max_ricochets: int = 0
 var sniper_bonus: float = 0.0
 var damage_multiplier: float = 1.0
 var crit_chance: float = 0.0
@@ -217,12 +221,59 @@ func _on_body_entered(body: Node2D) -> void:
 		if pierce_count > 0:
 			pierced_enemies.append(body)
 			pierce_count -= 1
+		elif has_ricochet and ricochet_count < max_ricochets:
+			# Ricochet: bounce to nearby enemy
+			pierced_enemies.append(body)
+			if _try_ricochet(body):
+				ricochet_count += 1
+			else:
+				queue_free()  # No valid target, despawn
 		elif has_boomerang and not is_returning:
 			# Boomerang: start returning on hit instead of despawning
 			pierced_enemies.append(body)
 			_start_boomerang_return()
 		else:
 			queue_free()
+
+func _try_ricochet(current_enemy: Node2D) -> bool:
+	"""Find nearest enemy and redirect arrow to it. Returns true if successful."""
+	var nearest_enemy: Node2D = null
+	var nearest_dist: float = 300.0  # Max ricochet range
+
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		if enemy == current_enemy:
+			continue
+		if enemy in pierced_enemies:
+			continue
+		if not enemy.has_method("take_damage"):
+			continue
+		# Check if enemy is alive
+		if enemy.has_method("is_dead") and enemy.is_dead():
+			continue
+
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist < nearest_dist:
+			nearest_dist = dist
+			nearest_enemy = enemy
+
+	if nearest_enemy:
+		# Redirect arrow toward new target
+		direction = (nearest_enemy.global_position - global_position).normalized()
+		rotation = direction.angle()
+
+		# Reset lifetime to give arrow time to reach target
+		lifetime = 0.0
+		lifespan = 0.5  # Short lifespan for ricochet
+
+		# Brief visual feedback
+		modulate = Color(1.2, 1.1, 0.8, 1.0)  # Slight golden flash
+
+		return true
+
+	return false
 
 func _apply_elemental_effects(enemy: Node2D) -> void:
 	if not AbilityManager:

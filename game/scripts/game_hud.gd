@@ -41,10 +41,17 @@ var level_label: Label = null
 # State
 var current_health: float = 100.0
 var max_health: float = 100.0
+var previous_health: float = 100.0
 var current_shield: float = 0.0
 var max_shield: float = 0.0
 var displayed_xp: float = 0.0
+var previous_xp: float = 0.0
 var current_tween: Tween = null
+
+# Animation constants (matching combo style)
+const BAR_BASE_ROTATION: float = 0.02  # Slight tilt
+const BAR_SHAKE_AMOUNT: float = 0.06
+const BAR_PULSE_SCALE: float = 1.08
 
 # Kill streak fire effect
 var fire_container: Control = null
@@ -351,9 +358,15 @@ func _process(delta: float) -> void:
 				_update_fire_particles()
 
 func _on_health_changed(current: float, maximum: float) -> void:
+	var health_changed = abs(current - previous_health) > 0.5
+	previous_health = current
 	current_health = current
 	max_health = maximum
 	_update_health_bar()
+
+	# Animate health bar on change
+	if health_changed and health_bar_bg:
+		_animate_bar_shake(health_bar_bg)
 
 func _update_health_bar() -> void:
 	if health_bar_fill == null:
@@ -397,11 +410,17 @@ func _on_xp_changed(current_xp: float, xp_needed: float, level: int) -> void:
 	if current_tween and current_tween.is_valid():
 		current_tween.kill()
 
+	# Check if XP increased (not level up reset)
+	var xp_increased = current_xp > previous_xp and current_xp > 0
+
 	# If XP decreased (level up reset), snap to new value
 	if current_xp < displayed_xp:
 		displayed_xp = current_xp
+		previous_xp = current_xp
 		_update_progress_bar(current_xp, xp_needed)
 		return
+
+	previous_xp = current_xp
 
 	# Smoothly animate to new XP value
 	var start_xp = displayed_xp
@@ -413,6 +432,10 @@ func _on_xp_changed(current_xp: float, xp_needed: float, level: int) -> void:
 		current_xp,
 		0.3
 	).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	# Animate XP bar on gain
+	if xp_increased and progress_bar_bg:
+		_animate_bar_shake(progress_bar_bg)
 
 func _update_progress_bar(current_xp: float, xp_needed: float) -> void:
 	if progress_bar_fill == null:
@@ -474,6 +497,36 @@ func _input(event: InputEvent) -> void:
 			_on_pause_pressed()
 
 		get_viewport().set_input_as_handled()
+
+# ============================================
+# BAR ANIMATION (rotate + pulse like combo)
+# ============================================
+
+func _animate_bar_shake(bar: Panel) -> void:
+	"""Rotating shake and pulse animation for HP/XP bars."""
+	if bar == null:
+		return
+
+	# Set pivot to center of bar
+	bar.pivot_offset = bar.size / 2
+
+	# Rotating shake animation
+	var tween = create_tween()
+	tween.set_parallel(true)
+
+	# Pulse scale
+	tween.tween_property(bar, "scale", Vector2(BAR_PULSE_SCALE, BAR_PULSE_SCALE), 0.06).set_ease(Tween.EASE_OUT)
+
+	# Rotation shake
+	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION + BAR_SHAKE_AMOUNT, 0.04)
+
+	tween.set_parallel(false)
+	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION - BAR_SHAKE_AMOUNT * 0.7, 0.04)
+	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION + BAR_SHAKE_AMOUNT * 0.3, 0.03)
+	tween.tween_property(bar, "rotation", BAR_BASE_ROTATION, 0.03)
+
+	# Return scale to normal
+	tween.tween_property(bar, "scale", Vector2(1.0, 1.0), 0.1).set_ease(Tween.EASE_OUT)
 
 # ============================================
 # KILL STREAK FIRE EFFECT

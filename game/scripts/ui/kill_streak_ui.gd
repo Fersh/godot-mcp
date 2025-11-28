@@ -74,7 +74,7 @@ func _create_ui() -> void:
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		combo_label.add_theme_font_override("font", pixel_font)
-	combo_label.add_theme_font_size_override("font_size", 16)
+	combo_label.add_theme_font_size_override("font_size", 20)
 	combo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	# Drop shadow matching wave/coins text
 	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))

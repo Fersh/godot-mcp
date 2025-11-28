@@ -1046,6 +1046,9 @@ func spawn_single_arrow(direction: Vector2) -> void:
 		arrow.knockback_force = AbilityManager.knockback_force
 		arrow.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
 		arrow.has_boomerang = AbilityManager.should_boomerang()
+		# Ricochet - arrows bounce to nearby enemies
+		arrow.has_ricochet = AbilityManager.has_ricochet
+		arrow.max_ricochets = AbilityManager.ricochet_bounces
 
 	# Apply Mage Arcane Focus damage bonus
 	if has_arcane_focus and arcane_focus_stacks > 0:
