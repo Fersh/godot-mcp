@@ -1043,6 +1043,7 @@ func spawn_single_arrow(direction: Vector2) -> void:
 		arrow.has_knockback = AbilityManager.has_knockback
 		arrow.knockback_force = AbilityManager.knockback_force
 		arrow.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
+		arrow.has_boomerang = AbilityManager.should_boomerang()
 
 	# Apply Mage Arcane Focus damage bonus
 	if has_arcane_focus and arcane_focus_stacks > 0:

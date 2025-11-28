@@ -24,6 +24,11 @@ var knockback_force: float = 0.0
 var speed_multiplier: float = 1.0
 var is_mage_orb: bool = false
 
+# Boomerang ability
+var has_boomerang: bool = false
+var is_returning: bool = false
+var return_target: Node2D = null
+
 func _ready() -> void:
 	# Rotate arrow to face direction
 	rotation = direction.angle()
@@ -73,16 +78,61 @@ func _setup_mage_orb() -> void:
 	rotation = 0
 
 func _physics_process(delta: float) -> void:
+	# Handle boomerang return
+	if is_returning:
+		_process_boomerang_return(delta)
+		return
+
 	position += direction * speed * delta
 
 	lifetime += delta
 	if lifetime >= lifespan:
+		# If boomerang, start returning instead of despawning
+		if has_boomerang and not is_returning:
+			_start_boomerang_return()
+			return
 		queue_free()
 		return
 
 	# Wall bounce check
 	if can_bounce:
 		check_wall_bounce()
+
+func _start_boomerang_return() -> void:
+	is_returning = true
+	pierced_enemies.clear()  # Allow hitting enemies again on return
+
+	# Find player to return to
+	return_target = get_tree().get_first_node_in_group("player")
+
+	# Extend lifespan for return journey
+	lifetime = 0.0
+	lifespan = 2.0  # Give plenty of time to return
+
+func _process_boomerang_return(delta: float) -> void:
+	if return_target == null or not is_instance_valid(return_target):
+		queue_free()
+		return
+
+	# Home in on player
+	var to_player = return_target.global_position - global_position
+	var distance = to_player.length()
+
+	# Reached player - despawn
+	if distance < 30.0:
+		queue_free()
+		return
+
+	# Update direction to track player
+	direction = to_player.normalized()
+	rotation = direction.angle()
+
+	# Move slightly faster on return
+	position += direction * speed * 1.2 * delta
+
+	lifetime += delta
+	if lifetime >= lifespan:
+		queue_free()
 
 func check_wall_bounce() -> void:
 	const ARENA_WIDTH = 1536
@@ -155,6 +205,10 @@ func _on_body_entered(body: Node2D) -> void:
 		if pierce_count > 0:
 			pierced_enemies.append(body)
 			pierce_count -= 1
+		elif has_boomerang and not is_returning:
+			# Boomerang: start returning on hit instead of despawning
+			pierced_enemies.append(body)
+			_start_boomerang_return()
 		else:
 			queue_free()
 
