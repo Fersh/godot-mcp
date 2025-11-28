@@ -144,7 +144,7 @@ static func create_archer() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Heartseeker"
-	data.passive_description = "Consecutive hits on same target: +10% DMG per hit (max 5 stacks)."
+	data.passive_description = "Consecutive hits on same target: +10% Damage per hit (max 5 stacks)."
 
 	return data
 
@@ -316,7 +316,7 @@ static func create_mage() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Arcane Focus"
-	data.passive_description = "Standing still: +10% DMG dealt & taken/sec (max 50%). Decays over 5s when moving."
+	data.passive_description = "Standing still: +10% Damage dealt & taken/sec (max 50%). Decays over 5s when moving."
 
 	return data
 

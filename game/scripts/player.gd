@@ -137,7 +137,7 @@ var death_animation_finished: bool = false
 
 # XP System
 var current_xp: float = 0.0
-var xp_to_next_level: float = 478.4  # Base XP required (10% reduction from 531.6)
+var xp_to_next_level: float = 526.24  # Base XP required (10% increase from 478.4)
 var current_level: int = 1
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
@@ -635,13 +635,13 @@ func _physics_process(delta: float) -> void:
 					active_buffs["rampage"] = {
 						"timer": AbilityManager.rampage_timer, "duration": AbilityManager.RAMPAGE_DECAY_TIME,
 						"name": "Rampage",
-						"description": "+" + str(AbilityManager.rampage_stacks * 3) + "% DMG",
+						"description": "+" + str(AbilityManager.rampage_stacks * 3) + "% Damage",
 						"color": Color(1.0, 0.3, 0.2)  # Red
 					}
 					buffs_changed = true
 				else:
 					active_buffs["rampage"].timer = AbilityManager.rampage_timer
-					active_buffs["rampage"].description = "+" + str(AbilityManager.rampage_stacks * 3) + "% DMG"
+					active_buffs["rampage"].description = "+" + str(AbilityManager.rampage_stacks * 3) + "% Damage"
 			elif active_buffs.has("rampage"):
 				active_buffs.erase("rampage")
 				buffs_changed = true
@@ -653,13 +653,13 @@ func _physics_process(delta: float) -> void:
 					active_buffs["killing_frenzy"] = {
 						"timer": AbilityManager.killing_frenzy_timer, "duration": AbilityManager.KILLING_FRENZY_DECAY_TIME,
 						"name": "Frenzy",
-						"description": "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% SPD",
+						"description": "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% Speed",
 						"color": Color(1.0, 0.7, 0.2)  # Orange
 					}
 					buffs_changed = true
 				else:
 					active_buffs["killing_frenzy"].timer = AbilityManager.killing_frenzy_timer
-					active_buffs["killing_frenzy"].description = "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% SPD"
+					active_buffs["killing_frenzy"].description = "+" + str(AbilityManager.killing_frenzy_stacks * 5) + "% Speed"
 			elif active_buffs.has("killing_frenzy"):
 				active_buffs.erase("killing_frenzy")
 				buffs_changed = true
@@ -671,13 +671,13 @@ func _physics_process(delta: float) -> void:
 					active_buffs["massacre"] = {
 						"timer": AbilityManager.massacre_timer, "duration": AbilityManager.MASSACRE_DECAY_TIME,
 						"name": "Massacre",
-						"description": "+" + str(AbilityManager.massacre_stacks * 2) + "% ALL",
+						"description": "+" + str(AbilityManager.massacre_stacks * 2) + "% All Stats",
 						"color": Color(0.8, 0.2, 0.8)  # Purple
 					}
 					buffs_changed = true
 				else:
 					active_buffs["massacre"].timer = AbilityManager.massacre_timer
-					active_buffs["massacre"].description = "+" + str(AbilityManager.massacre_stacks * 2) + "% ALL"
+					active_buffs["massacre"].description = "+" + str(AbilityManager.massacre_stacks * 2) + "% All Stats"
 			elif active_buffs.has("massacre"):
 				active_buffs.erase("massacre")
 				buffs_changed = true
@@ -1673,7 +1673,7 @@ func _update_flow_buff() -> void:
 	if flow_stacks > 0:
 		var dmg_bonus = int(flow_stacks * flow_damage_per_stack * 100)
 		var spd_bonus = int(flow_stacks * flow_speed_per_stack * 100)
-		var desc = "+" + str(dmg_bonus) + "% DMG, +" + str(spd_bonus) + "% SPD"
+		var desc = "+" + str(dmg_bonus) + "% Damage, +" + str(spd_bonus) + "% Speed"
 		if flow_stacks >= flow_dash_threshold:
 			desc += " [DASH]"
 
@@ -1763,7 +1763,7 @@ func _update_arcane_focus_buff() -> void:
 			"timer": -1,  # No timer, based on movement
 			"duration": -1,
 			"name": "Focus x" + str(display_stacks),
-			"description": "+" + str(bonus_percent) + "% DMG dealt & taken",
+			"description": "+" + str(bonus_percent) + "% Damage dealt & taken",
 			"color": Color(0.3, 0.5, 1.0)  # Blue for Mage
 		}
 		emit_signal("buff_changed", active_buffs)
@@ -1825,7 +1825,7 @@ func _update_heartseeker_buff() -> void:
 			"timer": -1,  # No timer, based on target
 			"duration": -1,
 			"name": "Heartseeker x" + str(heartseeker_stacks),
-			"description": "+" + str(bonus_percent) + "% DMG (same target)",
+			"description": "+" + str(bonus_percent) + "% Damage (same target)",
 			"color": Color(0.2, 0.8, 0.4)  # Green for Ranger
 		}
 		emit_signal("buff_changed", active_buffs)
@@ -1873,7 +1873,7 @@ func _update_retribution_buff() -> void:
 			"timer": retribution_timer,
 			"duration": retribution_duration,
 			"name": "Retribution",
-			"description": "+" + str(bonus_percent) + "% DMG + Stun",
+			"description": "+" + str(bonus_percent) + "% Damage + Stun",
 			"color": Color(1.0, 0.3, 0.3)  # Red for Knight
 		}
 		emit_signal("buff_changed", active_buffs)
@@ -2053,7 +2053,7 @@ func trigger_feast_of_carnage_kill() -> void:
 		"timer": feast_of_carnage_timer,
 		"duration": 12.0,
 		"name": "Carnage x" + str(feast_of_carnage_stacks),
-		"description": "+" + str(bonus) + "% DMG, heal on kill",
+		"description": "+" + str(bonus) + "% Damage, heal on kill",
 		"color": Color(0.8, 0.1, 0.1)
 	}
 	emit_signal("buff_changed", active_buffs)
@@ -2103,7 +2103,7 @@ func set_apex_predator(active: bool, duration: float, damage: float = 0.0) -> vo
 			"timer": duration,
 			"duration": duration,
 			"name": "Apex",
-			"description": "Dash through = 500% DMG",
+			"description": "Dash through = 500% Damage",
 			"color": Color(1.0, 0.3, 0.0)  # Bright orange
 		}
 	elif active_buffs.has("apex_predator"):

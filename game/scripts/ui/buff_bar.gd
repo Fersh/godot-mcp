@@ -332,7 +332,7 @@ func _on_icon_mouse_exited() -> void:
 	_hide_tooltip()
 
 func _on_icon_input(event: InputEvent, buff_id: String) -> void:
-	# Keep long press support for touch/mobile
+	# Show tooltip immediately on touch/click
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var pressed = false
 		if event is InputEventScreenTouch:
@@ -344,6 +344,8 @@ func _on_icon_input(event: InputEvent, buff_id: String) -> void:
 			is_holding = true
 			held_buff_id = buff_id
 			hold_timer = 0.0
+			# Show tooltip immediately on press
+			_show_tooltip(buff_id)
 		else:
 			is_holding = false
 			held_buff_id = ""
