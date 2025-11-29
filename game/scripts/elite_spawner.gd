@@ -94,6 +94,7 @@ func _setup_notification_ui() -> void:
 	notification_label.text = "ELITE INCOMING"
 	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	notification_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 
 	# Use pixel font - very bold and large
 	if pixel_font:
@@ -129,11 +130,13 @@ func _setup_boss_health_bar() -> void:
 	# Container for positioning at bottom
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	boss_health_bar_container.add_child(container)
 
 	# Health bar container positioned at bottom
 	var bar_container = Control.new()
 	bar_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	bar_container.anchor_top = 0.94
 	bar_container.anchor_bottom = 0.98
 	bar_container.offset_left = 200
@@ -146,6 +149,7 @@ func _setup_boss_health_bar() -> void:
 	boss_health_bar.max_value = 100
 	boss_health_bar.value = 100
 	boss_health_bar.show_percentage = false
+	boss_health_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 
 	# Style the health bar - reduced border width (4px instead of 6px)
 	var bg_style = StyleBoxFlat.new()
@@ -173,6 +177,7 @@ func _setup_boss_health_bar() -> void:
 	# Boss name label - centered inside the health bar
 	boss_name_label = Label.new()
 	boss_name_label.text = "BOSS"
+	boss_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	boss_name_label.set_anchors_preset(Control.PRESET_CENTER)
 	boss_name_label.anchor_left = 0.5
 	boss_name_label.anchor_right = 0.5
@@ -204,11 +209,13 @@ func _setup_elite_health_bar() -> void:
 	# Container for positioning at bottom (above boss bar position)
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	elite_health_bar_container.add_child(container)
 
 	# Health bar container positioned at bottom (slightly higher than boss)
 	var bar_container = Control.new()
 	bar_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	bar_container.anchor_top = 0.89
 	bar_container.anchor_bottom = 0.93
 	bar_container.offset_left = 250
@@ -221,6 +228,7 @@ func _setup_elite_health_bar() -> void:
 	elite_health_bar.max_value = 100
 	elite_health_bar.value = 100
 	elite_health_bar.show_percentage = false
+	elite_health_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 
 	# Style the health bar - orange theme for elites, reduced border width (4px)
 	var bg_style = StyleBoxFlat.new()
@@ -248,6 +256,7 @@ func _setup_elite_health_bar() -> void:
 	# Elite name label - centered inside the health bar
 	elite_name_label = Label.new()
 	elite_name_label.text = "ELITE"
+	elite_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
 	elite_name_label.set_anchors_preset(Control.PRESET_CENTER)
 	elite_name_label.anchor_left = 0.5
 	elite_name_label.anchor_right = 0.5
@@ -546,6 +555,7 @@ func _flash_screen_dark(is_boss: bool) -> void:
 		dark_overlay = ColorRect.new()
 		dark_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 		dark_overlay.color = Color(0, 0, 0, 0)
+		dark_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input to UI below
 		overlay_layer.add_child(dark_overlay)
 
 	# Flash dark then fade back

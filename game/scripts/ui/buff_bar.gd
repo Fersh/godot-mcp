@@ -22,6 +22,9 @@ var tooltip_visible: bool = false
 var held_buff_id: String = ""
 var hold_timer: float = 0.0
 var is_holding: bool = false
+var tooltip_auto_hide_timer: float = 0.0
+var tooltip_tapped: bool = false  # Track if tooltip was shown via tap
+const TOOLTIP_DISPLAY_TIME := 5.0  # Show tooltip for 5 seconds on tap
 
 func _ready() -> void:
 	layer = 45  # Below ability bar but above game
@@ -315,11 +318,12 @@ func _on_icon_mouse_entered(buff_id: String) -> void:
 	_show_tooltip(buff_id)
 
 func _on_icon_mouse_exited() -> void:
-	# Hide tooltip when mouse leaves
-	_hide_tooltip()
+	# Hide tooltip when mouse leaves, but not if it was shown via tap
+	if not tooltip_tapped:
+		_hide_tooltip()
 
 func _on_icon_input(event: InputEvent, buff_id: String) -> void:
-	# Show tooltip immediately on touch/click
+	# Show tooltip on touch/click for 5 seconds
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		var pressed = false
 		if event is InputEventScreenTouch:
@@ -331,12 +335,14 @@ func _on_icon_input(event: InputEvent, buff_id: String) -> void:
 			is_holding = true
 			held_buff_id = buff_id
 			hold_timer = 0.0
-			# Show tooltip immediately on press
+			# Show tooltip immediately on press and start auto-hide timer
+			tooltip_tapped = true
+			tooltip_auto_hide_timer = TOOLTIP_DISPLAY_TIME
 			_show_tooltip(buff_id)
 		else:
 			is_holding = false
 			held_buff_id = ""
-			_hide_tooltip()
+			# Don't hide on release - let the timer handle it
 
 func _process(delta: float) -> void:
 	# Update hold timer for tooltip
@@ -344,6 +350,13 @@ func _process(delta: float) -> void:
 		hold_timer += delta
 		if hold_timer >= LONG_PRESS_TIME and not tooltip_visible:
 			_show_tooltip(held_buff_id)
+
+	# Auto-hide tooltip after tap timer expires
+	if tooltip_tapped and tooltip_visible:
+		tooltip_auto_hide_timer -= delta
+		if tooltip_auto_hide_timer <= 0:
+			tooltip_tapped = false
+			_hide_tooltip()
 
 	# Update buff timers in icons
 	if player and player.active_buffs.size() > 0:
@@ -404,6 +417,8 @@ func _hide_tooltip() -> void:
 		return
 
 	tooltip_visible = false
+	tooltip_tapped = false
+	tooltip_auto_hide_timer = 0.0
 	var tween = create_tween()
 	tween.tween_property(tooltip_panel, "modulate:a", 0.0, 0.1)
 	tween.tween_callback(func(): tooltip_panel.visible = false)
