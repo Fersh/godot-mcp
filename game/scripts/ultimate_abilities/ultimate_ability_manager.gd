@@ -131,7 +131,7 @@ func _start_activation_sequence() -> void:
 		activation_overlay.play_activation(current_ultimate, player, _on_activation_complete)
 	else:
 		# Fallback if no overlay - just execute immediately
-		_execute_ultimate()
+		# Note: _on_activation_complete already calls _execute_ultimate, so don't call it here
 		_on_activation_complete()
 
 func _on_activation_complete() -> void:

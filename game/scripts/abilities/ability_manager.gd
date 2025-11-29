@@ -866,12 +866,17 @@ func trigger_death_explosion(enemy: Node2D) -> void:
 	# Visual effect
 	spawn_explosion_effect(enemy.global_position)
 
-func spawn_explosion_effect(pos: Vector2) -> void:
+func spawn_explosion_effect(pos: Vector2, tint: Color = Color(1.0, 0.4, 0.2)) -> void:
+	# Load the script first, then create a Node2D with the script attached
+	var explosion_script = load("res://scripts/abilities/explosion_effect.gd")
+	if explosion_script == null:
+		return
+
 	var circle = Node2D.new()
+	circle.set_script(explosion_script)
+	circle.explosion_color = tint  # Red/orange tint for death detonation
 	circle.global_position = pos
 	get_tree().current_scene.add_child(circle)
-
-	circle.set_script(load("res://scripts/abilities/explosion_effect.gd"))
 
 func spawn_shield_gain_number(player: Node2D, amount: float) -> void:
 	if player == null or not is_instance_valid(player):

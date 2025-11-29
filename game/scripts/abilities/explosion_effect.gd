@@ -5,6 +5,7 @@ extends Node2D
 var sprite: Sprite2D
 var scale_multiplier: float = 1.5
 var explosion_size: String = "medium"  # "small", "medium", "large"
+var explosion_color: Color = Color.WHITE  # Can tint the explosion
 var current_frame: int = 0
 var frame_count: int = 12
 var animation_speed: float = 24.0
@@ -12,6 +13,8 @@ var frame_timer: float = 0.0
 
 func _ready() -> void:
 	_create_sprite()
+	if explosion_color != Color.WHITE:
+		modulate = explosion_color
 
 func _create_sprite() -> void:
 	sprite = Sprite2D.new()

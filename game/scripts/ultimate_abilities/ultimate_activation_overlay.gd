@@ -200,6 +200,12 @@ func _run_activation_sequence() -> void:
 	var tween = create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)  # Runs during pause
 
+	# Safety: ensure time is restored even if tween fails
+	tween.finished.connect(func():
+		if Engine.time_scale == 0.0:
+			Engine.time_scale = original_time_scale
+	)
+
 	var screen_center_y = 376.0
 	var sprite_target_x = 280.0  # Left side of screen
 

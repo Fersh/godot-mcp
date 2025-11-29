@@ -323,11 +323,11 @@ func _setup_portrait() -> void:
 	var frame_h = character.frame_size.y
 	var idle_row = character.row_idle
 
-	# For extreme face close-up, crop to just the head area
-	# Offset down from top of frame to capture the actual head (not empty space above)
-	var face_region_y = idle_row * frame_h + frame_h * 0.15  # Start 15% down into the frame
-	var face_height = frame_h * 0.40  # Take 40% height for face
-	var face_width = frame_w * 0.6  # Center 60% width
+	# For face close-up, crop to upper body/head area
+	# Show more of the character - upper portion of frame
+	var face_region_y = idle_row * frame_h + frame_h * 0.0  # Start at top of frame
+	var face_height = frame_h * 0.70  # Take 70% height for head and upper body
+	var face_width = frame_w * 0.85  # Center 85% width
 	var face_x = (frame_w - face_width) / 2  # Center horizontally
 
 	atlas.region = Rect2(face_x, face_region_y, face_width, face_height)

@@ -3,8 +3,12 @@ class_name UltimateSelectionUI
 
 signal ultimate_selected(ability: UltimateAbilityData)
 
-const ULTIMATE_PURPLE := Color(0.6, 0.3, 0.9)
-const ULTIMATE_DARK_PURPLE := Color(0.2, 0.1, 0.3)
+const ULTIMATE_BASE := Color(1.0, 0.5, 0.8)  # Starting color for rainbow cycle
+const ULTIMATE_DARK := Color(0.15, 0.1, 0.2)
+
+# Rainbow animation
+var rainbow_time: float = 0.0
+const RAINBOW_SPEED := 1.5
 
 var current_choices: Array = []
 var ability_buttons: Array[Button] = []
@@ -16,13 +20,6 @@ var fire_particles: Array[Array] = []
 const FIRE_PARTICLE_COUNT := 12
 const FIRE_UPDATE_RATE := 0.08
 var fire_update_timer: float = 0.0
-# Purple fire colors (bright to dark)
-const FIRE_COLORS: Array[Color] = [
-	Color(0.8, 0.5, 1.0),   # Bright purple-pink
-	Color(0.6, 0.3, 0.9),   # Medium purple
-	Color(0.4, 0.2, 0.7),   # Darker purple
-	Color(0.3, 0.1, 0.5),   # Deep purple
-]
 
 # Slot machine state
 var is_rolling: bool = false
@@ -89,8 +86,8 @@ func _create_ui() -> void:
 	title_label.text = "ULTIMATE ABILITY"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 36)
-	title_label.add_theme_color_override("font_color", ULTIMATE_PURPLE)
-	title_label.add_theme_color_override("font_outline_color", ULTIMATE_DARK_PURPLE)
+	title_label.add_theme_color_override("font_color", ULTIMATE_BASE)  # Will be animated to rainbow
+	title_label.add_theme_color_override("font_outline_color", ULTIMATE_DARK)
 	title_label.add_theme_constant_override("outline_size", 3)
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
@@ -120,6 +117,11 @@ func _create_ui() -> void:
 	vbox.add_child(choices_container)
 
 func _process(delta: float) -> void:
+	# Update rainbow effect when visible
+	if visible:
+		rainbow_time += delta * RAINBOW_SPEED
+		_update_rainbow_colors()
+
 	# Update fire particles (always when visible)
 	if visible and fire_particles.size() > 0:
 		fire_update_timer += delta
@@ -222,7 +224,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	name_label.text = ultimate.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", ULTIMATE_PURPLE)
+	name_label.add_theme_color_override("font_color", ULTIMATE_BASE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -231,7 +233,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	# Separator line
 	var separator = HSeparator.new()
 	var sep_style = StyleBoxLine.new()
-	sep_style.color = Color(ULTIMATE_PURPLE.r, ULTIMATE_PURPLE.g, ULTIMATE_PURPLE.b, 0.4)
+	sep_style.color = Color(ULTIMATE_BASE.r, ULTIMATE_BASE.g, ULTIMATE_BASE.b, 0.4)
 	sep_style.thickness = 1
 	separator.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(separator)
@@ -304,7 +306,7 @@ func _create_ultimate_tag() -> CenterContainer:
 	var tag = PanelContainer.new()
 
 	var tag_style = StyleBoxFlat.new()
-	tag_style.bg_color = ULTIMATE_PURPLE
+	tag_style.bg_color = ULTIMATE_BASE
 	tag_style.set_corner_radius_all(6)
 	tag_style.content_margin_left = 14
 	tag_style.content_margin_right = 14
@@ -331,7 +333,7 @@ func _create_ultimate_tag() -> CenterContainer:
 func _style_ultimate_button(button: Button) -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.1, 0.05, 0.98)
-	style.border_color = ULTIMATE_PURPLE
+	style.border_color = ULTIMATE_BASE
 	style.set_border_width_all(4)
 	style.set_corner_radius_all(14)
 	# Add golden glow
@@ -504,18 +506,25 @@ func _reset_fire_particle(p: Dictionary) -> void:
 	p["lifetime"] = 0.0
 	p["max_lifetime"] = randf_range(0.3, 0.6)
 
-	p["node"].color = FIRE_COLORS[0]
+	p["node"].color = _get_rainbow_color(rainbow_time)
 	p["node"].color.a = 0.9
 
 func _update_all_fire_particles(delta: float) -> void:
 	"""Update all fire particles on all cards."""
-	for card_particles in fire_particles:
+	var base_rainbow = _get_rainbow_color(rainbow_time)
+
+	for card_idx in range(fire_particles.size()):
+		var card_particles = fire_particles[card_idx]
+		# Offset rainbow for each card
+		var card_rainbow = _get_rainbow_color(rainbow_time + card_idx * 0.3)
+
 		for p in card_particles:
 			p["lifetime"] += delta
 			var life_ratio = p["lifetime"] / p["max_lifetime"]
 
 			if life_ratio >= 1.0:
 				_reset_fire_particle(p)
+				p["node"].color = card_rainbow
 				continue
 
 			# Move upward
@@ -528,10 +537,9 @@ func _update_all_fire_particles(delta: float) -> void:
 			# Update position
 			p["node"].position = Vector2(p["x"], p["y"])
 
-			# Color transition through purple shades
-			var color_index = int(life_ratio * (FIRE_COLORS.size() - 1))
-			color_index = clampi(color_index, 0, FIRE_COLORS.size() - 1)
-			p["node"].color = FIRE_COLORS[color_index]
+			# Rainbow color that darkens as it rises
+			var darkened = card_rainbow.lerp(Color(0.1, 0.05, 0.15), life_ratio * 0.7)
+			p["node"].color = darkened
 
 			# Fade out near end of life
 			if life_ratio > 0.6:
@@ -542,3 +550,49 @@ func _update_all_fire_particles(delta: float) -> void:
 			# Shrink as it rises
 			var size = 6.0 * (1.0 - life_ratio * 0.5)
 			p["node"].size = Vector2(size, size)
+
+func _get_rainbow_color(time: float) -> Color:
+	"""Generate a rainbow color based on time."""
+	var hue = fmod(time, 1.0)
+	return Color.from_hsv(hue, 0.8, 1.0)
+
+func _update_rainbow_colors() -> void:
+	"""Update all rainbow-colored elements."""
+	var rainbow = _get_rainbow_color(rainbow_time)
+
+	# Update title
+	if title_label:
+		title_label.add_theme_color_override("font_color", rainbow)
+
+	# Update card elements
+	for i in range(ability_buttons.size()):
+		var button = ability_buttons[i]
+		var card_rainbow = _get_rainbow_color(rainbow_time + i * 0.2)
+
+		# Update border color
+		var style = button.get_theme_stylebox("normal")
+		if style:
+			style = style.duplicate()
+			style.border_color = card_rainbow
+			style.shadow_color = Color(card_rainbow.r, card_rainbow.g, card_rainbow.b, 0.3)
+			button.add_theme_stylebox_override("normal", style)
+
+		# Update name label
+		var margin = button.get_child(0) as MarginContainer
+		if margin:
+			var vbox = margin.get_child(0) as VBoxContainer
+			if vbox and vbox.get_child_count() > 1:
+				var name_label = vbox.get_child(1) as Label
+				if name_label:
+					name_label.add_theme_color_override("font_color", card_rainbow)
+
+		# Update rarity tag
+		var rarity_tag = button.get_node_or_null("RarityTag")
+		if rarity_tag:
+			var tag_panel = rarity_tag.get_child(0) as PanelContainer
+			if tag_panel:
+				var tag_style = tag_panel.get_theme_stylebox("panel")
+				if tag_style:
+					tag_style = tag_style.duplicate()
+					tag_style.bg_color = card_rainbow
+					tag_panel.add_theme_stylebox_override("panel", tag_style)
