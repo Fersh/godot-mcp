@@ -79,7 +79,7 @@ func _create_ui() -> void:
 	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	container.anchor_left = 0.6
 	container.anchor_right = 1.0
-	container.anchor_top = 0.12  # Below points/coins/wave
+	container.anchor_top = 0.14  # Below points/coins/wave (+10px)
 	container.anchor_bottom = 0.18
 	container.offset_right = -40  # 20px more inward from edge
 	container.modulate.a = 0.0

@@ -6,7 +6,9 @@ extends CanvasLayer
 
 var player: Node2D = null
 var points: int = 0
+var displayed_points: float = 0.0  # For smooth counting animation
 var coins: int = 0
+var displayed_coins: float = 0.0  # For smooth counting animation
 var kills: int = 0
 var time_survived: float = 0.0
 var last_time_points_second: int = 0  # Track last second we gave time points
@@ -18,6 +20,9 @@ const POINTS_PER_COIN = 50
 const POINTS_PER_SECOND = 5  # Points awarded each second alive
 const POINTS_PER_LEVEL_UP = 500  # Bonus for leveling up
 const POINTS_PER_ITEM = 200  # Points for picking up items
+
+# Smooth counting speed (points per second to catch up)
+const COUNT_SPEED_MULTIPLIER = 5.0  # Catch up at 5x the difference per second
 
 func _ready() -> void:
 	add_to_group("stats_display")
@@ -44,9 +49,22 @@ func _process(delta: float) -> void:
 		var seconds_to_award = current_second - last_time_points_second
 		points += seconds_to_award * POINTS_PER_SECOND
 		last_time_points_second = current_second
-		update_display()
 		if StatsManager:
 			StatsManager.set_points(points)
+
+	# Smoothly animate displayed points towards actual points
+	if displayed_points < points:
+		var diff = points - displayed_points
+		var increment = max(diff * COUNT_SPEED_MULTIPLIER * delta, 1.0)
+		displayed_points = min(displayed_points + increment, float(points))
+		_update_points_display()
+
+	# Smoothly animate displayed coins towards actual coins
+	if displayed_coins < coins:
+		var diff = coins - displayed_coins
+		var increment = max(diff * COUNT_SPEED_MULTIPLIER * delta, 0.5)
+		displayed_coins = min(displayed_coins + increment, float(coins))
+		_update_coins_display()
 
 	update_wave_display()
 	# Update StatsManager
@@ -98,8 +116,14 @@ func _on_level_up(new_level: int) -> void:
 		StatsManager.set_points(points)
 
 func update_display() -> void:
-	points_label.text = str(points) + "  POINTS"
-	coins_label.text = str(coins) + "  COINS"
+	_update_points_display()
+	_update_coins_display()
+
+func _update_points_display() -> void:
+	points_label.text = str(int(displayed_points)) + "  POINTS"
+
+func _update_coins_display() -> void:
+	coins_label.text = str(int(displayed_coins)) + "  COINS"
 
 func update_wave_display() -> void:
 	var minutes = int(time_survived) / 60
