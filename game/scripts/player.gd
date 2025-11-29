@@ -1461,6 +1461,19 @@ func add_xp(amount: float) -> void:
 		current_xp -= xp_to_next_level
 		current_level += 1
 		xp_to_next_level *= 1.5
+
+		# Apply automatic level bonuses (5% damage and health per level)
+		if AbilityManager:
+			AbilityManager.add_level_bonus()
+		# Increase max health by 5% and heal the same amount
+		var health_increase = base_max_health * 0.05
+		base_max_health += health_increase
+		max_health += health_increase
+		current_health += health_increase
+		if health_bar:
+			health_bar.set_health(current_health, max_health)
+		emit_signal("health_changed", current_health, max_health)
+
 		# Play level up sound
 		if SoundManager:
 			SoundManager.play_levelup()

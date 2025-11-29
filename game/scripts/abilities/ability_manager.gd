@@ -73,6 +73,9 @@ var whirlwind_cooldown: float = 3.0
 var whirlwind_timer: float = 0.0
 var has_double_strike: bool = false
 
+# Level-up bonuses (5% per level)
+var level_bonus_damage: float = 0.0  # Accumulated damage bonus from levels
+
 # New ability effects
 var armor: float = 0.0  # Flat damage reduction
 var coin_gain_bonus: float = 0.0
@@ -334,6 +337,9 @@ func reset() -> void:
 		"melee_area": 0.0,
 		"melee_range": 0.0,
 	}
+
+	# Reset level-up bonuses
+	level_bonus_damage = 0.0
 
 	# Reset special effect flags
 	has_regen = false
@@ -721,9 +727,9 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 				if player.has_method("force_death"):
 					player.force_death()
 
-	# Transcendence shield regen (2 HP/second)
+	# Transcendence shield regen (2.5 HP/second)
 	if has_transcendence and transcendence_shields < transcendence_max:
-		var regen_amount = minf(delta * 2.0, transcendence_max - transcendence_shields)
+		var regen_amount = minf(delta * 2.5, transcendence_max - transcendence_shields)
 		transcendence_shields += regen_amount
 		transcendence_accumulated_regen += regen_amount
 		# Show +x every time we accumulate 1 or more
@@ -1422,6 +1428,9 @@ func spawn_drone() -> void:
 func get_damage_multiplier() -> float:
 	var base = 1.0 + stat_modifiers["damage"]
 
+	# Add level-up bonus (5% per level after level 1)
+	base += level_bonus_damage
+
 	# Add permanent upgrade bonus
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("damage", 0.0)
@@ -1444,6 +1453,10 @@ func get_damage_multiplier() -> float:
 	base *= get_combo_master_damage_multiplier()
 
 	return base
+
+func add_level_bonus() -> void:
+	"""Add 5% damage bonus for leveling up."""
+	level_bonus_damage += 0.05
 
 func get_attack_speed_multiplier() -> float:
 	var base = 1.0 + stat_modifiers["attack_speed"]
@@ -1772,7 +1785,9 @@ func on_coin_pickup(player: Node2D) -> void:
 	if player == null or player.is_dead:
 		return
 	if has_blood_money:
-		heal_player(player, player.max_health * 0.01)
+		# Heal 1% max HP with visual feedback
+		if player.has_method("heal"):
+			player.heal(player.max_health * 0.01, false, false, true)  # show_text = true
 
 # Trigger divine shield invulnerability
 func trigger_divine_shield() -> void:
@@ -1790,9 +1805,16 @@ func get_ricochet_bounces() -> int:
 
 # Get passive ability damage multiplier
 func get_passive_damage_multiplier() -> float:
+	var base = 1.0
+
+	# Add level-up bonus (5% per level)
+	base += level_bonus_damage
+
+	# Add passive amplifier bonus
 	if has_passive_amplifier:
-		return 1.0 + passive_amplifier_bonus
-	return 1.0
+		base += passive_amplifier_bonus
+
+	return base
 
 # Check and trigger phoenix revive
 func try_phoenix_revive(player: Node2D) -> bool:

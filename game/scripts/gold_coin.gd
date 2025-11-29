@@ -61,6 +61,10 @@ func collect_coin() -> void:
 	if player and player.has_method("add_xp"):
 		player.add_xp(xp_value)
 
+	# Trigger Blood Money heal if player has it
+	if AbilityManager:
+		AbilityManager.on_coin_pickup(player)
+
 	# Play XP pickup sound
 	if SoundManager:
 		SoundManager.play_xp()
