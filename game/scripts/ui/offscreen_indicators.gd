@@ -32,20 +32,51 @@ func _ready() -> void:
 	drawer = IndicatorDrawer.new()
 	drawer.parent_ref = self
 	drawer.name = "IndicatorDrawer"
-	drawer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	drawer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(drawer)
+
+	# Set initial size
+	_update_drawer_size()
+
+func _update_drawer_size() -> void:
+	if drawer:
+		var viewport_size = get_viewport().get_visible_rect().size
+		drawer.position = Vector2.ZERO
+		drawer.size = viewport_size
 
 func _process(_delta: float) -> void:
 	# Find player and camera if not found
 	if player == null:
 		player = get_tree().get_first_node_in_group("player")
-	if camera == null and player:
-		camera = player.get_node_or_null("Camera2D")
+	if camera == null:
+		if player:
+			camera = player.get_node_or_null("Camera2D")
+		# Fallback: find any Camera2D in the scene
+		if camera == null:
+			camera = get_tree().get_first_node_in_group("camera")
+			if camera == null:
+				var cameras = get_tree().get_nodes_in_group("")
+				for node in get_tree().root.get_children():
+					var found_cam = _find_camera_recursive(node)
+					if found_cam:
+						camera = found_cam
+						break
+
+	# Update drawer size in case viewport changed
+	_update_drawer_size()
 
 	# Request redraw
 	if drawer:
 		drawer.queue_redraw()
+
+func _find_camera_recursive(node: Node) -> Camera2D:
+	if node is Camera2D and node.is_current():
+		return node
+	for child in node.get_children():
+		var result = _find_camera_recursive(child)
+		if result:
+			return result
+	return null
 
 func draw_indicators(canvas: Control) -> void:
 	if player == null or camera == null:

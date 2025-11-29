@@ -1571,7 +1571,7 @@ func _spawn_level_up_effect() -> void:
 		sun_strike.vframes = 1
 		sun_strike.frame = 0
 		sun_strike.scale = Vector2(3.0, 3.0)  # Scale up for visibility
-		sun_strike.position = Vector2(0, -100)  # Position above player
+		sun_strike.position = Vector2(0, -60)  # Position above player (lowered 40px)
 		sun_strike.modulate.a = 0.9
 		effect_container.add_child(sun_strike)
 
