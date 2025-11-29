@@ -31,7 +31,7 @@ frame = 0
 shape = SubResource("RectangleShape2D_player")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(1.42155, 1.42155)
+zoom = Vector2(1.56371, 1.56371)
 limit_left = 0
 limit_top = 0
 limit_right = 1536

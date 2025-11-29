@@ -47,6 +47,8 @@ var gold_rain_telegraph_timer: float = 0.0
 var gold_rain_target_pos: Vector2 = Vector2.ZERO
 var gold_rain_warning_label: Label = null
 var gold_rain_indicators: Array[Node2D] = []
+var gold_rain_warning_tween: Tween = null
+var gold_rain_indicator_tweens: Array[Tween] = []
 
 # Stomp state
 var stomp_active: bool = false
@@ -240,12 +242,20 @@ func _show_gold_rain_warning() -> void:
 	gold_rain_warning_label.position = Vector2(-50, -90)
 	gold_rain_warning_label.visible = true
 
+	# Kill existing tween if any
+	if gold_rain_warning_tween and gold_rain_warning_tween.is_valid():
+		gold_rain_warning_tween.kill()
+
 	# Pulsing animation
-	var tween = create_tween().set_loops()
-	tween.tween_property(gold_rain_warning_label, "modulate:a", 0.5, 0.15)
-	tween.tween_property(gold_rain_warning_label, "modulate:a", 1.0, 0.15)
+	gold_rain_warning_tween = create_tween().set_loops()
+	gold_rain_warning_tween.tween_property(gold_rain_warning_label, "modulate:a", 0.5, 0.15)
+	gold_rain_warning_tween.tween_property(gold_rain_warning_label, "modulate:a", 1.0, 0.15)
 
 func _hide_gold_rain_warning() -> void:
+	# Kill the pulsing tween to prevent infinite loop
+	if gold_rain_warning_tween and gold_rain_warning_tween.is_valid():
+		gold_rain_warning_tween.kill()
+		gold_rain_warning_tween = null
 	if gold_rain_warning_label:
 		gold_rain_warning_label.visible = false
 
@@ -268,12 +278,19 @@ func _show_gold_rain_indicators() -> void:
 		get_parent().add_child(indicator)
 		gold_rain_indicators.append(indicator)
 
-		# Pulsing animation for indicator
+		# Pulsing animation for indicator - store tween to kill later
 		var tween = create_tween().set_loops()
 		tween.tween_property(circle, "color:a", 0.2, 0.2)
 		tween.tween_property(circle, "color:a", 0.5, 0.2)
+		gold_rain_indicator_tweens.append(tween)
 
 func _clear_gold_rain_indicators() -> void:
+	# Kill all indicator tweens to prevent infinite loops
+	for tween in gold_rain_indicator_tweens:
+		if tween and tween.is_valid():
+			tween.kill()
+	gold_rain_indicator_tweens.clear()
+
 	for indicator in gold_rain_indicators:
 		if is_instance_valid(indicator):
 			indicator.queue_free()

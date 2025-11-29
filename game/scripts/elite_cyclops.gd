@@ -39,6 +39,7 @@ var current_laser_direction: Vector2 = Vector2.ZERO
 var laser_telegraphing: bool = false
 var laser_telegraph_timer: float = 0.0
 var beam_warning_label: Label = null
+var beam_warning_tween: Tween = null
 
 # Stomp state
 var stomp_active: bool = false
@@ -51,6 +52,7 @@ var throw_windup_timer: float = 0.0
 const THROW_WINDUP: float = 0.6  # Increased to give more warning time
 var rock_target_pos: Vector2 = Vector2.ZERO
 var rock_landing_indicator: Node2D = null
+var rock_indicator_tween: Tween = null
 
 func _setup_elite() -> void:
 	elite_name = "One Eyed Monster"
@@ -163,12 +165,21 @@ func _show_rock_landing_indicator() -> void:
 
 	get_parent().add_child(rock_landing_indicator)
 
-	# Pulsing animation for indicator
-	var tween = create_tween().set_loops()
-	tween.tween_property(circle, "color:a", 0.2, 0.15)
-	tween.tween_property(circle, "color:a", 0.6, 0.15)
+	# Kill existing tween if any
+	if rock_indicator_tween and rock_indicator_tween.is_valid():
+		rock_indicator_tween.kill()
+
+	# Pulsing animation for indicator - store tween to kill later
+	rock_indicator_tween = create_tween().set_loops()
+	rock_indicator_tween.tween_property(circle, "color:a", 0.2, 0.15)
+	rock_indicator_tween.tween_property(circle, "color:a", 0.6, 0.15)
 
 func _clear_rock_landing_indicator() -> void:
+	# Kill the pulsing tween to prevent infinite loop
+	if rock_indicator_tween and rock_indicator_tween.is_valid():
+		rock_indicator_tween.kill()
+		rock_indicator_tween = null
+
 	if rock_landing_indicator and is_instance_valid(rock_landing_indicator):
 		rock_landing_indicator.queue_free()
 	rock_landing_indicator = null
@@ -229,12 +240,20 @@ func _show_beam_warning() -> void:
 	beam_warning_label.position = Vector2(-30, -80)  # Above the cyclops head
 	beam_warning_label.visible = true
 
-	# Pulsing animation
-	var tween = create_tween().set_loops()
-	tween.tween_property(beam_warning_label, "modulate:a", 0.5, 0.15)
-	tween.tween_property(beam_warning_label, "modulate:a", 1.0, 0.15)
+	# Kill existing tween if any
+	if beam_warning_tween and beam_warning_tween.is_valid():
+		beam_warning_tween.kill()
+
+	# Pulsing animation - store tween to kill later
+	beam_warning_tween = create_tween().set_loops()
+	beam_warning_tween.tween_property(beam_warning_label, "modulate:a", 0.5, 0.15)
+	beam_warning_tween.tween_property(beam_warning_label, "modulate:a", 1.0, 0.15)
 
 func _hide_beam_warning() -> void:
+	# Kill the pulsing tween to prevent infinite loop
+	if beam_warning_tween and beam_warning_tween.is_valid():
+		beam_warning_tween.kill()
+		beam_warning_tween = null
 	if beam_warning_label:
 		beam_warning_label.visible = false
 

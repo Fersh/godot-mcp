@@ -560,7 +560,7 @@ func _spawn_spinning_slash_effect(player: Node2D, radius: float, duration: float
 
 	# Setup frames from slash sprite sheet
 	var frames = SpriteFrames.new()
-	frames.add_animation("default")
+	# SpriteFrames.new() already creates "default" animation, just configure it
 	frames.set_animation_speed("default", 20.0)
 	frames.set_animation_loop("default", true)
 

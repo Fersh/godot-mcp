@@ -30,9 +30,11 @@ func _ready() -> void:
 	bob_time = randf() * TAU  # Random start phase
 	add_to_group("dropped_items")
 
-	# Setup collision
-	body_entered.connect(_on_body_entered)
-	body_exited.connect(_on_body_exited)
+	# Setup collision - check if not already connected to prevent errors on re-parenting
+	if not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if not body_exited.is_connected(_on_body_exited):
+		body_exited.connect(_on_body_exited)
 
 func setup(data: ItemData) -> void:
 	item_data = data

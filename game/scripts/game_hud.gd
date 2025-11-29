@@ -3,15 +3,15 @@ extends CanvasLayer
 # Game HUD - Top-left portrait with health bar and progress bar
 # Clicking portrait opens pause menu
 
-const PORTRAIT_SIZE := 66  # 60 * 1.1
-const HEALTH_BAR_WIDTH := 165  # 150 * 1.1
-const HEALTH_BAR_HEIGHT := 24  # 22 * 1.1
-const PROGRESS_BAR_WIDTH := 165  # 150 * 1.1
-const PROGRESS_BAR_HEIGHT := 24  # 22 * 1.1
-const MARGIN := 40  # Distance from edge of screen
-const SPACING := 9  # 8 * 1.1
-const ICON_SIZE := 24  # Same as bar height (22 * 1.1)
-const ICON_MARGIN_RIGHT := 11  # 10 * 1.1
+const PORTRAIT_SIZE := 73  # 66 * 1.1
+const HEALTH_BAR_WIDTH := 182  # 165 * 1.1
+const HEALTH_BAR_HEIGHT := 26  # 24 * 1.1
+const PROGRESS_BAR_WIDTH := 182  # 165 * 1.1
+const PROGRESS_BAR_HEIGHT := 26  # 24 * 1.1
+const MARGIN := 44  # Distance from edge of screen (40 * 1.1)
+const SPACING := 10  # 9 * 1.1
+const ICON_SIZE := 26  # Same as bar height (24 * 1.1)
+const ICON_MARGIN_RIGHT := 12  # 11 * 1.1
 
 const HEALTH_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb659.png"
 const XP_ICON_PATH := "res://assets/sprites/icons/raven/32x32/fb101.png"

@@ -26,7 +26,7 @@ func _setup_sprite() -> void:
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
-	frames.add_animation("default")
+	# SpriteFrames.new() already creates "default" animation, just configure it
 
 	var source_path: String
 	var frame_size: int

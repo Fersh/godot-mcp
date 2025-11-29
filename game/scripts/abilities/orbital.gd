@@ -35,7 +35,7 @@ func _setup_sprite() -> void:
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()
-	frames.add_animation("default")
+	# SpriteFrames.new() already creates "default" animation, just configure it
 	frames.set_animation_speed("default", 15.0)
 	frames.set_animation_loop("default", true)
 
