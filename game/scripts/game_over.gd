@@ -175,61 +175,142 @@ func _display_loot() -> void:
 	# Commit the pending items to permanent inventory (after displaying)
 	EquipmentManager.commit_pending_items()
 
+var active_tooltip: PanelContainer = null
+
 func _create_loot_card(item: ItemData) -> Control:
 	var card = Button.new()
-	card.custom_minimum_size = Vector2(80, 80)
-	card.tooltip_text = "%s\n%s %s\n%s" % [
-		item.get_full_name(),
-		item.get_rarity_name(),
-		item.get_slot_name(),
-		item.get_stat_description()
-	]
+	card.custom_minimum_size = Vector2(50, 50)  # Smaller cards
+
+	# Center container for icon and name
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var vbox = VBoxContainer.new()
-	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 2)
 
-	# Icon
+	# Icon - smaller and centered
 	if item.icon_path != "" and ResourceLoader.exists(item.icon_path):
 		var icon = TextureRect.new()
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(40, 40)
-		var center = CenterContainer.new()
-		center.add_child(icon)
-		vbox.add_child(center)
+		icon.custom_minimum_size = Vector2(24, 24)  # Smaller icon
+		var icon_center = CenterContainer.new()
+		icon_center.add_child(icon)
+		vbox.add_child(icon_center)
 
-	# Name (truncated)
+	# Name (truncated) - smaller font, centered
 	var name_label = Label.new()
 	var display_name = item.get_full_name()
-	if display_name.length() > 10:
-		display_name = display_name.substr(0, 9) + ".."
+	if display_name.length() > 6:
+		display_name = display_name.substr(0, 5) + ".."
 	name_label.text = display_name
-	name_label.add_theme_font_size_override("font_size", 8)
+	name_label.add_theme_font_size_override("font_size", 6)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
+	center.add_child(vbox)
+
 	# Style based on rarity
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.1, 0.1, 0.12, 0.9)
 	style.border_color = item.get_rarity_color()
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
+	style.set_corner_radius_all(4)
 	card.add_theme_stylebox_override("normal", style)
+
+	var hover_style = style.duplicate()
+	hover_style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
+	card.add_theme_stylebox_override("hover", hover_style)
 
 	var margin = MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 4)
-	margin.add_theme_constant_override("margin_right", 4)
-	margin.add_theme_constant_override("margin_top", 4)
-	margin.add_theme_constant_override("margin_bottom", 4)
-	margin.add_child(vbox)
+	margin.add_theme_constant_override("margin_left", 3)
+	margin.add_theme_constant_override("margin_right", 3)
+	margin.add_theme_constant_override("margin_top", 3)
+	margin.add_theme_constant_override("margin_bottom", 3)
+	margin.add_child(center)
 	card.add_child(margin)
 
+	# Connect press to show tooltip
+	card.pressed.connect(_show_item_tooltip.bind(item, card))
+
 	return card
+
+func _show_item_tooltip(item: ItemData, card: Button) -> void:
+	# Remove existing tooltip
+	if active_tooltip:
+		active_tooltip.queue_free()
+		active_tooltip = null
+
+	# Create tooltip panel
+	active_tooltip = PanelContainer.new()
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.08, 0.1, 0.95)
+	panel_style.border_color = item.get_rarity_color()
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(6)
+	active_tooltip.add_theme_stylebox_override("panel", panel_style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+
+	# Item name
+	var name_label = Label.new()
+	name_label.text = item.get_full_name()
+	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_color_override("font_color", item.get_rarity_color())
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		name_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(name_label)
+
+	# Rarity and slot
+	var type_label = Label.new()
+	type_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
+	type_label.add_theme_font_size_override("font_size", 9)
+	type_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		type_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(type_label)
+
+	# Stats
+	var stats_label = Label.new()
+	stats_label.text = item.get_stat_description()
+	stats_label.add_theme_font_size_override("font_size", 10)
+	stats_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stats_label.custom_minimum_size = Vector2(150, 0)
+	if pixel_font:
+		stats_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(stats_label)
+
+	margin.add_child(vbox)
+	active_tooltip.add_child(margin)
+
+	# Position above the card
+	add_child(active_tooltip)
+	await get_tree().process_frame  # Wait for size calculation
+
+	var card_global = card.global_position
+	var tooltip_size = active_tooltip.size
+	active_tooltip.global_position = Vector2(
+		card_global.x + (card.size.x / 2) - (tooltip_size.x / 2),
+		card_global.y - tooltip_size.y - 10
+	)
 
 func _style_play_again_button() -> void:
 	# Golden/green prominent button for Play Again
@@ -457,6 +538,20 @@ func _input(event: InputEvent) -> void:
 			if not settings_btn_rect.has_point(event.position):
 				settings_visible = false
 				settings_dropdown.visible = false
+
+	# Close item tooltip when clicking outside of it
+	if active_tooltip and event is InputEventMouseButton and event.pressed:
+		if not active_tooltip.get_global_rect().has_point(event.position):
+			# Check if clicking on a loot card (don't close if clicking another card)
+			var clicked_on_loot = false
+			if loot_container:
+				for child in loot_container.get_children():
+					if child is Button and child.get_global_rect().has_point(event.position):
+						clicked_on_loot = true
+						break
+			if not clicked_on_loot:
+				active_tooltip.queue_free()
+				active_tooltip = null
 
 # ============================================
 # POLISHED DEATH SCREEN ANIMATIONS (#24)

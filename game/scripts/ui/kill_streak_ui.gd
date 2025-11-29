@@ -81,7 +81,7 @@ func _create_ui() -> void:
 	container.anchor_right = 1.0
 	container.anchor_top = 0.12  # Below points/coins/wave
 	container.anchor_bottom = 0.18
-	container.offset_right = -20
+	container.offset_right = -40  # 20px more inward from edge
 	container.modulate.a = 0.0
 	add_child(container)
 

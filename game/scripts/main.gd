@@ -265,8 +265,12 @@ func _show_active_ability_selection(level: int) -> void:
 			ability_selection.show_choices(passive_choices)
 
 func _show_ultimate_ability_selection() -> void:
-	"""Show the ultimate ability selection UI at level 15."""
+	"""Show the ultimate ability selection UI at level 5 (swapped for testing)."""
+	print("DEBUG: _show_ultimate_ability_selection called")
+	print("DEBUG: ultimate_selection_ui = ", ultimate_selection_ui)
+
 	if not ultimate_selection_ui:
+		print("DEBUG: No ultimate_selection_ui, falling back to passive")
 		# Fallback to passive if UI not available
 		var choices = AbilityManager.get_random_abilities(3)
 		if choices.size() > 0:
@@ -277,13 +281,17 @@ func _show_ultimate_ability_selection() -> void:
 	var character_id = "archer"
 	if CharacterManager:
 		character_id = CharacterManager.selected_character_id
+	print("DEBUG: character_id = ", character_id)
 
 	# Get random ultimate abilities for this character
 	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, 3) if UltimateAbilityManager else []
+	print("DEBUG: choices.size() = ", choices.size())
 
 	if choices.size() > 0:
+		print("DEBUG: Showing ultimate selection UI")
 		ultimate_selection_ui.show_choices(choices, character_id)
 	else:
+		print("DEBUG: No ultimates available, falling back to passive")
 		# No ultimates available, fall back to passive
 		var passive_choices = AbilityManager.get_random_abilities(3)
 		if passive_choices.size() > 0:
