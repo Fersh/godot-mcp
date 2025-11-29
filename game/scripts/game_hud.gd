@@ -49,6 +49,12 @@ var displayed_xp: float = 0.0
 var previous_xp: float = 0.0
 var current_tween: Tween = null
 
+# Low HP heartbeat animation
+var low_hp_active: bool = false
+var heartbeat_phase: float = 0.0
+var health_bar_original_scale: Vector2 = Vector2.ONE
+var health_bar_original_rotation: float = 0.0
+
 # Animation constants (matching combo style)
 const BAR_BASE_ROTATION: float = 0.0  # Return to no rotation (original position)
 const BAR_SHAKE_AMOUNT: float = 0.06
@@ -192,6 +198,7 @@ func _create_ui() -> void:
 	health_bar_bg.name = "HealthBarBG"
 	health_bar_bg.size = Vector2(HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT)
 	health_bar_bg.position = Vector2(health_bar_x, health_bar_y)
+	health_bar_bg.pivot_offset = Vector2(HEALTH_BAR_WIDTH / 2, HEALTH_BAR_HEIGHT / 2)  # Pulse from center
 	var health_bg_style = StyleBoxFlat.new()
 	health_bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
 	health_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
@@ -386,12 +393,28 @@ func _process(delta: float) -> void:
 				fire_update_timer = 0.0
 				_update_fire_particles()
 
+	# Update low HP heartbeat animation on health bar
+	_update_low_hp_heartbeat(delta)
+
 func _on_health_changed(current: float, maximum: float) -> void:
 	var health_changed = abs(current - previous_health) > 0.5
 	previous_health = current
 	current_health = current
 	max_health = maximum
 	_update_health_bar()
+
+	# Update low HP state
+	var health_ratio = current / maximum if maximum > 0 else 1.0
+	var was_low_hp = low_hp_active
+	low_hp_active = health_ratio <= 0.5 and health_ratio > 0
+
+	# Reset heartbeat phase when entering/leaving low HP
+	if low_hp_active != was_low_hp:
+		heartbeat_phase = 0.0
+		if not low_hp_active and health_bar_bg:
+			# Reset bar to original state
+			health_bar_bg.scale = health_bar_original_scale
+			health_bar_bg.rotation = health_bar_original_rotation
 
 	# Animate health bar on change (both bg and fill)
 	if health_changed and health_bar_bg:
@@ -729,3 +752,52 @@ func _reset_fire_particle(p: Dictionary) -> void:
 	if tier_colors.size() > 0:
 		p["node"].color = tier_colors[0]
 		p["node"].color.a = 0.8
+
+# ============================================
+# LOW HP HEARTBEAT ANIMATION
+# ============================================
+
+func _update_low_hp_heartbeat(delta: float) -> void:
+	"""Pulse and rotate the health bar like a heartbeat when at 50% HP or below."""
+	if not low_hp_active or health_bar_bg == null:
+		return
+
+	# Calculate heartbeat speed based on health (same as juice_manager vignette)
+	# At 50% HP: moderate pulse (~0.7 beats per second)
+	# At 10% HP: faster pulse (~2 beats per second)
+	var health_ratio = current_health / max_health if max_health > 0 else 1.0
+	var health_urgency = 1.0 - (health_ratio / 0.5)  # 0 at 50%, 1 at 0%
+	health_urgency = clamp(health_urgency, 0.0, 1.0)
+	var beats_per_second = lerp(0.7, 2.0, health_urgency)
+
+	heartbeat_phase += delta * beats_per_second
+	if heartbeat_phase >= 1.0:
+		heartbeat_phase -= 1.0
+
+	# Create heartbeat pattern: quick double-pulse (matching vignette)
+	var pulse_intensity: float = 0.0
+	if heartbeat_phase < 0.1:
+		# First beat rise
+		pulse_intensity = heartbeat_phase / 0.1
+	elif heartbeat_phase < 0.2:
+		# First beat fall
+		pulse_intensity = 1.0 - (heartbeat_phase - 0.1) / 0.1
+	elif heartbeat_phase < 0.3:
+		# Second beat rise
+		pulse_intensity = (heartbeat_phase - 0.2) / 0.1 * 0.7
+	elif heartbeat_phase < 0.4:
+		# Second beat fall
+		pulse_intensity = 0.7 * (1.0 - (heartbeat_phase - 0.3) / 0.1)
+	# Rest of the cycle: no pulse
+
+	# Scale pulse intensity based on how low HP is
+	var base_intensity = lerp(0.3, 0.8, health_urgency)
+	var final_pulse = pulse_intensity * base_intensity
+
+	# Apply scale pulse to health bar
+	var scale_boost = 1.0 + (final_pulse * 0.08)  # Up to 8% scale boost
+	health_bar_bg.scale = health_bar_original_scale * scale_boost
+
+	# Apply subtle rotation wobble
+	var rotation_amount = final_pulse * 0.02  # Up to ~1 degree rotation
+	health_bar_bg.rotation = health_bar_original_rotation + rotation_amount

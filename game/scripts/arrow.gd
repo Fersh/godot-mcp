@@ -279,6 +279,23 @@ func _apply_elemental_effects(enemy: Node2D) -> void:
 	if not AbilityManager:
 		return
 
+	# Chaotic Strikes - random elemental effect each hit
+	if AbilityManager.has_chaotic_strikes:
+		var chaos_element = AbilityManager.get_chaotic_element()
+		match chaos_element:
+			"fire":
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(3.0)
+				_spawn_elemental_damage_number(enemy, "BURN", Color(1.0, 0.4, 0.2))
+			"ice":
+				if enemy.has_method("apply_slow"):
+					enemy.apply_slow(0.5, 2.0)
+				_spawn_elemental_damage_number(enemy, "CHILL", Color(0.4, 0.7, 1.0))
+			"lightning":
+				AbilityManager.trigger_lightning_at(enemy.global_position)
+				_spawn_elemental_damage_number(enemy, "ZAP", Color(1.0, 0.9, 0.4))
+		return  # Chaotic strikes replaces other elemental effects
+
 	# Ignite - apply burn damage
 	if AbilityManager.check_ignite():
 		if enemy.has_method("apply_burn"):

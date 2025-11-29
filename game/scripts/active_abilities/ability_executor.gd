@@ -1374,17 +1374,62 @@ func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> v
 				arrow_pos.x = clamp(arrow_pos.x, 40, 1536 - 40)
 				arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
 
-				# Hit enemies at this position
-				var enemies = _get_enemies_in_radius(arrow_pos, 40)
-				for enemy in enemies:
-					_deal_damage_to_enemy(enemy, damage / (waves * 2))
-
-				# Spawn arrow impact effect
-				_spawn_effect("arrow_impact", arrow_pos)
+				# Spawn falling arrow visual
+				_spawn_falling_arrow(arrow_pos, damage / (waves * 2), ability.radius)
 		)
 
 	_play_sound("arrow_storm")
 	_screen_shake("medium")
+
+func _spawn_falling_arrow(target_pos: Vector2, damage: float, _radius: float) -> void:
+	"""Spawn a visual arrow that falls from above and impacts at target position."""
+	# Create arrow visual
+	var arrow = Node2D.new()
+	arrow.name = "FallingArrow"
+
+	# Arrow shaft (white rectangle)
+	var shaft = ColorRect.new()
+	shaft.size = Vector2(18, 3)
+	shaft.position = Vector2(-10, -1.5)
+	shaft.color = Color(0.9, 0.85, 0.7)  # Slightly off-white
+	arrow.add_child(shaft)
+
+	# Arrow tip (dark triangle)
+	var tip = Polygon2D.new()
+	tip.position = Vector2(8, 0)
+	tip.color = Color(0.2, 0.2, 0.2)
+	tip.polygon = PackedVector2Array([Vector2(0, -2), Vector2(6, 0), Vector2(0, 2)])
+	arrow.add_child(tip)
+
+	# Start position (above target, off-screen or high up)
+	var start_y = target_pos.y - randf_range(300, 500)
+	var start_x = target_pos.x + randf_range(-30, 30)  # Slight horizontal offset
+	arrow.global_position = Vector2(start_x, start_y)
+
+	# Rotate arrow to point downward (towards target)
+	var direction = (target_pos - arrow.global_position).normalized()
+	arrow.rotation = direction.angle()
+
+	get_tree().current_scene.add_child(arrow)
+
+	# Animate arrow falling
+	var fall_duration = randf_range(0.15, 0.25)  # Fast fall
+	var tween = arrow.create_tween()
+	tween.tween_property(arrow, "global_position", target_pos, fall_duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+
+	# On impact: deal damage, spawn effect, remove arrow
+	tween.tween_callback(func():
+		# Hit enemies at this position
+		var enemies = _get_enemies_in_radius(target_pos, 40)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		# Spawn impact effect
+		_spawn_effect("arrow_impact", target_pos)
+
+		# Remove arrow
+		arrow.queue_free()
+	)
 
 func _execute_explosive_decoy(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a decoy that attracts enemies then explodes
