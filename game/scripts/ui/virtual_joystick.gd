@@ -7,7 +7,8 @@ const JOYSTICK_RADIUS := 80.0
 const KNOB_RADIUS := 35.0
 const DEADZONE := 0.15
 const TRANSPARENCY := 0.5
-const SMOOTHING := 12.0  # Lower = smoother/slower response
+const SMOOTHING_ACCEL := 8.0  # Smooth ease into movement
+const SMOOTHING_DECEL := 50.0  # Quick response when stopping or changing direction
 
 var is_active: bool = false
 var touch_index: int = -1
@@ -22,9 +23,35 @@ func _ready() -> void:
 	set_process(true)
 
 func _process(delta: float) -> void:
-	# Smoothly interpolate knob position and direction
-	knob_offset = knob_offset.lerp(target_knob_offset, SMOOTHING * delta)
-	current_direction = current_direction.lerp(target_direction, SMOOTHING * delta)
+	# Determine smoothing based on whether we're accelerating or decelerating
+	var target_magnitude = target_direction.length()
+	var current_magnitude = current_direction.length()
+
+	# Use fast smoothing when:
+	# - Stopping (target is zero/near-zero)
+	# - Changing direction significantly while moving
+	var is_stopping = target_magnitude < 0.1
+	var is_changing_direction = current_magnitude > 0.1 and target_magnitude > 0.1 and current_direction.dot(target_direction) < 0.7
+
+	var direction_smoothing: float
+	if is_stopping:
+		# Immediate stop when released
+		current_direction = Vector2.ZERO
+		direction_smoothing = SMOOTHING_DECEL
+	elif is_changing_direction:
+		# Quick response when changing direction while moving
+		direction_smoothing = SMOOTHING_DECEL
+	else:
+		# Smooth ease into movement when starting or continuing same direction
+		direction_smoothing = SMOOTHING_ACCEL
+
+	# Smoothly interpolate knob position (visual only - always smooth)
+	var knob_smoothing = SMOOTHING_DECEL if is_stopping else SMOOTHING_ACCEL * 1.5
+	knob_offset = knob_offset.lerp(target_knob_offset, knob_smoothing * delta)
+
+	# Apply direction smoothing (skip if already set to zero above)
+	if not is_stopping:
+		current_direction = current_direction.lerp(target_direction, direction_smoothing * delta)
 
 	# Snap to zero if very close (avoid tiny movements)
 	if current_direction.length() < 0.01:
