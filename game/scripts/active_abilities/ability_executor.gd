@@ -1375,13 +1375,13 @@ func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> v
 				arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
 
 				# Spawn falling arrow visual
-				_spawn_storm_arrow(arrow_pos, damage / (waves * 2), ability.radius)
+				_spawn_barrage_arrow(arrow_pos, damage / (waves * 2), ability.radius)
 		)
 
 	_play_sound("arrow_storm")
 	_screen_shake("medium")
 
-func _spawn_storm_arrow(target_pos: Vector2, damage: float, _radius: float) -> void:
+func _spawn_barrage_arrow(target_pos: Vector2, damage: float, _radius: float) -> void:
 	"""Spawn a visual arrow that falls from above and impacts at target position."""
 	# Create arrow visual
 	var arrow = Node2D.new()
