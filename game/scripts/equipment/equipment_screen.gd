@@ -765,11 +765,12 @@ func _show_comparison(item: ItemData) -> void:
 	var scroll = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.custom_minimum_size = Vector2(500, 300)
+	scroll.custom_minimum_size = Vector2(750, 300)
 
 	# Fixed width container for consistent modal size
 	var main_hbox = HBoxContainer.new()
-	main_hbox.custom_minimum_size = Vector2(500, 0)
+	main_hbox.custom_minimum_size = Vector2(750, 0)
+	main_hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	main_hbox.add_theme_constant_override("separation", 16)
 
 	# New item card - takes exactly half
@@ -848,7 +849,7 @@ func _show_comparison(item: ItemData) -> void:
 
 	# Style comparison panel
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.1, 0.08, 0.12, 0.98)
+	panel_style.bg_color = Color(0.1, 0.08, 0.12, 1.0)
 	panel_style.border_color = COLOR_BORDER
 	panel_style.set_border_width_all(4)
 	panel_style.corner_radius_top_left = 4
@@ -879,6 +880,7 @@ func _show_comparison(item: ItemData) -> void:
 func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dictionary) -> Control:
 	var card = VBoxContainer.new()
 	card.add_theme_constant_override("separation", 4)
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	# Header
 	var header = Label.new()
@@ -911,6 +913,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_child(name_label)
 
@@ -922,6 +925,8 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	rarity_label.add_theme_font_size_override("font_size", 12)
 	rarity_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rarity_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rarity_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	card.add_child(rarity_label)
 
 	# Separator with margin
@@ -946,6 +951,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 
 		var row = HBoxContainer.new()
 		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var stat_label = Label.new()
 		stat_label.text = line
@@ -953,6 +959,8 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 			stat_label.add_theme_font_override("font", pixel_font)
 		stat_label.add_theme_font_size_override("font_size", 12)
 		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
+		stat_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stat_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		row.add_child(stat_label)
 
 		# Add arrow if showing comparison
@@ -982,6 +990,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		desc.add_theme_font_size_override("font_size", 11)
 		desc.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
 		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		card.add_child(desc)
 
