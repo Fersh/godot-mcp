@@ -579,31 +579,16 @@ func _show_equipped_popup(item: ItemData) -> void:
 		child.queue_free()
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
+	vbox.add_theme_constant_override("separation", 0)
 
-	# X button row at top right
-	var close_row = HBoxContainer.new()
-	close_row.alignment = BoxContainer.ALIGNMENT_END
-	var close_btn = Button.new()
-	close_btn.text = "X"
-	close_btn.custom_minimum_size = Vector2(32, 32)
-	if pixel_font:
-		close_btn.add_theme_font_override("font", pixel_font)
-	close_btn.add_theme_font_size_override("font_size", 14)
-	close_btn.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
-	var close_style = StyleBoxFlat.new()
-	close_style.bg_color = Color(0.4, 0.2, 0.2, 1.0)
-	close_style.set_border_width_all(2)
-	close_style.border_color = Color(0.6, 0.3, 0.3, 1.0)
-	close_style.set_corner_radius_all(4)
-	close_btn.add_theme_stylebox_override("normal", close_style)
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = Color(0.6, 0.3, 0.3, 1.0)
-	close_btn.add_theme_stylebox_override("hover", close_hover)
-	close_btn.add_theme_stylebox_override("pressed", close_style)
-	close_btn.pressed.connect(_hide_popups)
-	close_row.add_child(close_btn)
-	vbox.add_child(close_row)
+	# Scrollable content area
+	var scroll = ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.custom_minimum_size = Vector2(300, 150)
+
+	var content_vbox = VBoxContainer.new()
+	content_vbox.add_theme_constant_override("separation", 12)
 
 	# Item name
 	var name_label = Label.new()
@@ -613,19 +598,23 @@ func _show_equipped_popup(item: ItemData) -> void:
 	name_label.add_theme_font_size_override("font_size", 32)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(name_label)
+	content_vbox.add_child(name_label)
 
 	# Equipped by
 	var equipped_label = Label.new()
 	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
 	if pixel_font:
 		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 20)
+	equipped_label.add_theme_font_size_override("font_size", 14)
 	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(equipped_label)
+	content_vbox.add_child(equipped_label)
 
-	# Item stats
+	# Item stats with margin container
+	var stats_margin = MarginContainer.new()
+	stats_margin.add_theme_constant_override("margin_top", 8)
+	stats_margin.add_theme_constant_override("margin_bottom", 8)
+
 	var stats_vbox = VBoxContainer.new()
 	stats_vbox.custom_minimum_size = Vector2(280, 0)
 	stats_vbox.add_theme_constant_override("separation", 4)
@@ -678,22 +667,20 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 		stats_vbox.add_child(stat_row)
 
-	vbox.add_child(stats_vbox)
+	stats_margin.add_child(stats_vbox)
+	content_vbox.add_child(stats_margin)
 
-	# Buttons
+	scroll.add_child(content_vbox)
+	vbox.add_child(scroll)
+
+	# Buttons fixed at bottom
+	var button_margin = MarginContainer.new()
+	button_margin.add_theme_constant_override("margin_top", 16)
+	button_margin.add_theme_constant_override("margin_bottom", 12)
+
 	var button_row = HBoxContainer.new()
 	button_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	button_row.add_theme_constant_override("separation", 16)
-
-	var unequip_btn = Button.new()
-	unequip_btn.text = "UNEQUIP"
-	unequip_btn.custom_minimum_size = Vector2(180, 50)
-	_style_button(unequip_btn, Color(0.5, 0.3, 0.2))
-	if pixel_font:
-		unequip_btn.add_theme_font_override("font", pixel_font)
-	unequip_btn.add_theme_font_size_override("font_size", 18)
-	unequip_btn.pressed.connect(_on_unequip_popup_pressed)
-	button_row.add_child(unequip_btn)
 
 	var cancel_btn = Button.new()
 	cancel_btn.text = "CANCEL"
@@ -705,7 +692,18 @@ func _show_equipped_popup(item: ItemData) -> void:
 	cancel_btn.pressed.connect(_hide_popups)
 	button_row.add_child(cancel_btn)
 
-	vbox.add_child(button_row)
+	var unequip_btn = Button.new()
+	unequip_btn.text = "UNEQUIP"
+	unequip_btn.custom_minimum_size = Vector2(180, 50)
+	_style_button(unequip_btn, Color(0.5, 0.3, 0.2))
+	if pixel_font:
+		unequip_btn.add_theme_font_override("font", pixel_font)
+	unequip_btn.add_theme_font_size_override("font_size", 18)
+	unequip_btn.pressed.connect(_on_unequip_popup_pressed)
+	button_row.add_child(unequip_btn)
+
+	button_margin.add_child(button_row)
+	vbox.add_child(button_margin)
 
 	# Style popup - darker and fully opaque
 	var popup_style = StyleBoxFlat.new()
@@ -719,7 +717,7 @@ func _show_equipped_popup(item: ItemData) -> void:
 	popup_style.content_margin_left = 24
 	popup_style.content_margin_right = 48
 	popup_style.content_margin_top = 20
-	popup_style.content_margin_bottom = 20
+	popup_style.content_margin_bottom = 8
 	popup_panel.add_theme_stylebox_override("panel", popup_style)
 
 	popup_panel.add_child(vbox)
@@ -729,6 +727,12 @@ func _show_equipped_popup(item: ItemData) -> void:
 	await get_tree().process_frame
 	var equip_rect = equipment_panel.get_global_rect()
 	var viewport_size = get_viewport().get_visible_rect().size
+
+	# Constrain max height
+	var max_height = min(popup_panel.size.y, viewport_size.y * 0.6)
+	scroll.custom_minimum_size.y = min(scroll.custom_minimum_size.y, max_height - 100)
+	popup_panel.size.y = min(popup_panel.size.y, max_height)
+
 	var popup_x = equip_rect.position.x + equip_rect.size.x + 20
 	var popup_y = equip_rect.position.y
 
@@ -752,11 +756,23 @@ func _show_comparison(item: ItemData) -> void:
 	for child in comparison_panel.get_children():
 		child.queue_free()
 
+	# Main container with max height
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 0)
+	vbox.custom_minimum_size = Vector2(0, 0)
+
+	# Scrollable content area with max height
+	var scroll = ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.custom_minimum_size = Vector2(450, 300)
+
 	var main_hbox = HBoxContainer.new()
 	main_hbox.add_theme_constant_override("separation", 16)
 
-	# New item card
+	# New item card - fixed width
 	var new_card = _create_comparison_card(item, true, comparison)
+	new_card.custom_minimum_size = Vector2(200, 0)
 	main_hbox.add_child(new_card)
 
 	# VS separator
@@ -769,12 +785,14 @@ func _show_comparison(item: ItemData) -> void:
 	vs_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	main_hbox.add_child(vs_label)
 
-	# Equipped card
+	# Equipped card - fixed width
 	if equipped:
 		var equipped_card = _create_comparison_card(equipped, false, {})
+		equipped_card.custom_minimum_size = Vector2(200, 0)
 		main_hbox.add_child(equipped_card)
 	else:
 		var empty_card = VBoxContainer.new()
+		empty_card.custom_minimum_size = Vector2(200, 0)
 		var empty_label = Label.new()
 		empty_label.text = "Empty Slot"
 		if pixel_font:
@@ -785,10 +803,13 @@ func _show_comparison(item: ItemData) -> void:
 		empty_card.add_child(empty_label)
 		main_hbox.add_child(empty_card)
 
-	# Buttons at bottom
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	vbox.add_child(main_hbox)
+	scroll.add_child(main_hbox)
+	vbox.add_child(scroll)
+
+	# Buttons fixed at bottom (not in scroll)
+	var button_margin = MarginContainer.new()
+	button_margin.add_theme_constant_override("margin_top", 16)
+	button_margin.add_theme_constant_override("margin_bottom", 12)
 
 	var button_row = HBoxContainer.new()
 	button_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -796,6 +817,16 @@ func _show_comparison(item: ItemData) -> void:
 
 	# Check if can equip
 	var can_equip = item.can_be_equipped_by(selected_character)
+
+	var cancel_btn = Button.new()
+	cancel_btn.text = "CANCEL"
+	cancel_btn.custom_minimum_size = Vector2(140, 45)
+	_style_button(cancel_btn, Color(0.4, 0.3, 0.25))
+	if pixel_font:
+		cancel_btn.add_theme_font_override("font", pixel_font)
+	cancel_btn.add_theme_font_size_override("font_size", 16)
+	cancel_btn.pressed.connect(_hide_comparison)
+	button_row.add_child(cancel_btn)
 
 	var equip_btn = Button.new()
 	equip_btn.text = "EQUIP" if can_equip else "WRONG CLASS"
@@ -808,17 +839,8 @@ func _show_comparison(item: ItemData) -> void:
 	equip_btn.pressed.connect(_on_equip_comparison_pressed)
 	button_row.add_child(equip_btn)
 
-	var cancel_btn = Button.new()
-	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(140, 45)
-	_style_button(cancel_btn, Color(0.4, 0.3, 0.25))
-	if pixel_font:
-		cancel_btn.add_theme_font_override("font", pixel_font)
-	cancel_btn.add_theme_font_size_override("font_size", 16)
-	cancel_btn.pressed.connect(_hide_comparison)
-	button_row.add_child(cancel_btn)
-
-	vbox.add_child(button_row)
+	button_margin.add_child(button_row)
+	vbox.add_child(button_margin)
 
 	# Style comparison panel
 	var panel_style = StyleBoxFlat.new()
@@ -832,17 +854,22 @@ func _show_comparison(item: ItemData) -> void:
 	panel_style.content_margin_left = 16
 	panel_style.content_margin_right = 16
 	panel_style.content_margin_top = 12
-	panel_style.content_margin_bottom = 12
+	panel_style.content_margin_bottom = 0
 	comparison_panel.add_theme_stylebox_override("panel", panel_style)
 
 	comparison_panel.add_child(vbox)
 	comparison_panel.visible = true
 
-	# Position in center
+	# Position in center and constrain size
 	await get_tree().process_frame
+	var viewport_size = get_viewport().get_visible_rect().size
+	var max_height = min(comparison_panel.size.y, viewport_size.y * 0.7)
+	scroll.custom_minimum_size.y = min(scroll.custom_minimum_size.y, max_height - 80)
+	comparison_panel.size.y = min(comparison_panel.size.y, max_height)
+
 	comparison_panel.position = Vector2(
-		(get_viewport().get_visible_rect().size.x - comparison_panel.size.x) / 2,
-		(get_viewport().get_visible_rect().size.y - comparison_panel.size.y) / 2
+		(viewport_size.x - comparison_panel.size.x) / 2,
+		(viewport_size.y - comparison_panel.size.y) / 2
 	)
 
 func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dictionary) -> Control:
