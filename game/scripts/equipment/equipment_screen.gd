@@ -892,7 +892,11 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(header)
 
-	# Icon
+	# Icon with margin
+	var icon_margin = MarginContainer.new()
+	icon_margin.add_theme_constant_override("margin_top", 10)
+	icon_margin.add_theme_constant_override("margin_bottom", 10)
+
 	var icon_center = CenterContainer.new()
 	icon_center.custom_minimum_size = Vector2(40, 40)
 	if item.icon_path != "" and ResourceLoader.exists(item.icon_path):
@@ -903,7 +907,8 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		icon.custom_minimum_size = Vector2(36, 36)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon_center.add_child(icon)
-	card.add_child(icon_center)
+	icon_margin.add_child(icon_center)
+	card.add_child(icon_margin)
 
 	# Name
 	var name_label = Label.new()
@@ -949,8 +954,16 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		if line.strip_edges() == "":
 			continue
 
+		var is_special = line.to_lower().begins_with("special:")
+
+		# Add margin above special text
+		if is_special:
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 20)
+			card.add_child(spacer)
+
 		var row = HBoxContainer.new()
-		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.alignment = BoxContainer.ALIGNMENT_BEGIN if is_special else BoxContainer.ALIGNMENT_CENTER
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var stat_label = Label.new()
@@ -961,6 +974,8 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
 		stat_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		stat_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if is_special:
+			stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		row.add_child(stat_label)
 
 		# Add arrow if showing comparison
@@ -971,11 +986,12 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 					var diff = comparison[stat_key].diff
 					if abs(diff) > 0.001:
 						var arrow = Label.new()
-						arrow.text = " ^" if diff > 0 else " v"
+						arrow.text = " ▲" if diff > 0 else " ▼"
 						if pixel_font:
 							arrow.add_theme_font_override("font", pixel_font)
 						arrow.add_theme_font_size_override("font_size", 12)
 						arrow.add_theme_color_override("font_color", COLOR_STAT_UP if diff > 0 else COLOR_STAT_DOWN)
+						arrow.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 						row.add_child(arrow)
 					break
 
@@ -983,6 +999,10 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 
 	# Description
 	if item.description != "":
+		var desc_spacer = Control.new()
+		desc_spacer.custom_minimum_size = Vector2(0, 20)
+		card.add_child(desc_spacer)
+
 		var desc = Label.new()
 		desc.text = "\"%s\"" % item.description
 		if pixel_font:
