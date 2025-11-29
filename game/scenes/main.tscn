@@ -1,14 +1,14 @@
-[gd_scene load_steps=20 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=21 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/game_hud.tscn" id="4_game_hud"]
-[ext_resource type="Texture2D" uid="uid://bbgscr1vsv17w" path="res://assets/sprites/arena3.png" id="5_arena"]
+[ext_resource type="Texture2D" uid="uid://d0a4q8jtga3fw" path="res://assets/enviro/arena5.png" id="5_arena"]
 [ext_resource type="PackedScene" path="res://scenes/stats_display.tscn" id="6_stats"]
 [ext_resource type="PackedScene" uid="uid://diimf5rw8jlto" path="res://scenes/ability_selection.tscn" id="7_ability_selection"]
-[ext_resource type="PackedScene" path="res://scenes/juice_overlay.tscn" id="8_juice"]
+[ext_resource type="PackedScene" uid="uid://kcwlkidhjrtq" path="res://scenes/juice_overlay.tscn" id="8_juice"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_ratfolk.tscn" id="9_ratfolk"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_imp.tscn" id="10_imp"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_slime.tscn" id="11_slime"]
@@ -20,6 +20,9 @@
 [ext_resource type="PackedScene" path="res://scenes/boss_minotaur.tscn" id="18_minotaur"]
 [ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
+size = Vector2(1848, 449)
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
 
@@ -28,6 +31,15 @@ z_index = -10
 position = Vector2(764, 690)
 scale = Vector2(0.75, 0.75)
 texture = ExtResource("5_arena")
+
+[node name="TopWall" type="StaticBody2D" parent="."]
+position = Vector2(768, 60)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
+position = Vector2(-10, 151)
+shape = SubResource("RectangleShape2D_topwall")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(768, 691)

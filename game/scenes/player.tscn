@@ -13,7 +13,7 @@ size = Vector2(18, 21)
 
 [node name="Player" type="CharacterBody2D" groups=["player"]]
 collision_layer = 1
-collision_mask = 0
+collision_mask = 2
 script = ExtResource("1_script")
 arrow_scene = ExtResource("3_arrow")
 damage_number_scene = ExtResource("5_damage_number")

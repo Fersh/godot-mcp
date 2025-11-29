@@ -218,17 +218,18 @@ func get_scene_for_type(enemy_type: String) -> PackedScene:
 			return enemy_scene
 
 func get_spawn_position() -> Vector2:
-	var edge = randi() % 4
+	# Spawn from left, right, or bottom only (no top spawns)
+	var roll = randf()
 	var pos: Vector2
 
-	match edge:
-		0:  # Top
-			pos = Vector2(randf_range(50, ARENA_WIDTH - 50), -50)
-		1:  # Bottom
-			pos = Vector2(randf_range(50, ARENA_WIDTH - 50), ARENA_HEIGHT + 50)
-		2:  # Left
-			pos = Vector2(-50, randf_range(50, ARENA_HEIGHT - 50))
-		3:  # Right
-			pos = Vector2(ARENA_WIDTH + 50, randf_range(50, ARENA_HEIGHT - 50))
+	if roll < 0.333:
+		# Left
+		pos = Vector2(-50, randf_range(50, ARENA_HEIGHT - 50))
+	elif roll < 0.666:
+		# Right
+		pos = Vector2(ARENA_WIDTH + 50, randf_range(50, ARENA_HEIGHT - 50))
+	else:
+		# Bottom
+		pos = Vector2(randf_range(50, ARENA_WIDTH - 50), ARENA_HEIGHT + 50)
 
 	return pos

@@ -22,13 +22,13 @@ const TIER_NAMES: Array[String] = [
 	"DOMINATING",      # 35
 	"GODLIKE",         # 50
 	"LEGENDARY",       # 75
-	"BEYOND GODLIKE",  # 100
+	"WHOA BRO",        # 100
 	"SEEK HELP",       # 150
 	"GOT GUD",         # 200
 	"TOUCH GRASS",     # 250
 	"GET A LIFE",      # 300
 	"1V1 ME BRO",      # 350
-	"CLEARLY OVERCOMPENSATING", # 400
+	"OVERCOMPENSATING", # 400
 	"ARE YOU OK?",     # 450
 	"LOL WTF!?",       # 500
 ]

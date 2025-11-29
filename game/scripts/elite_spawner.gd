@@ -498,31 +498,28 @@ func _on_elite_died(_elite: Node) -> void:
 	elite_health_bar_container.visible = false
 
 func _get_spawn_position() -> Vector2:
-	# Spawn at a random edge of the arena
-	var edge = randi() % 4
+	# Spawn from left, right, or bottom only (no top spawns)
+	var roll = randf()
 	var pos: Vector2
 
-	match edge:
-		0:  # Top
-			pos = Vector2(
-				randf_range(SPAWN_MARGIN, ARENA_WIDTH - SPAWN_MARGIN),
-				-SPAWN_MARGIN
-			)
-		1:  # Bottom
-			pos = Vector2(
-				randf_range(SPAWN_MARGIN, ARENA_WIDTH - SPAWN_MARGIN),
-				ARENA_HEIGHT + SPAWN_MARGIN
-			)
-		2:  # Left
-			pos = Vector2(
-				-SPAWN_MARGIN,
-				randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
-			)
-		3:  # Right
-			pos = Vector2(
-				ARENA_WIDTH + SPAWN_MARGIN,
-				randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
-			)
+	if roll < 0.333:
+		# Left
+		pos = Vector2(
+			-SPAWN_MARGIN,
+			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
+		)
+	elif roll < 0.666:
+		# Right
+		pos = Vector2(
+			ARENA_WIDTH + SPAWN_MARGIN,
+			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
+		)
+	else:
+		# Bottom
+		pos = Vector2(
+			randf_range(SPAWN_MARGIN, ARENA_WIDTH - SPAWN_MARGIN),
+			ARENA_HEIGHT + SPAWN_MARGIN
+		)
 
 	return pos
 

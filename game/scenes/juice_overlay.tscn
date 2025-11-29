@@ -7,8 +7,8 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
 shader = ExtResource("2_vignette")
-shader_parameter/intensity = 0.35
-shader_parameter/softness = 0.45
+shader_parameter/intensity = 0.6
+shader_parameter/softness = 0.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_chromatic"]
 shader = ExtResource("3_chromatic")
