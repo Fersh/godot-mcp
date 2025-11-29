@@ -1188,7 +1188,7 @@ func perform_melee_attack() -> void:
 								var bonuses = CharacterManager.get_passive_bonuses()
 								if bonuses.get("lifesteal_on_crit", 0.0) > 0:
 									var heal_amount = final_damage * bonuses.get("lifesteal_on_crit", 0.0)
-									heal(heal_amount)
+									heal(heal_amount, true, false, true)  # Show heal text
 
 					# Apply damage
 					if enemy.has_method("take_damage"):
@@ -1460,7 +1460,7 @@ func give_kill_xp(enemy_max_hp: float = 100.0) -> void:
 	add_xp(xp_gain)
 
 # Ability system helper functions
-func heal(amount: float, _play_sound: bool = true, show_particles: bool = false) -> void:
+func heal(amount: float, _play_sound: bool = true, show_particles: bool = false, show_text: bool = false) -> void:
 	var actual_heal = min(amount, max_health - current_health)
 	if actual_heal <= 0:
 		return  # Already at full health
@@ -1468,8 +1468,8 @@ func heal(amount: float, _play_sound: bool = true, show_particles: bool = false)
 	current_health += actual_heal
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
-		# Show +HP text on health bar for potion heals
-		if show_particles and health_bar.has_method("show_heal_text"):
+		# Show +HP text on health bar for potion heals or lifesteal
+		if (show_particles or show_text) and health_bar.has_method("show_heal_text"):
 			health_bar.show_heal_text(actual_heal)
 	emit_signal("health_changed", current_health, max_health)
 
@@ -2174,7 +2174,7 @@ func on_arrow_hit_enemy(enemy: Node2D, is_crit: bool) -> void:
 			if AbilityManager:
 				estimated_damage *= AbilityManager.get_damage_multiplier()
 			var heal_amount = estimated_damage * bonuses.get("lifesteal_on_crit", 0.0)
-			heal(heal_amount)
+			heal(heal_amount, true, false, true)  # Show heal text
 
 func get_heartseeker_damage_multiplier() -> float:
 	"""Get the current Heartseeker damage multiplier."""
@@ -2218,9 +2218,47 @@ func _activate_retribution() -> void:
 	retribution_timer = retribution_duration
 	_update_retribution_buff()
 
-	# Visual feedback - slight red tint
-	if JuiceManager:
-		JuiceManager.shake_small()
+	# Visual feedback - red glow on player
+	_spawn_retribution_effect()
+
+func _spawn_retribution_effect() -> void:
+	"""Spawn a red glow effect around player to indicate Retribution is active."""
+	var effect = Node2D.new()
+	effect.global_position = global_position
+	get_parent().add_child(effect)
+
+	# Red pulsing aura
+	var aura = Polygon2D.new()
+	var aura_points: Array[Vector2] = []
+	for i in range(16):
+		var angle = (float(i) / 16) * TAU
+		aura_points.append(Vector2(cos(angle), sin(angle)) * 35)
+	aura.polygon = aura_points
+	aura.color = Color(1.0, 0.2, 0.2, 0.0)
+	effect.add_child(aura)
+
+	# Animate aura appearing
+	var tween = aura.create_tween()
+	tween.tween_property(aura, "color:a", 0.5, 0.15)
+	tween.tween_property(aura, "scale", Vector2(1.3, 1.3), 0.2).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(aura, "color:a", 0.0, 0.3)
+	tween.tween_callback(effect.queue_free)
+
+	# Red particles bursting outward
+	for i in range(8):
+		var particle = ColorRect.new()
+		particle.size = Vector2(4, 4)
+		particle.color = Color(1.0, 0.3, 0.2, 0.9)
+		particle.position = Vector2(-2, -2)
+		effect.add_child(particle)
+
+		var p_angle = (float(i) / 8) * TAU
+		var end_pos = Vector2(cos(p_angle), sin(p_angle)) * 40
+
+		var p_tween = particle.create_tween()
+		p_tween.set_parallel(true)
+		p_tween.tween_property(particle, "position", end_pos, 0.25).set_ease(Tween.EASE_OUT)
+		p_tween.tween_property(particle, "modulate:a", 0.0, 0.2).set_delay(0.1)
 
 func _consume_retribution() -> void:
 	"""Consume Retribution after hitting enemies."""

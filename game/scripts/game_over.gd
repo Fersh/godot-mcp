@@ -158,10 +158,7 @@ func _display_loot() -> void:
 			loot_container.add_child(no_loot_container)
 		return
 
-	# Commit the pending items to permanent inventory
-	EquipmentManager.commit_pending_items()
-
-	# Display each item
+	# Display each item BEFORE committing (commit clears the array)
 	if loot_container:
 		var loot_label = Label.new()
 		loot_label.text = "LOOT: "
@@ -174,6 +171,9 @@ func _display_loot() -> void:
 		for item in pending:
 			var item_card = _create_loot_card(item)
 			loot_container.add_child(item_card)
+
+	# Commit the pending items to permanent inventory (after displaying)
+	EquipmentManager.commit_pending_items()
 
 func _create_loot_card(item: ItemData) -> Control:
 	var card = Button.new()

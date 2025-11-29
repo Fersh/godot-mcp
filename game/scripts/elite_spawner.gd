@@ -155,10 +155,7 @@ func _setup_boss_health_bar() -> void:
 	bg_style.border_width_top = 4
 	bg_style.border_width_bottom = 4
 	bg_style.border_color = Color(0.5, 0.1, 0.1, 1.0)
-	bg_style.corner_radius_top_left = 6
-	bg_style.corner_radius_top_right = 6
-	bg_style.corner_radius_bottom_left = 6
-	bg_style.corner_radius_bottom_right = 6
+	bg_style.set_corner_radius_all(2)  # Match HUD health bar
 	boss_health_bar.add_theme_stylebox_override("background", bg_style)
 
 	var fill_style = StyleBoxFlat.new()
@@ -168,10 +165,7 @@ func _setup_boss_health_bar() -> void:
 	fill_style.border_width_bottom = 4
 	fill_style.border_width_right = 4
 	fill_style.border_color = Color(0.5, 0.1, 0.1, 1.0)
-	fill_style.corner_radius_top_left = 4
-	fill_style.corner_radius_top_right = 4
-	fill_style.corner_radius_bottom_left = 4
-	fill_style.corner_radius_bottom_right = 4
+	fill_style.set_corner_radius_all(1)  # Match HUD health bar fill
 	boss_health_bar.add_theme_stylebox_override("fill", fill_style)
 
 	bar_container.add_child(boss_health_bar)
@@ -236,10 +230,7 @@ func _setup_elite_health_bar() -> void:
 	bg_style.border_width_top = 4
 	bg_style.border_width_bottom = 4
 	bg_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
-	bg_style.corner_radius_top_left = 6
-	bg_style.corner_radius_top_right = 6
-	bg_style.corner_radius_bottom_left = 6
-	bg_style.corner_radius_bottom_right = 6
+	bg_style.set_corner_radius_all(2)  # Match HUD health bar
 	elite_health_bar.add_theme_stylebox_override("background", bg_style)
 
 	var fill_style = StyleBoxFlat.new()
@@ -249,10 +240,7 @@ func _setup_elite_health_bar() -> void:
 	fill_style.border_width_bottom = 4
 	fill_style.border_width_right = 4
 	fill_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
-	fill_style.corner_radius_top_left = 4
-	fill_style.corner_radius_top_right = 4
-	fill_style.corner_radius_bottom_left = 4
-	fill_style.corner_radius_bottom_right = 4
+	fill_style.set_corner_radius_all(1)  # Match HUD health bar fill
 	elite_health_bar.add_theme_stylebox_override("fill", fill_style)
 
 	bar_container.add_child(elite_health_bar)

@@ -331,7 +331,7 @@ static func _create_explosive_arrow() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		10.0
-	).with_damage(12.0, 1.0).with_aoe(60.0).with_projectiles(1, 450.0)
+	).with_damage(20.0, 1.2).with_aoe(60.0).with_projectiles(1, 450.0)
 
 static func _create_multi_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

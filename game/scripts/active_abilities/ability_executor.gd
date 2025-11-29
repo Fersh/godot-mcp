@@ -1323,40 +1323,6 @@ func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 		arrow.queue_free()
 	)
 
-func _spawn_arrow_impact(pos: Vector2) -> void:
-	# Small dust/impact effect
-	var impact = Node2D.new()
-	impact.global_position = pos
-	impact.z_index = 5
-
-	# Create small particles
-	for i in range(4):
-		var particle = ColorRect.new()
-		particle.size = Vector2(4, 4)
-		particle.position = Vector2(-2, -2)
-		particle.color = Color(0.8, 0.7, 0.5, 0.8)
-		impact.add_child(particle)
-
-		# Animate particle spreading out
-		var angle = i * TAU / 4 + randf() * 0.5
-		var dist = 15 + randf() * 10
-		var end_pos = Vector2(cos(angle) * dist, sin(angle) * dist)
-
-		var ptween = particle.create_tween()
-		ptween.set_parallel(true)
-		ptween.tween_property(particle, "position", end_pos, 0.2)
-		ptween.tween_property(particle, "color:a", 0.0, 0.2)
-
-	var main_node = get_tree().current_scene
-	if main_node:
-		main_node.add_child(impact)
-
-	# Clean up after animation
-	get_tree().create_timer(0.3).timeout.connect(func():
-		if is_instance_valid(impact):
-			impact.queue_free()
-	)
-
 func _execute_ballista_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target = _get_nearest_enemy(player.global_position)
 	if not target:

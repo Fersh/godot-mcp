@@ -3,8 +3,25 @@ extends CanvasLayer
 # Kill Streak UI - Minimal combo display on right side
 # Shows streak counter with tier name on same line
 
-const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100]
-const TIER_NAMES: Array[String] = ["COMBO", "KILLING SPREE", "RAMPAGE", "UNSTOPPABLE", "DOMINATING", "GODLIKE", "LEGENDARY", "BEYOND GODLIKE"]
+const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+const TIER_NAMES: Array[String] = [
+	"COMBO",           # 0
+	"KILLING SPREE",   # 5
+	"RAMPAGE",         # 10
+	"UNSTOPPABLE",     # 20
+	"DOMINATING",      # 35
+	"GODLIKE",         # 50
+	"LEGENDARY",       # 75
+	"BEYOND GODLIKE",  # 100
+	"SEEK HELP",       # 150
+	"GOT GUD",         # 200
+	"TOUCH GRASS",     # 250
+	"GET A LIFE",      # 300
+	"1V1 ME BRO",      # 350
+	"CLEARLY OVERCOMPENSATING", # 400
+	"ARE YOU OK?",     # 450
+	"LOL WTF!?",       # 500
+]
 const TIER_COLORS: Array[Color] = [
 	Color(1.0, 1.0, 1.0),       # White (0)
 	Color(1.0, 0.9, 0.3),       # Yellow (5)
@@ -13,7 +30,15 @@ const TIER_COLORS: Array[Color] = [
 	Color(0.9, 0.2, 0.9),       # Purple (35)
 	Color(0.3, 0.8, 1.0),       # Cyan (50)
 	Color(1.0, 0.85, 0.0),      # Gold (75)
-	Color(1.0, 1.0, 1.0),       # Prismatic/White (100)
+	Color(1.0, 1.0, 1.0),       # Prismatic/Rainbow (100)
+	Color(1.0, 0.3, 0.5),       # Rose (150)
+	Color(0.4, 1.0, 0.6),       # Mint (200)
+	Color(0.5, 1.0, 0.5),       # Neon Green (250)
+	Color(1.0, 0.4, 0.8),       # Hot Pink (300)
+	Color(0.6, 0.4, 1.0),       # Indigo (350)
+	Color(0.4, 1.0, 1.0),       # Electric Cyan (400)
+	Color(1.0, 0.6, 0.0),       # Blazing Orange (450)
+	Color(1.0, 1.0, 1.0),       # Prismatic/Rainbow (500)
 ]
 
 var pixel_font: Font = null
@@ -74,7 +99,7 @@ func _create_ui() -> void:
 	combo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		combo_label.add_theme_font_override("font", pixel_font)
-	combo_label.add_theme_font_size_override("font_size", 24)  # Increased by 20%
+	combo_label.add_theme_font_size_override("font_size", 28)  # Larger combo font
 	combo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	# Drop shadow matching wave/coins text
 	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -124,9 +149,10 @@ func _on_streak_changed(streak: int, tier: int) -> void:
 		_update_display()
 		display_timer = 5.0  # Match the combo timer duration
 
-		# Rotating shake animation when streak changes
+		# Rotating shake and pulse animation when streak changes
 		if old_streak != streak:
 			_animate_shake()
+			_animate_pulse()
 
 func _on_streak_milestone(tier: int, tier_name: String) -> void:
 	# Update display with new tier name
@@ -157,8 +183,8 @@ func _update_display() -> void:
 	var color = TIER_COLORS[current_tier]
 	combo_label.add_theme_color_override("font_color", color)
 
-	# Scale font size slightly based on tier (base size increased by 20%)
-	var base_size = 20
+	# Scale font size slightly based on tier
+	var base_size = 24
 	var size_bonus = min(current_tier, 4) * 2
 	combo_label.add_theme_font_size_override("font_size", base_size + size_bonus)
 
@@ -169,6 +195,13 @@ func _animate_shake() -> void:
 	tween.tween_property(combo_label, "rotation", BASE_ROTATION - 0.06, 0.04)
 	tween.tween_property(combo_label, "rotation", BASE_ROTATION + 0.03, 0.03)
 	tween.tween_property(combo_label, "rotation", BASE_ROTATION, 0.03)
+
+func _animate_pulse() -> void:
+	"""Scale pulse animation when combo increases."""
+	combo_label.pivot_offset = combo_label.size / 2
+	var tween = create_tween()
+	tween.tween_property(combo_label, "scale", Vector2(1.15, 1.15), 0.08).set_ease(Tween.EASE_OUT)
+	tween.tween_property(combo_label, "scale", Vector2(1.0, 1.0), 0.12).set_ease(Tween.EASE_IN_OUT)
 
 func _animate_milestone_shake() -> void:
 	"""Bigger rotating shake for tier milestones."""

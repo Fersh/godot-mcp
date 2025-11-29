@@ -2207,7 +2207,8 @@ func get_soul_reaper_damage_bonus() -> float:
 func get_unlimited_power_bonus() -> float:
 	if not has_unlimited_power:
 		return 0.0
-	return unlimited_power_bonus * unlimited_power_stacks
+	# Cap at 40% max damage bonus
+	return minf(unlimited_power_bonus * unlimited_power_stacks, 0.40)
 
 func reduce_active_cooldowns(amount: float) -> void:
 	# Signal to active ability system to reduce cooldowns

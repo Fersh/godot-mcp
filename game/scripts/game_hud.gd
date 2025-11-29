@@ -27,6 +27,7 @@ var pause_menu: CanvasLayer = null
 # UI References
 var portrait_button: Button = null
 var portrait_texture: TextureRect = null
+var portrait_bg: Panel = null
 var pause_overlay: Label = null
 var health_icon: TextureRect = null
 var health_bar_bg: Panel = null
@@ -100,9 +101,9 @@ func _create_ui() -> void:
 	container.offset_top = MARGIN
 	container.offset_right = MARGIN + PORTRAIT_SIZE + SPACING + HEALTH_BAR_WIDTH
 	container.offset_bottom = MARGIN + PORTRAIT_SIZE + SPACING + PROGRESS_BAR_HEIGHT
-	# Slight rotation with left side down (~2 degrees)
+	# Slight rotation with right side down (~1 degree)
 	container.pivot_offset = Vector2(0, 0)  # Rotate from top-left corner
-	container.rotation = 0.035  # ~2 degrees
+	container.rotation = -0.017  # ~1 degree, right side down
 	add_child(container)
 
 	# Portrait button (clickable for pause)
@@ -116,7 +117,7 @@ func _create_ui() -> void:
 	container.add_child(portrait_button)
 
 	# Portrait background
-	var portrait_bg = Panel.new()
+	portrait_bg = Panel.new()
 	portrait_bg.name = "PortraitBG"
 	portrait_bg.size = Vector2(PORTRAIT_SIZE, PORTRAIT_SIZE)
 	portrait_bg.position = Vector2.ZERO
@@ -322,13 +323,14 @@ func _setup_portrait() -> void:
 	var frame_h = character.frame_size.y
 	var idle_row = character.row_idle
 
-	# For face close-up, we want the upper portion of the first idle frame
-	# Adjust region to focus on the face area (top 60-70% of frame)
+	# For extreme face close-up, crop to just the head area (top 35-40% of frame)
+	# Center horizontally on the middle portion of the sprite
 	var face_region_y = idle_row * frame_h
-	var face_height = frame_h * 0.7  # Top 70% for face
+	var face_height = frame_h * 0.35  # Top 35% for face only
+	var face_width = frame_w * 0.6  # Center 60% width
+	var face_x = (frame_w - face_width) / 2  # Center horizontally
 
-	# Center horizontally but focus on upper portion
-	atlas.region = Rect2(0, face_region_y, frame_w, face_height)
+	atlas.region = Rect2(face_x, face_region_y, face_width, face_height)
 
 	portrait_texture.texture = atlas
 
@@ -609,7 +611,7 @@ func _setup_fire_effect() -> void:
 		})
 
 func _update_fire_intensity() -> void:
-	"""Update fire visibility based on kill streak tier."""
+	"""Update fire visibility and portrait border based on kill streak tier."""
 	if fire_container == null:
 		return
 
@@ -617,10 +619,26 @@ func _update_fire_intensity() -> void:
 		# Hide all fire particles
 		for p in fire_particles:
 			p["node"].color.a = 0.0
+		# Reset portrait border to default
+		_update_portrait_border(Color(0.4, 0.35, 0.3, 1.0))
 	else:
 		# Reset particles for new intensity
 		for p in fire_particles:
 			_reset_fire_particle(p)
+		# Update portrait border to match fire tier color
+		var tier_colors = FIRE_TIER_COLORS[min(current_fire_tier, FIRE_TIER_COLORS.size() - 1)]
+		if tier_colors.size() > 0:
+			_update_portrait_border(tier_colors[0])  # Use the brightest color
+
+func _update_portrait_border(color: Color) -> void:
+	"""Update the portrait background border color."""
+	if portrait_bg == null:
+		return
+	var style = portrait_bg.get_theme_stylebox("panel")
+	if style:
+		style = style.duplicate()
+		style.border_color = color
+		portrait_bg.add_theme_stylebox_override("panel", style)
 
 func _update_fire_particles() -> void:
 	"""Update fire particle positions and colors (called at low framerate for pixelated look)."""

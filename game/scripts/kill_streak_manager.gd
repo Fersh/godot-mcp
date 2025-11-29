@@ -13,8 +13,25 @@ var streak_timer: float = 0.0
 var streak_decay_time: float = 5.0  # Time between kills to maintain streak
 
 # Tier thresholds and names
-const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100]
-const TIER_NAMES: Array[String] = ["", "KILLING SPREE", "RAMPAGE", "UNSTOPPABLE", "DOMINATING", "GODLIKE", "LEGENDARY", "BEYOND GODLIKE"]
+const TIER_THRESHOLDS: Array[int] = [0, 5, 10, 20, 35, 50, 75, 100, 150, 200, 250, 300, 350, 400, 450, 500]
+const TIER_NAMES: Array[String] = [
+	"",                # 0
+	"KILLING SPREE",   # 5
+	"RAMPAGE",         # 10
+	"UNSTOPPABLE",     # 20
+	"DOMINATING",      # 35
+	"GODLIKE",         # 50
+	"LEGENDARY",       # 75
+	"BEYOND GODLIKE",  # 100
+	"SEEK HELP",       # 150
+	"GOT GUD",         # 200
+	"TOUCH GRASS",     # 250
+	"GET A LIFE",      # 300
+	"1V1 ME BRO",      # 350
+	"CLEARLY OVERCOMPENSATING", # 400
+	"ARE YOU OK?",     # 450
+	"LOL WTF!?",       # 500
+]
 const TIER_COLORS: Array[Color] = [
 	Color(1.0, 1.0, 1.0),       # White (0)
 	Color(1.0, 0.9, 0.3),       # Yellow (5)
@@ -23,12 +40,20 @@ const TIER_COLORS: Array[Color] = [
 	Color(0.9, 0.2, 0.9),       # Purple (35)
 	Color(0.3, 0.8, 1.0),       # Cyan (50)
 	Color(1.0, 0.85, 0.0),      # Gold (75)
-	Color(1.0, 1.0, 1.0),       # Prismatic/White (100)
+	Color(1.0, 1.0, 1.0),       # Prismatic/Rainbow (100)
+	Color(1.0, 0.3, 0.5),       # Rose (150)
+	Color(0.4, 1.0, 0.6),       # Mint (200)
+	Color(0.5, 1.0, 0.5),       # Neon Green (250)
+	Color(1.0, 0.4, 0.8),       # Hot Pink (300)
+	Color(0.6, 0.4, 1.0),       # Indigo (350)
+	Color(0.4, 1.0, 1.0),       # Electric Cyan (400)
+	Color(1.0, 0.6, 0.0),       # Blazing Orange (450)
+	Color(1.0, 1.0, 1.0),       # Prismatic/Rainbow (500)
 ]
 
-# Reward multipliers per tier
-const XP_MULTIPLIERS: Array[float] = [1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
-const GOLD_MULTIPLIERS: Array[float] = [1.0, 1.1, 1.2, 1.4, 1.6, 1.8, 2.2, 2.5]
+# Reward multipliers per tier (scaled 1x to 5x from 0 to 500 kills)
+const XP_MULTIPLIERS: Array[float] = [1.0, 1.04, 1.08, 1.16, 1.28, 1.4, 1.6, 1.8, 2.2, 2.6, 3.0, 3.4, 3.8, 4.2, 4.6, 5.0]
+const GOLD_MULTIPLIERS: Array[float] = [1.0, 1.04, 1.08, 1.16, 1.28, 1.4, 1.6, 1.8, 2.2, 2.6, 3.0, 3.4, 3.8, 4.2, 4.6, 5.0]
 
 var current_tier: int = 0
 var highest_streak: int = 0
