@@ -144,7 +144,7 @@ static func create_archer() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Heartseeker"
-	data.passive_description = "Consecutive hits on same target: +10% Damage per hit (max 5 stacks)."
+	data.passive_description = "Hitting the same enemy deals more damage (up to 50%)."
 
 	return data
 
@@ -259,7 +259,7 @@ static func create_beast() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Bloodlust"
-	data.passive_description = "Heal 5% of damage dealt on critical hits"
+	data.passive_description = "Heal 10% of damage dealt on critical hits"
 
 	return data
 
@@ -316,7 +316,7 @@ static func create_mage() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Arcane Focus"
-	data.passive_description = "Standing still: +10% Damage dealt & taken/sec (max 50%). Decays over 5s when moving."
+	data.passive_description = "Channel power while standing still. Deal up to +50% damage, but take +50% damage too."
 
 	return data
 
@@ -381,6 +381,6 @@ static func create_monk() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Flowing Strikes"
-	data.passive_description = "Each attack builds Flow. Gain 5% damage and speed per stack (max 4). At 3 stacks, dash toward enemies."
+	data.passive_description = "Gain 5% damage and speed per attack. Automatically dash towards enemies at 3 stacks."
 
 	return data

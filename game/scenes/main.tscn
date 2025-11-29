@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
 [ext_resource type="PackedScene" path="res://scenes/decorations/banner.tscn" id="21_yc10j"]
 [ext_resource type="Script" uid="uid://blnv3drpcd3ac" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
+[ext_resource type="Script" path="res://scripts/ui/offscreen_indicators.gd" id="23_offscreen"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -75,6 +76,9 @@ visible = false
 [node name="JuiceOverlay" parent="." instance=ExtResource("8_juice")]
 
 [node name="ItemPickupUI" parent="." instance=ExtResource("12_item_pickup")]
+
+[node name="OffscreenIndicators" type="CanvasLayer" parent="."]
+script = ExtResource("23_offscreen")
 
 [node name="Torch" parent="." instance=ExtResource("20_gqmmt")]
 position = Vector2(94, 241.00006)

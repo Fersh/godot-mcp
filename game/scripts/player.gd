@@ -1465,8 +1465,8 @@ func add_xp(amount: float) -> void:
 		# Apply automatic level bonuses (5% damage and health per level)
 		if AbilityManager:
 			AbilityManager.add_level_bonus()
-		# Increase max health by 5% and heal the same amount
-		var health_increase = base_max_health * 0.05
+		# Increase max health by 5% and heal the same amount (rounded up)
+		var health_increase = ceili(base_max_health * 0.05)
 		base_max_health += health_increase
 		max_health += health_increase
 		current_health += health_increase
