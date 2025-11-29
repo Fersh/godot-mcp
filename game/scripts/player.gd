@@ -141,6 +141,7 @@ var target_indicator_pulse: float = 0.0
 var current_target: Node2D = null
 
 # XP System
+const MAX_LEVEL: int = 20
 var current_xp: float = 0.0
 var xp_to_next_level: float = 526.24  # Base XP required (10% increase from 478.4)
 var current_level: int = 1
@@ -1481,14 +1482,23 @@ func add_xp(amount: float) -> void:
 		if AbilityManager.should_double_xp():
 			xp_multiplier *= 2.0
 
+	# No XP gain at max level
+	if current_level >= MAX_LEVEL:
+		return
+
 	var final_amount = amount * xp_multiplier
 	current_xp += final_amount
 	emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
-	while current_xp >= xp_to_next_level:
+	while current_xp >= xp_to_next_level and current_level < MAX_LEVEL:
 		current_xp -= xp_to_next_level
 		current_level += 1
-		xp_to_next_level *= 1.5
+		# XP scaling: 1.5x for levels 1-10, then 1.15x after level 10
+		# This allows faster progression in late game to reach ~level 20 by 20 mins
+		if current_level <= 10:
+			xp_to_next_level *= 1.5
+		else:
+			xp_to_next_level *= 1.15
 
 		# Apply automatic level bonuses (5% damage and health per level)
 		if AbilityManager:
@@ -1514,6 +1524,11 @@ func add_xp(amount: float) -> void:
 		# Spawn level up visual effect on player
 		_spawn_level_up_effect()
 		emit_signal("level_up", current_level)
+		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
+
+	# At max level, set XP to full and stop
+	if current_level >= MAX_LEVEL:
+		current_xp = xp_to_next_level
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 func give_kill_xp(enemy_max_hp: float = 100.0) -> void:

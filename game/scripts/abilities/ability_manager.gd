@@ -859,7 +859,7 @@ func apply_adrenaline_buff(player: Node2D) -> void:
 		player.apply_temporary_speed_boost(adrenaline_boost, 2.0)
 
 func trigger_death_explosion(enemy: Node2D) -> void:
-	var explosion_radius = 80.0
+	var explosion_radius = 150.0  # Increased from 80 for better area coverage
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var actual_damage = explosion_damage * get_passive_damage_multiplier()
 
@@ -869,10 +869,10 @@ func trigger_death_explosion(enemy: Node2D) -> void:
 			if dist <= explosion_radius and other_enemy.has_method("take_damage"):
 				other_enemy.take_damage(actual_damage)
 
-	# Visual effect
-	spawn_explosion_effect(enemy.global_position)
+	# Visual effect - pass larger radius
+	spawn_explosion_effect(enemy.global_position, Color(1.0, 0.4, 0.2), explosion_radius)
 
-func spawn_explosion_effect(pos: Vector2, tint: Color = Color(1.0, 0.4, 0.2)) -> void:
+func spawn_explosion_effect(pos: Vector2, tint: Color = Color(1.0, 0.4, 0.2), radius: float = 80.0) -> void:
 	# Load the script first, then create a Node2D with the script attached
 	var explosion_script = load("res://scripts/abilities/explosion_effect.gd")
 	if explosion_script == null:
@@ -881,6 +881,9 @@ func spawn_explosion_effect(pos: Vector2, tint: Color = Color(1.0, 0.4, 0.2)) ->
 	var circle = Node2D.new()
 	circle.set_script(explosion_script)
 	circle.explosion_color = tint  # Red/orange tint for death detonation
+	# Scale explosion visual to match actual damage radius
+	circle.scale_multiplier = radius / 50.0  # Base explosion is ~50px
+	circle.explosion_size = "large" if radius >= 120 else "medium"
 	circle.global_position = pos
 	get_tree().current_scene.add_child(circle)
 

@@ -356,7 +356,8 @@ func _execute_time_dilation_field(ultimate: UltimateAbilityData, player: Node2D)
 func _execute_rain_of_thousand_arrows(ultimate: UltimateAbilityData, player: Node2D) -> void:
 	"""Arrows rain on all enemies for 5 seconds, 10 hits/second."""
 	var duration = ultimate.duration
-	var damage_per_hit = _get_damage(ultimate) / 50.0  # 50 total hits
+	# base_damage is 0.5 (50% per hit), damage_multiplier already factors in total
+	var damage_per_hit = ultimate.base_damage * (AbilityManager.get_damage_multiplier() if AbilityManager else 1.0)
 
 	var hits_per_second = 10
 	var total_hits = int(duration * hits_per_second)
