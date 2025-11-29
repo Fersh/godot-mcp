@@ -93,9 +93,9 @@ func _style_back_button() -> void:
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 1)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.5)
 	style.border_width_bottom = 2
-	style.border_color = Color(0.15, 0.14, 0.2, 1)
+	style.border_color = Color(0.15, 0.14, 0.2, 0.5)
 	style.content_margin_left = 30
 	style.content_margin_right = 30
 	header.add_theme_stylebox_override("panel", style)
