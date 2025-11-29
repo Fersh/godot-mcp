@@ -761,21 +761,24 @@ func _show_comparison(item: ItemData) -> void:
 	vbox.add_theme_constant_override("separation", 0)
 	vbox.custom_minimum_size = Vector2(0, 0)
 
-	# Scrollable content area with max height
+	# Scrollable content area with fixed width and max height
 	var scroll = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.custom_minimum_size = Vector2(450, 300)
+	scroll.custom_minimum_size = Vector2(500, 300)
 
+	# Fixed width container for consistent modal size
 	var main_hbox = HBoxContainer.new()
+	main_hbox.custom_minimum_size = Vector2(500, 0)
 	main_hbox.add_theme_constant_override("separation", 16)
 
-	# New item card - fixed width
+	# New item card - takes exactly half
 	var new_card = _create_comparison_card(item, true, comparison)
-	new_card.custom_minimum_size = Vector2(200, 0)
+	new_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	new_card.size_flags_stretch_ratio = 1.0
 	main_hbox.add_child(new_card)
 
-	# VS separator
+	# VS separator - fixed width, doesn't expand
 	var vs_label = Label.new()
 	vs_label.text = "VS"
 	if pixel_font:
@@ -783,16 +786,15 @@ func _show_comparison(item: ItemData) -> void:
 	vs_label.add_theme_font_size_override("font_size", 20)
 	vs_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	vs_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	vs_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	main_hbox.add_child(vs_label)
 
-	# Equipped card - fixed width
+	# Equipped card - takes exactly half
+	var equipped_card: Control
 	if equipped:
-		var equipped_card = _create_comparison_card(equipped, false, {})
-		equipped_card.custom_minimum_size = Vector2(200, 0)
-		main_hbox.add_child(equipped_card)
+		equipped_card = _create_comparison_card(equipped, false, {})
 	else:
-		var empty_card = VBoxContainer.new()
-		empty_card.custom_minimum_size = Vector2(200, 0)
+		equipped_card = VBoxContainer.new()
 		var empty_label = Label.new()
 		empty_label.text = "Empty Slot"
 		if pixel_font:
@@ -800,8 +802,10 @@ func _show_comparison(item: ItemData) -> void:
 		empty_label.add_theme_font_size_override("font_size", 18)
 		empty_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_card.add_child(empty_label)
-		main_hbox.add_child(empty_card)
+		equipped_card.add_child(empty_label)
+	equipped_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	equipped_card.size_flags_stretch_ratio = 1.0
+	main_hbox.add_child(equipped_card)
 
 	scroll.add_child(main_hbox)
 	vbox.add_child(scroll)
@@ -875,8 +879,6 @@ func _show_comparison(item: ItemData) -> void:
 func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dictionary) -> Control:
 	var card = VBoxContainer.new()
 	card.add_theme_constant_override("separation", 4)
-	# Compact width for landscape
-	card.custom_minimum_size = Vector2(200, 0)
 
 	# Header
 	var header = Label.new()
