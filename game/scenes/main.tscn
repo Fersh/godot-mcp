@@ -1,6 +1,7 @@
-[gd_scene load_steps=23 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=24 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
@@ -33,6 +34,9 @@ z_index = -10
 position = Vector2(764, 690)
 scale = Vector2(0.75, 0.75)
 texture = ExtResource("5_arena")
+
+[node name="DayNightCycle" type="CanvasModulate" parent="."]
+script = ExtResource("22_daynight")
 
 [node name="TopWall" type="StaticBody2D" parent="."]
 position = Vector2(768, 60)

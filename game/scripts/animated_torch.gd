@@ -4,7 +4,7 @@ extends Sprite2D
 # Sprite sheet: 80x16 = 10 frames of 8x16 each
 
 const TORCH_FRAMES = 10
-const TORCH_FPS = 8.0
+const TORCH_FPS = 10.0
 
 var anim_timer: float = 0.0
 
@@ -15,6 +15,7 @@ func _ready() -> void:
 	anim_timer = randf()  # Random offset so torches aren't in sync
 
 func _process(delta: float) -> void:
+	# Animate sprite frames
 	anim_timer += delta
 	if anim_timer >= 1.0 / TORCH_FPS:
 		anim_timer = fmod(anim_timer, 1.0 / TORCH_FPS)
