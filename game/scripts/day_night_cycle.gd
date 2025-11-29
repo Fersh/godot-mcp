@@ -2,6 +2,7 @@ extends CanvasModulate
 
 # Day/Night Cycle System
 # Transitions from day to night over 10 minutes, then back again (20 min full cycle)
+# Characters and enemies remain visible during night (darkness applies below them)
 
 const CYCLE_DURATION := 600.0  # 10 minutes per half-cycle (day->night or night->day)
 const FULL_CYCLE := CYCLE_DURATION * 2.0  # 20 minutes for full day/night cycle
@@ -10,16 +11,16 @@ const FULL_CYCLE := CYCLE_DURATION * 2.0  # 20 minutes for full day/night cycle
 var cycle_time := 0.475  # Start just before noon, reaches peak daylight at ~30s
 var cycle_speed := 1.0 / FULL_CYCLE  # How much cycle_time advances per second
 
-# Color palette for different times of day
-const COLOR_MIDNIGHT := Color(0.15, 0.15, 0.25, 1.0)  # Deep blue night
-const COLOR_DAWN := Color(0.7, 0.5, 0.6, 1.0)  # Pink/purple dawn
-const COLOR_SUNRISE := Color(1.0, 0.85, 0.7, 1.0)  # Warm golden sunrise
+# Color palette for different times of day - brighter values so characters stand out
+const COLOR_MIDNIGHT := Color(0.35, 0.35, 0.45, 1.0)  # Lighter night (was 0.15)
+const COLOR_DAWN := Color(0.8, 0.65, 0.7, 1.0)  # Pink/purple dawn
+const COLOR_SUNRISE := Color(1.0, 0.9, 0.8, 1.0)  # Warm golden sunrise
 const COLOR_MORNING := Color(1.0, 0.98, 0.95, 1.0)  # Bright morning
 const COLOR_NOON := Color(1.0, 1.0, 1.0, 1.0)  # Full bright
 const COLOR_AFTERNOON := Color(1.0, 0.97, 0.9, 1.0)  # Slightly warm
-const COLOR_SUNSET := Color(1.0, 0.7, 0.5, 1.0)  # Orange sunset
-const COLOR_DUSK := Color(0.6, 0.45, 0.55, 1.0)  # Purple dusk
-const COLOR_NIGHT := Color(0.2, 0.2, 0.35, 1.0)  # Night blue
+const COLOR_SUNSET := Color(1.0, 0.8, 0.6, 1.0)  # Orange sunset
+const COLOR_DUSK := Color(0.7, 0.55, 0.65, 1.0)  # Purple dusk
+const COLOR_NIGHT := Color(0.4, 0.4, 0.5, 1.0)  # Lighter night blue (was 0.2)
 
 # Torch light intensity based on time
 var torch_intensity := 0.0
@@ -32,6 +33,7 @@ signal time_changed(time_of_day: float, is_night: bool)
 
 func _ready() -> void:
 	# Start with morning color
+	# Night colors are brighter (35-40% vs 15-20%) so characters remain visible
 	color = _get_sky_color(cycle_time)
 
 	# Find all torches after a frame
@@ -50,7 +52,7 @@ func _process(delta: float) -> void:
 	if cycle_time >= 1.0:
 		cycle_time -= 1.0
 
-	# Update sky color
+	# Update sky color (lighter version for characters)
 	color = _get_sky_color(cycle_time)
 
 	# Calculate if it's night (for torch brightness)
@@ -147,12 +149,18 @@ func _update_torch_lights(night_factor: float) -> void:
 		var light = torch.get_node_or_null("PointLight2D")
 		if light:
 			# Scale energy based on night factor
-			# Torches are dim during day, bright at night
-			var base_energy = 0.3 + night_factor * 1.2
-			# Add subtle flicker
-			var flicker = sin(Time.get_ticks_msec() * 0.01 + torch.get_instance_id()) * 0.1
-			light.energy = base_energy + flicker
-			light.enabled = night_factor > 0.1 or base_energy > 0.4
+			# Torches are dim during day, brighter at night (but not too bright)
+			var base_energy = 0.15 + night_factor * 0.6
+			# Add dynamic flicker using multiple sine waves
+			var time_ms = Time.get_ticks_msec() * 0.001
+			var torch_offset = float(torch.get_instance_id() % 1000) * 0.1
+			var flicker = sin(time_ms * 8.0 + torch_offset) * 0.05
+			flicker += sin(time_ms * 12.0 + torch_offset * 2.0) * 0.03
+			flicker += sin(time_ms * 3.0 + torch_offset * 0.5) * 0.08
+			light.energy = max(0.1, base_energy + flicker)
+			# Also vary the scale slightly for more dynamic effect
+			light.texture_scale = 1.0 + sin(time_ms * 5.0 + torch_offset) * 0.1
+			light.enabled = night_factor > 0.1 or base_energy > 0.2
 
 func _smooth(t: float) -> float:
 	# Smoothstep for nice transitions

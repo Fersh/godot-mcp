@@ -31,6 +31,12 @@ var elite_spawn_count: int = 0
 var last_elite_type: int = -1  # -1=none, 0=Cyclops, 1=GoblinKing
 var initial_elite_chosen: bool = false
 
+# Scaling per spawn - each elite/boss is 15% stronger than the last
+const ELITE_SCALING_PER_SPAWN: float = 0.15
+const BOSS_SCALING_PER_SPAWN: float = 0.15
+var total_elites_killed: int = 0  # Track for scaling
+var total_bosses_killed: int = 0
+
 # Track active elites/bosses
 var active_elites: Array[Node] = []
 var active_boss: Node = null
@@ -374,6 +380,18 @@ func _spawn_boss() -> void:
 	boss.global_position = _get_spawn_position()
 	get_parent().add_child(boss)
 
+	# Apply scaling based on previous bosses killed (15% per boss)
+	var scale_multiplier = 1.0 + (total_bosses_killed * BOSS_SCALING_PER_SPAWN)
+	if boss.has_method("apply_scaling"):
+		boss.apply_scaling(scale_multiplier)
+	else:
+		# Manual scaling fallback
+		if "max_health" in boss:
+			boss.max_health *= scale_multiplier
+			boss.current_health = boss.max_health
+		if "attack_damage" in boss:
+			boss.attack_damage *= scale_multiplier
+
 	active_boss = boss
 
 	# Connect to boss signals for health bar
@@ -405,6 +423,18 @@ func _spawn_elite() -> void:
 	var elite = scene.instantiate()
 	elite.global_position = _get_spawn_position()
 	get_parent().add_child(elite)
+
+	# Apply scaling based on previous elites killed (15% per elite)
+	var scale_multiplier = 1.0 + (total_elites_killed * ELITE_SCALING_PER_SPAWN)
+	if elite.has_method("apply_scaling"):
+		elite.apply_scaling(scale_multiplier)
+	else:
+		# Manual scaling fallback
+		if "max_health" in elite:
+			elite.max_health *= scale_multiplier
+			elite.current_health = elite.max_health
+		if "attack_damage" in elite:
+			elite.attack_damage *= scale_multiplier
 
 	active_elites.append(elite)
 	current_tracked_elite = elite
@@ -487,6 +517,7 @@ func _on_boss_health_changed(current: float, max_hp: float) -> void:
 
 func _on_boss_died(_boss: Node) -> void:
 	active_boss = null
+	total_bosses_killed += 1  # Track for scaling next boss
 	# Hide health bar (CanvasLayer doesn't support modulate)
 	boss_health_bar_container.visible = false
 
@@ -496,6 +527,7 @@ func _on_elite_health_changed(current: float, max_hp: float) -> void:
 
 func _on_elite_died(_elite: Node) -> void:
 	current_tracked_elite = null
+	total_elites_killed += 1  # Track for scaling next elite
 	# Hide health bar
 	elite_health_bar_container.visible = false
 
