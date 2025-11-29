@@ -3,12 +3,26 @@ class_name UltimateSelectionUI
 
 signal ultimate_selected(ability: UltimateAbilityData)
 
-const ULTIMATE_GOLD := Color(1.0, 0.84, 0.0)
-const ULTIMATE_DARK_GOLD := Color(0.3, 0.25, 0.1)
+const ULTIMATE_PURPLE := Color(0.6, 0.3, 0.9)
+const ULTIMATE_DARK_PURPLE := Color(0.2, 0.1, 0.3)
 
 var current_choices: Array = []
 var ability_buttons: Array[Button] = []
 var all_ultimates_pool: Array = []
+
+# Fire effect for cards
+var fire_containers: Array[Control] = []
+var fire_particles: Array[Array] = []
+const FIRE_PARTICLE_COUNT := 12
+const FIRE_UPDATE_RATE := 0.08
+var fire_update_timer: float = 0.0
+# Purple fire colors (bright to dark)
+const FIRE_COLORS: Array[Color] = [
+	Color(0.8, 0.5, 1.0),   # Bright purple-pink
+	Color(0.6, 0.3, 0.9),   # Medium purple
+	Color(0.4, 0.2, 0.7),   # Darker purple
+	Color(0.3, 0.1, 0.5),   # Deep purple
+]
 
 # Slot machine state
 var is_rolling: bool = false
@@ -45,9 +59,9 @@ func _create_ui() -> void:
 	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	# Style with dark golden semi-transparent background
+	# Style with dark purple semi-transparent background
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.05, 0.04, 0.02, 0.95)
+	panel_style.bg_color = Color(0.04, 0.02, 0.08, 0.95)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 
@@ -75,8 +89,8 @@ func _create_ui() -> void:
 	title_label.text = "ULTIMATE ABILITY"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 36)
-	title_label.add_theme_color_override("font_color", ULTIMATE_GOLD)
-	title_label.add_theme_color_override("font_outline_color", ULTIMATE_DARK_GOLD)
+	title_label.add_theme_color_override("font_color", ULTIMATE_PURPLE)
+	title_label.add_theme_color_override("font_outline_color", ULTIMATE_DARK_PURPLE)
 	title_label.add_theme_constant_override("outline_size", 3)
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
@@ -106,6 +120,13 @@ func _create_ui() -> void:
 	vbox.add_child(choices_container)
 
 func _process(delta: float) -> void:
+	# Update fire particles (always when visible)
+	if visible and fire_particles.size() > 0:
+		fire_update_timer += delta
+		if fire_update_timer >= FIRE_UPDATE_RATE:
+			fire_update_timer = 0.0
+			_update_all_fire_particles(FIRE_UPDATE_RATE)
+
 	if not is_rolling:
 		return
 
@@ -141,6 +162,10 @@ func _process(delta: float) -> void:
 
 func show_choices(ultimates: Array, character_class_id: String) -> void:
 	current_choices = ultimates
+
+	# Clear previous fire effects
+	fire_containers.clear()
+	fire_particles.clear()
 
 	# Get pool for slot machine effect
 	var ultimate_class = UltimateAbilityManager._convert_character_id_to_class(character_class_id) if UltimateAbilityManager else UltimateAbilityData.CharacterClass.ARCHER
@@ -197,7 +222,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	name_label.text = ultimate.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", ULTIMATE_GOLD)
+	name_label.add_theme_color_override("font_color", ULTIMATE_PURPLE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -206,7 +231,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	# Separator line
 	var separator = HSeparator.new()
 	var sep_style = StyleBoxLine.new()
-	sep_style.color = Color(ULTIMATE_GOLD.r, ULTIMATE_GOLD.g, ULTIMATE_GOLD.b, 0.4)
+	sep_style.color = Color(ULTIMATE_PURPLE.r, ULTIMATE_PURPLE.g, ULTIMATE_PURPLE.b, 0.4)
 	sep_style.thickness = 1
 	separator.add_theme_stylebox_override("separator", sep_style)
 	vbox.add_child(separator)
@@ -259,6 +284,9 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 
 	_style_ultimate_button(button)
 
+	# Add fire effect
+	_add_fire_effect(button)
+
 	button.pressed.connect(_on_ultimate_selected.bind(index))
 
 	return button
@@ -276,7 +304,7 @@ func _create_ultimate_tag() -> CenterContainer:
 	var tag = PanelContainer.new()
 
 	var tag_style = StyleBoxFlat.new()
-	tag_style.bg_color = ULTIMATE_GOLD
+	tag_style.bg_color = ULTIMATE_PURPLE
 	tag_style.set_corner_radius_all(6)
 	tag_style.content_margin_left = 14
 	tag_style.content_margin_right = 14
@@ -303,7 +331,7 @@ func _create_ultimate_tag() -> CenterContainer:
 func _style_ultimate_button(button: Button) -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.1, 0.05, 0.98)
-	style.border_color = ULTIMATE_GOLD
+	style.border_color = ULTIMATE_PURPLE
 	style.set_border_width_all(4)
 	style.set_corner_radius_all(14)
 	# Add golden glow
@@ -370,6 +398,9 @@ func _on_ultimate_selected(index: int) -> void:
 func hide_selection() -> void:
 	visible = false
 	get_tree().paused = false
+	# Clear fire particles
+	fire_containers.clear()
+	fire_particles.clear()
 
 func _input(event: InputEvent) -> void:
 	if not visible or is_rolling:
@@ -419,3 +450,95 @@ func _animate_entrance() -> void:
 		card_tween.set_parallel(true)
 		card_tween.tween_property(button, "position:y", original_pos.y, 0.35).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		card_tween.tween_property(button, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+
+# ============================================
+# PURPLE FIRE EFFECT FOR ULTIMATE CARDS
+# ============================================
+
+func _add_fire_effect(button: Button) -> void:
+	"""Add purple fire particles above an ultimate card."""
+	var fire_container = Control.new()
+	fire_container.name = "FireContainer"
+	fire_container.size = Vector2(button.custom_minimum_size.x + 40, 60)
+	fire_container.position = Vector2(-20, -55)  # Position above the card
+	fire_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fire_container.clip_contents = false
+	button.add_child(fire_container)
+	fire_containers.append(fire_container)
+
+	var card_particles: Array = []
+	for i in range(FIRE_PARTICLE_COUNT):
+		var particle = ColorRect.new()
+		particle.name = "FireParticle" + str(i)
+		particle.size = Vector2(6, 6)
+		particle.color = FIRE_COLORS[0]
+		particle.color.a = 0.0
+		particle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fire_container.add_child(particle)
+
+		var p_data = {
+			"node": particle,
+			"x": 0.0,
+			"y": 0.0,
+			"speed": 0.0,
+			"wobble": 0.0,
+			"lifetime": 0.0,
+			"max_lifetime": 0.0,
+			"card_width": button.custom_minimum_size.x
+		}
+		_reset_fire_particle(p_data)
+		card_particles.append(p_data)
+
+	fire_particles.append(card_particles)
+
+func _reset_fire_particle(p: Dictionary) -> void:
+	"""Reset a fire particle to start position."""
+	var card_width = p.get("card_width", 280.0)
+	var spawn_spread = card_width * 0.7
+	var center_x = (card_width + 40) / 2.0
+
+	p["x"] = center_x + randf_range(-spawn_spread / 2, spawn_spread / 2)
+	p["y"] = 55 + randf_range(-5, 5)  # Start at bottom
+	p["speed"] = randf_range(50, 80)
+	p["wobble"] = randf_range(-1.0, 1.0)
+	p["lifetime"] = 0.0
+	p["max_lifetime"] = randf_range(0.3, 0.6)
+
+	p["node"].color = FIRE_COLORS[0]
+	p["node"].color.a = 0.9
+
+func _update_all_fire_particles(delta: float) -> void:
+	"""Update all fire particles on all cards."""
+	for card_particles in fire_particles:
+		for p in card_particles:
+			p["lifetime"] += delta
+			var life_ratio = p["lifetime"] / p["max_lifetime"]
+
+			if life_ratio >= 1.0:
+				_reset_fire_particle(p)
+				continue
+
+			# Move upward
+			p["y"] -= p["speed"] * delta
+
+			# Wobble side to side
+			p["wobble"] += randf_range(-5, 5) * delta
+			p["x"] += p["wobble"] * delta * 20
+
+			# Update position
+			p["node"].position = Vector2(p["x"], p["y"])
+
+			# Color transition through purple shades
+			var color_index = int(life_ratio * (FIRE_COLORS.size() - 1))
+			color_index = clampi(color_index, 0, FIRE_COLORS.size() - 1)
+			p["node"].color = FIRE_COLORS[color_index]
+
+			# Fade out near end of life
+			if life_ratio > 0.6:
+				p["node"].color.a = (1.0 - life_ratio) / 0.4 * 0.9
+			else:
+				p["node"].color.a = 0.9
+
+			# Shrink as it rises
+			var size = 6.0 * (1.0 - life_ratio * 0.5)
+			p["node"].size = Vector2(size, size)
