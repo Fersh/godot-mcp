@@ -1772,13 +1772,16 @@ func update_ability_stats(modifiers: Dictionary) -> void:
 	var old_max = max_health
 	var new_max = (base_max_health + hp_flat) * (1.0 + hp_percent)
 
+	# Ensure max HP never goes below 1
+	new_max = maxf(new_max, 1.0)
+
 	# When max HP increases, add the bonus to current health too
 	# (so 10/25 + 50 max HP = 60/75, not 30/75)
 	if new_max != old_max:
 		var hp_difference = new_max - old_max
 		max_health = new_max
-		# Add the HP difference to current health (but cap at new max)
-		current_health = min(current_health + hp_difference, max_health)
+		# Add the HP difference to current health (but cap at new max, floor at 1)
+		current_health = clampf(current_health + hp_difference, 1.0, max_health)
 		if health_bar:
 			health_bar.set_health(current_health, max_health)
 		emit_signal("health_changed", current_health, max_health)
