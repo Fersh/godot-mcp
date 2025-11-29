@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/game_hud.tscn" id="4_game_hud"]
-[ext_resource type="Texture2D" uid="uid://qo0ltp5e3f1s" path="res://assets/sprites/ground4.png" id="5_arena"]
+[ext_resource type="Texture2D" uid="uid://qo0ltp5e3f1s" path="res://assets/sprites/arena3.png" id="5_arena"]
 [ext_resource type="PackedScene" path="res://scenes/stats_display.tscn" id="6_stats"]
 [ext_resource type="PackedScene" uid="uid://diimf5rw8jlto" path="res://scenes/ability_selection.tscn" id="7_ability_selection"]
 [ext_resource type="PackedScene" path="res://scenes/juice_overlay.tscn" id="8_juice"]
