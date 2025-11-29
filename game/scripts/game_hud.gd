@@ -323,11 +323,12 @@ func _setup_portrait() -> void:
 	var frame_h = character.frame_size.y
 	var idle_row = character.row_idle
 
-	# For face close-up, crop to upper body/head area
-	# Show more of the character - upper portion of frame
-	var face_region_y = idle_row * frame_h + frame_h * 0.0  # Start at top of frame
-	var face_height = frame_h * 0.70  # Take 70% height for head and upper body
-	var face_width = frame_w * 0.85  # Center 85% width
+	# Per-character portrait crop settings
+	var crop = _get_portrait_crop_settings(CharacterManager.selected_character_id)
+
+	var face_region_y = idle_row * frame_h + frame_h * crop.start_y
+	var face_height = frame_h * crop.height
+	var face_width = frame_w * crop.width
 	var face_x = (frame_w - face_width) / 2  # Center horizontally
 
 	atlas.region = Rect2(face_x, face_region_y, face_width, face_height)
@@ -336,6 +337,28 @@ func _setup_portrait() -> void:
 
 	# Setup fire effect container for kill streaks
 	_setup_fire_effect()
+
+func _get_portrait_crop_settings(character_id: String) -> Dictionary:
+	# Per-character crop settings to show face properly
+	# start_y: how far down to start (0 = top of frame)
+	# height: how much height to take
+	# width: how much width to take (centered)
+	match character_id:
+		"archer":
+			return {"start_y": 0.0, "height": 0.70, "width": 0.85}
+		"knight":
+			# Knight is 128x64 (wide), zoom in more on upper body
+			return {"start_y": 0.0, "height": 0.95, "width": 0.45}
+		"beast":
+			# Beast is 128x128, zoom in on head/upper body
+			return {"start_y": 0.0, "height": 0.50, "width": 0.55}
+		"mage":
+			return {"start_y": 0.0, "height": 0.70, "width": 0.85}
+		"monk":
+			# Monk is 96x96
+			return {"start_y": 0.0, "height": 0.55, "width": 0.65}
+		_:
+			return {"start_y": 0.0, "height": 0.70, "width": 0.85}
 
 var fire_update_timer: float = 0.0
 

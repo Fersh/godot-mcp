@@ -9,7 +9,7 @@ extends EliteBase
 @export var laser_beam_scene: PackedScene
 
 # Attack-specific stats
-@export var stomp_damage: float = 30.0  # Reduced from 40
+@export var stomp_damage: float = 18.0  # Reduced from 30
 @export var stomp_range: float = 80.0
 @export var stomp_aoe_radius: float = 100.0
 

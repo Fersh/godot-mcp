@@ -25,10 +25,10 @@ var kill_count: int = 0
 var nearby_item: Node2D = null
 
 # Levels that grant active abilities (not passive)
-const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 15, 10]  # TESTING: Swapped 5 with ultimate
+const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
 
-# Level that grants ultimate ability (TESTING: Swapped with level 5)
-const ULTIMATE_ABILITY_LEVEL: int = 5
+# Level that grants ultimate ability
+const ULTIMATE_ABILITY_LEVEL: int = 15
 
 var kill_streak_ui = null
 

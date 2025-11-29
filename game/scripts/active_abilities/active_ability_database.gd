@@ -182,12 +182,12 @@ static func _create_dash_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_strike",
 		"Dash Strike",
-		"A short-range charge attack through enemies, dealing damage and knockback.",
+		"A charge attack through enemies, dealing damage and knockback.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.DIRECTION,
 		8.0
-	).with_damage(12.0, 1.0).with_range(120.0).with_knockback(100.0).with_movement()
+	).with_damage(12.0, 1.0).with_range(200.0).with_knockback(100.0).with_movement()
 
 # ============================================
 # MELEE ABILITY CREATORS - RARE

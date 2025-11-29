@@ -742,13 +742,14 @@ func _physics_process(delta: float) -> void:
 				if not active_buffs.has("massacre"):
 					active_buffs["massacre"] = {
 						"timer": AbilityManager.massacre_timer, "duration": AbilityManager.MASSACRE_DECAY_TIME,
-						"name": "Massacre",
+						"name": "Massacre x" + str(AbilityManager.massacre_stacks),
 						"description": "+" + str(AbilityManager.massacre_stacks * 2) + "% All Stats",
 						"color": Color(0.8, 0.2, 0.8)  # Purple
 					}
 					buffs_changed = true
 				else:
 					active_buffs["massacre"].timer = AbilityManager.massacre_timer
+					active_buffs["massacre"].name = "Massacre x" + str(AbilityManager.massacre_stacks)
 					active_buffs["massacre"].description = "+" + str(AbilityManager.massacre_stacks * 2) + "% All Stats"
 			elif active_buffs.has("massacre"):
 				active_buffs.erase("massacre")

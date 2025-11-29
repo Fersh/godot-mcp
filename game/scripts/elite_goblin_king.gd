@@ -18,7 +18,7 @@ extends EliteBase
 @export var coin_bag_projectile_scene: PackedScene
 
 # Attack-specific stats
-@export var stomp_damage: float = 35.0
+@export var stomp_damage: float = 20.0  # Reduced from 35
 @export var stomp_range: float = 80.0
 @export var stomp_aoe_radius: float = 100.0
 
