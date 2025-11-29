@@ -1,9 +1,9 @@
 extends Sprite2D
 
 # Animated torch - place in editor and position visually
-# Sprite sheet: 80x16 = 5 frames of 16x16 each
+# Sprite sheet: 80x16 = 10 frames of 8x16 each
 
-const TORCH_FRAMES = 5
+const TORCH_FRAMES = 10
 const TORCH_FPS = 8.0
 
 var anim_timer: float = 0.0

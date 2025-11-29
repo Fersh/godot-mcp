@@ -7,6 +7,6 @@
 z_index = -5
 scale = Vector2(2.5, 2.5)
 texture = ExtResource("1_torch")
-hframes = 5
+hframes = 10
 frame = 0
 script = ExtResource("2_script")

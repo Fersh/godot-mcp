@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=23 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/boss_minotaur.tscn" id="18_minotaur"]
 [ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
 [ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
+[ext_resource type="PackedScene" path="res://scenes/decorations/banner.tscn" id="21_yc10j"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -88,3 +89,18 @@ position = Vector2(1118.0001, 241.00008)
 
 [node name="Torch6" parent="." instance=ExtResource("20_gqmmt")]
 position = Vector2(1398, 241.00006)
+
+[node name="Banner" parent="." instance=ExtResource("21_yc10j")]
+position = Vector2(240, 231.00008)
+
+[node name="Banner2" parent="." instance=ExtResource("21_yc10j")]
+position = Vector2(472, 231.00006)
+
+[node name="Banner3" parent="." instance=ExtResource("21_yc10j")]
+position = Vector2(1016, 231.00006)
+
+[node name="Banner4" parent="." instance=ExtResource("21_yc10j")]
+position = Vector2(1264.0001, 231.00006)
+
+[node name="Banner5" parent="." instance=ExtResource("21_yc10j")]
+position = Vector2(1520.0001, 231.00008)
