@@ -283,8 +283,14 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Ice effects
 		"frost_nova", "ice_shatter":
 			return "ice_shatter"
-		"totem_of_frost", "ice_cast":
+		"ice_cast":
 			return "ice_cast"
+
+		# Totem effects
+		"sentry_turret", "sentry_network":
+			return "sentry_turret"
+		"totem_of_frost":
+			return "frost_totem"
 
 		# Lightning effects
 		"chain_lightning", "lightning_strike", "thunderstorm":

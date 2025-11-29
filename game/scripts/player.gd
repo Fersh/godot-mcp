@@ -755,6 +755,34 @@ func _physics_process(delta: float) -> void:
 				active_buffs.erase("massacre")
 				buffs_changed = true
 
+		# Horde Breaker - damage bonus per nearby enemy
+		if AbilityManager.has_horde_breaker:
+			var nearby_count = 0
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			for enemy in enemies:
+				if is_instance_valid(enemy) and global_position.distance_to(enemy.global_position) < 160.0:
+					nearby_count += 1
+			if nearby_count > 0:
+				var bonus_pct = min(int(AbilityManager.horde_breaker_bonus * nearby_count * 100), 20)
+				if not active_buffs.has("horde_breaker"):
+					active_buffs["horde_breaker"] = {
+						"timer": -1, "duration": -1,
+						"name": "Horde x" + str(nearby_count),
+						"description": "+" + str(bonus_pct) + "% Damage",
+						"color": Color(0.9, 0.5, 0.2)  # Orange-red
+					}
+					buffs_changed = true
+				else:
+					var new_name = "Horde x" + str(nearby_count)
+					var new_desc = "+" + str(bonus_pct) + "% Damage"
+					if active_buffs["horde_breaker"].name != new_name or active_buffs["horde_breaker"].description != new_desc:
+						active_buffs["horde_breaker"].name = new_name
+						active_buffs["horde_breaker"].description = new_desc
+						buffs_changed = true
+			elif active_buffs.has("horde_breaker"):
+				active_buffs.erase("horde_breaker")
+				buffs_changed = true
+
 	if buffs_changed:
 		emit_signal("buff_changed", active_buffs)
 

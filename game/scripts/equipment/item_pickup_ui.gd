@@ -6,6 +6,7 @@ signal item_picked_up(item: ItemData)
 var current_dropped_item: DroppedItem = null
 var current_item: ItemData = null
 var pixel_font: Font = null
+var stats_font: Font = null  # Different font for stats/numbers
 
 # RPG color palette
 const COLOR_BG_DARK = Color(0.08, 0.06, 0.12, 0.95)
@@ -27,8 +28,9 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-	# Load pixel font
+	# Load fonts
 	pixel_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
+	stats_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
 	equip_button.pressed.connect(_on_equip_pressed)
 	pickup_button.pressed.connect(_on_pickup_pressed)
@@ -319,9 +321,9 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 
 	var stat_label = Label.new()
 	stat_label.text = stat_line
-	if pixel_font:
-		stat_label.add_theme_font_override("font", pixel_font)
-	stat_label.add_theme_font_size_override("font_size", 24)
+	if stats_font:
+		stat_label.add_theme_font_override("font", stats_font)
+	stat_label.add_theme_font_size_override("font_size", 14)  # Smaller for Press Start 2P
 
 	# Color Special lines and descriptive text yellow
 	if is_special or is_descriptive:
@@ -334,9 +336,9 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 	if arrow_text != "":
 		var arrow_label = Label.new()
 		arrow_label.text = arrow_text
-		if pixel_font:
-			arrow_label.add_theme_font_override("font", pixel_font)
-		arrow_label.add_theme_font_size_override("font_size", 24)
+		if stats_font:
+			arrow_label.add_theme_font_override("font", stats_font)
+		arrow_label.add_theme_font_size_override("font_size", 14)
 		arrow_label.add_theme_color_override("font_color", arrow_color)
 		row.add_child(arrow_label)
 

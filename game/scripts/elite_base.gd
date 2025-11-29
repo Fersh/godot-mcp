@@ -32,6 +32,9 @@ const WARNING_OFFSET: Vector2 = Vector2(0, -80)
 
 func _on_ready() -> void:
 	enemy_rarity = "elite"
+	# Elites and bosses cannot be pushed by the player
+	# Remove player layer (1) from collision mask, keep walls layer (2)
+	collision_mask = 2
 	_setup_elite()
 	_init_attack_cooldowns()
 
