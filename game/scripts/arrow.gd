@@ -151,28 +151,29 @@ func _process_boomerang_return(delta: float) -> void:
 		queue_free()
 
 func check_wall_bounce() -> void:
-	const ARENA_WIDTH = 1536
+	const ARENA_LEFT = -80
+	const ARENA_RIGHT = 1616
 	const ARENA_HEIGHT = 1382
-	const MARGIN = 20
+	const MARGIN_Y = 20
 
 	var bounced = false
 
-	if global_position.x < MARGIN:
+	if global_position.x < ARENA_LEFT:
 		direction.x = abs(direction.x)
-		global_position.x = MARGIN
+		global_position.x = ARENA_LEFT
 		bounced = true
-	elif global_position.x > ARENA_WIDTH - MARGIN:
+	elif global_position.x > ARENA_RIGHT:
 		direction.x = -abs(direction.x)
-		global_position.x = ARENA_WIDTH - MARGIN
+		global_position.x = ARENA_RIGHT
 		bounced = true
 
-	if global_position.y < MARGIN:
+	if global_position.y < MARGIN_Y:
 		direction.y = abs(direction.y)
-		global_position.y = MARGIN
+		global_position.y = MARGIN_Y
 		bounced = true
-	elif global_position.y > ARENA_HEIGHT - MARGIN:
+	elif global_position.y > ARENA_HEIGHT - MARGIN_Y:
 		direction.y = -abs(direction.y)
-		global_position.y = ARENA_HEIGHT - MARGIN
+		global_position.y = ARENA_HEIGHT - MARGIN_Y
 		bounced = true
 
 	if bounced:

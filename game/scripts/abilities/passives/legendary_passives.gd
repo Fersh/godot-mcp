@@ -80,7 +80,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"unlimited_power",
 			"Unlimited Power",
-			"+2% permanent damage per kill (this run)",
+			"+2% permanent damage per kill (max 40%)",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.UNLIMITED_POWER, value = 0.02}]

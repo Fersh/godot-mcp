@@ -493,7 +493,7 @@ func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	# Calculate end position with arena bounds
 	var end_pos = start_pos + direction * dash_distance
-	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
+	end_pos.x = clamp(end_pos.x, -60, 1596)
 	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
 
 	# Dash forward then hit
@@ -643,7 +643,7 @@ func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 		direction = _get_attack_direction(player)
 		end_pos = start_pos + direction * ability.range_distance
 
-	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
+	end_pos.x = clamp(end_pos.x, -60, 1596)
 	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
 
 	var tween = create_tween()
@@ -756,7 +756,7 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target_pos = _get_enemy_cluster_center(player.global_position, ability.range_distance)
 
 	# Clamp to arena
-	target_pos.x = clamp(target_pos.x, 40, 1536 - 40)
+	target_pos.x = clamp(target_pos.x, -60, 1596)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
 	# Store original scale
@@ -808,7 +808,7 @@ func _execute_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
 		end_pos = start_pos + direction * ability.range_distance
 
 	# Clamp end position to arena
-	end_pos.x = clamp(end_pos.x, 40, 1536 - 40)
+	end_pos.x = clamp(end_pos.x, -60, 1596)
 	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
 
 	# Dash through enemies
@@ -1001,7 +1001,7 @@ func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(true)
 
 	var target_pos = player.global_position + direction * ability.range_distance
-	target_pos.x = clamp(target_pos.x, 40, 1536 - 40)
+	target_pos.x = clamp(target_pos.x, -60, 1596)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
 	var tween = create_tween()
@@ -1219,7 +1219,7 @@ func _execute_fan_of_knives(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_sentry_turret(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a single turret at player position
 	var turret_pos = player.global_position
-	turret_pos.x = clamp(turret_pos.x, 40, 1536 - 40)
+	turret_pos.x = clamp(turret_pos.x, -60, 1596)
 	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
 
 	var turret = _spawn_effect("sentry_turret", turret_pos)
@@ -1274,7 +1274,7 @@ func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 	var target_pos = center + Vector2(randf_range(-radius, radius), randf_range(-radius, radius))
 
 	# Clamp to arena bounds
-	target_pos.x = clamp(target_pos.x, 50, 1486)
+	target_pos.x = clamp(target_pos.x, -60, 1596)
 	target_pos.y = clamp(target_pos.y, 50, 1332)
 
 	# Arrow starts from above and falls down at an angle
@@ -1344,7 +1344,7 @@ func _execute_sentry_network(ability: ActiveAbilityData, player: Node2D) -> void
 	]
 
 	for pos in turret_positions:
-		pos.x = clamp(pos.x, 40, 1536 - 40)
+		pos.x = clamp(pos.x, -60, 1596)
 		pos.y = clamp(pos.y, 40, 1382 - 40)
 		var turret = _spawn_effect("sentry_turret", pos)
 		if turret and turret.has_method("setup"):
@@ -1371,7 +1371,7 @@ func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> v
 				var arrow_pos = player.global_position + random_offset
 
 				# Clamp to screen
-				arrow_pos.x = clamp(arrow_pos.x, 40, 1536 - 40)
+				arrow_pos.x = clamp(arrow_pos.x, -60, 1596)
 				arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
 
 				# Spawn falling arrow visual
@@ -1611,7 +1611,7 @@ func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
 		var direction = _get_attack_direction(player)
 		target_pos = player.global_position + direction * ability.range_distance
 
-	target_pos.x = clamp(target_pos.x, 40, 1536 - 40)
+	target_pos.x = clamp(target_pos.x, -60, 1596)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
 	# Spawn effect at start position
@@ -1718,7 +1718,7 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_summon_golem(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a golem ally that fights for the player
 	var golem_pos = player.global_position + Vector2(60, 0)
-	golem_pos.x = clamp(golem_pos.x, 40, 1536 - 40)
+	golem_pos.x = clamp(golem_pos.x, -60, 1596)
 	golem_pos.y = clamp(golem_pos.y, 40, 1382 - 40)
 
 	var golem = _spawn_effect("summon_golem", golem_pos)
@@ -1762,7 +1762,7 @@ func _execute_army_of_the_dead(ability: ActiveAbilityData, player: Node2D) -> vo
 		var offset = Vector2(cos(angle), sin(angle)) * 80
 		var spawn_pos = player.global_position + offset
 
-		spawn_pos.x = clamp(spawn_pos.x, 40, 1536 - 40)
+		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
 		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
 
 		var skeleton = _spawn_effect("skeleton_warrior", spawn_pos)

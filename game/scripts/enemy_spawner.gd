@@ -13,8 +13,10 @@ extends Node2D
 @export var ramp_up_time: float = 90.0
 @export var min_spawn_distance: float = 200.0
 
-const ARENA_WIDTH = 1536
+const ARENA_WIDTH = 1736  # Expanded 100px each side
 const ARENA_HEIGHT = 1382
+const ARENA_LEFT = -60
+const ARENA_RIGHT = 1596
 
 # Spawn scaling - increases enemy count over time
 const SCALING_START_TIME: float = 150.0  # 2.5 minutes
@@ -223,13 +225,13 @@ func get_spawn_position() -> Vector2:
 	var pos: Vector2
 
 	if roll < 0.333:
-		# Left
-		pos = Vector2(-50, randf_range(50, ARENA_HEIGHT - 50))
+		# Left (spawn just outside left boundary)
+		pos = Vector2(ARENA_LEFT - 50, randf_range(50, ARENA_HEIGHT - 50))
 	elif roll < 0.666:
-		# Right
-		pos = Vector2(ARENA_WIDTH + 50, randf_range(50, ARENA_HEIGHT - 50))
+		# Right (spawn just outside right boundary)
+		pos = Vector2(ARENA_RIGHT + 50, randf_range(50, ARENA_HEIGHT - 50))
 	else:
 		# Bottom
-		pos = Vector2(randf_range(50, ARENA_WIDTH - 50), ARENA_HEIGHT + 50)
+		pos = Vector2(randf_range(ARENA_LEFT, ARENA_RIGHT), ARENA_HEIGHT + 50)
 
 	return pos

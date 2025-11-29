@@ -5,6 +5,8 @@ extends CanvasLayer
 
 const ICON_SIZE := Vector2(40, 40)
 const ICON_SPACING := 8
+const ROW_SPACING := 4
+const MAX_PER_ROW := 8
 const MARGIN_TOP := 42  # Vertically aligned with top HUD elements (points/coins/waves) + 10px
 const LONG_PRESS_TIME := 0.3
 const RUNE_BG_PATH := "res://assets/sprites/runes/Background/runes+bricks+effects/"
@@ -12,7 +14,8 @@ const RUNE_BG_COUNT := 48
 
 var player: Node2D = null
 var rune_textures: Array[Texture2D] = []
-var buff_container: HBoxContainer = null
+var buff_container: VBoxContainer = null  # Main container (vertical)
+var buff_rows: Array[HBoxContainer] = []  # Individual rows
 var buff_icons: Dictionary = {}  # buff_id -> Control
 var pixel_font: Font = null
 
@@ -64,18 +67,43 @@ func _create_ui() -> void:
 	center_container.name = "CenterContainer"
 	center_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	center_container.offset_top = MARGIN_TOP
-	center_container.offset_bottom = MARGIN_TOP + ICON_SIZE.y + 20
+	center_container.offset_bottom = MARGIN_TOP + (ICON_SIZE.y + ROW_SPACING) * 3  # Support up to 3 rows
 	add_child(center_container)
 
-	# HBox for buff icons (centered)
-	buff_container = HBoxContainer.new()
+	# VBox for rows of buff icons (centered)
+	buff_container = VBoxContainer.new()
 	buff_container.name = "BuffContainer"
-	buff_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	buff_container.add_theme_constant_override("separation", ICON_SPACING)
+	buff_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+	buff_container.add_theme_constant_override("separation", ROW_SPACING)
 	buff_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	buff_container.offset_top = 0
-	buff_container.offset_bottom = ICON_SIZE.y
 	center_container.add_child(buff_container)
+
+func _get_or_create_row() -> HBoxContainer:
+	# Find a row with space, or create a new one
+	for row in buff_rows:
+		if row.get_child_count() < MAX_PER_ROW:
+			return row
+
+	# Create new row
+	var new_row = HBoxContainer.new()
+	new_row.name = "BuffRow%d" % buff_rows.size()
+	new_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	new_row.add_theme_constant_override("separation", ICON_SPACING)
+	buff_container.add_child(new_row)
+	buff_rows.append(new_row)
+	return new_row
+
+func _cleanup_empty_rows() -> void:
+	# Remove empty rows (except keep at least one potential row structure)
+	var rows_to_remove: Array[HBoxContainer] = []
+	for row in buff_rows:
+		if row.get_child_count() == 0:
+			rows_to_remove.append(row)
+
+	for row in rows_to_remove:
+		buff_rows.erase(row)
+		row.queue_free()
 
 func _create_tooltip() -> void:
 	tooltip_panel = PanelContainer.new()
@@ -135,6 +163,11 @@ func _on_buff_changed(buffs: Dictionary) -> void:
 		if buff_icons.has(buff_id):
 			buff_icons[buff_id].queue_free()
 			buff_icons.erase(buff_id)
+
+	# Clean up any empty rows
+	if to_remove.size() > 0:
+		# Defer cleanup to next frame to let queue_free complete
+		call_deferred("_cleanup_empty_rows")
 
 	# Add/update icons for active buffs
 	for buff_id in buffs:
@@ -259,7 +292,9 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	# Connect input for touch/long press (mobile)
 	icon_container.gui_input.connect(_on_icon_input.bind(buff_id))
 
-	buff_container.add_child(icon_container)
+	# Add to a row (max 8 per row)
+	var row = _get_or_create_row()
+	row.add_child(icon_container)
 	buff_icons[buff_id] = icon_container
 
 	# Animate appearance
@@ -428,4 +463,10 @@ func reset_for_new_run() -> void:
 	for buff_id in buff_icons:
 		buff_icons[buff_id].queue_free()
 	buff_icons.clear()
+
+	# Clear all rows
+	for row in buff_rows:
+		row.queue_free()
+	buff_rows.clear()
+
 	_hide_tooltip()

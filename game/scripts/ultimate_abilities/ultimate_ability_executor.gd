@@ -585,7 +585,7 @@ func _execute_meteor_swarm(ultimate: UltimateAbilityData, player: Node2D) -> voi
 				randf_range(-200, 200)
 			)
 			var impact_pos = player.global_position + offset
-			impact_pos.x = clamp(impact_pos.x, 40, 1536 - 40)
+			impact_pos.x = clamp(impact_pos.x, -60, 1596)
 			impact_pos.y = clamp(impact_pos.y, 40, 1382 - 40)
 
 			# Deal damage

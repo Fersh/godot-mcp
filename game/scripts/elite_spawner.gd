@@ -11,8 +11,10 @@ extends Node2D
 @export var warning_duration: float = 3.0  # How long to show warning
 
 # Arena bounds for spawn positioning
-const ARENA_WIDTH = 1536
+const ARENA_WIDTH = 1736  # Expanded 100px each side
 const ARENA_HEIGHT = 1382
+const ARENA_LEFT = -60
+const ARENA_RIGHT = 1596
 const SPAWN_MARGIN = 100  # Spawn this far from edges
 
 # Spawn state
@@ -503,21 +505,21 @@ func _get_spawn_position() -> Vector2:
 	var pos: Vector2
 
 	if roll < 0.333:
-		# Left
+		# Left (spawn outside left boundary)
 		pos = Vector2(
-			-SPAWN_MARGIN,
+			ARENA_LEFT - SPAWN_MARGIN,
 			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
 		)
 	elif roll < 0.666:
-		# Right
+		# Right (spawn outside right boundary)
 		pos = Vector2(
-			ARENA_WIDTH + SPAWN_MARGIN,
+			ARENA_RIGHT + SPAWN_MARGIN,
 			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
 		)
 	else:
 		# Bottom
 		pos = Vector2(
-			randf_range(SPAWN_MARGIN, ARENA_WIDTH - SPAWN_MARGIN),
+			randf_range(ARENA_LEFT, ARENA_RIGHT),
 			ARENA_HEIGHT + SPAWN_MARGIN
 		)
 

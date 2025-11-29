@@ -186,7 +186,7 @@ func _create_target_indicator() -> void:
 	# Create 4 corner brackets using Line2D with pixelated curved corners
 	var bracket_size: float = 14.0
 	var bracket_length: float = 7.0
-	var bracket_color: Color = Color(1.0, 0.9, 0.3, 0.9)  # Yellow
+	var bracket_color: Color = Color(1.0, 0.2, 0.2, 0.9)  # Red
 	var line_width: float = 4.0
 	var corner_step: float = 2.0  # Pixel step for curved corner effect
 
@@ -794,12 +794,11 @@ func _physics_process(delta: float) -> void:
 	if has_arcane_focus:
 		_update_arcane_focus(delta, direction.length() < 0.1)
 
-	# Keep player within arena bounds (1536x1382)
-	const ARENA_WIDTH = 1536
+	# Keep player within arena bounds (expanded horizontally by 100px each side)
 	const ARENA_HEIGHT = 1382
-	const MARGIN = 40
-	position.x = clamp(position.x, MARGIN, ARENA_WIDTH - MARGIN)
-	position.y = clamp(position.y, MARGIN, ARENA_HEIGHT - MARGIN)
+	const MARGIN_Y = 40
+	position.x = clamp(position.x, -60, 1596)
+	position.y = clamp(position.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
 
 	# Auto-attack (apply temp attack speed boost and flow bonus)
 	attack_timer += delta
@@ -1964,12 +1963,11 @@ func dash_toward(target_pos: Vector2) -> void:
 	# Calculate end position
 	var end_pos = global_position + direction * dash_distance
 
-	# Clamp to arena bounds
-	const ARENA_WIDTH = 1536
+	# Clamp to arena bounds (expanded horizontally)
 	const ARENA_HEIGHT = 1382
-	const MARGIN = 40
-	end_pos.x = clamp(end_pos.x, MARGIN, ARENA_WIDTH - MARGIN)
-	end_pos.y = clamp(end_pos.y, MARGIN, ARENA_HEIGHT - MARGIN)
+	const MARGIN_Y = 40
+	end_pos.x = clamp(end_pos.x, -60, 1596)
+	end_pos.y = clamp(end_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
 
 	# Update facing direction
 	if direction.x > 0:
@@ -2081,12 +2079,11 @@ func _perform_flow_dash(target_pos: Vector2) -> void:
 	# Calculate end position
 	var end_pos = global_position + direction * dash_distance
 
-	# Clamp to arena bounds
-	const ARENA_WIDTH = 1536
+	# Clamp to arena bounds (expanded horizontally)
 	const ARENA_HEIGHT = 1382
-	const MARGIN = 40
-	end_pos.x = clamp(end_pos.x, MARGIN, ARENA_WIDTH - MARGIN)
-	end_pos.y = clamp(end_pos.y, MARGIN, ARENA_HEIGHT - MARGIN)
+	const MARGIN_Y = 40
+	end_pos.x = clamp(end_pos.x, -60, 1596)
+	end_pos.y = clamp(end_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
 
 	# Update facing direction
 	if direction.x > 0:

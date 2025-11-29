@@ -5,9 +5,10 @@ extends Node2D
 const BANNER_TEXTURE_PATH = "res://assets/enviro/Banner.png"
 const TORCH_TEXTURE_PATH = "res://assets/enviro/Torch.png"
 
-# Arena dimensions
-const ARENA_WIDTH = 1536
+# Arena dimensions (expanded horizontally by 100px each side)
+const ARENA_WIDTH = 1736
 const ARENA_HEIGHT = 1382
+const ARENA_LEFT = -60
 
 # Banner settings (128x64 sprite sheet = 4x2 grid of 32x32 frames)
 const BANNER_HFRAMES = 4
@@ -60,10 +61,10 @@ func _spawn_decorations() -> void:
 
 	# Torches along left wall (very close to edge)
 	var left_torch_positions = [
-		Vector2(15, 450),
-		Vector2(15, 700),
-		Vector2(15, 950),
-		Vector2(15, 1200),
+		Vector2(ARENA_LEFT + 75, 450),
+		Vector2(ARENA_LEFT + 75, 700),
+		Vector2(ARENA_LEFT + 75, 950),
+		Vector2(ARENA_LEFT + 75, 1200),
 	]
 
 	# Torches along right wall (very close to edge)
