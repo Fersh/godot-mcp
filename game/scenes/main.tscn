@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=22 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -19,6 +19,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy_kobold_priest.tscn" id="17_kobold_priest"]
 [ext_resource type="PackedScene" path="res://scenes/boss_minotaur.tscn" id="18_minotaur"]
 [ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
+[ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -38,7 +39,7 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
-position = Vector2(-10, 151)
+position = Vector2(-10, 136)
 shape = SubResource("RectangleShape2D_topwall")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
@@ -64,7 +65,26 @@ minotaur_scene = ExtResource("18_minotaur")
 [node name="StatsDisplay" parent="." instance=ExtResource("6_stats")]
 
 [node name="AbilitySelection" parent="." instance=ExtResource("7_ability_selection")]
+visible = false
 
 [node name="JuiceOverlay" parent="." instance=ExtResource("8_juice")]
 
 [node name="ItemPickupUI" parent="." instance=ExtResource("12_item_pickup")]
+
+[node name="Torch" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(94, 241.00006)
+
+[node name="Torch2" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(382.00003, 241.00006)
+
+[node name="Torch3" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(566, 241.00008)
+
+[node name="Torch4" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(918, 241.00008)
+
+[node name="Torch5" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1118.0001, 241.00008)
+
+[node name="Torch6" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1398, 241.00006)

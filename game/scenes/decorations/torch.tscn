@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" uid="uid://buhdauj3mco2k" path="res://assets/enviro/Torch.png" id="1_torch"]
+[ext_resource type="Script" path="res://scripts/animated_torch.gd" id="2_script"]
+
+[node name="Torch" type="Sprite2D"]
+z_index = -5
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("1_torch")
+hframes = 5
+frame = 0
+script = ExtResource("2_script")
