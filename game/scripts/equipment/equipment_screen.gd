@@ -36,9 +36,11 @@ var selected_character: String = "archer"
 var selected_item: ItemData = null
 var popup_item: ItemData = null
 var pixel_font: Font = null
+var item_name_font: Font = null
 
 @onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
+@onready var main_panel: PanelContainer = $Panel
 @onready var character_tabs: HBoxContainer = $Panel/VBoxContainer/CharacterTabs
 @onready var equipment_panel: PanelContainer = $Panel/VBoxContainer/MainRow/LeftColumn/EquipmentPanel
 @onready var equipment_container: GridContainer = $Panel/VBoxContainer/MainRow/LeftColumn/EquipmentPanel/EquipmentContainer
@@ -51,7 +53,8 @@ var pixel_font: Font = null
 @onready var comparison_panel: PanelContainer = $ComparisonPanel
 
 func _ready() -> void:
-	pixel_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
+	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+	item_name_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
 
 	back_button.pressed.connect(_on_back_pressed)
 
@@ -67,6 +70,7 @@ func _setup_ui_style() -> void:
 	# Style header and back button
 	_style_header()
 	_style_back_button()
+	_style_main_panel()
 	_style_panels()
 
 	# Limit inventory scroll height to force scrolling
@@ -74,9 +78,15 @@ func _setup_ui_style() -> void:
 		inventory_scroll.custom_minimum_size = Vector2(540, 300)
 		inventory_scroll.set_deferred("size", Vector2(540, 300))
 
+func _style_main_panel() -> void:
+	# Make the main panel transparent so background image shows through
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0)
+	main_panel.add_theme_stylebox_override("panel", style)
+
 func _style_panels() -> void:
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.06, 0.055, 0.09, 0.9)
+	panel_style.bg_color = Color(0.02, 0.02, 0.03, 0.95)
 	panel_style.border_width_left = 2
 	panel_style.border_width_right = 2
 	panel_style.border_width_top = 2
@@ -97,12 +107,19 @@ func _style_panels() -> void:
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.5)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.0)
 	style.border_width_bottom = 2
-	style.border_color = Color(0.15, 0.14, 0.2, 0.5)
-	style.content_margin_left = 30
-	style.content_margin_right = 30
+	style.border_color = Color(0.15, 0.14, 0.2, 0.0)
+	style.content_margin_left = 60
+	style.content_margin_right = 60
 	header.add_theme_stylebox_override("panel", style)
+
+	# Darken title label shadow
+	var title_label = header.find_child("TitleLabel", true, false)
+	if title_label:
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+		title_label.add_theme_constant_override("shadow_offset_x", 3)
+		title_label.add_theme_constant_override("shadow_offset_y", 3)
 
 func _style_back_button() -> void:
 	var style_normal = StyleBoxFlat.new()
@@ -133,6 +150,11 @@ func _style_back_button() -> void:
 	back_button.add_theme_stylebox_override("hover", style_hover)
 	back_button.add_theme_stylebox_override("pressed", style_normal)
 	back_button.add_theme_stylebox_override("focus", style_normal)
+
+	# Add darker text shadow
+	back_button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	back_button.add_theme_constant_override("shadow_offset_x", 2)
+	back_button.add_theme_constant_override("shadow_offset_y", 2)
 
 func _style_button(button: Button, base_color: Color) -> void:
 	var style = StyleBoxFlat.new()
@@ -194,26 +216,31 @@ func _setup_character_tabs() -> void:
 func _style_character_tab(button: Button, is_selected: bool) -> void:
 	var style = StyleBoxFlat.new()
 	if is_selected:
-		style.bg_color = Color(0.25, 0.22, 0.35, 1.0)
-		style.border_color = Color(0.6, 0.5, 0.3, 1.0)
+		style.bg_color = Color(0.35, 0.28, 0.15, 1.0)
+		style.border_color = Color(1.0, 0.85, 0.4, 1.0)
 		style.border_width_bottom = 4
+		style.border_width_left = 3
+		style.border_width_right = 3
+		style.border_width_top = 3
 	else:
 		style.bg_color = Color(0.12, 0.10, 0.15, 1.0)
 		style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 		style.border_width_bottom = 2
+		style.border_width_left = 2
+		style.border_width_right = 2
+		style.border_width_top = 2
 
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
 	style.corner_radius_top_left = 4
 	style.corner_radius_top_right = 4
 	style.corner_radius_bottom_left = 0
 	style.corner_radius_bottom_right = 0
+	style.content_margin_left = 16
+	style.content_margin_right = 16
 
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("hover", style)
 	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_color_override("font_color", COLOR_TEXT if is_selected else COLOR_TEXT_DIM)
+	button.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5, 1.0) if is_selected else COLOR_TEXT_DIM)
 
 func _on_character_tab_pressed(char_id: String) -> void:
 	selected_character = char_id
@@ -249,7 +276,7 @@ func _refresh_equipment_slots() -> void:
 
 func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
-	container.add_theme_constant_override("separation", 2)
+	container.add_theme_constant_override("separation", 8)
 
 	# Slot label
 	var slot_label = Label.new()
@@ -326,9 +353,9 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 		name_label.text = "Empty"
 		name_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 
-	if pixel_font:
-		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 14)
+	if item_name_font:
+		name_label.add_theme_font_override("font", item_name_font)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.custom_minimum_size = Vector2(70, 0)
 	container.add_child(name_label)
@@ -349,7 +376,7 @@ func _refresh_stats() -> void:
 
 	# Header
 	var header = Label.new()
-	header.text = "- STATS -"
+	header.text = "Stats"
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
 	header.add_theme_font_size_override("font_size", 18)
@@ -554,12 +581,36 @@ func _show_equipped_popup(item: ItemData) -> void:
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 12)
 
+	# X button row at top right
+	var close_row = HBoxContainer.new()
+	close_row.alignment = BoxContainer.ALIGNMENT_END
+	var close_btn = Button.new()
+	close_btn.text = "X"
+	close_btn.custom_minimum_size = Vector2(32, 32)
+	if pixel_font:
+		close_btn.add_theme_font_override("font", pixel_font)
+	close_btn.add_theme_font_size_override("font_size", 14)
+	close_btn.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
+	var close_style = StyleBoxFlat.new()
+	close_style.bg_color = Color(0.4, 0.2, 0.2, 1.0)
+	close_style.set_border_width_all(2)
+	close_style.border_color = Color(0.6, 0.3, 0.3, 1.0)
+	close_style.set_corner_radius_all(4)
+	close_btn.add_theme_stylebox_override("normal", close_style)
+	var close_hover = close_style.duplicate()
+	close_hover.bg_color = Color(0.6, 0.3, 0.3, 1.0)
+	close_btn.add_theme_stylebox_override("hover", close_hover)
+	close_btn.add_theme_stylebox_override("pressed", close_style)
+	close_btn.pressed.connect(_hide_popups)
+	close_row.add_child(close_btn)
+	vbox.add_child(close_row)
+
 	# Item name
 	var name_label = Label.new()
 	name_label.text = item.get_full_name()
-	if pixel_font:
-		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 28)
+	if item_name_font:
+		name_label.add_theme_font_override("font", item_name_font)
+	name_label.add_theme_font_size_override("font_size", 32)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(name_label)
@@ -665,20 +716,29 @@ func _show_equipped_popup(item: ItemData) -> void:
 	popup_style.corner_radius_top_right = 4
 	popup_style.corner_radius_bottom_left = 4
 	popup_style.corner_radius_bottom_right = 4
-	popup_style.content_margin_left = 16
-	popup_style.content_margin_right = 16
-	popup_style.content_margin_top = 12
-	popup_style.content_margin_bottom = 12
+	popup_style.content_margin_left = 24
+	popup_style.content_margin_right = 48
+	popup_style.content_margin_top = 20
+	popup_style.content_margin_bottom = 20
 	popup_panel.add_theme_stylebox_override("panel", popup_style)
 
 	popup_panel.add_child(vbox)
 	popup_panel.visible = true
 
-	# Position popup in center of screen
-	popup_panel.position = Vector2(
-		(get_viewport().get_visible_rect().size.x - popup_panel.size.x) / 2,
-		(get_viewport().get_visible_rect().size.y - popup_panel.size.y) / 2 - 50
-	)
+	# Position popup to the right of the equipment panel
+	await get_tree().process_frame
+	var equip_rect = equipment_panel.get_global_rect()
+	var viewport_size = get_viewport().get_visible_rect().size
+	var popup_x = equip_rect.position.x + equip_rect.size.x + 20
+	var popup_y = equip_rect.position.y
+
+	# Make sure it doesn't go off screen
+	if popup_x + popup_panel.size.x > viewport_size.x - 20:
+		popup_x = viewport_size.x - popup_panel.size.x - 20
+	if popup_y + popup_panel.size.y > viewport_size.y - 20:
+		popup_y = viewport_size.y - popup_panel.size.y - 20
+
+	popup_panel.position = Vector2(popup_x, popup_y)
 
 func _show_comparison(item: ItemData) -> void:
 	_hide_popups()
@@ -817,9 +877,9 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	# Name
 	var name_label = Label.new()
 	name_label.text = item.get_full_name()
-	if pixel_font:
-		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 16)
+	if item_name_font:
+		name_label.add_theme_font_override("font", item_name_font)
+	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -835,11 +895,17 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	card.add_child(rarity_label)
 
-	# Separator
+	# Separator with margin
+	var sep_container = MarginContainer.new()
+	sep_container.add_theme_constant_override("margin_top", 8)
+	sep_container.add_theme_constant_override("margin_bottom", 8)
 	var sep = ColorRect.new()
-	sep.color = item.get_rarity_color()
+	var sep_color = item.get_rarity_color()
+	sep_color.a = 0.5  # 50% transparent
+	sep.color = sep_color
 	sep.custom_minimum_size = Vector2(0, 2)
-	card.add_child(sep)
+	sep_container.add_child(sep)
+	card.add_child(sep_container)
 
 	# Stats with arrows
 	var stats_text = item.get_stat_description()

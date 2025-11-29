@@ -43,12 +43,18 @@ func _ready() -> void:
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.5)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.0)
 	style.border_width_bottom = 2
-	style.border_color = Color(0.15, 0.14, 0.2, 0.5)
-	style.content_margin_left = 30
-	style.content_margin_right = 30
+	style.border_color = Color(0.15, 0.14, 0.2, 0.0)
+	style.content_margin_left = 60
+	style.content_margin_right = 60
 	header.add_theme_stylebox_override("panel", style)
+
+	# Darken title label shadow
+	if title_label:
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+		title_label.add_theme_constant_override("shadow_offset_x", 3)
+		title_label.add_theme_constant_override("shadow_offset_y", 3)
 
 func _process(delta: float) -> void:
 	# Update animation for preview sprite
@@ -577,3 +583,8 @@ func _style_back_button(button: Button) -> void:
 	button.add_theme_stylebox_override("hover", style_hover)
 	button.add_theme_stylebox_override("pressed", style_normal)
 	button.add_theme_stylebox_override("focus", style_normal)
+
+	# Add darker text shadow
+	button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	button.add_theme_constant_override("shadow_offset_x", 2)
+	button.add_theme_constant_override("shadow_offset_y", 2)

@@ -79,8 +79,9 @@ func _create_ui() -> void:
 	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	container.anchor_left = 0.6
 	container.anchor_right = 1.0
-	container.anchor_top = 0.14  # Below points/coins/wave (+10px)
+	container.anchor_top = 0.14  # Below points/coins/wave
 	container.anchor_bottom = 0.18
+	container.offset_top = 20  # Move down 20px
 	container.offset_right = -40  # 20px more inward from edge
 	container.modulate.a = 0.0
 	add_child(container)
@@ -101,10 +102,10 @@ func _create_ui() -> void:
 		combo_label.add_theme_font_override("font", pixel_font)
 	combo_label.add_theme_font_size_override("font_size", 28)  # Larger combo font
 	combo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
-	# Drop shadow matching wave/coins text
-	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	combo_label.add_theme_constant_override("shadow_offset_x", 3)
-	combo_label.add_theme_constant_override("shadow_offset_y", 3)
+	# Drop shadow - darker for better visibility
+	combo_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	combo_label.add_theme_constant_override("shadow_offset_x", 4)
+	combo_label.add_theme_constant_override("shadow_offset_y", 4)
 	# Outline for visibility
 	combo_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
 	combo_label.add_theme_constant_override("outline_size", 3)

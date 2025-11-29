@@ -91,14 +91,26 @@ func _style_back_button() -> void:
 	back_button.add_theme_stylebox_override("pressed", style_normal)
 	back_button.add_theme_stylebox_override("focus", style_normal)
 
+	# Add darker text shadow
+	back_button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	back_button.add_theme_constant_override("shadow_offset_x", 2)
+	back_button.add_theme_constant_override("shadow_offset_y", 2)
+
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.5)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.0)
 	style.border_width_bottom = 2
-	style.border_color = Color(0.15, 0.14, 0.2, 0.5)
-	style.content_margin_left = 30
-	style.content_margin_right = 30
+	style.border_color = Color(0.15, 0.14, 0.2, 0.0)
+	style.content_margin_left = 60
+	style.content_margin_right = 60
 	header.add_theme_stylebox_override("panel", style)
+
+	# Darken title label shadow
+	var title_label = header.find_child("TitleLabel", true, false)
+	if title_label:
+		title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+		title_label.add_theme_constant_override("shadow_offset_x", 3)
+		title_label.add_theme_constant_override("shadow_offset_y", 3)
 
 func _style_refund_button() -> void:
 	var style_normal = StyleBoxFlat.new()
@@ -256,9 +268,9 @@ func _create_upgrade_tile(upgrade) -> Button:
 	name_label.add_theme_font_override("font", pixel_font)
 	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85, 1))
-	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
-	name_label.add_theme_constant_override("shadow_offset_x", 1)
-	name_label.add_theme_constant_override("shadow_offset_y", 1)
+	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	name_label.add_theme_constant_override("shadow_offset_x", 2)
+	name_label.add_theme_constant_override("shadow_offset_y", 2)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD
