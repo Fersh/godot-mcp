@@ -7,7 +7,7 @@ const CYCLE_DURATION := 600.0  # 10 minutes per half-cycle (day->night or night-
 const FULL_CYCLE := CYCLE_DURATION * 2.0  # 20 minutes for full day/night cycle
 
 # Time of day phases (0.0 = midnight, 0.25 = sunrise, 0.5 = noon, 0.75 = sunset)
-var cycle_time := 0.25  # Start at sunrise/early morning
+var cycle_time := 0.475  # Start just before noon, reaches peak daylight at ~30s
 var cycle_speed := 1.0 / FULL_CYCLE  # How much cycle_time advances per second
 
 # Color palette for different times of day

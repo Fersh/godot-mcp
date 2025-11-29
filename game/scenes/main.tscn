@@ -1,7 +1,6 @@
 [gd_scene load_steps=24 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="Script" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
@@ -22,6 +21,7 @@
 [ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
 [ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
 [ext_resource type="PackedScene" path="res://scenes/decorations/banner.tscn" id="21_yc10j"]
+[ext_resource type="Script" uid="uid://blnv3drpcd3ac" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -79,6 +79,10 @@ visible = false
 [node name="Torch" parent="." instance=ExtResource("20_gqmmt")]
 position = Vector2(94, 241.00006)
 
+[node name="Torch7" parent="." instance=ExtResource("20_gqmmt")]
+visible = false
+position = Vector2(94, 241.00006)
+
 [node name="Torch2" parent="." instance=ExtResource("20_gqmmt")]
 position = Vector2(382.00003, 241.00006)
 
@@ -108,3 +112,61 @@ position = Vector2(1264.0001, 231.00006)
 
 [node name="Banner5" parent="." instance=ExtResource("21_yc10j")]
 position = Vector2(1520.0001, 231.00008)
+
+[node name="Torch8" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(-87, 476)
+
+[node name="Torch9" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1613.9998, 476)
+
+[node name="Torch10" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(-87, 633)
+
+[node name="Torch11" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1613.9998, 633)
+
+[node name="Torch12" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(-87.00001, 809.00006)
+
+[node name="Torch13" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1613.9998, 809.00006)
+
+[node name="Torch14" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(-87, 1009)
+
+[node name="Torch15" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1613.9998, 1009)
+
+[node name="Torch16" parent="." instance=ExtResource("20_gqmmt")]
+visible = false
+position = Vector2(-87, 1241.0001)
+
+[node name="Torch17" parent="." instance=ExtResource("20_gqmmt")]
+visible = false
+position = Vector2(1613.9998, 1241.0001)
+
+[node name="Torch18" parent="." instance=ExtResource("20_gqmmt")]
+visible = false
+position = Vector2(-87, 1377.0001)
+
+[node name="Torch20" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(96.99999, 1377)
+
+[node name="Torch21" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(377.00003, 1377)
+
+[node name="Torch22" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(569, 1377)
+
+[node name="Torch23" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(929, 1377)
+
+[node name="Torch24" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1121.0001, 1377)
+
+[node name="Torch25" parent="." instance=ExtResource("20_gqmmt")]
+position = Vector2(1401, 1377)
+
+[node name="Torch19" parent="." instance=ExtResource("20_gqmmt")]
+visible = false
+position = Vector2(1613.9998, 1377.0001)
