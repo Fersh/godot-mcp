@@ -1225,23 +1225,28 @@ func perform_melee_attack() -> void:
 	if using_retribution and melee_hit_enemies.size() > 0:
 		_consume_retribution()
 
-	# Double Strike - trigger a second attack after a brief delay
+	# Double Strike - trigger a second attack after a brief delay (from passive)
 	if AbilityManager and AbilityManager.should_double_strike():
-		_queue_double_strike()
+		_queue_extra_swing(1)
 
-var _double_strike_queued: bool = false
+	# Multiswing - trigger additional attacks from permanent upgrade
+	if AbilityManager:
+		var extra_swings = AbilityManager.get_extra_melee_swings()
+		for i in range(extra_swings):
+			_queue_extra_swing(i + 1)
 
-func _queue_double_strike() -> void:
-	if _double_strike_queued:
-		return
-	_double_strike_queued = true
-	get_tree().create_timer(0.15).timeout.connect(_perform_double_strike)
+var _extra_swings_queued: int = 0
 
-func _perform_double_strike() -> void:
-	_double_strike_queued = false
+func _queue_extra_swing(swing_index: int) -> void:
+	_extra_swings_queued += 1
+	var delay = 0.12 * swing_index  # Stagger each swing
+	get_tree().create_timer(delay).timeout.connect(_perform_extra_swing)
+
+func _perform_extra_swing() -> void:
+	_extra_swings_queued -= 1
 	if is_dead:
 		return
-	# Perform a second melee attack hit (damage only, no animations/sounds)
+	# Perform an extra melee attack hit (damage only, no animations/sounds)
 	var melee_damage = 10.0 * base_damage
 	if AbilityManager:
 		melee_damage *= AbilityManager.get_damage_multiplier()

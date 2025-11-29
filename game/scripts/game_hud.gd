@@ -370,14 +370,11 @@ func _get_portrait_crop_settings(character_id: String) -> Dictionary:
 var fire_update_timer: float = 0.0
 
 func _process(delta: float) -> void:
-	# Update shield display from AbilityManager
+	# Update shield display from AbilityManager (always update when transcendence is active)
 	if AbilityManager and AbilityManager.has_transcendence:
-		var new_shield = AbilityManager.transcendence_shields
-		var new_max = AbilityManager.transcendence_max
-		if new_shield != current_shield or new_max != max_shield:
-			current_shield = new_shield
-			max_shield = new_max
-			_update_health_bar()
+		current_shield = AbilityManager.transcendence_shields
+		max_shield = AbilityManager.transcendence_max
+		_update_shield_display()
 
 	# Update kill streak fire effect
 	if KillStreakManager:
@@ -449,6 +446,15 @@ func _update_health_bar() -> void:
 		health_label.text = str(int(current_health)) + "/" + str(int(max_health))
 
 	# Update shield display
+	if current_shield > 0 and max_shield > 0:
+		health_bar_shield.visible = true
+		var shield_ratio = clamp(current_shield / max_shield, 0.0, 1.0)
+		health_bar_shield.size.x = (HEALTH_BAR_WIDTH - 4) * shield_ratio
+	else:
+		health_bar_shield.visible = false
+
+func _update_shield_display() -> void:
+	# Update shield bar only (for real-time regeneration display)
 	if current_shield > 0 and max_shield > 0:
 		health_bar_shield.visible = true
 		var shield_ratio = clamp(current_shield / max_shield, 0.0, 1.0)

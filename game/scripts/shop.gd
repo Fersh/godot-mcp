@@ -321,6 +321,8 @@ func _create_upgrade_tile(upgrade) -> Button:
 
 func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool = true) -> void:
 	var category_color = CATEGORY_COLORS.get(upgrade.category, Color.WHITE)
+	var current_rank = PermanentUpgrades.get_rank(upgrade.id)
+	var has_investment = current_rank > 0
 
 	# Unified background color for all available tiles
 	var base_bg = Color(0.1, 0.1, 0.12, 1)
@@ -342,8 +344,16 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 		style.border_width_top = 2
 		style.border_width_bottom = 3
 		style.border_color = category_color.darkened(0.3)
+	elif has_investment:
+		# Can't afford but has investment - show category color border (dimmed)
+		style.bg_color = Color(0.08, 0.08, 0.10, 0.95)
+		style.border_width_left = 2
+		style.border_width_right = 2
+		style.border_width_top = 2
+		style.border_width_bottom = 3
+		style.border_color = category_color.darkened(0.5)
 	else:
-		# Can't afford - dimmed gray
+		# Can't afford and no investment - dimmed gray
 		style.bg_color = Color(0.06, 0.06, 0.08, 0.9)
 		style.border_width_left = 2
 		style.border_width_right = 2
@@ -385,8 +395,13 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 	tile.add_theme_stylebox_override("pressed", style_selected)
 	tile.add_theme_stylebox_override("focus", style)
 
-	# Dim the tile content if can't afford
-	tile.modulate = Color(1, 1, 1, 1) if (can_afford or is_maxed) else Color(0.5, 0.5, 0.55, 1)
+	# Dim the tile content if can't afford (less dim if has investment)
+	if can_afford or is_maxed:
+		tile.modulate = Color(1, 1, 1, 1)
+	elif has_investment:
+		tile.modulate = Color(0.75, 0.75, 0.8, 1)  # Less dim when invested
+	else:
+		tile.modulate = Color(0.5, 0.5, 0.55, 1)
 
 func _on_tile_pressed(upgrade_id: String) -> void:
 	# Deselect previous tile

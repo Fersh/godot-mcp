@@ -721,9 +721,9 @@ func process_periodic_effects(delta: float, player: Node2D) -> void:
 				if player.has_method("force_death"):
 					player.force_death()
 
-	# Transcendence shield regen
+	# Transcendence shield regen (2 HP/second)
 	if has_transcendence and transcendence_shields < transcendence_max:
-		var regen_amount = minf(delta * 5.0, transcendence_max - transcendence_shields)
+		var regen_amount = minf(delta * 2.0, transcendence_max - transcendence_shields)
 		transcendence_shields += regen_amount
 		transcendence_accumulated_regen += regen_amount
 		# Show +x every time we accumulate 1 or more
@@ -1754,17 +1754,18 @@ func get_point_blank_bonus(distance: float) -> float:
 func should_fire_blade_beam() -> bool:
 	return has_blade_beam
 
-# Check if double strike should trigger
+# Check if double strike should trigger (from passive ability)
 func should_double_strike() -> bool:
 	# Passive ability gives guaranteed double strike
 	if has_double_strike:
 		return true
-	# Permanent upgrade gives a chance for double strike
-	if PermanentUpgrades:
-		var chance = PermanentUpgrades.get_all_bonuses().get("double_strike_chance", 0.0)
-		if chance > 0 and randf() < chance:
-			return true
 	return false
+
+# Get number of extra melee swings from permanent upgrade
+func get_extra_melee_swings() -> int:
+	if PermanentUpgrades:
+		return PermanentUpgrades.get_all_bonuses().get("melee_swing_count", 0)
+	return 0
 
 # Called when player picks up a coin
 func on_coin_pickup(player: Node2D) -> void:
