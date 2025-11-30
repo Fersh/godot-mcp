@@ -176,7 +176,7 @@ func _generate_magic_item(item: ItemData, slot: ItemData.Slot) -> void:
 		ItemData.Slot.HELMET:
 			item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.CHEST:
-			item.icon_path = "res://assets/sprites/items/chest/png/transperent/Icon%d.png" % icon_num
+			item.icon_path = "res://assets/sprites/items/chest/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.BELT:
 			item.icon_path = "res://assets/sprites/items/Belt/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.LEGS:
@@ -210,7 +210,7 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 		ItemData.Slot.HELMET:
 			item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.CHEST:
-			item.icon_path = "res://assets/sprites/items/chest/png/transperent/Icon%d.png" % icon_num
+			item.icon_path = "res://assets/sprites/items/chest/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.BELT:
 			item.icon_path = "res://assets/sprites/items/Belt/PNG/Transperent/Icon%d.png" % icon_num
 		ItemData.Slot.LEGS:

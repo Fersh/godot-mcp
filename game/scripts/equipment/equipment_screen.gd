@@ -75,8 +75,8 @@ func _setup_ui_style() -> void:
 
 	# Limit inventory scroll height to force scrolling
 	if inventory_scroll:
-		inventory_scroll.custom_minimum_size = Vector2(540, 300)
-		inventory_scroll.set_deferred("size", Vector2(540, 300))
+		inventory_scroll.custom_minimum_size = Vector2(540, 375)  # Increased height by 25%
+		inventory_scroll.set_deferred("size", Vector2(540, 375))
 
 func _style_main_panel() -> void:
 	# Make the main panel transparent so background image shows through
@@ -326,7 +326,7 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 		icon.texture = load(equipped.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(56, 56)
+		icon.custom_minimum_size = Vector2(45, 45)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
@@ -534,7 +534,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(48, 48)
+		icon.custom_minimum_size = Vector2(38, 38)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
@@ -590,6 +590,16 @@ func _show_equipped_popup(item: ItemData) -> void:
 	var content_vbox = VBoxContainer.new()
 	content_vbox.add_theme_constant_override("separation", 12)
 
+	# Equipped by (shown first, above item name)
+	var equipped_label = Label.new()
+	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
+	if pixel_font:
+		equipped_label.add_theme_font_override("font", pixel_font)
+	equipped_label.add_theme_font_size_override("font_size", 14)
+	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content_vbox.add_child(equipped_label)
+
 	# Item name
 	var name_label = Label.new()
 	name_label.text = item.get_full_name()
@@ -599,16 +609,6 @@ func _show_equipped_popup(item: ItemData) -> void:
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content_vbox.add_child(name_label)
-
-	# Equipped by
-	var equipped_label = Label.new()
-	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
-	if pixel_font:
-		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 14)
-	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content_vbox.add_child(equipped_label)
 
 	# Item stats with margin container
 	var stats_margin = MarginContainer.new()
@@ -904,7 +904,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(36, 36)
+		icon.custom_minimum_size = Vector2(29, 29)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon_center.add_child(icon)
 	icon_margin.add_child(icon_center)
@@ -924,7 +924,10 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 
 	# Rarity
 	var rarity_label = Label.new()
-	rarity_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
+	var type_text = item.get_slot_name()
+	if item.slot == ItemData.Slot.WEAPON:
+		type_text = "%s %s" % [item.display_name, item.get_slot_name()]
+	rarity_label.text = "%s %s" % [item.get_rarity_name(), type_text]
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
 	rarity_label.add_theme_font_size_override("font_size", 12)
