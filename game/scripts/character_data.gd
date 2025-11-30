@@ -344,7 +344,7 @@ static func create_monk() -> CharacterData:
 	data.frame_size = Vector2(96, 96)
 	data.hframes = 16
 	data.vframes = 8
-	data.sprite_scale = Vector2(1.75, 1.75)  # Scaled up for visibility
+	data.sprite_scale = Vector2(1.575, 1.575)  # Reduced 10% from 1.75
 
 	# Animation rows
 	# Row 0: Idle 1 (skip)
@@ -366,17 +366,17 @@ static func create_monk() -> CharacterData:
 	# Frame counts (reduced by 1 to remove empty trailing frame)
 	data.frames_idle = 8
 	data.frames_move = 6
-	data.frames_attack = 14
-	data.frames_attack_up = 14
-	data.frames_attack_down = 14
+	data.frames_attack = 13  # Reduced by 1
+	data.frames_attack_up = 13  # Reduced by 1
+	data.frames_attack_down = 13  # Reduced by 1
 	data.frames_damage = 6
 	data.frames_death = 6
 
 	# Monk-specific: Triple attack system
 	data.row_attack_2 = 5  # Attack 2 row
 	data.row_attack_3 = 3  # Staff spin (taunt) as Attack 3
-	data.frames_attack_2 = 12
-	data.frames_attack_3 = 3
+	data.frames_attack_2 = 11  # Reduced by 1
+	data.frames_attack_3 = 2  # Reduced by 1
 	data.has_triple_attack = true
 
 	# Passive

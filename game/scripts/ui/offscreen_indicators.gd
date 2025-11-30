@@ -101,8 +101,8 @@ func draw_indicators(canvas: Control) -> void:
 
 		var enemy_pos = enemy.global_position
 
-		# Check if off-screen (with small buffer)
-		var buffer = 20.0
+		# Check if off-screen (with small buffer - show indicators for enemies just off screen)
+		var buffer = 0.0  # No buffer - show indicator as soon as enemy is off visible screen
 		if enemy_pos.x >= screen_left + buffer and enemy_pos.x <= screen_right - buffer and \
 		   enemy_pos.y >= screen_top + buffer and enemy_pos.y <= screen_bottom - buffer:
 			continue  # On screen, skip

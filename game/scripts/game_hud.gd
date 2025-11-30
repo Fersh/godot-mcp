@@ -28,6 +28,7 @@ var pause_menu: CanvasLayer = null
 var portrait_button: Button = null
 var portrait_texture: TextureRect = null
 var portrait_bg: Panel = null
+var portrait_border: Panel = null
 var pause_overlay: Label = null
 var health_icon: TextureRect = null
 var health_bar_bg: Panel = null
@@ -120,31 +121,54 @@ func _create_ui() -> void:
 	portrait_button.position = Vector2.ZERO
 	portrait_button.pressed.connect(_on_pause_pressed)
 	portrait_button.flat = true
+	portrait_button.clip_contents = true
 	container.add_child(portrait_button)
 
-	# Portrait background
+	# Portrait background (just the bg color, no border)
 	portrait_bg = Panel.new()
 	portrait_bg.name = "PortraitBG"
 	portrait_bg.size = Vector2(PORTRAIT_SIZE, PORTRAIT_SIZE)
 	portrait_bg.position = Vector2.ZERO
 	portrait_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.1, 0.1, 0.15, 0.95)
-	bg_style.border_color = Color(0.4, 0.35, 0.3, 1.0)
-	bg_style.set_border_width_all(3)
+	bg_style.bg_color = Color(0.1, 0.1, 0.15, 0.3)  # Semi-transparent to show ground
 	bg_style.set_corner_radius_all(4)
 	portrait_bg.add_theme_stylebox_override("panel", bg_style)
 	portrait_button.add_child(portrait_bg)
+
+	# Clip container for portrait (inside border area)
+	var portrait_clip = Control.new()
+	portrait_clip.name = "PortraitClip"
+	portrait_clip.position = Vector2(3, 3)
+	portrait_clip.size = Vector2(PORTRAIT_SIZE - 6, PORTRAIT_SIZE - 6)
+	portrait_clip.clip_contents = true
+	portrait_clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_button.add_child(portrait_clip)
 
 	# Portrait texture (character face)
 	portrait_texture = TextureRect.new()
 	portrait_texture.name = "PortraitTexture"
 	portrait_texture.size = Vector2(PORTRAIT_SIZE - 6, PORTRAIT_SIZE - 6)
-	portrait_texture.position = Vector2(3, 3)
+	portrait_texture.position = Vector2.ZERO
 	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait_button.add_child(portrait_texture)
+	portrait_texture.modulate.a = 0.75  # 75% opacity
+	portrait_clip.add_child(portrait_texture)
+
+	# Portrait border (on top of everything)
+	portrait_border = Panel.new()
+	portrait_border.name = "PortraitBorder"
+	portrait_border.size = Vector2(PORTRAIT_SIZE, PORTRAIT_SIZE)
+	portrait_border.position = Vector2.ZERO
+	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var border_style = StyleBoxFlat.new()
+	border_style.bg_color = Color(0, 0, 0, 0)  # Transparent background
+	border_style.border_color = Color(0.4, 0.35, 0.3, 1.0)
+	border_style.set_border_width_all(3)
+	border_style.set_corner_radius_all(4)
+	portrait_border.add_theme_stylebox_override("panel", border_style)
+	portrait_button.add_child(portrait_border)
 
 	# Pause overlay (|| symbol)
 	pause_overlay = Label.new()
@@ -212,11 +236,13 @@ func _create_ui() -> void:
 	health_bar_fill.name = "HealthBarFill"
 	health_bar_fill.size = Vector2(HEALTH_BAR_WIDTH - 4, HEALTH_BAR_HEIGHT - 4)
 	health_bar_fill.position = Vector2(health_bar_x + 2, health_bar_y + 2)
+	health_bar_fill.clip_contents = true
 	var health_fill_style = StyleBoxFlat.new()
 	health_fill_style.bg_color = Color(0.2, 0.8, 0.2, 1.0)  # Green (will change based on health)
 	health_fill_style.set_corner_radius_all(1)
 	health_bar_fill.add_theme_stylebox_override("panel", health_fill_style)
 	container.add_child(health_bar_fill)
+	_add_bar_texture_overlays(health_bar_fill, HEALTH_BAR_HEIGHT - 4)
 
 	# Shield bar (overlay on health)
 	health_bar_shield = Panel.new()
@@ -289,11 +315,13 @@ func _create_ui() -> void:
 	progress_bar_fill.name = "ProgressBarFill"
 	progress_bar_fill.size = Vector2(0, PROGRESS_BAR_HEIGHT - 4)
 	progress_bar_fill.position = Vector2(progress_bar_x + 2, progress_row_y + 2)
+	progress_bar_fill.clip_contents = true
 	var progress_fill_style = StyleBoxFlat.new()
 	progress_fill_style.bg_color = Color(0.3, 0.7, 1.0, 1.0)  # Blue
 	progress_fill_style.set_corner_radius_all(1)
 	progress_bar_fill.add_theme_stylebox_override("panel", progress_fill_style)
 	container.add_child(progress_bar_fill)
+	_add_bar_texture_overlays(progress_bar_fill, PROGRESS_BAR_HEIGHT - 4)
 
 	# Level label (centered on progress bar)
 	level_label = Label.new()
@@ -327,12 +355,40 @@ func _setup_portrait() -> void:
 		var texture = load(portrait_path) as Texture2D
 		if texture:
 			portrait_texture.texture = texture
-			# Ensure full image is shown centered
+			# Ensure full image is shown, top aligned
 			portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			# Zoom in by 15% from top-center
+			portrait_texture.pivot_offset = Vector2(portrait_texture.size.x / 2, 0)
+			portrait_texture.scale = Vector2(1.15, 1.15)
+			# 75% opacity
+			portrait_texture.modulate.a = 0.75
 
 	# Setup fire effect container for kill streaks
 	_setup_fire_effect()
+
+func _add_bar_texture_overlays(bar: Panel, bar_height: float) -> void:
+	"""Add highlight and shadow overlays to create a textured gradient effect on bars."""
+	var highlight_height = bar_height * 0.25  # Top 25% lighter
+	var shadow_height = bar_height * 0.3  # Bottom 30% darker
+
+	# Top highlight (lighter)
+	var highlight = ColorRect.new()
+	highlight.name = "Highlight"
+	highlight.color = Color(1.0, 1.0, 1.0, 0.25)  # Semi-transparent white
+	highlight.size = Vector2(HEALTH_BAR_WIDTH, highlight_height)
+	highlight.position = Vector2.ZERO
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(highlight)
+
+	# Bottom shadow (darker)
+	var shadow = ColorRect.new()
+	shadow.name = "Shadow"
+	shadow.color = Color(0.0, 0.0, 0.0, 0.3)  # Semi-transparent black
+	shadow.size = Vector2(HEALTH_BAR_WIDTH, shadow_height)
+	shadow.position = Vector2(0, bar_height - shadow_height)
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.add_child(shadow)
 
 func _get_portrait_crop_settings(character_id: String) -> Dictionary:
 	# Per-character crop settings to show face properly
@@ -672,14 +728,14 @@ func _update_fire_intensity() -> void:
 			_update_portrait_border(tier_colors[0])  # Use the brightest color
 
 func _update_portrait_border(color: Color) -> void:
-	"""Update the portrait background border color."""
-	if portrait_bg == null:
+	"""Update the portrait border color."""
+	if portrait_border == null:
 		return
-	var style = portrait_bg.get_theme_stylebox("panel")
+	var style = portrait_border.get_theme_stylebox("panel")
 	if style:
 		style = style.duplicate()
 		style.border_color = color
-		portrait_bg.add_theme_stylebox_override("panel", style)
+		portrait_border.add_theme_stylebox_override("panel", style)
 
 func _update_fire_particles() -> void:
 	"""Update fire particle positions and colors (called at low framerate for pixelated look)."""

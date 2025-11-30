@@ -45,6 +45,7 @@ func _setup_sprite() -> void:
 
 func _setup_aura() -> void:
 	# Aura is drawn in _draw()
+	pass
 
 func setup(p_duration: float, p_radius: float = 100.0, p_damage: float = 0.0, p_slow_percent: float = 0.5, p_slow_duration: float = 1.0) -> void:
 	duration = p_duration

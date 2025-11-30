@@ -109,14 +109,15 @@ func _on_body_entered(body: Node2D) -> void:
 			damage *= AbilityManager.get_summon_damage_multiplier()
 		body.take_damage(damage)
 
-		# Apply burn effect
-		if body.has_method("apply_burn"):
-			var burn = burn_damage
-			if AbilityManager:
-				burn *= AbilityManager.get_summon_damage_multiplier()
-			body.apply_burn(burn, burn_duration)
-		elif body.has_method("apply_dot"):
-			var burn = burn_damage
-			if AbilityManager:
-				burn *= AbilityManager.get_summon_damage_multiplier()
-			body.apply_dot(burn, burn_duration, "burn")
+		# Apply burn effect (check if body still valid after taking damage)
+		if is_instance_valid(body):
+			if body.has_method("apply_burn"):
+				var burn = burn_damage
+				if AbilityManager:
+					burn *= AbilityManager.get_summon_damage_multiplier()
+				body.apply_burn(burn, burn_duration)
+			elif body.has_method("apply_dot"):
+				var burn = burn_damage
+				if AbilityManager:
+					burn *= AbilityManager.get_summon_damage_multiplier()
+				body.apply_dot(burn, burn_duration, "burn")
