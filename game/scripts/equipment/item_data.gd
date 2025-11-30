@@ -21,7 +21,8 @@ enum Rarity {
 enum WeaponType {
 	NONE,
 	MELEE,
-	RANGED
+	RANGED,
+	MAGIC  # Books for mages
 }
 
 # Rarity colors (WoW-style)
@@ -162,9 +163,13 @@ func can_be_equipped_by(character_id: String) -> bool:
 	# Check weapon type restrictions
 	if slot == Slot.WEAPON:
 		if weapon_type == WeaponType.MELEE:
+			# Knight uses swords, Monk & Beast use spears
 			return character_id in ["knight", "beast", "monk"]
 		elif weapon_type == WeaponType.RANGED:
 			return character_id == "archer"
+		elif weapon_type == WeaponType.MAGIC:
+			# Mages use books
+			return character_id == "mage"
 	return true
 
 func duplicate_item() -> ItemData:

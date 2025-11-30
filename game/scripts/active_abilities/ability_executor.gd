@@ -312,6 +312,8 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 		else:
 			get_tree().current_scene.add_child(effect)
 			effect.global_position = position
+		# Make abilities 90% opacity so game is visible beneath
+		effect.modulate.a = 0.9
 		# Configure effect based on type
 		_configure_spawned_effect(effect, effect_id)
 		return effect
@@ -452,6 +454,7 @@ func _spawn_explosion_effect(position: Vector2, parent: Node = null) -> Node:
 	"""Spawn the animated pixel explosion effect."""
 	var explosion = Node2D.new()
 	explosion.global_position = position
+	explosion.modulate.a = 0.9  # 90% opacity
 
 	var explosion_script = load("res://scripts/abilities/explosion_effect.gd")
 	if explosion_script:
@@ -468,6 +471,7 @@ func _spawn_generic_effect(position: Vector2, parent: Node = null) -> Node:
 	"""Spawn a simple generic impact effect."""
 	var effect = Node2D.new()
 	effect.global_position = position
+	effect.modulate.a = 0.9  # 90% opacity
 
 	# Simple flash effect that fades out
 	var sprite = Sprite2D.new()
@@ -1958,6 +1962,7 @@ func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
 	wall.name = "FlameWall"
 	wall.global_position = wall_center
 	wall.rotation = direction.angle()
+	wall.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(wall)
 
 	# Visual representation - animated fire sprites along the wall
@@ -2041,6 +2046,7 @@ func _execute_ice_barricade(ability: ActiveAbilityData, player: Node2D) -> void:
 	wall.name = "IceBarricade"
 	wall.global_position = wall_center
 	wall.rotation = direction.angle() + PI / 2  # Perpendicular to direction
+	wall.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(wall)
 
 	# Visual representation - ice blocks along the wall
@@ -2112,6 +2118,7 @@ func _create_lava_pool(position: Vector2, damage: float, lifetime: float) -> Nod
 	pool.name = "LavaPool"
 	pool.global_position = position
 	pool.z_index = -1
+	pool.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(pool)
 
 	# Visual - orange/red circle
@@ -2171,6 +2178,7 @@ func _execute_bear_trap(ability: ActiveAbilityData, player: Node2D) -> void:
 	var trap = Node2D.new()
 	trap.name = "BearTrap"
 	trap.global_position = trap_pos
+	trap.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(trap)
 
 	# Visual - metal trap jaws
@@ -2264,6 +2272,7 @@ func _create_glue_puddle(position: Vector2, ability: ActiveAbilityData) -> void:
 	puddle.name = "GluePuddle"
 	puddle.global_position = position
 	puddle.z_index = -1
+	puddle.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(puddle)
 
 	var radius = ability.radius
@@ -2312,6 +2321,7 @@ func _execute_pressure_mine(ability: ActiveAbilityData, player: Node2D) -> void:
 	var mine = Node2D.new()
 	mine.name = "PressureMine"
 	mine.global_position = mine_pos
+	mine.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(mine)
 
 	# Visual - circular mine with warning light
@@ -2389,6 +2399,7 @@ func _execute_smoke_bomb(ability: ActiveAbilityData, player: Node2D) -> void:
 	smoke.name = "SmokeCloud"
 	smoke.global_position = smoke_pos
 	smoke.z_index = 10
+	smoke.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(smoke)
 
 	# Visual - multiple semi-transparent circles
@@ -2635,6 +2646,7 @@ func _execute_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
 	var vortex = Node2D.new()
 	vortex.name = "Vortex"
 	vortex.global_position = target_pos
+	vortex.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(vortex)
 
 	# Spinning visual
@@ -2711,6 +2723,7 @@ func _execute_dj_drop(ability: ActiveAbilityData, player: Node2D) -> void:
 	var drop = Node2D.new()
 	drop.global_position = player.global_position
 	drop.z_index = 100
+	drop.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(drop)
 
 	# Multiple expanding rings
@@ -2766,6 +2779,7 @@ func _spawn_mirror_clone(position: Vector2, damage: float, duration: float, play
 	var clone = Node2D.new()
 	clone.name = "MirrorClone"
 	clone.global_position = position
+	clone.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(clone)
 
 	# Try to copy player sprite
@@ -2940,6 +2954,7 @@ func _spawn_party_member(position: Vector2, damage: float, duration: float, memb
 	var member = Node2D.new()
 	member.name = "PartyMember_" + member_type
 	member.global_position = position
+	member.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(member)
 
 	# Color based on type
@@ -3016,6 +3031,7 @@ func _spawn_hound(position: Vector2, damage: float, duration: float) -> void:
 	var hound = Node2D.new()
 	hound.name = "AttackHound"
 	hound.global_position = position
+	hound.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(hound)
 
 	# Simple dog visual
@@ -3124,6 +3140,7 @@ func _execute_pocket_healer(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Create healer visual
 	var healer = Node2D.new()
 	healer.name = "PocketHealer"
+	healer.modulate.a = 0.9  # 90% opacity
 	player.add_child(healer)
 	healer.position = Vector2(30, -30)
 
@@ -3175,6 +3192,7 @@ func _execute_safe_space(ability: ActiveAbilityData, player: Node2D) -> void:
 	var barrier = Node2D.new()
 	barrier.name = "SafeSpace"
 	barrier.global_position = barrier_pos
+	barrier.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(barrier)
 
 	# Dome visual

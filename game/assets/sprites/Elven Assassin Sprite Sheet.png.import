@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfbummychkix4"
-path="res://.godot/imported/Fire Elemental Sprite Sheet (1).png-7c71616fa519d980caf6b131966c417c.ctex"
+uid="uid://5r4rvaro5520"
+path="res://.godot/imported/Elven Assassin Sprite Sheet.png-9dbcc9453f0552e32a48089ce28384d0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/Fire Elemental Sprite Sheet (1).png"
-dest_files=["res://.godot/imported/Fire Elemental Sprite Sheet (1).png-7c71616fa519d980caf6b131966c417c.ctex"]
+source_file="res://assets/sprites/Elven Assassin Sprite Sheet.png"
+dest_files=["res://.godot/imported/Elven Assassin Sprite Sheet.png-9dbcc9453f0552e32a48089ce28384d0.ctex"]
 
 [params]
 
