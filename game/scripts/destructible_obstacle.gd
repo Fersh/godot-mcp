@@ -75,23 +75,32 @@ func _check_player_behind() -> void:
 		return
 
 	# Calculate the tree's visual bounds
-	var tree_top = global_position.y
-	var tree_width = 40.0  # Default width
+	var tree_width = 40.0
+	var sprite_top = global_position.y
+	var sprite_bottom = global_position.y
 
 	if sprite and sprite.texture:
-		# Tree sprite is offset upward, so the visual top is above global_position
 		var sprite_height = sprite.texture.get_height() * sprite.scale.y
-		tree_top = global_position.y + sprite.position.y - sprite_height / 2
 		tree_width = sprite.texture.get_width() * sprite.scale.x
+		# Sprite is offset upward from global_position
+		sprite_top = global_position.y + sprite.position.y - sprite_height / 2
+		sprite_bottom = global_position.y + sprite.position.y + sprite_height / 2
 
-	# Player is "behind" visually if their Y is LESS than the tree's position
-	# (lower Y = higher on screen = behind the tree in top-down view)
+	# Player's approximate visual position (their feet)
+	var player_y = player.global_position.y
+
+	# Horizontal distance check
 	var horizontal_dist = abs(player.global_position.x - global_position.x)
-	var max_horizontal = tree_width * 0.6  # Slightly wider than tree for smooth transition
+	var max_horizontal = tree_width * 0.4  # Only when actually overlapping horizontally
 
-	# Only make transparent if player is BEHIND (lower Y, meaning visually behind/above in top-down)
-	# AND horizontally overlapping with the tree
-	if player.global_position.y < global_position.y and horizontal_dist < max_horizontal:
+	# Only make transparent if:
+	# 1. Player is horizontally within the tree sprite
+	# 2. Player's Y is between sprite top and the tree's collision base (they're actually behind the sprite)
+	# This means player is visually "inside" the tree sprite area
+	var player_behind_sprite = player_y > sprite_top and player_y < sprite_bottom + 20
+	var player_overlapping = horizontal_dist < max_horizontal
+
+	if player_behind_sprite and player_overlapping:
 		target_alpha = BEHIND_ALPHA
 	else:
 		target_alpha = NORMAL_ALPHA

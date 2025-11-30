@@ -9,24 +9,29 @@ signal map_generated(map_bounds: Rect2)
 const MAP_SIZE: int = 2500
 const TILE_SIZE: int = 16
 
-# Tile coordinates in Nature.png
-const TILE_GRASS_LIGHT_1 := Vector2i(6, 3)
-const TILE_GRASS_LIGHT_2 := Vector2i(7, 3)
-const TILE_GRASS_LIGHT_3 := Vector2i(8, 3)
-const TILE_GRASS_LIGHT_4 := Vector2i(6, 4)
-const TILE_GRASS_LIGHT_5 := Vector2i(7, 4)
+# Tile coordinates in Nature.png (16x16 grid)
+# Looking at the tileset: grass is in the large green block (center area)
+# Row 4-5 columns 7-10 appear to be solid grass tiles
+const TILE_GRASS_LIGHT_1 := Vector2i(7, 4)  # Solid grass center
+const TILE_GRASS_LIGHT_2 := Vector2i(8, 4)  # Solid grass center
+const TILE_GRASS_LIGHT_3 := Vector2i(7, 5)  # Solid grass center
+const TILE_GRASS_LIGHT_4 := Vector2i(8, 5)  # Solid grass center
+const TILE_GRASS_LIGHT_5 := Vector2i(9, 4)  # Solid grass center
 
-const TILE_GRASS_DARK_1 := Vector2i(9, 3)
-const TILE_GRASS_DARK_2 := Vector2i(10, 3)
-const TILE_GRASS_DARK_3 := Vector2i(9, 4)
-const TILE_GRASS_DARK_4 := Vector2i(10, 4)
-const TILE_GRASS_DARK_5 := Vector2i(8, 4)
+# Darker grass for variation (slightly different shade tiles)
+const TILE_GRASS_DARK_1 := Vector2i(9, 5)
+const TILE_GRASS_DARK_2 := Vector2i(10, 4)
+const TILE_GRASS_DARK_3 := Vector2i(10, 5)
+const TILE_GRASS_DARK_4 := Vector2i(6, 5)
+const TILE_GRASS_DARK_5 := Vector2i(6, 4)
 
+# Decorations from bottom row
 const TILE_GRASS_FLOWER := Vector2i(7, 7)
 const TILE_GRASS_MUSHROOM := Vector2i(9, 7)
 
+# Dirt/path tiles (center tiles from dirt section)
 const TILE_DIRT := Vector2i(4, 1)
-const TILE_DIRT_2 := Vector2i(5, 1)
+const TILE_DIRT_2 := Vector2i(4, 0)
 
 # Spawn area
 const SPAWN_AREA_RADIUS: int = 120
@@ -126,24 +131,35 @@ func _clear_existing() -> void:
 		child.queue_free()
 
 func _setup_tilemaps() -> void:
+	# Create solid grass background using ColorRect (more reliable than tiles)
+	var grass_bg = ColorRect.new()
+	grass_bg.name = "GrassBackground"
+	grass_bg.color = Color(0.286, 0.478, 0.208)  # Green grass color
+	grass_bg.position = Vector2(-100, -100)
+	grass_bg.size = Vector2(MAP_SIZE + 200, MAP_SIZE + 200)
+	grass_bg.z_index = -15
+	add_child(grass_bg)
+
 	var tileset = _create_tileset()
 
-	grass_tilemap = TileMapLayer.new()
-	grass_tilemap.name = "GrassTileMap"
-	grass_tilemap.tile_set = tileset
-	grass_tilemap.z_index = -12
-	add_child(grass_tilemap)
-
+	# Dirt layer for dirt patches
 	dirt_tilemap = TileMapLayer.new()
 	dirt_tilemap.name = "DirtTileMap"
 	dirt_tilemap.tile_set = tileset
-	dirt_tilemap.z_index = -11
+	dirt_tilemap.z_index = -12
 	add_child(dirt_tilemap)
+
+	# Dark grass overlay for variation
+	grass_tilemap = TileMapLayer.new()
+	grass_tilemap.name = "GrassVariationTileMap"
+	grass_tilemap.tile_set = tileset
+	grass_tilemap.z_index = -13
+	add_child(grass_tilemap)
 
 	decoration_tilemap = TileMapLayer.new()
 	decoration_tilemap.name = "DecorationTileMap"
 	decoration_tilemap.tile_set = tileset
-	decoration_tilemap.z_index = -10
+	decoration_tilemap.z_index = -11
 	add_child(decoration_tilemap)
 
 func _create_tileset() -> TileSet:
@@ -289,59 +305,72 @@ func _create_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Arr
 	container.add_child(sprite)
 
 func _generate_grass() -> void:
-	print("ProceduralMapGenerator: Generating grass...")
+	print("ProceduralMapGenerator: Generating grass variation...")
 
-	var light_tiles = [TILE_GRASS_LIGHT_1, TILE_GRASS_LIGHT_2, TILE_GRASS_LIGHT_3, TILE_GRASS_LIGHT_4, TILE_GRASS_LIGHT_5]
-	var dark_tiles = [TILE_GRASS_DARK_1, TILE_GRASS_DARK_2, TILE_GRASS_DARK_3, TILE_GRASS_DARK_4, TILE_GRASS_DARK_5]
+	# Add darker grass patches randomly for visual variation
+	# The base grass is already a solid ColorRect
+	var dark_grass_color = Color(0.22, 0.40, 0.16)  # Darker green
 
 	for key in land_cells:
 		var pos = land_cells[key]
-		var tile = light_tiles[rng.randi() % light_tiles.size()]
-		grass_tilemap.set_cell(pos, 0, tile)
 
-		# Random dark grass variation
-		if rng.randf() < 0.12:
-			var dark = dark_tiles[rng.randi() % dark_tiles.size()]
-			decoration_tilemap.set_cell(pos, 0, dark)
-
-		# Very sparse flowers/mushrooms
-		if rng.randf() < 0.004:
-			var deco = TILE_GRASS_FLOWER if rng.randf() < 0.7 else TILE_GRASS_MUSHROOM
-			decoration_tilemap.set_cell(pos, 0, deco)
+		# Random darker grass patches (about 10% of tiles)
+		if rng.randf() < 0.10:
+			# Create small dark grass patches using ColorRects
+			var dark_patch = ColorRect.new()
+			dark_patch.color = dark_grass_color
+			dark_patch.size = Vector2(TILE_SIZE, TILE_SIZE)
+			dark_patch.position = Vector2(pos.x * TILE_SIZE, pos.y * TILE_SIZE)
+			dark_patch.z_index = -14
+			add_child(dark_patch)
 
 func _place_dirt_patches() -> void:
 	print("ProceduralMapGenerator: Placing dirt patches...")
 
-	var dirt_tiles = [TILE_DIRT, TILE_DIRT_2]
+	var dirt_colors = [
+		Color(0.45, 0.35, 0.22),  # Light brown
+		Color(0.40, 0.30, 0.18),  # Medium brown
+		Color(0.50, 0.38, 0.25),  # Tan
+	]
 
 	for i in range(DIRT_PATCH_COUNT):
-		# Random position on land
 		var attempts = 0
 		while attempts < 20:
-			var x = rng.randi_range(50, MAP_SIZE - 50)
-			var y = rng.randi_range(50, MAP_SIZE - 50)
+			var x = rng.randi_range(100, MAP_SIZE - 100)
+			var y = rng.randi_range(100, MAP_SIZE - 100)
 			var tx = x / TILE_SIZE
 			var ty = y / TILE_SIZE
 
 			if land_cells.has("%d_%d" % [tx, ty]):
-				# Create organic dirt patch
-				var patch_size = rng.randi_range(2, 7)
-				_create_dirt_patch(tx, ty, patch_size, dirt_tiles)
+				var patch_size = rng.randi_range(2, 6)
+				_create_dirt_patch(tx, ty, patch_size, dirt_colors)
 				break
 			attempts += 1
 
-func _create_dirt_patch(center_x: int, center_y: int, size: int, dirt_tiles: Array) -> void:
+func _create_dirt_patch(center_x: int, center_y: int, size: int, dirt_colors: Array) -> void:
+	var base_color = dirt_colors[rng.randi() % dirt_colors.size()]
+
 	for dy in range(-size, size + 1):
 		for dx in range(-size, size + 1):
 			var dist = Vector2(dx, dy).length()
-			if dist <= size and rng.randf() < (1.0 - dist / size * 0.5):
+			if dist <= size and rng.randf() < (1.0 - dist / size * 0.6):
 				var tx = center_x + dx
 				var ty = center_y + dy
 				var key = "%d_%d" % [tx, ty]
 
 				if land_cells.has(key) and not water_cells.has(key):
-					var tile = dirt_tiles[rng.randi() % dirt_tiles.size()]
-					dirt_tilemap.set_cell(Vector2i(tx, ty), 0, tile)
+					# Create dirt tile with slight color variation
+					var dirt_rect = ColorRect.new()
+					var color_var = rng.randf_range(-0.03, 0.03)
+					dirt_rect.color = Color(
+						base_color.r + color_var,
+						base_color.g + color_var,
+						base_color.b + color_var
+					)
+					dirt_rect.size = Vector2(TILE_SIZE, TILE_SIZE)
+					dirt_rect.position = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
+					dirt_rect.z_index = -13
+					add_child(dirt_rect)
 					dirt_cells[key] = Vector2i(tx, ty)
 
 func _place_trees() -> void:
