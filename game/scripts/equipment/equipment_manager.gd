@@ -170,10 +170,20 @@ func _generate_magic_item(item: ItemData, slot: ItemData.Slot) -> void:
 		item.suffix = suffix_data.name
 		item.magic_stats = suffix_data.stats.duplicate()
 
-	# Upgrade helmet icon for magic rarity (icons 9-18)
-	if slot == ItemData.Slot.HELMET:
-		var icon_num = randi_range(9, 18)
-		item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
+	# Upgrade icons for magic rarity (icons 9-18)
+	var icon_num = randi_range(9, 18)
+	match slot:
+		ItemData.Slot.HELMET:
+			item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.CHEST:
+			item.icon_path = "res://assets/sprites/items/chest/png/transperent/Icon%d.png" % icon_num
+		ItemData.Slot.BELT:
+			item.icon_path = "res://assets/sprites/items/Belt/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.LEGS:
+			item.icon_path = "res://assets/sprites/items/Legs/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.WEAPON:
+			if item.weapon_type == ItemData.WeaponType.RANGED:
+				item.icon_path = "res://assets/sprites/items/Bow/PNG/Transperent/Icon%d.png" % icon_num
 
 func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 	# Start with common base
@@ -194,10 +204,20 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 		else:
 			item.magic_stats[stat] = suffix_data.stats[stat]
 
-	# Upgrade helmet icon for rare rarity (icons 19-30)
-	if slot == ItemData.Slot.HELMET:
-		var icon_num = randi_range(19, 30)
-		item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
+	# Upgrade icons for rare rarity (icons 19-30)
+	var icon_num = randi_range(19, 30)
+	match slot:
+		ItemData.Slot.HELMET:
+			item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.CHEST:
+			item.icon_path = "res://assets/sprites/items/chest/png/transperent/Icon%d.png" % icon_num
+		ItemData.Slot.BELT:
+			item.icon_path = "res://assets/sprites/items/Belt/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.LEGS:
+			item.icon_path = "res://assets/sprites/items/Legs/PNG/Transperent/Icon%d.png" % icon_num
+		ItemData.Slot.WEAPON:
+			if item.weapon_type == ItemData.WeaponType.RANGED:
+				item.icon_path = "res://assets/sprites/items/Bow/PNG/Transperent/Icon%d.png" % icon_num
 
 func _generate_unique_item(item: ItemData, slot: ItemData.Slot) -> void:
 	var unique_ids = ItemDatabase.get_unique_items_for_slot(slot)
