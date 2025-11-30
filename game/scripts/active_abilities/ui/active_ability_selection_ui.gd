@@ -399,6 +399,11 @@ func _on_ability_selected(index: int) -> void:
 	if is_rolling:
 		return
 
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
 	if index >= 0 and index < current_choices.size():
 		var ability = current_choices[index]
 

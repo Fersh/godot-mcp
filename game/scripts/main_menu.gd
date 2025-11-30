@@ -163,11 +163,23 @@ func _update_coin_display() -> void:
 		coin_amount.text = " %d" % StatsManager.spendable_coins
 
 func _on_play_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Go to character select screen
 	get_tree().change_scene_to_file("res://scenes/character_select.tscn")
 
 func _on_gear_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/equipment/equipment_screen.tscn")
 
 func _on_shop_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/shop.tscn")

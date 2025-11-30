@@ -112,6 +112,10 @@ func format_number(num: int) -> String:
 	return result
 
 func _on_play_again_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Reset run stats and abilities, then restart game
 	if StatsManager:
 		StatsManager.reset_run()
@@ -122,6 +126,10 @@ func _on_play_again_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 func _on_main_menu_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Unpause and go to main menu
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
@@ -242,6 +250,10 @@ func _create_loot_card(item: ItemData) -> Control:
 	return card
 
 func _show_item_tooltip(item: ItemData, card: Button) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Remove existing tooltip
 	if active_tooltip:
 		active_tooltip.queue_free()
@@ -496,13 +508,23 @@ func _create_settings_dropdown() -> void:
 	var vol_down = Button.new()
 	vol_down.text = "-"
 	vol_down.custom_minimum_size = Vector2(40, 40)
-	vol_down.pressed.connect(func(): GameSettings.decrease_volume())
+	vol_down.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		if HapticManager:
+			HapticManager.light()
+		GameSettings.decrease_volume())
 	vol_hbox.add_child(vol_down)
 
 	var vol_up = Button.new()
 	vol_up.text = "+"
 	vol_up.custom_minimum_size = Vector2(40, 40)
-	vol_up.pressed.connect(func(): GameSettings.increase_volume())
+	vol_up.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		if HapticManager:
+			HapticManager.light()
+		GameSettings.increase_volume())
 	vol_hbox.add_child(vol_up)
 
 	vbox.add_child(vol_hbox)
@@ -521,6 +543,10 @@ func _create_settings_dropdown() -> void:
 	add_child(settings_dropdown)
 
 func _toggle_settings_dropdown() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	settings_visible = not settings_visible
 	settings_dropdown.visible = settings_visible
 

@@ -19,6 +19,7 @@ var damage_sound: AudioStream
 var buff_sound: AudioStream
 var ding_sound: AudioStream
 var block_sound: AudioStream
+var click_sound: AudioStream
 
 # Audio players pool for concurrent sounds
 var audio_players: Array[AudioStreamPlayer] = []
@@ -112,6 +113,7 @@ func _load_sounds() -> void:
 	buff_sound = load("res://assets/sounds/buff.mp3")
 	ding_sound = load("res://assets/sounds/ding.mp3")
 	block_sound = load("res://assets/sounds/block.mp3")
+	click_sound = load("res://assets/sounds/click.mp3")
 
 func _create_audio_pool() -> void:
 	for i in POOL_SIZE:
@@ -252,6 +254,10 @@ func play_ding() -> void:
 func play_block() -> void:
 	# Attack blocked
 	_play_sound(block_sound, -3.0, 0.1)
+
+func play_click() -> void:
+	# UI button click sound
+	_play_sound(click_sound, -5.0, 0.05)
 
 # ============================================
 # MUSIC CONTROL API

@@ -404,6 +404,10 @@ func _style_upgrade_tile(tile: Button, upgrade, is_maxed: bool, can_afford: bool
 		tile.modulate = Color(0.5, 0.5, 0.55, 1)
 
 func _on_tile_pressed(upgrade_id: String) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Deselect previous tile
 	if selected_upgrade_id != "" and upgrade_tiles.has(selected_upgrade_id):
 		var prev_tile = upgrade_tiles[selected_upgrade_id]
@@ -570,6 +574,10 @@ func _update_tooltip(upgrade_id: String) -> void:
 		upgrade_button.text = "UPGRADE  ● %d" % cost
 
 func _on_upgrade_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if selected_upgrade_id.is_empty():
 		return
 
@@ -617,6 +625,10 @@ func _on_upgrade_purchased(_upgrade_id: String, _new_rank: int) -> void:
 	pass
 
 func _on_back_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _on_scroll_changed(_value: float) -> void:
@@ -639,6 +651,10 @@ func _close_tooltip() -> void:
 	floating_tooltip.visible = false
 
 func _on_refund_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if PermanentUpgrades and PermanentUpgrades.total_coins_spent > 0:
 		confirm_dialog.dialog_text = "Are you sure you want to refund all upgrades?\nYou will get back %d gold." % PermanentUpgrades.total_coins_spent
 		confirm_dialog.popup_centered()

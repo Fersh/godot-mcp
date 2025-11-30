@@ -243,6 +243,10 @@ func _style_character_tab(button: Button, is_selected: bool) -> void:
 	button.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5, 1.0) if is_selected else COLOR_TEXT_DIM)
 
 func _on_character_tab_pressed(char_id: String) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	selected_character = char_id
 	selected_item = null
 	_hide_popups()
@@ -363,6 +367,10 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	return container
 
 func _on_equipment_slot_pressed(slot: ItemData.Slot) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	var equipped = EquipmentManager.get_equipped_item(selected_character, slot) if EquipmentManager else null
 	if equipped:
 		_show_equipped_popup(equipped)
@@ -559,6 +567,10 @@ func _create_inventory_card(item: ItemData) -> Button:
 	return button
 
 func _on_inventory_item_pressed(item: ItemData) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	_hide_popups()
 
 	if item.equipped_by != "":
@@ -1020,12 +1032,20 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	return card
 
 func _on_unequip_popup_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if popup_item and EquipmentManager:
 		EquipmentManager.unequip_item_from_character(popup_item.equipped_by, popup_item.slot)
 		_hide_popups()
 		_refresh_display()
 
 func _on_equip_comparison_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if selected_item and EquipmentManager:
 		EquipmentManager.equip_item(selected_item.id, selected_character, selected_item.slot)
 		if SoundManager:
@@ -1043,6 +1063,10 @@ func _hide_comparison() -> void:
 	selected_item = null
 
 func _on_back_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	emit_signal("back_pressed")
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 

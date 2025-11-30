@@ -363,6 +363,10 @@ func _update_buttons() -> void:
 		equip_button.tooltip_text = ""
 
 func _on_equip_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if current_dropped_item == null or current_item == null:
 		return
 
@@ -390,6 +394,10 @@ func _on_equip_pressed() -> void:
 	hide_ui()
 
 func _on_pickup_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if current_dropped_item == null or current_item == null:
 		return
 

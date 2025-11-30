@@ -369,6 +369,11 @@ func _on_ultimate_selected(index: int) -> void:
 	if is_rolling:
 		return
 
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
 	if index >= 0 and index < current_choices.size():
 		var ultimate = current_choices[index]
 

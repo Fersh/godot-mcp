@@ -494,12 +494,24 @@ func _get_stat_color(value: float, low: float, high: float) -> Color:
 		return Color(1.0 - (t - 0.5) * 2, 1.0, 0.2, 1)
 
 func _on_selector_pressed(index: int) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	_set_selected(index)
 
 func _on_back_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _on_select_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	var char_data: CharacterData = characters_list[selected_index]
 	CharacterManager.select_character(char_data.id)
 

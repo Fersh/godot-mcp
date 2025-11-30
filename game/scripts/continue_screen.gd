@@ -269,6 +269,10 @@ func _show_ui() -> void:
 
 func _on_yes_pressed() -> void:
 	"""Player chose to continue."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Disable buttons
 	yes_button.disabled = true
 	no_button.disabled = true
@@ -284,12 +288,12 @@ func _on_yes_pressed() -> void:
 	current_row = ROW_CAST
 	current_frame = 0
 
-	# Haptic feedback
-	if HapticManager:
-		HapticManager.light()
-
 func _on_no_pressed() -> void:
 	"""Player chose not to continue."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	# Disable buttons
 	yes_button.disabled = true
 	no_button.disabled = true
@@ -304,10 +308,6 @@ func _on_no_pressed() -> void:
 	animation_phase = "disappear_no"
 	current_row = ROW_DISAPPEAR
 	current_frame = 0
-
-	# Haptic feedback
-	if HapticManager:
-		HapticManager.light()
 
 func _finish_continue(accepted: bool) -> void:
 	"""Finish the continue sequence."""

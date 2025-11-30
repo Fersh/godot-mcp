@@ -186,10 +186,18 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 	return container
 
 func _on_resume_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	hide_menu()
 	emit_signal("resumed")
 
 func _on_give_up_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	hide_menu()
 	emit_signal("gave_up")
 

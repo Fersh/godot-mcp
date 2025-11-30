@@ -2199,38 +2199,36 @@ func _execute_bear_trap(ability: ActiveAbilityData, player: Node2D) -> void:
 		tooth.color = Color(0.6, 0.6, 0.6, 1.0)
 		trap.add_child(tooth)
 
-	# Check for enemies stepping on trap
+	# Check for enemies stepping on trap using periodic checks
 	var check_interval = 0.1
-	var trap_active = true
 	var trap_radius = 30.0
+	var max_duration = ability.duration + 10.0
+	var checks = int(max_duration / check_interval)
 
-	var check_timer = func check_trap():
-		if not trap_active or not is_instance_valid(trap):
-			return
+	for i in range(checks):
+		get_tree().create_timer(check_interval * i).timeout.connect(func():
+			if not is_instance_valid(trap):
+				return
 
-		var enemies = _get_enemies_in_radius(trap_pos, trap_radius)
-		if enemies.size() > 0:
-			trap_active = false
-			var target = enemies[0]
+			var enemies = _get_enemies_in_radius(trap_pos, trap_radius)
+			if enemies.size() > 0:
+				var target = enemies[0]
 
-			# Snap trap - visual feedback
-			_spawn_effect("punch_impact", trap_pos)
-			_screen_shake("small")
-			_play_sound("swing")
+				# Snap trap - visual feedback
+				_spawn_effect("punch_impact", trap_pos)
+				_screen_shake("small")
+				_play_sound("swing")
 
-			# Deal damage and stun
-			_deal_damage_to_enemy(target, damage)
-			_apply_stun_to_enemy(target, ability.stun_duration)
+				# Deal damage and stun
+				_deal_damage_to_enemy(target, damage)
+				_apply_stun_to_enemy(target, ability.stun_duration)
 
-			# Remove trap
-			trap.queue_free()
-		else:
-			get_tree().create_timer(check_interval).timeout.connect(check_timer)
+				# Remove trap
+				trap.queue_free()
+		)
 
-	check_timer.call()
-
-	# Trap expires after duration if not triggered
-	get_tree().create_timer(ability.duration + 10.0).timeout.connect(func():
+	# Trap expires after max duration
+	get_tree().create_timer(max_duration).timeout.connect(func():
 		if is_instance_valid(trap):
 			trap.queue_free()
 	)
@@ -2346,40 +2344,37 @@ func _execute_pressure_mine(ability: ActiveAbilityData, player: Node2D) -> void:
 	blink_tween.tween_property(light, "modulate:a", 0.3, 0.5)
 	blink_tween.tween_property(light, "modulate:a", 1.0, 0.5)
 
-	# Check for enemies
+	# Check for enemies using periodic checks
 	var check_interval = 0.1
-	var mine_active = true
 	var trigger_radius = 40.0
 	var explosion_radius = ability.radius
+	var max_duration = ability.duration + 15.0
+	var checks = int(max_duration / check_interval)
 
-	var check_mine = func check():
-		if not mine_active or not is_instance_valid(mine):
-			return
+	for i in range(checks):
+		get_tree().create_timer(check_interval * i).timeout.connect(func():
+			if not is_instance_valid(mine):
+				return
 
-		var enemies = _get_enemies_in_radius(mine_pos, trigger_radius)
-		if enemies.size() > 0:
-			mine_active = false
+			var enemies = _get_enemies_in_radius(mine_pos, trigger_radius)
+			if enemies.size() > 0:
+				# Explosion!
+				_spawn_effect("explosion", mine_pos)
+				_screen_shake("medium")
+				_play_sound("explosion")
+				_impact_pause()
 
-			# Explosion!
-			_spawn_effect("explosion", mine_pos)
-			_screen_shake("medium")
-			_play_sound("explosion")
-			_impact_pause()
+				# Deal damage to all enemies in explosion radius
+				var blast_enemies = _get_enemies_in_radius(mine_pos, explosion_radius)
+				for enemy in blast_enemies:
+					_deal_damage_to_enemy(enemy, damage)
+					_apply_stun_to_enemy(enemy, ability.stun_duration)
 
-			# Deal damage to all enemies in explosion radius
-			var blast_enemies = _get_enemies_in_radius(mine_pos, explosion_radius)
-			for enemy in blast_enemies:
-				_deal_damage_to_enemy(enemy, damage)
-				_apply_stun_to_enemy(enemy, ability.stun_duration)
+				mine.queue_free()
+		)
 
-			mine.queue_free()
-		else:
-			get_tree().create_timer(check_interval).timeout.connect(check)
-
-	check_mine.call()
-
-	# Mine expires after duration
-	get_tree().create_timer(ability.duration + 15.0).timeout.connect(func():
+	# Mine expires after max duration
+	get_tree().create_timer(max_duration).timeout.connect(func():
 		if is_instance_valid(mine):
 			mine.queue_free()
 	)

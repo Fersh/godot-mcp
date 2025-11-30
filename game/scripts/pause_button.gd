@@ -44,6 +44,10 @@ func _setup_style() -> void:
 	button.add_theme_color_override("font_color", Color(0.9, 0.85, 0.75, 1.0))
 
 func _on_pause_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
 	if pause_menu == null:
 		pause_menu = pause_menu_scene.instantiate()
 		pause_menu.gave_up.connect(_on_gave_up)
