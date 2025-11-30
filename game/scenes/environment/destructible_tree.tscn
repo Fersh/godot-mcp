@@ -28,7 +28,7 @@ scale = Vector2(1.5, 1.5)
 texture = ExtResource("2_tree")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 8)
+position = Vector2(0, 20)
 shape = SubResource("RectangleShape2D_collision")
 
 [node name="DetectionArea" type="Area2D" parent="."]
@@ -36,5 +36,5 @@ collision_layer = 0
 collision_mask = 1
 
 [node name="DetectionShape" type="CollisionShape2D" parent="DetectionArea"]
-position = Vector2(0, 12)
+position = Vector2(0, 20)
 shape = SubResource("RectangleShape2D_collision")

@@ -1,12 +1,17 @@
 extends StaticBody2D
 
-## Magic Stone - rare findable that grants ability selection when activated.
-## Has a glowing highlight effect to show it's special.
+## Golden Chest - rare findable that grants ability selection when activated.
+## Animates open when player approaches.
 
 signal stone_activated(stone: Node2D)
 
-@export var glow_color: Color = Color(0.4, 0.7, 1.0, 1.0)  # Blue magical glow
+@export var glow_color: Color = Color(1.0, 0.85, 0.4, 1.0)  # Golden glow
 @export var interaction_range: float = 50.0
+
+# Chest animation frames
+var chest_frames: Array[Texture2D] = []
+var current_frame: int = 0
+var is_opening: bool = false
 
 var is_activated: bool = false
 var player: Node2D = null
@@ -29,6 +34,13 @@ func _ready() -> void:
 	# Setup collision - layer 8 for obstacles
 	collision_layer = 8
 	collision_mask = 0
+
+	# Load chest animation frames
+	chest_frames = [
+		load("res://assets/enviro/gowl/Rocks and Chest/Chest/GoldenChest/1.png"),
+		load("res://assets/enviro/gowl/Rocks and Chest/Chest/GoldenChest/2.png"),
+		load("res://assets/enviro/gowl/Rocks and Chest/Chest/GoldenChest/3.png")
+	]
 
 	# Find player
 	await get_tree().process_frame
@@ -67,20 +79,20 @@ func _process(delta: float) -> void:
 	# Subtle float animation
 	var float_offset = sin(pulse_time * 0.7) * 3
 	if sprite:
-		sprite.position.y = -16 + float_offset
+		sprite.position.y = -12 + float_offset
 	if glow_sprite:
-		glow_sprite.position.y = -16 + float_offset
+		glow_sprite.position.y = -12 + float_offset
 
 	# Animate pulsing outline sprite
 	outline_pulse_time += delta * 3.0
 	var outline_pulse = (sin(outline_pulse_time) + 1.0) * 0.5
 
 	if outline_sprite and is_instance_valid(outline_sprite):
-		# Pulse the outline color between cyan and white
+		# Pulse the outline color between gold and bright gold
 		var outline_color = Color(
-			0.3 + outline_pulse * 0.4,   # R: 0.3-0.7
-			0.7 + outline_pulse * 0.3,   # G: 0.7-1.0
-			1.0,                          # B: always 1.0
+			1.0,                          # R: always 1.0
+			0.7 + outline_pulse * 0.2,   # G: 0.7-0.9
+			0.2 + outline_pulse * 0.2,   # B: 0.2-0.4
 			0.6 + outline_pulse * 0.4    # A: 0.6-1.0
 		)
 		outline_sprite.modulate = outline_color
@@ -91,7 +103,7 @@ func _process(delta: float) -> void:
 		outline_sprite.scale = base_scale * scale_pulse
 
 		# Match the float position
-		outline_sprite.position.y = -16 + float_offset
+		outline_sprite.position.y = -12 + float_offset
 
 	# Check for interaction input when player is nearby
 	if prompt_label and prompt_label.visible:
@@ -105,16 +117,43 @@ func _is_touch_tap() -> bool:
 	return false
 
 func _on_player_entered(body: Node2D) -> void:
-	if body.is_in_group("player") and not is_activated:
+	if body.is_in_group("player") and not is_activated and not is_opening:
 		if prompt_label:
 			prompt_label.visible = true
-		# Also allow tap interaction
-		_activate()
+		# Start chest opening animation
+		_play_chest_opening_animation()
 
 func _on_player_exited(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		if prompt_label:
 			prompt_label.visible = false
+
+func _play_chest_opening_animation() -> void:
+	if is_opening or is_activated:
+		return
+	is_opening = true
+
+	# Hide prompt during animation
+	if prompt_label:
+		prompt_label.visible = false
+
+	# Animate through frames 1 -> 2 -> 3
+	for i in range(chest_frames.size()):
+		if sprite and chest_frames[i]:
+			sprite.texture = chest_frames[i]
+			# Also update glow and outline sprites
+			if glow_sprite:
+				glow_sprite.texture = chest_frames[i]
+			if outline_sprite and is_instance_valid(outline_sprite):
+				outline_sprite.texture = chest_frames[i]
+
+		# Wait between frames (faster for opening effect)
+		if i < chest_frames.size() - 1:
+			await get_tree().create_timer(0.15).timeout
+
+	# Small pause at fully open, then activate
+	await get_tree().create_timer(0.2).timeout
+	_activate()
 
 func _activate() -> void:
 	if is_activated:
@@ -232,8 +271,8 @@ func _create_outline_effect() -> void:
 	outline_sprite.position = sprite.position
 	outline_sprite.scale = sprite.scale * 1.15  # Slightly larger for outline effect
 
-	# Color it with the glow color
-	outline_sprite.modulate = Color(0.3, 0.8, 1.0, 0.8)
+	# Color it with the golden glow color
+	outline_sprite.modulate = Color(1.0, 0.75, 0.3, 0.8)
 
 	# Place it behind the main sprite
 	outline_sprite.z_index = sprite.z_index - 1

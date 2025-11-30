@@ -218,89 +218,100 @@ func _generate_ground() -> void:
 				decoration_tilemap.set_cell(tile_pos, 0, deco)
 
 func _generate_water_boundary() -> void:
-	# Create water around the edges using ColorRects for clean appearance
-	var water_color = Color(0.247, 0.463, 0.580)  # Blue water color
-	var shore_color = Color(0.761, 0.698, 0.502)  # Sandy shore color
+	# Create animated water around the edges using actual water tiles
+	print("ProceduralMapGenerator: Generating water boundary with tiles...")
 
-	# Create water rectangles for each edge
-	# Top water
-	var water_top = ColorRect.new()
-	water_top.name = "WaterTop"
-	water_top.color = water_color
-	water_top.position = Vector2(-WATER_BORDER, -WATER_BORDER)
-	water_top.size = Vector2(MAP_SIZE + WATER_BORDER * 2, WATER_BORDER)
-	water_top.z_index = -11
-	add_child(water_top)
+	# Load water animation frames
+	var water_frames = [
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim1.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim2.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim3.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim4.png")
+	]
 
-	# Bottom water
-	var water_bottom = ColorRect.new()
-	water_bottom.name = "WaterBottom"
-	water_bottom.color = water_color
-	water_bottom.position = Vector2(-WATER_BORDER, MAP_SIZE)
-	water_bottom.size = Vector2(MAP_SIZE + WATER_BORDER * 2, WATER_BORDER)
-	water_bottom.z_index = -11
-	add_child(water_bottom)
+	# Create container for water tiles
+	var water_container = Node2D.new()
+	water_container.name = "WaterBoundary"
+	water_container.z_index = -11
+	add_child(water_container)
 
-	# Left water
-	var water_left = ColorRect.new()
-	water_left.name = "WaterLeft"
-	water_left.color = water_color
-	water_left.position = Vector2(-WATER_BORDER, 0)
-	water_left.size = Vector2(WATER_BORDER, MAP_SIZE)
-	water_left.z_index = -11
-	add_child(water_left)
+	# Calculate tile counts
+	var tiles_across = int((MAP_SIZE + WATER_BORDER * 2) / TILE_SIZE) + 1
+	var border_tiles = int(WATER_BORDER / TILE_SIZE) + 1
 
-	# Right water
-	var water_right = ColorRect.new()
-	water_right.name = "WaterRight"
-	water_right.color = water_color
-	water_right.position = Vector2(MAP_SIZE, 0)
-	water_right.size = Vector2(WATER_BORDER, MAP_SIZE)
-	water_right.z_index = -11
-	add_child(water_right)
+	# Create animated water tiles for all four edges
+	# Top edge
+	for x in range(-border_tiles, tiles_across):
+		for y in range(-border_tiles, 0):
+			_create_animated_water_tile(water_container, x, y, water_frames)
 
-	# Add thin shore/beach lines at the water edge
-	_add_shoreline(shore_color)
+	# Bottom edge
+	for x in range(-border_tiles, tiles_across):
+		for y in range(int(MAP_SIZE / TILE_SIZE), int(MAP_SIZE / TILE_SIZE) + border_tiles):
+			_create_animated_water_tile(water_container, x, y, water_frames)
 
-func _add_shoreline(shore_color: Color) -> void:
-	# Add thin shore/beach lines at the edge of water using ColorRects
-	var shore_width = 8.0  # Thin beach strip
+	# Left edge (excluding corners already done)
+	for x in range(-border_tiles, 0):
+		for y in range(0, int(MAP_SIZE / TILE_SIZE)):
+			_create_animated_water_tile(water_container, x, y, water_frames)
 
-	# Top shore (at y=0, below water)
-	var shore_top = ColorRect.new()
-	shore_top.name = "ShoreTop"
-	shore_top.color = shore_color
-	shore_top.position = Vector2(0, -shore_width)
-	shore_top.size = Vector2(MAP_SIZE, shore_width)
-	shore_top.z_index = -10
-	add_child(shore_top)
+	# Right edge (excluding corners already done)
+	for x in range(int(MAP_SIZE / TILE_SIZE), int(MAP_SIZE / TILE_SIZE) + border_tiles):
+		for y in range(0, int(MAP_SIZE / TILE_SIZE)):
+			_create_animated_water_tile(water_container, x, y, water_frames)
 
-	# Bottom shore (at y=MAP_SIZE, above water)
-	var shore_bottom = ColorRect.new()
-	shore_bottom.name = "ShoreBottom"
-	shore_bottom.color = shore_color
-	shore_bottom.position = Vector2(0, MAP_SIZE)
-	shore_bottom.size = Vector2(MAP_SIZE, shore_width)
-	shore_bottom.z_index = -10
-	add_child(shore_bottom)
+	# Add shore tiles along the edges using Nature.png tileset
+	_add_shore_tiles()
+
+func _create_animated_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Array) -> void:
+	# Create an AnimatedSprite2D for each water tile
+	var water_sprite = AnimatedSprite2D.new()
+	water_sprite.position = Vector2(tile_x * TILE_SIZE + TILE_SIZE / 2, tile_y * TILE_SIZE + TILE_SIZE / 2)
+
+	# Create sprite frames
+	var sprite_frames = SpriteFrames.new()
+	sprite_frames.add_animation("default")
+	sprite_frames.set_animation_loop("default", true)
+	sprite_frames.set_animation_speed("default", 4.0)  # 4 FPS for gentle wave
+
+	for frame in frames:
+		if frame:
+			sprite_frames.add_frame("default", frame)
+
+	water_sprite.sprite_frames = sprite_frames
+	water_sprite.play("default")
+
+	# Randomize starting frame for variety
+	water_sprite.frame = randi() % frames.size()
+
+	container.add_child(water_sprite)
+
+func _add_shore_tiles() -> void:
+	# Add shore/edge tiles along the boundary using Nature.png tileset
+	var tiles_x = int(MAP_SIZE / TILE_SIZE)
+	var tiles_y = int(MAP_SIZE / TILE_SIZE)
+
+	# Top shore (grass to water transition)
+	for x in range(tiles_x):
+		water_tilemap.set_cell(Vector2i(x, -1), 0, TILE_WATER_SHORE_BOTTOM)
+
+	# Bottom shore
+	for x in range(tiles_x):
+		water_tilemap.set_cell(Vector2i(x, tiles_y), 0, TILE_WATER_SHORE_TOP)
 
 	# Left shore
-	var shore_left = ColorRect.new()
-	shore_left.name = "ShoreLeft"
-	shore_left.color = shore_color
-	shore_left.position = Vector2(-shore_width, 0)
-	shore_left.size = Vector2(shore_width, MAP_SIZE)
-	shore_left.z_index = -10
-	add_child(shore_left)
+	for y in range(tiles_y):
+		water_tilemap.set_cell(Vector2i(-1, y), 0, TILE_WATER_SHORE_RIGHT)
 
 	# Right shore
-	var shore_right = ColorRect.new()
-	shore_right.name = "ShoreRight"
-	shore_right.color = shore_color
-	shore_right.position = Vector2(MAP_SIZE, 0)
-	shore_right.size = Vector2(shore_width, MAP_SIZE)
-	shore_right.z_index = -10
-	add_child(shore_right)
+	for y in range(tiles_y):
+		water_tilemap.set_cell(Vector2i(tiles_x, y), 0, TILE_WATER_SHORE_LEFT)
+
+	# Corners
+	water_tilemap.set_cell(Vector2i(-1, -1), 0, TILE_WATER_CORNER_BR)
+	water_tilemap.set_cell(Vector2i(tiles_x, -1), 0, TILE_WATER_CORNER_BL)
+	water_tilemap.set_cell(Vector2i(-1, tiles_y), 0, TILE_WATER_CORNER_TR)
+	water_tilemap.set_cell(Vector2i(tiles_x, tiles_y), 0, TILE_WATER_CORNER_TL)
 
 func _generate_paths() -> void:
 	# Create 4 paths from center going to each direction using ColorRects
@@ -462,9 +473,23 @@ func _generate_ponds() -> void:
 	print("ProceduralMapGenerator: Generated %d ponds" % placed)
 
 func _create_pond(center_pos: Vector2, radius: int) -> void:
-	# Create an organic-shaped pond using tilemap tiles
+	# Create an organic-shaped pond using tilemap tiles for edges and animated sprites for center
 	var center_tile_x = int(center_pos.x) / TILE_SIZE
 	var center_tile_y = int(center_pos.y) / TILE_SIZE
+
+	# Load water animation frames for center tiles
+	var water_frames = [
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim1.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim2.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim3.png"),
+		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim4.png")
+	]
+
+	# Container for this pond's animated water
+	var pond_water_container = Node2D.new()
+	pond_water_container.name = "PondWater_%d_%d" % [center_tile_x, center_tile_y]
+	pond_water_container.z_index = -9
+	add_child(pond_water_container)
 
 	# First pass: determine which tiles are water (using noise for organic shape)
 	var pond_tiles: Dictionary = {}
@@ -500,42 +525,37 @@ func _create_pond(center_pos: Vector2, radius: int) -> void:
 		var has_left = "%d_%d" % [tx - 1, ty] in pond_tiles
 		var has_right = "%d_%d" % [tx + 1, ty] in pond_tiles
 
-		var tile_to_use: Vector2i
+		var is_center = has_top and has_bottom and has_left and has_right
 
-		# Determine which tile to use based on neighbors
-		if has_top and has_bottom and has_left and has_right:
-			# Center water
-			tile_to_use = TILE_WATER
-		elif not has_top and has_bottom and has_left and has_right:
-			# Top edge
-			tile_to_use = TILE_WATER_SHORE_TOP
-		elif has_top and not has_bottom and has_left and has_right:
-			# Bottom edge
-			tile_to_use = TILE_WATER_SHORE_BOTTOM
-		elif has_top and has_bottom and not has_left and has_right:
-			# Left edge
-			tile_to_use = TILE_WATER_SHORE_LEFT
-		elif has_top and has_bottom and has_left and not has_right:
-			# Right edge
-			tile_to_use = TILE_WATER_SHORE_RIGHT
-		elif not has_top and has_bottom and not has_left and has_right:
-			# Top-left corner
-			tile_to_use = TILE_WATER_CORNER_TL
-		elif not has_top and has_bottom and has_left and not has_right:
-			# Top-right corner
-			tile_to_use = TILE_WATER_CORNER_TR
-		elif has_top and not has_bottom and not has_left and has_right:
-			# Bottom-left corner
-			tile_to_use = TILE_WATER_CORNER_BL
-		elif has_top and not has_bottom and has_left and not has_right:
-			# Bottom-right corner
-			tile_to_use = TILE_WATER_CORNER_BR
+		if is_center:
+			# Use animated water sprite for center tiles
+			_create_animated_water_tile(pond_water_container, tx, ty, water_frames)
 		else:
-			# Default to center water for any other case
-			tile_to_use = TILE_WATER
+			# Use tilemap for edge/shore tiles
+			var tile_to_use: Vector2i
 
-		# Place the tile
-		water_tilemap.set_cell(Vector2i(tx, ty), 0, tile_to_use)
+			if not has_top and has_bottom and has_left and has_right:
+				tile_to_use = TILE_WATER_SHORE_TOP
+			elif has_top and not has_bottom and has_left and has_right:
+				tile_to_use = TILE_WATER_SHORE_BOTTOM
+			elif has_top and has_bottom and not has_left and has_right:
+				tile_to_use = TILE_WATER_SHORE_LEFT
+			elif has_top and has_bottom and has_left and not has_right:
+				tile_to_use = TILE_WATER_SHORE_RIGHT
+			elif not has_top and has_bottom and not has_left and has_right:
+				tile_to_use = TILE_WATER_CORNER_TL
+			elif not has_top and has_bottom and has_left and not has_right:
+				tile_to_use = TILE_WATER_CORNER_TR
+			elif has_top and not has_bottom and not has_left and has_right:
+				tile_to_use = TILE_WATER_CORNER_BL
+			elif has_top and not has_bottom and has_left and not has_right:
+				tile_to_use = TILE_WATER_CORNER_BR
+			else:
+				# Default - use animated water for isolated or unusual configurations
+				_create_animated_water_tile(pond_water_container, tx, ty, water_frames)
+				continue
+
+			water_tilemap.set_cell(Vector2i(tx, ty), 0, tile_to_use)
 
 	# Create collision for the pond (StaticBody2D)
 	_create_pond_collision(center_pos, radius)
@@ -685,8 +705,31 @@ func _randomize_tree_appearance(tree: Node2D) -> void:
 	if shadow and shadow is Sprite2D and sprite:
 		shadow.texture = sprite.texture
 		shadow.scale = Vector2(sprite.scale.x * 0.9, sprite.scale.y * 0.4)
+		# Move shadow down based on tree scale
+		shadow.position.y = 12 + (sprite.scale.y - 1.5) * 8
 		if sprite.flip_h:
 			shadow.flip_h = true
+
+	# Adjust collision shape based on tree scale
+	var collision_shape = tree.get_node_or_null("CollisionShape2D")
+	var detection_shape = tree.get_node_or_null("DetectionArea/DetectionShape")
+	if collision_shape and sprite:
+		# Scale collision and move it to base of tree trunk
+		var scale_factor = sprite.scale.x
+		var base_collision_y = 20 + (scale_factor - 1.5) * 12  # Move down as tree gets bigger
+		collision_shape.position.y = base_collision_y
+
+		# Scale the collision shape size
+		var rect_shape = RectangleShape2D.new()
+		rect_shape.size = Vector2(24 * scale_factor * 0.5, 16 * scale_factor * 0.4)
+		collision_shape.shape = rect_shape
+
+		# Update detection shape too
+		if detection_shape:
+			detection_shape.position.y = base_collision_y
+			var detect_shape = RectangleShape2D.new()
+			detect_shape.size = rect_shape.size
+			detection_shape.shape = detect_shape
 
 func _place_rocks() -> void:
 	if rock_scenes.is_empty():
