@@ -23,7 +23,9 @@ var equipped_items: Dictionary = {
 	"knight": {},
 	"mage": {},
 	"monk": {},
-	"beast": {}
+	"beast": {},
+	"barbarian": {},
+	"assassin": {}
 }
 
 # Track next unique item ID
@@ -48,6 +50,11 @@ func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> Item
 	item.id = "item_%d" % next_item_id
 	next_item_id += 1
 
+	# Get current character for weapon filtering
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
 	# Determine slot
 	var slot: ItemData.Slot
 	if forced_slot >= 0:
@@ -63,15 +70,15 @@ func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> Item
 	# Generate item based on rarity
 	match rarity:
 		ItemData.Rarity.COMMON:
-			_generate_common_item(item, slot)
+			_generate_common_item(item, slot, character_id)
 		ItemData.Rarity.MAGIC:
-			_generate_magic_item(item, slot)
+			_generate_magic_item(item, slot, character_id)
 		ItemData.Rarity.RARE:
-			_generate_rare_item(item, slot)
+			_generate_rare_item(item, slot, character_id)
 		ItemData.Rarity.UNIQUE:
-			_generate_unique_item(item, slot)
+			_generate_unique_item(item, slot, character_id)
 		ItemData.Rarity.LEGENDARY:
-			_generate_legendary_item(item, slot)
+			_generate_legendary_item(item, slot, character_id)
 
 	# Set item level based on game time
 	item.item_level = max(1, int(current_game_time / 30.0) + 1)
@@ -142,8 +149,14 @@ func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
 
 	return ItemData.Rarity.COMMON
 
-func _generate_common_item(item: ItemData, slot: ItemData.Slot) -> void:
-	var base_ids = ItemDatabase.get_base_item_ids_for_slot(slot)
+func _generate_common_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	# Use character-filtered items for weapons
+	var base_ids: Array
+	if slot == ItemData.Slot.WEAPON and character_id != "":
+		base_ids = ItemDatabase.get_base_item_ids_for_character(slot, character_id)
+	else:
+		base_ids = ItemDatabase.get_base_item_ids_for_slot(slot)
+
 	if base_ids.size() == 0:
 		return
 
@@ -156,9 +169,9 @@ func _generate_common_item(item: ItemData, slot: ItemData.Slot) -> void:
 	item.weapon_type = base.get("weapon_type", ItemData.WeaponType.NONE)
 	item.base_stats = base.get("base_stats", {}).duplicate()
 
-func _generate_magic_item(item: ItemData, slot: ItemData.Slot) -> void:
+func _generate_magic_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
 	# Start with common base
-	_generate_common_item(item, slot)
+	_generate_common_item(item, slot, character_id)
 
 	# Add one magic property (prefix OR suffix)
 	if randf() > 0.5:
@@ -184,10 +197,12 @@ func _generate_magic_item(item: ItemData, slot: ItemData.Slot) -> void:
 		ItemData.Slot.WEAPON:
 			if item.weapon_type == ItemData.WeaponType.RANGED:
 				item.icon_path = "res://assets/sprites/items/Bow/PNG/Transperent/Icon%d.png" % icon_num
+			elif item.weapon_type == ItemData.WeaponType.DAGGER:
+				item.icon_path = "res://assets/sprites/items/daggers/PNG/Transperent/Icon%d.png" % icon_num
 
-func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
+func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
 	# Start with common base
-	_generate_common_item(item, slot)
+	_generate_common_item(item, slot, character_id)
 
 	# Add two magic properties (prefix AND suffix)
 	var prefix_data = ItemDatabase.get_random_prefix()
@@ -218,12 +233,14 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot) -> void:
 		ItemData.Slot.WEAPON:
 			if item.weapon_type == ItemData.WeaponType.RANGED:
 				item.icon_path = "res://assets/sprites/items/Bow/PNG/Transperent/Icon%d.png" % icon_num
+			elif item.weapon_type == ItemData.WeaponType.DAGGER:
+				item.icon_path = "res://assets/sprites/items/daggers/PNG/Transperent/Icon%d.png" % icon_num
 
-func _generate_unique_item(item: ItemData, slot: ItemData.Slot) -> void:
-	var unique_ids = ItemDatabase.get_unique_items_for_slot(slot)
+func _generate_unique_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	var unique_ids = ItemDatabase.get_unique_items_for_slot(slot, character_id)
 	if unique_ids.size() == 0:
 		# Fallback to rare
-		_generate_rare_item(item, slot)
+		_generate_rare_item(item, slot, character_id)
 		return
 
 	var unique_id = unique_ids[randi() % unique_ids.size()]
@@ -238,11 +255,11 @@ func _generate_unique_item(item: ItemData, slot: ItemData.Slot) -> void:
 	item.grants_ability = unique.get("grants_ability", "")
 	item.grants_equipment_ability = unique.get("grants_equipment_ability", "")
 
-func _generate_legendary_item(item: ItemData, slot: ItemData.Slot) -> void:
-	var legendary_ids = ItemDatabase.get_legendary_items_for_slot(slot)
+func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	var legendary_ids = ItemDatabase.get_legendary_items_for_slot(slot, character_id)
 	if legendary_ids.size() == 0:
 		# Fallback to unique
-		_generate_unique_item(item, slot)
+		_generate_unique_item(item, slot, character_id)
 		return
 
 	var legendary_id = legendary_ids[randi() % legendary_ids.size()]
@@ -485,7 +502,7 @@ func load_data() -> void:
 			equipped_items = data.get("equipped_items", {"archer": {}, "knight": {}, "mage": {}, "monk": {}, "beast": {}})
 
 			# Ensure all characters exist
-			for char_id in ["archer", "knight", "mage", "monk", "beast"]:
+			for char_id in ["archer", "knight", "mage", "monk", "beast", "barbarian", "assassin"]:
 				if not equipped_items.has(char_id):
 					equipped_items[char_id] = {}
 

@@ -349,8 +349,28 @@ func _setup_portrait() -> void:
 	if character_id == "":
 		return
 
+	# Map character IDs to portrait filenames (using p_ prefix files where available)
+	var portrait_filename = ""
+	match character_id:
+		"archer":
+			portrait_filename = "archer.png"  # No p_ version available
+		"knight":
+			portrait_filename = "knight.png"  # No p_ version available
+		"beast":
+			portrait_filename = "p_beast2.png"  # Use beast2 variant
+		"mage":
+			portrait_filename = "p_mage.png"
+		"monk":
+			portrait_filename = "p_monk.png"
+		"barbarian":
+			portrait_filename = "p_barb.png"
+		"assassin":
+			portrait_filename = "p_assassin.png"
+		_:
+			portrait_filename = character_id + ".png"  # Fallback
+
 	# Load portrait texture from assets/sprites/portraits/
-	var portrait_path = "res://assets/sprites/portraits/" + character_id + ".png"
+	var portrait_path = "res://assets/sprites/portraits/" + portrait_filename
 	if ResourceLoader.exists(portrait_path):
 		var texture = load(portrait_path) as Texture2D
 		if texture:

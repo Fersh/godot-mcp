@@ -107,12 +107,34 @@ const BASE_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.08, "knockback": 20.0},
 		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon1.png"
 	},
+	# DAGGERS - Assassin weapon (1-48 scaling, 1=common, 48=mythic)
 	"dagger_basic": {
 		"display_name": "Dagger",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
-		"base_stats": {"attack_speed": 0.10},
-		"icon_path": "res://assets/sprites/items/daggers/png/transperent/Icon1.png"
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"attack_speed": 0.08, "crit_chance": 0.03},
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon1.png"
+	},
+	"stiletto_basic": {
+		"display_name": "Stiletto",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"crit_chance": 0.08, "damage": 0.03},
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon2.png"
+	},
+	"kris_basic": {
+		"display_name": "Kris",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.06, "attack_speed": 0.05},
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon3.png"
+	},
+	"shiv_basic": {
+		"display_name": "Shiv",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"attack_speed": 0.12},
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon4.png"
 	},
 	# SPEARS - Monk & Beast weapon (1-48 scaling, 1=common, 48=mythic)
 	"spear_basic": {
@@ -349,10 +371,10 @@ const UNIQUE_ITEMS: Dictionary = {
 		"display_name": "Vampire's Toothpick",
 		"description": "It's seen some necks.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"damage": 0.10, "attack_speed": 0.10},
 		"grants_ability": "vampirism",
-		"icon_path": "res://assets/sprites/items/daggers/png/transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon20.png"
 	},
 	"cactus_sword": {
 		"display_name": "Ow Ow Ow Blade",
@@ -376,10 +398,39 @@ const UNIQUE_ITEMS: Dictionary = {
 		"display_name": "Le Fromage Slicer",
 		"description": "Smells like victory. And cheese.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"damage": 0.12, "crit_chance": 0.10},
 		"grants_ability": "bleeding",
-		"icon_path": "res://assets/sprites/items/daggers/png/transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon25.png"
+	},
+
+	# Weapons - Daggers (Assassin)
+	"shadow_blade": {
+		"display_name": "Shadow's Edge",
+		"description": "Whispers in the darkness.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.12, "attack_speed": 0.15, "crit_chance": 0.08},
+		"grants_ability": "shadow_strike",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon21.png"
+	},
+	"poison_fang": {
+		"display_name": "Venom Fang",
+		"description": "One scratch is all it takes.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.08, "attack_speed": 0.12},
+		"grants_ability": "poison_damage",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon22.png"
+	},
+	"backstabber": {
+		"display_name": "The Backstabber",
+		"description": "Et tu, Brute?",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"crit_chance": 0.15, "damage": 0.10},
+		"grants_equipment_ability": "assassinate",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon23.png"
 	},
 
 	# Weapons - Spears (Monk & Beast)
@@ -657,6 +708,38 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.35, "attack_speed": 0.15},
 		"grants_equipment_ability": "overtuned",
 		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon48.png"
+	},
+
+	# Weapons - Daggers (Assassin) - Legendary
+	"deaths_whisper": {
+		"display_name": "Death's Whisper",
+		"description": "Shh... it's almost over.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.25, "attack_speed": 0.25, "crit_chance": 0.20},
+		"grants_ability": "shadow_strike",
+		"grants_equipment_ability": "assassinate",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon40.png"
+	},
+	"nightfall": {
+		"display_name": "Nightfall",
+		"description": "When darkness falls, so do your enemies.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.20, "attack_speed": 0.30, "dodge_chance": 0.15},
+		"grants_ability": "shadow_clone",
+		"grants_equipment_ability": "vanishing_strike",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon45.png"
+	},
+	"gutripper": {
+		"display_name": "The Gutripper",
+		"description": "It does exactly what it sounds like.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.DAGGER,
+		"base_stats": {"damage": 0.30, "crit_chance": 0.25},
+		"grants_ability": "bleeding",
+		"grants_equipment_ability": "eviscerate",
+		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon48.png"
 	},
 
 	# Weapons - Spears (Monk & Beast) - Legendary
@@ -1018,13 +1101,47 @@ const EQUIPMENT_ABILITIES: Dictionary = {
 	},
 }
 
-static func get_base_item_ids_for_slot(slot: ItemData.Slot) -> Array:
+static func get_base_item_ids_for_slot(slot: ItemData.Slot, weapon_type: int = -1) -> Array:
 	var ids = []
 	for id in BASE_ITEMS:
 		var item = BASE_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
 		if item_slot == slot:
+			# If weapon_type filter specified for weapons, only return matching types
+			if slot == ItemData.Slot.WEAPON and weapon_type >= 0:
+				var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
+				if item_weapon_type != weapon_type:
+					continue
 			ids.append(id)
+	return ids
+
+static func get_base_item_ids_for_character(slot: ItemData.Slot, character_id: String) -> Array:
+	"""Get base item IDs that can be equipped by the specified character."""
+	var ids = []
+	for id in BASE_ITEMS:
+		var item = BASE_ITEMS[id]
+		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
+		if item_slot != slot:
+			continue
+
+		# For weapons, filter by character's weapon type
+		if slot == ItemData.Slot.WEAPON:
+			var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
+			match character_id:
+				"archer":
+					if item_weapon_type != ItemData.WeaponType.RANGED:
+						continue
+				"mage":
+					if item_weapon_type != ItemData.WeaponType.MAGIC:
+						continue
+				"assassin":
+					if item_weapon_type != ItemData.WeaponType.DAGGER:
+						continue
+				"knight", "barbarian", "beast", "monk":
+					if item_weapon_type != ItemData.WeaponType.MELEE:
+						continue
+
+		ids.append(id)
 	return ids
 
 static func get_random_prefix() -> Dictionary:
@@ -1037,20 +1154,49 @@ static func get_random_suffix() -> Dictionary:
 	var key = keys[randi() % keys.size()]
 	return {"name": key, "stats": SUFFIXES[key]}
 
-static func get_unique_items_for_slot(slot: ItemData.Slot) -> Array:
+static func get_unique_items_for_slot(slot: ItemData.Slot, character_id: String = "") -> Array:
 	var items = []
 	for id in UNIQUE_ITEMS:
 		var item = UNIQUE_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
-		if item_slot == slot:
-			items.append(id)
+		if item_slot != slot:
+			continue
+
+		# If character specified, filter weapons by type
+		if character_id != "" and slot == ItemData.Slot.WEAPON:
+			var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
+			if not _weapon_type_matches_character(item_weapon_type, character_id):
+				continue
+
+		items.append(id)
 	return items
 
-static func get_legendary_items_for_slot(slot: ItemData.Slot) -> Array:
+static func get_legendary_items_for_slot(slot: ItemData.Slot, character_id: String = "") -> Array:
 	var items = []
 	for id in LEGENDARY_ITEMS:
 		var item = LEGENDARY_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
-		if item_slot == slot:
-			items.append(id)
+		if item_slot != slot:
+			continue
+
+		# If character specified, filter weapons by type
+		if character_id != "" and slot == ItemData.Slot.WEAPON:
+			var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
+			if not _weapon_type_matches_character(item_weapon_type, character_id):
+				continue
+
+		items.append(id)
 	return items
+
+static func _weapon_type_matches_character(weapon_type: int, character_id: String) -> bool:
+	"""Check if a weapon type can be used by a character."""
+	match character_id:
+		"archer":
+			return weapon_type == ItemData.WeaponType.RANGED
+		"mage":
+			return weapon_type == ItemData.WeaponType.MAGIC
+		"assassin":
+			return weapon_type == ItemData.WeaponType.DAGGER
+		"knight", "barbarian", "beast", "monk":
+			return weapon_type == ItemData.WeaponType.MELEE
+	return true  # Unknown character, allow all

@@ -29,7 +29,13 @@ const IDLE_DURATION: float = 4.0  # Seconds of idle before attack
 const ATTACK_ANIM_SPEED: float = 12.0
 const SELECTOR_ANIM_SPEED: float = 8.0
 
+# Font for placeholder "?" labels
+var pixelify_font: Font = null
+
 func _ready() -> void:
+	# Load pixelify font for placeholder labels
+	pixelify_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
+
 	back_button.pressed.connect(_on_back_pressed)
 	select_button.pressed.connect(_on_select_pressed)
 
@@ -218,8 +224,8 @@ func _setup_preview_panel() -> void:
 func _create_selector_buttons() -> void:
 	var all_chars = CharacterManager.get_all_characters()
 
-	# Reorder to: ranger, knight, monk, mage, beast, barbarian, assassin
-	var order = ["archer", "knight", "monk", "mage", "beast", "barbarian", "assassin"]
+	# Reorder to: ranger, knight, monk, mage, beast, assassin, barbarian
+	var order = ["archer", "knight", "monk", "mage", "beast", "assassin", "barbarian"]
 	characters_list = []
 	for id in order:
 		for char_data in all_chars:
@@ -294,7 +300,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_scale = 1.7  # Similar size to monk (96x96 frames)
 			sprite_pos = Vector2(38, 38)
 		"assassin":
-			sprite_scale = 2.5  # Small 64x32 frames need more scaling
+			sprite_scale = 1.8  # Reduced to match other characters
 			sprite_pos = Vector2(38, 38)
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
@@ -335,6 +341,8 @@ func _create_placeholder_button() -> PanelContainer:
 
 	var label = Label.new()
 	label.text = "?"
+	if pixelify_font:
+		label.add_theme_font_override("font", pixelify_font)
 	label.add_theme_font_size_override("font_size", 28)
 	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55, 0.8))
 	center.add_child(label)
@@ -423,7 +431,7 @@ func _update_preview() -> void:
 		"barbarian":
 			preview_scale = 2.1  # Similar to monk (96x96 frames)
 		"assassin":
-			preview_scale = 3.0  # Small 64x32 frames need more scaling
+			preview_scale = 2.1  # Match monk size
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 	preview_sprite.offset = preview_offset
