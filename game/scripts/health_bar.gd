@@ -26,16 +26,16 @@ func _ready() -> void:
 	# Set background to black (missing health portion)
 	var bg_style = StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.1, 0.1, 0.1, 1.0)  # Dark/black background
-	bg_style.set_corner_radius_all(2)  # Match HUD health bar
+	bg_style.set_corner_radius_all(1)  # Match fill bar radius
 	background.add_theme_stylebox_override("panel", bg_style)
 
-	# Set fill corner radius to match HUD
+	# Set fill corner radius to match background
 	var fill_style = fill.get_theme_stylebox("panel")
 	if fill_style == null:
 		fill_style = StyleBoxFlat.new()
 	else:
 		fill_style = fill_style.duplicate()
-	fill_style.set_corner_radius_all(1)  # Match HUD health bar fill
+	fill_style.set_corner_radius_all(1)  # Match background bar radius
 	fill.add_theme_stylebox_override("panel", fill_style)
 
 	# Create highlight (top 1px)

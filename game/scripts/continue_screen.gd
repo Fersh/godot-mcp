@@ -175,7 +175,7 @@ func _start_animation() -> void:
 
 	# Fade in overlay
 	var overlay_tween = create_tween()
-	overlay_tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	overlay_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	overlay_tween.tween_property(overlay, "color:a", 0.7, 0.5)
 
 	# Position archangel above screen, then descend
@@ -191,7 +191,7 @@ func _start_animation() -> void:
 
 	# Descend animation
 	var descend_tween = create_tween()
-	descend_tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	descend_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	descend_tween.tween_property(archangel_sprite, "position:y", end_y, 1.0).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	descend_tween.tween_callback(_on_descend_complete)
 
@@ -247,7 +247,7 @@ func _process(delta: float) -> void:
 func _show_ui() -> void:
 	"""Show the CONTINUE? text and buttons."""
 	var tween = create_tween()
-	tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
 
 	# Fade in label with scale pop
@@ -275,7 +275,7 @@ func _on_yes_pressed() -> void:
 
 	# Hide UI
 	var tween = create_tween()
-	tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(continue_label, "modulate:a", 0.0, 0.2)
 	tween.parallel().tween_property(button_container, "modulate:a", 0.0, 0.2)
 
@@ -296,7 +296,7 @@ func _on_no_pressed() -> void:
 
 	# Hide UI
 	var tween = create_tween()
-	tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(continue_label, "modulate:a", 0.0, 0.2)
 	tween.parallel().tween_property(button_container, "modulate:a", 0.0, 0.2)
 
@@ -313,7 +313,7 @@ func _finish_continue(accepted: bool) -> void:
 	"""Finish the continue sequence."""
 	# Fade out overlay
 	var tween = create_tween()
-	tween.set_pause_mode(Tween.PAUSE_MODE_PROCESS)
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.tween_property(overlay, "color:a", 0.0, 0.3)
 	tween.tween_property(archangel_sprite, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(func():
