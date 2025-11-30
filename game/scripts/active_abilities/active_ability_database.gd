@@ -374,7 +374,7 @@ static func _create_power_shot() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		8.0
-	).with_damage(25.0, 1.5).with_projectiles(1, 600.0).with_range(500.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon5.png")
+	).with_damage(25.0, 1.5).with_projectiles(1, 600.0).with_range(500.0).with_icon("res://assets/icons/abilities/power_shot.png")
 
 static func _create_explosive_arrow() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -385,7 +385,7 @@ static func _create_explosive_arrow() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		10.0
-	).with_damage(20.0, 1.2).with_aoe(60.0).with_projectiles(1, 450.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon15.png")
+	).with_damage(20.0, 1.2).with_aoe(60.0).with_projectiles(1, 450.0).with_icon("res://assets/icons/abilities/explosive_arrow.png")
 
 static func _create_multi_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -396,7 +396,7 @@ static func _create_multi_shot() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.DIRECTION,
 		9.0
-	).with_damage(8.0, 0.7).with_projectiles(5, 480.0).with_range(400.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon10.png")
+	).with_damage(8.0, 0.7).with_projectiles(5, 480.0).with_range(400.0).with_icon("res://assets/icons/abilities/multi_shot.png")
 
 static func _create_quick_roll() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -433,7 +433,7 @@ static func _create_rain_of_arrows() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
 		16.0
-	).with_damage(30.0, 1.5).with_aoe(120.0).with_duration(2.0).with_cast_time(0.5).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon12.png")
+	).with_damage(30.0, 1.5).with_aoe(120.0).with_duration(2.0).with_cast_time(0.5).with_icon("res://assets/icons/abilities/rain_of_arrows.png")
 
 static func _create_piercing_volley() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -477,7 +477,7 @@ static func _create_sentry_turret() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		18.0
-	).with_damage(5.0, 0.6).with_duration(8.0).with_aoe(180.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon20.png")
+	).with_damage(5.0, 0.6).with_duration(8.0).with_aoe(180.0).with_icon("res://assets/icons/abilities/sentry_turret.png")
 
 # ============================================
 # RANGED ABILITY CREATORS - LEGENDARY
