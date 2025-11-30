@@ -20,6 +20,8 @@ var knight_texture: Texture2D
 var beast_texture: Texture2D
 var mage_texture: Texture2D
 var monk_texture: Texture2D
+var barbarian_texture: Texture2D
+var assassin_texture: Texture2D
 
 func _ready() -> void:
 	_init_characters()
@@ -32,6 +34,8 @@ func _init_characters() -> void:
 	beast_texture = load("res://assets/sprites/The Beast Sprite Sheet v1.1 Fixed.png")
 	mage_texture = load("res://assets/sprites/BlueMage_Sprites.png")
 	monk_texture = load("res://assets/sprites/Monk Sprite Sheet.png")
+	barbarian_texture = load("res://assets/sprites/Barbarian Sprite Sheet-Sheet.png")
+	assassin_texture = load("res://assets/sprites/Elven Assassin Sprite Sheet.png")
 
 	# Create archer
 	var archer = CharacterData.create_archer()
@@ -57,6 +61,16 @@ func _init_characters() -> void:
 	var monk = CharacterData.create_monk()
 	monk.sprite_texture = monk_texture
 	characters["monk"] = monk
+
+	# Create barbarian
+	var barbarian = CharacterData.create_barbarian()
+	barbarian.sprite_texture = barbarian_texture
+	characters["barbarian"] = barbarian
+
+	# Create assassin
+	var assassin = CharacterData.create_assassin()
+	assassin.sprite_texture = assassin_texture
+	characters["assassin"] = assassin
 
 	# Set default selection
 	selected_character = characters.get(selected_character_id, characters["archer"])
@@ -158,6 +172,20 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["flow_dash_threshold"] = 3  # Dash at 3+ stacks
 			bonuses["flow_max_stacks"] = 4  # Max 4 stacks
 			bonuses["flow_decay_time"] = 1.5  # Stacks decay after 1.5s
+		"barbarian":
+			# Berserker Rage: 10% chance for AOE spin attack
+			bonuses["has_berserker_rage"] = 1.0
+			bonuses["berserker_rage_chance"] = 0.10  # 10% chance
+			bonuses["berserker_rage_aoe_radius"] = 120.0  # AOE radius
+			bonuses["berserker_rage_damage_multiplier"] = 2.0  # Double damage on spin
+		"assassin":
+			# Shadow Dance: After hitting 3 enemies, vanish for 1.5s, first attack from stealth +100% damage
+			bonuses["has_shadow_dance"] = 1.0
+			bonuses["shadow_dance_hits_required"] = 3  # Hits to trigger vanish
+			bonuses["shadow_dance_duration"] = 1.5  # Vanish duration
+			bonuses["shadow_dance_damage_bonus"] = 1.0  # +100% damage from stealth
+			bonuses["is_hybrid_attacker"] = 1.0  # Flag for hybrid melee/ranged
+			bonuses["assassin_melee_range"] = 70.0  # Within this range, use melee
 
 	return bonuses
 

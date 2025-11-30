@@ -108,6 +108,31 @@ var retribution_duration: float = 2.0
 var retribution_damage_bonus: float = 0.50
 var retribution_stun_duration: float = 0.5
 
+# Barbarian Berserker Rage system (10% chance for AOE spin attack)
+var has_berserker_rage: bool = false
+var row_spin_attack: int = -1
+var frames_spin_attack: int = 8
+var berserker_rage_chance: float = 0.10
+var berserker_rage_aoe_radius: float = 120.0
+var berserker_rage_damage_multiplier: float = 2.0
+var is_spin_attacking: bool = false  # Track if currently doing spin attack
+
+# Assassin Shadow Dance system
+var has_shadow_dance: bool = false
+var is_hybrid_attacker: bool = false
+var assassin_melee_range: float = 70.0
+var row_melee_attack: int = -1
+var row_disappear: int = -1
+var frames_melee_attack: int = 8
+var frames_disappear: int = 8
+var shadow_dance_hit_count: int = 0
+var shadow_dance_hits_required: int = 3
+var shadow_dance_duration: float = 1.5
+var shadow_dance_damage_bonus: float = 1.0
+var is_stealthed: bool = false
+var stealth_timer: float = 0.0
+var is_playing_disappear: bool = false  # Track if playing vanish animation
+
 # Mage-specific death animation
 var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
 var death_spans_rows: bool = false  # Death animation spans multiple rows
@@ -319,6 +344,27 @@ func _load_character_data() -> void:
 	death_row_2 = character_data.death_row_2
 	frames_death_row_2 = character_data.frames_death_row_2
 
+	# Barbarian-specific spin attack animation
+	row_spin_attack = character_data.row_spin_attack
+	frames_spin_attack = character_data.frames_spin_attack
+	has_berserker_rage = character_data.has_berserker_rage
+	if has_berserker_rage and row_spin_attack >= 0:
+		frame_counts[row_spin_attack] = frames_spin_attack
+
+	# Assassin-specific hybrid attack and shadow dance
+	row_melee_attack = character_data.row_melee_attack
+	row_disappear = character_data.row_disappear
+	frames_melee_attack = character_data.frames_melee_attack
+	frames_disappear = character_data.frames_disappear
+	is_hybrid_attacker = character_data.is_hybrid_attacker
+	assassin_melee_range = character_data.melee_range
+	has_shadow_dance = character_data.has_shadow_dance
+	if is_hybrid_attacker:
+		if row_melee_attack >= 0:
+			frame_counts[row_melee_attack] = frames_melee_attack
+		if row_disappear >= 0:
+			frame_counts[row_disappear] = frames_disappear
+
 	current_row = row_idle
 
 func _setup_archer_defaults() -> void:
@@ -398,6 +444,27 @@ func _apply_character_passive() -> void:
 		retribution_stun_duration = bonuses.get("retribution_stun_duration", 0.5)
 		retribution_ready = false
 		retribution_timer = 0.0
+
+	# Initialize Barbarian Berserker Rage system
+	if bonuses.get("has_berserker_rage", 0.0) > 0.0:
+		has_berserker_rage = true
+		berserker_rage_chance = bonuses.get("berserker_rage_chance", 0.10)
+		berserker_rage_aoe_radius = bonuses.get("berserker_rage_aoe_radius", 120.0)
+		berserker_rage_damage_multiplier = bonuses.get("berserker_rage_damage_multiplier", 2.0)
+		is_spin_attacking = false
+
+	# Initialize Assassin Shadow Dance system
+	if bonuses.get("has_shadow_dance", 0.0) > 0.0:
+		has_shadow_dance = true
+		shadow_dance_hits_required = int(bonuses.get("shadow_dance_hits_required", 3))
+		shadow_dance_duration = bonuses.get("shadow_dance_duration", 1.5)
+		shadow_dance_damage_bonus = bonuses.get("shadow_dance_damage_bonus", 1.0)
+		shadow_dance_hit_count = 0
+		is_stealthed = false
+		stealth_timer = 0.0
+	if bonuses.get("is_hybrid_attacker", 0.0) > 0.0:
+		is_hybrid_attacker = true
+		assassin_melee_range = bonuses.get("assassin_melee_range", 70.0)
 
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
@@ -960,9 +1027,23 @@ func try_attack() -> void:
 			facing_right = attack_direction.x > 0
 			sprite.flip_h = not facing_right
 
-		if is_melee:
-			# Melee attack
-			perform_melee_attack()
+		var enemy_dist = global_position.distance_to(closest_enemy.global_position)
+
+		# Assassin hybrid attack: melee if close, ranged if far
+		if is_hybrid_attacker:
+			if enemy_dist <= assassin_melee_range:
+				# Close range - use melee attack
+				perform_assassin_melee_attack()
+			else:
+				# Far range - throw dagger
+				spawn_assassin_dagger()
+		elif is_melee:
+			# Check for Barbarian Berserker Rage (10% chance for spin attack)
+			if has_berserker_rage and randf() < berserker_rage_chance:
+				perform_spin_attack()
+			else:
+				# Normal melee attack
+				perform_melee_attack()
 		else:
 			# Ranged attack - spawn arrow
 			spawn_arrow()
@@ -1346,6 +1427,244 @@ func _perform_extra_swing() -> void:
 					if enemy.has_method("take_damage"):
 						enemy.take_damage(final_damage, is_crit)
 
+# Barbarian Spin Attack - 360 degree AOE attack
+func perform_spin_attack() -> void:
+	melee_hit_enemies.clear()
+	melee_hitbox_active = true
+	is_spin_attacking = true
+	current_attack_row = row_spin_attack if row_spin_attack >= 0 else row_attack
+
+	# Play swing sound
+	if SoundManager:
+		SoundManager.play_swing()
+
+	# Spawn swipe effect (full circle)
+	spawn_swipe_effect()
+
+	# Calculate spin attack damage (double damage for spin)
+	var spin_damage = 10.0 * base_damage * berserker_rage_damage_multiplier
+
+	# Apply ability modifiers
+	if AbilityManager:
+		spin_damage *= AbilityManager.get_damage_multiplier()
+
+	# Get ALL enemies in AOE radius (360 degree attack)
+	var enemies = get_tree().get_nodes_in_group("enemies")
+
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy not in melee_hit_enemies:
+			var to_enemy = enemy.global_position - global_position
+			var dist = to_enemy.length()
+
+			# Hit all enemies within AOE radius (no arc check - it's 360 degrees)
+			if dist <= berserker_rage_aoe_radius:
+				melee_hit_enemies.append(enemy)
+
+				var final_damage = spin_damage
+				var is_crit = false
+
+				# Crit check
+				if AbilityManager:
+					var crit_chance = AbilityManager.get_crit_chance()
+					if randf() < crit_chance:
+						is_crit = true
+						final_damage *= AbilityManager.get_crit_damage_multiplier()
+						if JuiceManager:
+							JuiceManager.shake_crit()
+
+				# Apply damage
+				if enemy.has_method("take_damage"):
+					enemy.take_damage(final_damage, is_crit)
+
+				# Apply stagger
+				if enemy.has_method("apply_stagger"):
+					enemy.apply_stagger()
+
+				# Knockback away from player
+				if AbilityManager and AbilityManager.has_knockback:
+					if enemy.has_method("apply_knockback"):
+						enemy.apply_knockback(to_enemy.normalized() * AbilityManager.knockback_force * 1.5)
+
+				# Apply elemental effects
+				_apply_elemental_effects_to_enemy(enemy)
+
+	# Screen shake for spin attack (bigger than normal melee)
+	if melee_hit_enemies.size() > 0 and JuiceManager:
+		JuiceManager.shake_medium()
+
+# Assassin Melee Attack - close range dagger slash
+func perform_assassin_melee_attack() -> void:
+	melee_hit_enemies.clear()
+	melee_hitbox_active = true
+	current_attack_row = row_melee_attack if row_melee_attack >= 0 else row_attack
+
+	# Play swing sound
+	if SoundManager:
+		SoundManager.play_swing()
+
+	# Spawn swipe effect
+	spawn_swipe_effect()
+
+	# Calculate melee damage
+	var melee_damage = 10.0 * base_damage
+
+	# Apply ability modifiers
+	if AbilityManager:
+		melee_damage *= AbilityManager.get_damage_multiplier()
+
+	# Apply Shadow Dance stealth bonus
+	var from_stealth = false
+	if has_shadow_dance and is_stealthed:
+		melee_damage *= (1.0 + shadow_dance_damage_bonus)  # +100% damage
+		from_stealth = true
+		_exit_stealth()
+
+	# Get enemies in melee range
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var melee_arc = PI / 3  # 60 degree arc (focused assassin strikes)
+	var melee_reach = assassin_melee_range
+
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy not in melee_hit_enemies:
+			var to_enemy = enemy.global_position - global_position
+			var dist = to_enemy.length()
+
+			if dist <= melee_reach:
+				var angle_to_enemy = to_enemy.angle()
+				var attack_angle = attack_direction.angle()
+				var angle_diff = abs(angle_to_enemy - attack_angle)
+				if angle_diff > PI:
+					angle_diff = TAU - angle_diff
+
+				if angle_diff <= melee_arc / 2:
+					melee_hit_enemies.append(enemy)
+
+					var final_damage = melee_damage
+					var is_crit = false
+
+					# Crit check (assassins have high crit)
+					if AbilityManager:
+						var crit_chance = AbilityManager.get_crit_chance()
+						if randf() < crit_chance:
+							is_crit = true
+							final_damage *= AbilityManager.get_crit_damage_multiplier()
+							if JuiceManager:
+								JuiceManager.shake_crit()
+
+					# Apply damage
+					if enemy.has_method("take_damage"):
+						enemy.take_damage(final_damage, is_crit)
+
+					# Stagger on hit
+					if enemy.has_method("apply_stagger"):
+						enemy.apply_stagger()
+
+					# Apply elemental effects
+					_apply_elemental_effects_to_enemy(enemy)
+
+					# Track Shadow Dance hits
+					_on_shadow_dance_hit()
+
+	# Screen shake
+	if melee_hit_enemies.size() > 0 and JuiceManager:
+		JuiceManager.shake_small()
+
+# Assassin Ranged Attack - throw dagger
+func spawn_assassin_dagger() -> void:
+	if arrow_scene == null:
+		return
+
+	# Play throwing sound (use arrow sound for now)
+	if SoundManager:
+		SoundManager.play_arrow()
+
+	# Muzzle flash
+	spawn_muzzle_flash()
+
+	# Calculate damage
+	var dagger_damage = 10.0 * base_damage
+
+	# Apply ability modifiers
+	if AbilityManager:
+		dagger_damage *= AbilityManager.get_damage_multiplier()
+
+	# Apply Shadow Dance stealth bonus
+	var from_stealth = false
+	if has_shadow_dance and is_stealthed:
+		dagger_damage *= (1.0 + shadow_dance_damage_bonus)  # +100% damage
+		from_stealth = true
+		_exit_stealth()
+
+	# Spawn the dagger (using arrow scene with modified visuals)
+	var dagger = arrow_scene.instantiate()
+	dagger.global_position = global_position
+	dagger.direction = attack_direction
+	dagger.damage = dagger_damage
+	dagger.is_assassin_dagger = true  # Flag for dagger visuals
+
+	# Apply ability modifiers to projectile
+	if AbilityManager:
+		dagger.pierce_count = AbilityManager.pierce_count
+		dagger.can_bounce = AbilityManager.has_bouncing
+		dagger.has_sniper = AbilityManager.has_sniper
+		dagger.has_ricochet = AbilityManager.has_ricochet
+		dagger.crit_chance = AbilityManager.get_crit_chance()
+		dagger.crit_multiplier = AbilityManager.get_crit_damage_multiplier()
+		dagger.has_knockback = AbilityManager.has_knockback
+		dagger.knockback_force = AbilityManager.knockback_force
+		dagger.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
+
+	# Track Shadow Dance on hit
+	dagger.connect("enemy_hit", _on_shadow_dance_hit)
+
+	get_parent().add_child(dagger)
+
+# Shadow Dance - track hits and trigger stealth
+func _on_shadow_dance_hit() -> void:
+	if not has_shadow_dance or is_stealthed:
+		return
+
+	shadow_dance_hit_count += 1
+	if shadow_dance_hit_count >= shadow_dance_hits_required:
+		_enter_stealth()
+
+func _enter_stealth() -> void:
+	if is_stealthed:
+		return
+
+	is_stealthed = true
+	stealth_timer = shadow_dance_duration
+	shadow_dance_hit_count = 0
+	is_playing_disappear = true
+	animation_frame = 0.0
+
+	# Visual feedback - become semi-transparent
+	modulate.a = 0.4
+
+	# Add buff display
+	active_buffs["shadow_dance"] = {
+		"timer": stealth_timer,
+		"duration": shadow_dance_duration,
+		"name": "Shadow Dance",
+		"description": "+100% Damage (Stealthed)",
+		"color": Color(0.5, 0.3, 0.8)  # Purple
+	}
+	emit_signal("buff_changed", active_buffs)
+
+	# Play disappear animation briefly then return to idle-ish state
+	# The actual animation will be handled in update_animation
+
+func _exit_stealth() -> void:
+	is_stealthed = false
+	stealth_timer = 0.0
+	is_playing_disappear = false
+	modulate.a = 1.0
+
+	# Remove buff display
+	if active_buffs.has("shadow_dance"):
+		active_buffs.erase("shadow_dance")
+		emit_signal("buff_changed", active_buffs)
+
 func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 	"""Apply elemental on-hit effects to an enemy."""
 	if not AbilityManager:
@@ -1404,9 +1723,23 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 	var prev_row = current_row
 	var target_row: int
 
-	if is_attacking:
-		if is_melee:
-			# Melee uses current attack animation (may be alternate for Beast)
+	# Assassin disappear animation (plays when entering stealth)
+	if is_playing_disappear and row_disappear >= 0:
+		target_row = row_disappear
+		# Check if disappear animation finished
+		if animation_frame >= frame_counts.get(row_disappear, 8) - 1:
+			is_playing_disappear = false
+	elif is_attacking:
+		# Barbarian spin attack
+		if is_spin_attacking and row_spin_attack >= 0:
+			target_row = row_spin_attack
+			# Check if spin animation finished
+			if animation_frame >= frame_counts.get(row_spin_attack, 8) - 1:
+				is_attacking = false
+				is_spin_attacking = false
+				melee_hitbox_active = false
+		elif is_melee or (is_hybrid_attacker and current_attack_row == row_melee_attack):
+			# Melee uses current attack animation (may be alternate for Beast, or assassin melee)
 			target_row = current_attack_row
 		else:
 			# Ranged - choose shoot animation based on attack direction
@@ -1427,6 +1760,7 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 		# Check if attack animation finished
 		if animation_frame >= frame_counts.get(target_row, 8) - 1:
 			is_attacking = false
+			is_spin_attacking = false
 			melee_hitbox_active = false
 	elif move_direction.length() > 0:
 		target_row = row_move
@@ -2007,6 +2341,14 @@ func _update_active_ability_timers(delta: float) -> void:
 			active_buffs["retribution"].timer = retribution_timer
 		if retribution_timer <= 0:
 			_consume_retribution()
+
+	# Update Assassin Shadow Dance stealth timer
+	if has_shadow_dance and is_stealthed:
+		stealth_timer -= delta
+		if active_buffs.has("shadow_dance"):
+			active_buffs["shadow_dance"].timer = stealth_timer
+		if stealth_timer <= 0:
+			_exit_stealth()
 
 	# Update ultimate ability timers
 	_update_ultimate_timers(delta)

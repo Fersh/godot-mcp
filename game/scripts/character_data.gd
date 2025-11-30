@@ -6,7 +6,9 @@ enum CharacterType {
 	KNIGHT,
 	BEAST,
 	MAGE,
-	MONK
+	MONK,
+	BARBARIAN,
+	ASSASSIN
 }
 
 enum AttackType {
@@ -88,6 +90,22 @@ enum AttackType {
 @export var frames_attack_2: int = 8
 @export var frames_attack_3: int = 8
 @export var has_triple_attack: bool = false  # Randomly pick between 3 attacks
+
+# Barbarian-specific (spin attack for AOE passive)
+@export_group("Barbarian Animations")
+@export var row_spin_attack: int = -1  # Spin attack animation (used when passive triggers)
+@export var frames_spin_attack: int = 8
+@export var has_berserker_rage: bool = false  # 10% chance for AOE spin attack
+
+# Assassin-specific (hybrid melee/ranged, shadow dance)
+@export_group("Assassin Animations")
+@export var row_melee_attack: int = -1  # Melee attack when close
+@export var row_disappear: int = -1  # Vanish animation for Shadow Dance
+@export var frames_melee_attack: int = 8
+@export var frames_disappear: int = 8
+@export var is_hybrid_attacker: bool = false  # Can do melee or ranged based on distance
+@export var melee_range: float = 70.0  # Distance threshold for melee vs ranged
+@export var has_shadow_dance: bool = false  # Vanish passive
 
 # Passive ability (unique to each character)
 @export_group("Passive")
@@ -382,5 +400,133 @@ static func create_monk() -> CharacterData:
 	# Passive
 	data.passive_name = "Flowing Strikes"
 	data.passive_description = "Gain 5% damage and speed per attack. Automatically dash towards enemies at 3 stacks."
+
+	return data
+
+static func create_barbarian() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "barbarian"
+	data.display_name = "The Chad"
+	data.description = "Raw power incarnate. Slow but devastating, with a chance to unleash destructive spin attacks."
+	data.character_type = CharacterType.BARBARIAN
+	data.attack_type = AttackType.MELEE
+
+	# Barbarian stats - tanky brawler with big hits
+	data.base_health = 35.0
+	data.base_speed = 150.0
+	data.base_attack_cooldown = 1.0  # Slow heavy swings
+	data.base_damage = 1.7
+	data.attack_range = 60.0  # Melee reach
+
+	# Combat stats - some crit, tough skin blocks, not very agile
+	data.base_crit_rate = 0.08
+	data.base_block_rate = 0.05
+	data.base_dodge_rate = 0.03
+
+	# Sprite config (96x96 per frame, 8 cols x 6 rows)
+	data.frame_size = Vector2(96, 96)
+	data.hframes = 8
+	data.vframes = 6
+	data.sprite_scale = Vector2(1.6, 1.6)
+
+	# Animation rows
+	# Row 0: Idle (8)
+	# Row 1: Movement (8)
+	# Row 2: Attack (8)
+	# Row 3: Spin Attack (8)
+	# Row 4: Damage (4)
+	# Row 5: Death (5)
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2
+	data.row_attack_up = 2  # Uses same attack for all directions
+	data.row_attack_down = 2
+	data.row_damage = 4
+	data.row_death = 5
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 4
+	data.frames_death = 5
+
+	# Barbarian-specific: Spin attack for AOE passive
+	data.row_spin_attack = 3
+	data.frames_spin_attack = 8
+	data.has_berserker_rage = true
+
+	# Passive
+	data.passive_name = "Berserker Rage"
+	data.passive_description = "Attacks have a 10% chance to unleash a devastating spin attack dealing massive AOE damage."
+
+	return data
+
+static func create_assassin() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "assassin"
+	data.display_name = "The Sneaky Sneaky"
+	data.description = "A deadly shadow. Throws daggers from afar, slashes up close, and vanishes to strike with lethal precision."
+	data.character_type = CharacterType.ASSASSIN
+	data.attack_type = AttackType.RANGED  # Base type for fire_range, but is hybrid
+
+	# Assassin stats - glass cannon with highest speed and crit
+	data.base_health = 16.0  # Lowest HP
+	data.base_speed = 190.0  # Fastest character
+	data.base_attack_cooldown = 0.6  # Very fast strikes
+	data.base_damage = 1.3
+	data.attack_range = 350.0  # Ranged attack range (shorter than archer)
+
+	# Combat stats - crit and evasion focused
+	data.base_crit_rate = 0.18  # Highest crit
+	data.base_block_rate = 0.0  # No blocking
+	data.base_dodge_rate = 0.20  # Highest dodge
+
+	# Sprite config (64x32 per frame, 8 cols x 8 rows)
+	data.frame_size = Vector2(64, 32)
+	data.hframes = 8
+	data.vframes = 8
+	data.sprite_scale = Vector2(2.5, 2.5)  # Scale up the smaller sprite
+
+	# Animation rows
+	# Row 0: Idle (8)
+	# Row 1: Movement (8)
+	# Row 2: Attack/Ranged (6)
+	# Row 3: Disappear (8)
+	# Row 4: Melee Attack (5)
+	# Row 5: Fall (8) - unused
+	# Row 6: Damage (5)
+	# Row 7: Death (8)
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2  # Ranged attack (throwing dagger)
+	data.row_attack_up = 2
+	data.row_attack_down = 2
+	data.row_damage = 6
+	data.row_death = 7
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 8
+	data.frames_attack = 6
+	data.frames_attack_up = 6
+	data.frames_attack_down = 6
+	data.frames_damage = 5
+	data.frames_death = 8
+
+	# Assassin-specific: Hybrid attacks and Shadow Dance
+	data.row_melee_attack = 4
+	data.row_disappear = 3
+	data.frames_melee_attack = 5
+	data.frames_disappear = 8
+	data.is_hybrid_attacker = true
+	data.melee_range = 70.0  # Within this range, use melee attack
+	data.has_shadow_dance = true
+
+	# Passive
+	data.passive_name = "Shadow Dance"
+	data.passive_description = "After hitting 3 enemies, vanish for 1.5s. First attack from stealth deals +100% damage."
 
 	return data

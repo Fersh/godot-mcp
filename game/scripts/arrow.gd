@@ -27,6 +27,9 @@ var has_knockback: bool = false
 var knockback_force: float = 0.0
 var speed_multiplier: float = 1.0
 var is_mage_orb: bool = false
+var is_assassin_dagger: bool = false
+
+signal enemy_hit  # For Assassin Shadow Dance tracking
 
 # Boomerang ability
 var has_boomerang: bool = false
@@ -51,6 +54,60 @@ func _ready() -> void:
 	# Transform into mage orb if needed
 	if is_mage_orb:
 		_setup_mage_orb()
+
+	# Transform into assassin dagger if needed
+	if is_assassin_dagger:
+		_setup_assassin_dagger()
+
+func _setup_assassin_dagger() -> void:
+	# Remove arrow visuals
+	var sprite = get_node_or_null("Sprite")
+	var tip = get_node_or_null("Tip")
+	if sprite:
+		sprite.queue_free()
+	if tip:
+		tip.queue_free()
+
+	# Create dagger shape
+	var dagger = Node2D.new()
+	dagger.name = "Dagger"
+	add_child(dagger)
+
+	# Blade (main body) - triangular shape
+	var blade = Polygon2D.new()
+	var blade_points: PackedVector2Array = [
+		Vector2(-8, 0),    # Back of blade
+		Vector2(8, -2),    # Top edge going forward
+		Vector2(12, 0),    # Tip
+		Vector2(8, 2),     # Bottom edge going forward
+	]
+	blade.polygon = blade_points
+	blade.color = Color(0.8, 0.85, 0.9, 1.0)  # Silvery metal color
+	dagger.add_child(blade)
+
+	# Cutting edge highlight
+	var edge = Line2D.new()
+	edge.add_point(Vector2(-6, 0))
+	edge.add_point(Vector2(12, 0))
+	edge.width = 1.5
+	edge.default_color = Color(1.0, 1.0, 1.0, 0.8)  # Bright edge
+	dagger.add_child(edge)
+
+	# Handle/grip (dark part at back)
+	var handle = Polygon2D.new()
+	var handle_points: PackedVector2Array = [
+		Vector2(-12, -2),
+		Vector2(-8, -2),
+		Vector2(-8, 2),
+		Vector2(-12, 2),
+	]
+	handle.polygon = handle_points
+	handle.color = Color(0.3, 0.2, 0.15, 1.0)  # Dark brown grip
+	dagger.add_child(handle)
+
+	# Update trail color to purple/dark
+	if trail_line:
+		trail_line.default_color = Color(0.6, 0.4, 0.8, 0.5)
 
 func _setup_mage_orb() -> void:
 	# Remove arrow visuals
@@ -201,6 +258,9 @@ func _on_body_entered(body: Node2D) -> void:
 
 		# Deal damage
 		body.take_damage(final_damage, is_crit)
+
+		# Emit enemy_hit signal for Assassin Shadow Dance tracking
+		emit_signal("enemy_hit")
 
 		# Apply elemental effects
 		_apply_elemental_effects(body)

@@ -218,8 +218,8 @@ func _setup_preview_panel() -> void:
 func _create_selector_buttons() -> void:
 	var all_chars = CharacterManager.get_all_characters()
 
-	# Reorder to: ranger, knight, monk, mage, beast
-	var order = ["archer", "knight", "monk", "mage", "beast"]
+	# Reorder to: ranger, knight, monk, mage, beast, barbarian, assassin
+	var order = ["archer", "knight", "monk", "mage", "beast", "barbarian", "assassin"]
 	characters_list = []
 	for id in order:
 		for char_data in all_chars:
@@ -235,8 +235,8 @@ func _create_selector_buttons() -> void:
 		selector_buttons.append(result.panel)
 		selector_sprites.append(result.sprite)
 
-	# Add 7 locked placeholder slots
-	for i in 7:
+	# Add 5 locked placeholder slots (reduced from 7 since we added 2 new characters)
+	for i in 5:
 		selector_container.add_child(_create_placeholder_button())
 
 func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary:
@@ -290,6 +290,12 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_pos = Vector2(38, 38)
 			# Apply beast's sprite offset to center it properly
 			sprite.offset = char_data.sprite_offset
+		"barbarian":
+			sprite_scale = 1.7  # Similar size to monk (96x96 frames)
+			sprite_pos = Vector2(38, 38)
+		"assassin":
+			sprite_scale = 2.5  # Small 64x32 frames need more scaling
+			sprite_pos = Vector2(38, 38)
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -389,6 +395,10 @@ func _update_preview() -> void:
 			class_type_text = "Mage"
 		"monk":
 			class_type_text = "Monk"
+		"barbarian":
+			class_type_text = "Barbarian"
+		"assassin":
+			class_type_text = "Assassin"
 	preview_class_label.text = class_type_text
 
 	# Update sprite
@@ -410,6 +420,10 @@ func _update_preview() -> void:
 			preview_scale = 1.2
 			# Apply beast's sprite offset to center it properly
 			preview_offset = char_data.sprite_offset
+		"barbarian":
+			preview_scale = 2.1  # Similar to monk (96x96 frames)
+		"assassin":
+			preview_scale = 3.0  # Small 64x32 frames need more scaling
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 	preview_sprite.offset = preview_offset
