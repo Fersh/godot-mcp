@@ -48,7 +48,7 @@ const PATH_WIDTH: int = 48  # Width of paths
 const TREE_DENSITY: float = 0.00003  # Trees per pixel squared (~190 trees total)
 const ROCK_DENSITY: float = 0.00002  # Rocks per pixel squared (~125 rocks)
 const LAMP_SPACING: int = 300  # Approximate spacing between lamps along paths
-const MAGIC_STONE_COUNT: int = 5  # Number of magic stones on map
+const MAGIC_STONE_COUNT: int = 1  # Number of magic stones on map
 
 # Scenes to instantiate
 var tree_scenes: Array[PackedScene] = []

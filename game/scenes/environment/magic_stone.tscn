@@ -4,10 +4,10 @@
 [ext_resource type="Texture2D" path="res://assets/enviro/gowl/Rocks and Chest/MagicStoons/MagicStones1.png" id="2_stone"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_collision"]
-size = Vector2(16, 12)
+size = Vector2(32, 24)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
-radius = 50.0
+radius = 80.0
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
 width = 64
@@ -23,15 +23,15 @@ script = ExtResource("1_script")
 
 [node name="GlowSprite" type="Sprite2D" parent="."]
 z_index = -1
-position = Vector2(0, -8)
+position = Vector2(0, -16)
 modulate = Color(0.4, 0.7, 1, 0.5)
-scale = Vector2(2.6, 2.6)
+scale = Vector2(5.2, 5.2)
 texture = ExtResource("2_stone")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 z_index = 0
-position = Vector2(0, -8)
-scale = Vector2(2.0, 2.0)
+position = Vector2(0, -16)
+scale = Vector2(4.0, 4.0)
 texture = ExtResource("2_stone")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -46,8 +46,8 @@ collision_mask = 1
 shape = SubResource("CircleShape2D_interaction")
 
 [node name="PointLight2D" type="PointLight2D" parent="."]
-position = Vector2(0, -12)
+position = Vector2(0, -20)
 color = Color(0.4, 0.7, 1, 1)
-energy = 0.5
+energy = 0.8
 texture = SubResource("GradientTexture2D_glow")
-texture_scale = 2.0
+texture_scale = 4.0
