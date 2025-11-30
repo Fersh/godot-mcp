@@ -207,7 +207,7 @@ static func get_abilities() -> Array[AbilityData]:
 		"toxic_traits": "res://assets/icons/abilities/toxic_traits.png",
 		"surprise_mechanics": "res://assets/icons/abilities/surprise_mechanics.png",
 		"sore_loser": "res://assets/icons/abilities/sore_loser.png",
-		"wallflower": "res://assets/icons/abilities/wallflower.png",
+		"wallflower": "res://assets/icons/abilities/wallflower.png",  # thiefskills/icon9
 		"friendly_fire": "res://assets/icons/abilities/friendly_fire.png",
 		"built_different": "res://assets/icons/abilities/built_different.png",
 		"wombo_combo": "res://assets/icons/abilities/wombo_combo.png",
