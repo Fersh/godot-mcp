@@ -148,6 +148,10 @@ func with_effect(p_effect_id: String) -> ActiveAbilityData:
 	effect_id = p_effect_id
 	return self
 
+func with_icon(p_icon_path: String) -> ActiveAbilityData:
+	icon_path = p_icon_path
+	return self
+
 # Utility methods
 static func get_rarity_color(p_rarity: Rarity) -> Color:
 	match p_rarity:
