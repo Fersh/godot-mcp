@@ -16,6 +16,9 @@ extends Node2D
 # Dynamic arena bounds (set by procedural map generator)
 var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
 
+# Reference to procedural map for valid spawn positions
+var procedural_map: Node2D = null
+
 # Legacy constants for backwards compatibility
 var ARENA_WIDTH: float = 2500
 var ARENA_HEIGHT: float = 2500
@@ -226,24 +229,16 @@ func get_scene_for_type(enemy_type: String) -> PackedScene:
 			return enemy_scene
 
 func get_spawn_position() -> Vector2:
-	# Spawn from all 4 edges of the arena
-	var roll = randf()
-	var pos: Vector2
-	var margin = 50.0
+	# Try to get a valid land position from procedural map
+	if procedural_map and procedural_map.has_method("get_random_land_position"):
+		return procedural_map.get_random_land_position(min_spawn_distance)
 
-	if roll < 0.25:
-		# Left (spawn just outside left boundary)
-		pos = Vector2(ARENA_LEFT - margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
-	elif roll < 0.5:
-		# Right (spawn just outside right boundary)
-		pos = Vector2(ARENA_RIGHT + margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
-	elif roll < 0.75:
-		# Top
-		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_TOP - margin)
-	else:
-		# Bottom
-		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_BOTTOM + margin)
-
+	# Fallback: spawn inside arena bounds (not outside edges)
+	var margin = 100.0
+	var pos = Vector2(
+		randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin),
+		randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin)
+	)
 	return pos
 
 func set_arena_bounds(bounds: Rect2) -> void:

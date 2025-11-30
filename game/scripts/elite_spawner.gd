@@ -12,6 +12,7 @@ extends Node2D
 
 # Arena bounds for spawn positioning (dynamic, set by procedural map)
 var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
+var procedural_map: Node2D = null  # Reference to map for valid spawn positions
 var ARENA_WIDTH: float = 2500
 var ARENA_HEIGHT: float = 2500
 var ARENA_LEFT: float = 0
@@ -535,35 +536,15 @@ func _on_elite_died(_elite: Node) -> void:
 	elite_health_bar_container.visible = false
 
 func _get_spawn_position() -> Vector2:
-	# Spawn from all 4 edges of the arena
-	var roll = randf()
-	var pos: Vector2
+	# Try to get a valid land position from procedural map
+	if procedural_map and procedural_map.has_method("get_random_land_position"):
+		return procedural_map.get_random_land_position(400.0)  # Spawn further from player for elites/bosses
 
-	if roll < 0.25:
-		# Left (spawn outside left boundary)
-		pos = Vector2(
-			ARENA_LEFT - SPAWN_MARGIN,
-			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
-		)
-	elif roll < 0.5:
-		# Right (spawn outside right boundary)
-		pos = Vector2(
-			ARENA_RIGHT + SPAWN_MARGIN,
-			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
-		)
-	elif roll < 0.75:
-		# Top
-		pos = Vector2(
-			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
-			ARENA_TOP - SPAWN_MARGIN
-		)
-	else:
-		# Bottom
-		pos = Vector2(
-			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
-			ARENA_BOTTOM + SPAWN_MARGIN
-		)
-
+	# Fallback: spawn inside arena bounds
+	var pos = Vector2(
+		randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
+		randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
+	)
 	return pos
 
 func set_arena_bounds(bounds: Rect2) -> void:

@@ -113,13 +113,17 @@ func _setup_procedural_map() -> void:
 		player.set_arena_bounds(map_bounds, camera_bounds)
 		player.global_position = spawn_pos
 
-	# Configure enemy spawner bounds
-	if enemy_spawner and enemy_spawner.has_method("set_arena_bounds"):
-		enemy_spawner.set_arena_bounds(map_bounds)
+	# Configure enemy spawner bounds and map reference
+	if enemy_spawner:
+		if enemy_spawner.has_method("set_arena_bounds"):
+			enemy_spawner.set_arena_bounds(map_bounds)
+		enemy_spawner.procedural_map = procedural_map
 
-	# Configure elite spawner bounds
-	if elite_spawner and elite_spawner.has_method("set_arena_bounds"):
-		elite_spawner.set_arena_bounds(map_bounds)
+	# Configure elite spawner bounds and map reference
+	if elite_spawner:
+		if elite_spawner.has_method("set_arena_bounds"):
+			elite_spawner.set_arena_bounds(map_bounds)
+		elite_spawner.procedural_map = procedural_map
 
 	print("Main: Procedural map initialized with bounds: ", map_bounds)
 

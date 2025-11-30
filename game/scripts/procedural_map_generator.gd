@@ -9,37 +9,36 @@ signal map_generated(map_bounds: Rect2)
 const MAP_SIZE: int = 2500
 const TILE_SIZE: int = 16
 
-# Tile coordinates in Nature.png (16x16 grid)
-# Looking at the tileset: grass is in the large green block (center area)
-# Row 4-5 columns 7-10 appear to be solid grass tiles
-const TILE_GRASS_LIGHT_1 := Vector2i(7, 4)  # Solid grass center
-const TILE_GRASS_LIGHT_2 := Vector2i(8, 4)  # Solid grass center
-const TILE_GRASS_LIGHT_3 := Vector2i(7, 5)  # Solid grass center
-const TILE_GRASS_LIGHT_4 := Vector2i(8, 5)  # Solid grass center
-const TILE_GRASS_LIGHT_5 := Vector2i(9, 4)  # Solid grass center
+# Tile coordinates in forest_tileset.png (16x16 grid)
+# Solid grass tiles from the large green block (bottom-left area, rows 10-12)
+const TILE_GRASS_LIGHT_1 := Vector2i(0, 10)  # Solid grass center
+const TILE_GRASS_LIGHT_2 := Vector2i(1, 10)  # Solid grass center
+const TILE_GRASS_LIGHT_3 := Vector2i(2, 10)  # Solid grass center
+const TILE_GRASS_LIGHT_4 := Vector2i(0, 11)  # Solid grass center
+const TILE_GRASS_LIGHT_5 := Vector2i(1, 11)  # Solid grass center
 
 # Darker grass for variation (slightly different shade tiles)
-const TILE_GRASS_DARK_1 := Vector2i(9, 5)
-const TILE_GRASS_DARK_2 := Vector2i(10, 4)
-const TILE_GRASS_DARK_3 := Vector2i(10, 5)
-const TILE_GRASS_DARK_4 := Vector2i(6, 5)
-const TILE_GRASS_DARK_5 := Vector2i(6, 4)
+const TILE_GRASS_DARK_1 := Vector2i(2, 11)
+const TILE_GRASS_DARK_2 := Vector2i(3, 10)
+const TILE_GRASS_DARK_3 := Vector2i(3, 11)
+const TILE_GRASS_DARK_4 := Vector2i(0, 12)
+const TILE_GRASS_DARK_5 := Vector2i(1, 12)
 
-# Decorations from bottom row
-const TILE_GRASS_FLOWER := Vector2i(7, 7)
-const TILE_GRASS_MUSHROOM := Vector2i(9, 7)
+# Decorations (flowers, mushrooms from middle rows around row 7-8)
+const TILE_GRASS_FLOWER := Vector2i(5, 8)
+const TILE_GRASS_MUSHROOM := Vector2i(7, 8)
 
-# Dirt/path tiles (center tiles from dirt section)
-const TILE_DIRT := Vector2i(4, 1)
-const TILE_DIRT_2 := Vector2i(4, 0)
+# Dirt/path tiles (top section, tan colored area)
+const TILE_DIRT := Vector2i(2, 0)
+const TILE_DIRT_2 := Vector2i(3, 0)
 
 # Spawn area
 const SPAWN_AREA_RADIUS: int = 120
 
 # Decoration density
-const TREE_DENSITY: float = 0.000015
-const ROCK_DENSITY: float = 0.000025
-const LAMP_COUNT: int = 30
+const TREE_DENSITY: float = 0.00000375
+const ROCK_DENSITY: float = 0.00000625  # Reduced by 50%
+const LAMP_COUNT: int = 15
 const MAGIC_STONE_COUNT: int = 1
 
 # Dirt patches
@@ -78,6 +77,12 @@ var water_cells: Dictionary = {}
 var dirt_cells: Dictionary = {}
 var _spawn_center: Vector2 = Vector2.ZERO
 
+# References to spawned objects for fog visibility
+var spawned_trees: Array[Node2D] = []
+var spawned_rocks: Array[Node2D] = []
+var spawned_lamps: Array[Node2D] = []
+var spawned_stones: Array[Node2D] = []
+
 # Player reference
 var player: Node2D = null
 
@@ -88,6 +93,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_update_fog_of_war()
+	_update_object_visibility()
 
 func _load_scenes() -> void:
 	var tree1 = load("res://scenes/environment/destructible_tree.tscn")
@@ -126,6 +132,10 @@ func _clear_existing() -> void:
 	land_cells.clear()
 	water_cells.clear()
 	dirt_cells.clear()
+	spawned_trees.clear()
+	spawned_rocks.clear()
+	spawned_lamps.clear()
+	spawned_stones.clear()
 
 	for child in get_children():
 		child.queue_free()
@@ -137,29 +147,29 @@ func _setup_tilemaps() -> void:
 	grass_bg.color = Color(0.286, 0.478, 0.208)  # Green grass color
 	grass_bg.position = Vector2(-100, -100)
 	grass_bg.size = Vector2(MAP_SIZE + 200, MAP_SIZE + 200)
-	grass_bg.z_index = -15
+	grass_bg.z_index = -20  # Bottom layer
 	add_child(grass_bg)
 
 	var tileset = _create_tileset()
 
-	# Dirt layer for dirt patches
-	dirt_tilemap = TileMapLayer.new()
-	dirt_tilemap.name = "DirtTileMap"
-	dirt_tilemap.tile_set = tileset
-	dirt_tilemap.z_index = -12
-	add_child(dirt_tilemap)
-
-	# Dark grass overlay for variation
+	# Dark grass overlay for variation (above grass bg)
 	grass_tilemap = TileMapLayer.new()
 	grass_tilemap.name = "GrassVariationTileMap"
 	grass_tilemap.tile_set = tileset
-	grass_tilemap.z_index = -13
+	grass_tilemap.z_index = -18
 	add_child(grass_tilemap)
+
+	# Dirt layer for dirt patches (above grass)
+	dirt_tilemap = TileMapLayer.new()
+	dirt_tilemap.name = "DirtTileMap"
+	dirt_tilemap.tile_set = tileset
+	dirt_tilemap.z_index = -16
+	add_child(dirt_tilemap)
 
 	decoration_tilemap = TileMapLayer.new()
 	decoration_tilemap.name = "DecorationTileMap"
 	decoration_tilemap.tile_set = tileset
-	decoration_tilemap.z_index = -11
+	decoration_tilemap.z_index = -12
 	add_child(decoration_tilemap)
 
 func _create_tileset() -> TileSet:
@@ -167,7 +177,7 @@ func _create_tileset() -> TileSet:
 	tileset.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
 	var source = TileSetAtlasSource.new()
-	var texture = load("res://assets/enviro/gowl/Tiles/Nature.png")
+	var texture = load("res://assets/enviro/forest_tileset.png")
 	if texture:
 		source.texture = texture
 		source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
@@ -229,21 +239,32 @@ func _generate_water() -> void:
 
 	var water_container = Node2D.new()
 	water_container.name = "WaterContainer"
-	water_container.z_index = -13
+	water_container.z_index = -14  # Above dirt (-16) and grass (-18/-20), below decorations (-12)
 	add_child(water_container)
+
+	# Water collision container
+	var water_collision = StaticBody2D.new()
+	water_collision.name = "WaterCollision"
+	water_collision.collision_layer = 8  # Obstacles layer
+	water_collision.collision_mask = 0
+	add_child(water_collision)
 
 	# Add water inlets cutting into land
 	for i in range(WATER_INLET_COUNT):
 		_create_water_inlet(tiles_x, tiles_y)
 
-	# Place water where there's no land (only near edges)
-	for y in range(-3, tiles_y + 3):
-		for x in range(-3, tiles_x + 3):
+	# Place water in all non-land areas within reasonable range
+	# Extended margin to ensure full coverage at map edges
+	var water_margin = 8
+	for y in range(-water_margin, tiles_y + water_margin):
+		for x in range(-water_margin, tiles_x + water_margin):
 			var key = "%d_%d" % [x, y]
 			if key not in land_cells:
-				if _is_near_land(x, y, 3):
+				# Only create water tiles that are within viewable range (near land or near map bounds)
+				if _is_near_land(x, y, 6) or x < 5 or x > tiles_x - 5 or y < 5 or y > tiles_y - 5:
 					water_cells[key] = Vector2i(x, y)
 					_create_water_tile(water_container, x, y, water_frames)
+					_create_water_collision(water_collision, x, y)
 
 func _is_near_land(x: int, y: int, radius: int) -> bool:
 	for dy in range(-radius, radius + 1):
@@ -289,6 +310,9 @@ func _create_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Arr
 	var sprite = AnimatedSprite2D.new()
 	sprite.position = Vector2(tile_x * TILE_SIZE + TILE_SIZE/2, tile_y * TILE_SIZE + TILE_SIZE/2)
 
+	# Water frames are 32x16, scale to fit 16x16 tile
+	sprite.scale = Vector2(0.5, 1.0)
+
 	var sf = SpriteFrames.new()
 	sf.add_animation("default")
 	sf.set_animation_loop("default", true)
@@ -303,6 +327,16 @@ func _create_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Arr
 	sprite.frame = rng.randi() % max(1, frames.size())
 
 	container.add_child(sprite)
+
+func _create_water_collision(collision_body: StaticBody2D, tile_x: int, tile_y: int) -> void:
+	var collision = CollisionShape2D.new()
+	collision.position = Vector2(tile_x * TILE_SIZE + TILE_SIZE/2, tile_y * TILE_SIZE + TILE_SIZE/2)
+
+	var shape = RectangleShape2D.new()
+	shape.size = Vector2(TILE_SIZE, TILE_SIZE)
+	collision.shape = shape
+
+	collision_body.add_child(collision)
 
 func _generate_grass() -> void:
 	print("ProceduralMapGenerator: Generating grass variation...")
@@ -321,7 +355,7 @@ func _generate_grass() -> void:
 			dark_patch.color = dark_grass_color
 			dark_patch.size = Vector2(TILE_SIZE, TILE_SIZE)
 			dark_patch.position = Vector2(pos.x * TILE_SIZE, pos.y * TILE_SIZE)
-			dark_patch.z_index = -14
+			dark_patch.z_index = -19  # Above grass bg (-20), below grass tilemap (-18)
 			add_child(dark_patch)
 
 func _place_dirt_patches() -> void:
@@ -369,7 +403,7 @@ func _create_dirt_patch(center_x: int, center_y: int, size: int, dirt_colors: Ar
 					)
 					dirt_rect.size = Vector2(TILE_SIZE, TILE_SIZE)
 					dirt_rect.position = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
-					dirt_rect.z_index = -13
+					dirt_rect.z_index = -17  # Above grass (-18/-19/-20), below water (-14)
 					add_child(dirt_rect)
 					dirt_cells[key] = Vector2i(tx, ty)
 
@@ -392,7 +426,9 @@ func _place_trees() -> void:
 			var tree = tree_scenes[0].instantiate()
 			tree.global_position = pos
 			_randomize_tree(tree)
+			tree.visible = false  # Start hidden until fog reveals
 			add_child(tree)
+			spawned_trees.append(tree)
 			obstacle_positions.append(pos)
 			placed += 1
 
@@ -403,13 +439,14 @@ func _randomize_tree(tree: Node2D) -> void:
 		"res://assets/enviro/gowl/Trees/Tree3.png"
 	]
 
+	var scale_val = 1.5
 	var sprite = tree.get_node_or_null("Sprite")
 	if sprite and sprite is Sprite2D:
 		var tex = load(textures[rng.randi() % textures.size()])
 		if tex:
 			sprite.texture = tex
 
-		var scale_val = rng.randf_range(1.5, 5.0)
+		scale_val = rng.randf_range(1.5, 5.0)
 		sprite.scale = Vector2(scale_val, scale_val)
 
 		if rng.randf() < 0.5:
@@ -431,6 +468,10 @@ func _randomize_tree(tree: Node2D) -> void:
 		shape.size = Vector2(24 * scale_factor * 0.5, 16 * scale_factor * 0.4)
 		collision.shape = shape
 
+	# Small/medium trees (scale < 3.0) render below player
+	if scale_val < 3.0:
+		tree.z_index = -5  # Below player, player walks over them
+
 func _place_rocks() -> void:
 	if rock_scenes.is_empty():
 		return
@@ -450,7 +491,9 @@ func _place_rocks() -> void:
 			var rock = rock_scenes[0].instantiate()
 			rock.global_position = pos
 			_randomize_rock(rock)
+			rock.visible = false  # Start hidden until fog reveals
 			add_child(rock)
+			spawned_rocks.append(rock)
 			obstacle_positions.append(pos)
 			placed += 1
 
@@ -476,6 +519,18 @@ func _randomize_rock(rock: Node2D) -> void:
 		if rng.randf() < 0.5:
 			sprite.flip_h = true
 
+	# ALL rocks are decorative - disable collision so players/enemies can walk over them
+	var collision = rock.get_node_or_null("CollisionShape2D")
+	if collision:
+		collision.set_deferred("disabled", true)
+	rock.collision_layer = 0
+	rock.collision_mask = 0
+
+	# Remove health functionality - rocks are just visual decoration
+	if rock.has_method("set"):
+		rock.set("max_health", 0)
+		rock.set("show_health_bar", false)
+
 func _place_lamps() -> void:
 	if not lamp_scene:
 		return
@@ -492,7 +547,9 @@ func _place_lamps() -> void:
 		if _is_valid_lamp_position(pos):
 			var lamp = lamp_scene.instantiate()
 			lamp.global_position = pos
+			lamp.visible = false  # Start hidden until fog reveals
 			add_child(lamp)
+			spawned_lamps.append(lamp)
 			lamp_positions.append(pos)
 			placed += 1
 
@@ -513,7 +570,9 @@ func _place_magic_stones() -> void:
 			if _is_valid_position(pos, 150):
 				var stone = magic_stone_scene.instantiate()
 				stone.global_position = pos
+				stone.visible = false  # Start hidden until fog reveals
 				add_child(stone)
+				spawned_stones.append(stone)
 				magic_stone_positions.append(pos)
 				placed += 1
 
@@ -596,22 +655,61 @@ func _update_fog_of_war() -> void:
 	var fog_y = int(player_pos.y / FOG_SCALE)
 	var reveal_radius = int(FOG_REVEAL_RADIUS / FOG_SCALE)
 
+	# Use noise for organic fog edges
+	var time_offset = Time.get_ticks_msec() * 0.0005  # Slow animation
+
 	# Reveal area around player
-	for dy in range(-reveal_radius, reveal_radius + 1):
-		for dx in range(-reveal_radius, reveal_radius + 1):
+	for dy in range(-reveal_radius - 10, reveal_radius + 11):
+		for dx in range(-reveal_radius - 10, reveal_radius + 11):
 			var px = fog_x + dx
 			var py = fog_y + dy
 
 			if px >= 0 and px < fog_image.get_width() and py >= 0 and py < fog_image.get_height():
 				var dist = Vector2(dx, dy).length()
-				if dist <= reveal_radius:
-					# Gradual fade at edges
+
+				# Add noise variation to the edge (use world position for consistent noise)
+				var world_px = px * FOG_SCALE
+				var world_py = py * FOG_SCALE
+				var angle = atan2(dy, dx)
+				var noise_val = sin(angle * 3.0 + time_offset) * 0.15 + sin(angle * 7.0 - time_offset * 0.7) * 0.1
+				var varied_radius = reveal_radius * (1.0 + noise_val)
+
+				if dist <= varied_radius:
+					# More gradual fade starting earlier
 					var alpha = 0.0
-					if dist > reveal_radius * 0.7:
-						alpha = (dist - reveal_radius * 0.7) / (reveal_radius * 0.3) * 0.85
+					var fade_start = varied_radius * 0.5
+					if dist > fade_start:
+						alpha = (dist - fade_start) / (varied_radius - fade_start) * 0.85
 					fog_image.set_pixel(px, py, Color(0, 0, 0, alpha))
 
 	fog_texture.update(fog_image)
+
+func _update_object_visibility() -> void:
+	if not player:
+		return
+
+	var player_pos = player.global_position
+	var visibility_radius = FOG_REVEAL_RADIUS + 50  # Slightly larger than fog reveal
+
+	# Update trees visibility
+	for tree in spawned_trees:
+		if is_instance_valid(tree):
+			tree.visible = tree.global_position.distance_to(player_pos) < visibility_radius
+
+	# Update rocks visibility
+	for rock in spawned_rocks:
+		if is_instance_valid(rock):
+			rock.visible = rock.global_position.distance_to(player_pos) < visibility_radius
+
+	# Update lamps visibility
+	for lamp in spawned_lamps:
+		if is_instance_valid(lamp):
+			lamp.visible = lamp.global_position.distance_to(player_pos) < visibility_radius
+
+	# Update magic stones visibility
+	for stone in spawned_stones:
+		if is_instance_valid(stone):
+			stone.visible = stone.global_position.distance_to(player_pos) < visibility_radius
 
 # Public API
 func get_spawn_position() -> Vector2:
@@ -624,3 +722,45 @@ func get_map_bounds() -> Rect2:
 
 func get_camera_bounds() -> Rect2:
 	return Rect2(-50, -50, MAP_SIZE + 100, MAP_SIZE + 100)
+
+func get_random_land_position(min_dist_from_player: float = 300.0) -> Vector2:
+	"""Get a random position on land, away from player and water."""
+	var attempts = 0
+	var max_attempts = 50
+
+	while attempts < max_attempts:
+		attempts += 1
+
+		# Pick a random land cell
+		if land_cells.is_empty():
+			break
+
+		var keys = land_cells.keys()
+		var random_key = keys[rng.randi() % keys.size()]
+		var cell = land_cells[random_key]
+
+		var pos = Vector2(cell.x * TILE_SIZE + TILE_SIZE/2, cell.y * TILE_SIZE + TILE_SIZE/2)
+
+		# Check not in water
+		if water_cells.has(random_key):
+			continue
+
+		# Check distance from player
+		if player and pos.distance_to(player.global_position) < min_dist_from_player:
+			continue
+
+		# Check not too close to spawn
+		if pos.distance_to(_spawn_center) < SPAWN_AREA_RADIUS:
+			continue
+
+		return pos
+
+	# Fallback to center area if no valid position found
+	return Vector2(MAP_SIZE / 2 + rng.randf_range(-200, 200), MAP_SIZE / 2 + rng.randf_range(-200, 200))
+
+func is_position_on_land(pos: Vector2) -> bool:
+	"""Check if a position is on valid land (not water)."""
+	var tx = int(pos.x) / TILE_SIZE
+	var ty = int(pos.y) / TILE_SIZE
+	var key = "%d_%d" % [tx, ty]
+	return land_cells.has(key) and not water_cells.has(key)

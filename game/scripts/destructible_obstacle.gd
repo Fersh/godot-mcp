@@ -74,6 +74,11 @@ func _check_player_behind() -> void:
 		target_alpha = NORMAL_ALPHA
 		return
 
+	# Rocks don't become transparent - only trees do
+	if obstacle_type == "rock":
+		target_alpha = NORMAL_ALPHA
+		return
+
 	# Calculate the tree's visual bounds
 	var tree_width = 40.0
 	var sprite_top = global_position.y
