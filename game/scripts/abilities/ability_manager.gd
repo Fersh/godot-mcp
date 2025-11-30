@@ -1621,8 +1621,8 @@ func spawn_blood_pool(position: Vector2) -> void:
 	if blood_pool_scene:
 		var pool = blood_pool_scene.instantiate()
 		pool.global_position = position
-		pool.duration = blood_trail_duration
-		pool.damage_multiplier = get_summon_damage_multiplier()
+		pool.lifetime = blood_trail_duration
+		pool.damage_per_tick = 5.0 * get_summon_damage_multiplier()
 		player.get_parent().add_child(pool)
 
 func get_summon_damage_multiplier() -> float:

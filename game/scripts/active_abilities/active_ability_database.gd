@@ -407,7 +407,7 @@ static func _create_quick_roll() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		3.0
-	).with_movement().with_invulnerability(0.3).with_range(100.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon27.png")
+	).with_movement().with_invulnerability(0.3).with_range(100.0).with_icon("res://assets/icons/abilities/dodge.png")
 
 static func _create_throw_net() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -551,7 +551,7 @@ static func _create_fireball() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		8.0
-	).with_damage(18.0, 1.2).with_aoe(50.0).with_projectiles(1, 400.0).with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon10.png")
+	).with_damage(18.0, 1.2).with_aoe(50.0).with_projectiles(1, 400.0).with_icon("res://assets/icons/abilities/fireball.png")
 
 static func _create_frost_nova() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
