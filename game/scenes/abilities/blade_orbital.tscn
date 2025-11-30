@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://blade_orbital001"]
+
+[ext_resource type="Script" path="res://scripts/abilities/blade_orbital.gd" id="1_blade"]
+
+[node name="BladeOrbital" type="Area2D"]
+script = ExtResource("1_blade")

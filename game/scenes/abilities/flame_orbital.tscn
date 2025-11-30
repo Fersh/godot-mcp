@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://flame_orbital001"]
+
+[ext_resource type="Script" path="res://scripts/abilities/flame_orbital.gd" id="1_flame"]
+
+[node name="FlameOrbital" type="Area2D"]
+script = ExtResource("1_flame")

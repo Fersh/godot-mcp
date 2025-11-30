@@ -33,6 +33,9 @@ static func get_extended_abilities() -> Array[AbilityData]:
 	abilities.append_array(ConditionalPassives.get_abilities())
 	abilities.append_array(LegendaryPassives.get_abilities())
 	abilities.append_array(MythicPassives.get_abilities())
+	abilities.append_array(OrbitalPassives.get_abilities())
+	abilities.append_array(SummonPassives.get_abilities())
+	abilities.append_array(SynergyPassives.get_abilities())
 	abilities.append_array(get_active_synergy_abilities())
 	return abilities
 

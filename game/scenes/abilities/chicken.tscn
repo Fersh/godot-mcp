@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://chicken_summon001"]
+
+[ext_resource type="Script" path="res://scripts/abilities/chicken.gd" id="1_chicken"]
+
+[node name="Chicken" type="Node2D"]
+script = ExtResource("1_chicken")

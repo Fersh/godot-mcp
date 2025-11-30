@@ -85,7 +85,11 @@ func _process(delta: float) -> void:
 func register_kill() -> void:
 	"""Called when player kills an enemy."""
 	current_streak += 1
-	streak_timer = streak_decay_time
+	# Apply momentum master bonus if available
+	var duration_mult = 1.0
+	if AbilityManager:
+		duration_mult = AbilityManager.get_kill_streak_duration_multiplier()
+	streak_timer = streak_decay_time * duration_mult
 
 	# Track highest
 	if current_streak > highest_streak:

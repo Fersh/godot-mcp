@@ -1541,6 +1541,9 @@ func _execute_chain_lightning(ability: ActiveAbilityData, player: Node2D) -> voi
 
 	var damage = _get_damage(ability)
 	var chain_count = 5
+	# Apply Conductor bonus for extra chains
+	if AbilityManager:
+		chain_count += AbilityManager.get_lightning_chain_count()
 	var current_target = first_target
 	var hit_enemies = [current_target]
 

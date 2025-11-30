@@ -161,6 +161,33 @@ enum EffectType {
 
 	# Passive Ability Enhancement
 	PASSIVE_AMPLIFIER,  # Passive abilities deal 20% more damage
+
+	# New Orbital Types
+	BLADE_ORBIT,        # Sword orbital - melee damage
+	FLAME_ORBIT,        # Fire orbital - applies burn
+	FROST_ORBIT,        # Ice orbital - applies chill/slow
+
+	# Orbital Enhancements
+	ORBITAL_AMPLIFIER,  # +1 to random orbital
+	ORBITAL_MASTERY,    # +1 to ALL orbitals
+
+	# Kill Streak Enhancements
+	MOMENTUM_MASTER,    # Kill streak timers last 50% longer
+
+	# Active Ability Synergies
+	ABILITY_CASCADE,    # 20% chance to reset another ability
+
+	# Elemental Enhancements
+	CONDUCTOR,          # Lightning chains +2 additional times
+
+	# Kill Effects
+	BLOOD_TRAIL,        # Kills leave damaging pools
+
+	# Summon Types
+	CHICKEN_SUMMON,     # Summon a chicken that pecks enemies
+
+	# Summon Enhancements
+	SUMMON_DAMAGE,      # Summons deal 25% more damage
 }
 
 # Rarity weights for random selection (out of 100)

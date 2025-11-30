@@ -203,6 +203,10 @@ func use_ability(slot: int) -> bool:
 		# Execute ability again with slight delay
 		get_tree().create_timer(0.1).timeout.connect(func(): _execute_ability(ability))
 
+	# Check for Ability Cascade (chance to reset another ability cooldown)
+	if AbilityManager:
+		AbilityManager.try_ability_cascade()
+
 	emit_signal("ability_used", slot, ability)
 	return true
 
@@ -224,6 +228,18 @@ func get_cooldown_multiplier() -> float:
 		multiplier *= AbilityManager.get_all_for_one_cooldown_multiplier()
 
 	return maxf(multiplier, 0.1)  # Minimum 10% of original cooldown
+
+func reset_random_cooldown() -> void:
+	"""Reset a random ability cooldown (used by Ability Cascade)."""
+	var on_cooldown_slots: Array[int] = []
+	for i in range(MAX_ABILITY_SLOTS):
+		if cooldown_timers[i] > 0 and ability_slots[i] != null:
+			on_cooldown_slots.append(i)
+
+	if on_cooldown_slots.size() > 0:
+		var random_slot = on_cooldown_slots[randi() % on_cooldown_slots.size()]
+		cooldown_timers[random_slot] = 0.0
+		emit_signal("cooldown_changed", random_slot, 0.0, 0.0)
 
 func _execute_ability(ability: ActiveAbilityData) -> void:
 	"""Execute an ability's effect. Delegates to AbilityExecutor."""

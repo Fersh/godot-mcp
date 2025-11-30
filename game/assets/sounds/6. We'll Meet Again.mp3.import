@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dexa1gklub7ba"
+path="res://.godot/imported/6. We'll Meet Again.mp3-b473c1fdec26cfa5f465e278e841c611.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/6. We'll Meet Again.mp3"
+dest_files=["res://.godot/imported/6. We'll Meet Again.mp3-b473c1fdec26cfa5f465e278e841c611.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

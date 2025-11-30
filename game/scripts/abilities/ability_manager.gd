@@ -290,6 +290,46 @@ var kill_accelerant_reduction: float = 0.0  # Ultimate cooldown reduction per ki
 var has_passive_amplifier: bool = false
 var passive_amplifier_bonus: float = 0.0  # Passive ability damage bonus
 
+# ============================================
+# NEW ORBITAL TYPES
+# ============================================
+var has_blade_orbit: bool = false
+var blade_orbit_count: int = 0
+var has_flame_orbit: bool = false
+var flame_orbit_count: int = 0
+var has_frost_orbit: bool = false
+var frost_orbit_count: int = 0
+
+# Orbital enhancements
+var orbital_amplifier_applied: bool = false  # Track if we've applied the random +1
+var orbital_mastery_count: int = 0  # +1 to all orbitals per pickup
+
+# ============================================
+# NEW SYNERGY EFFECTS
+# ============================================
+var has_momentum_master: bool = false
+var momentum_master_bonus: float = 0.0  # Kill streak duration bonus (0.5 = 50% longer)
+
+var has_ability_cascade: bool = false
+var ability_cascade_chance: float = 0.0  # Chance to reset another ability
+
+var has_conductor: bool = false
+var conductor_bonus: int = 0  # Extra lightning chain targets
+
+var has_blood_trail: bool = false
+var blood_trail_duration: float = 0.0  # How long blood pools last
+
+# ============================================
+# NEW SUMMON TYPES
+# ============================================
+var has_chicken_summon: bool = false
+var chicken_count: int = 0
+const MAX_CHICKENS: int = 3
+
+# Summon enhancements
+var has_summon_damage: bool = false
+var summon_damage_bonus: float = 0.0  # Bonus damage for all summons
+
 # Run tracking
 var run_start_time: float = 0.0
 var run_duration_for_warmup: float = 120.0  # 2 minutes
@@ -574,6 +614,32 @@ func reset() -> void:
 	kill_accelerant_reduction = 0.0
 	has_passive_amplifier = false
 	passive_amplifier_bonus = 0.0
+
+	# Reset new orbital types
+	has_blade_orbit = false
+	blade_orbit_count = 0
+	has_flame_orbit = false
+	flame_orbit_count = 0
+	has_frost_orbit = false
+	frost_orbit_count = 0
+	orbital_amplifier_applied = false
+	orbital_mastery_count = 0
+
+	# Reset new synergy effects
+	has_momentum_master = false
+	momentum_master_bonus = 0.0
+	has_ability_cascade = false
+	ability_cascade_chance = 0.0
+	has_conductor = false
+	conductor_bonus = 0
+	has_blood_trail = false
+	blood_trail_duration = 0.0
+
+	# Reset new summon types
+	has_chicken_summon = false
+	chicken_count = 0
+	has_summon_damage = false
+	summon_damage_bonus = 0.0
 
 	run_start_time = 0.0
 
@@ -1378,6 +1444,49 @@ func apply_ability_effects(ability: AbilityData) -> void:
 				has_passive_amplifier = true
 				passive_amplifier_bonus += value  # Stacks
 
+			# New Orbital Types
+			AbilityData.EffectType.BLADE_ORBIT:
+				has_blade_orbit = true
+				blade_orbit_count += int(value)
+				spawn_blade_orbital()
+			AbilityData.EffectType.FLAME_ORBIT:
+				has_flame_orbit = true
+				flame_orbit_count += int(value)
+				spawn_flame_orbital()
+			AbilityData.EffectType.FROST_ORBIT:
+				has_frost_orbit = true
+				frost_orbit_count += int(value)
+				spawn_frost_orbital()
+
+			# Orbital Enhancements
+			AbilityData.EffectType.ORBITAL_AMPLIFIER:
+				_apply_orbital_amplifier()
+			AbilityData.EffectType.ORBITAL_MASTERY:
+				orbital_mastery_count += 1
+				_apply_orbital_mastery()
+
+			# Synergy Effects
+			AbilityData.EffectType.MOMENTUM_MASTER:
+				has_momentum_master = true
+				momentum_master_bonus = value
+			AbilityData.EffectType.ABILITY_CASCADE:
+				has_ability_cascade = true
+				ability_cascade_chance = value
+			AbilityData.EffectType.CONDUCTOR:
+				has_conductor = true
+				conductor_bonus += int(value)
+			AbilityData.EffectType.BLOOD_TRAIL:
+				has_blood_trail = true
+				blood_trail_duration = value
+
+			# Summon Types
+			AbilityData.EffectType.CHICKEN_SUMMON:
+				has_chicken_summon = true
+				spawn_chicken()
+			AbilityData.EffectType.SUMMON_DAMAGE:
+				has_summon_damage = true
+				summon_damage_bonus += value
+
 	# Apply stat changes to player immediately
 	apply_stats_to_player()
 
@@ -1400,6 +1509,153 @@ func spawn_orbital() -> void:
 		var orbital = orbital_scene.instantiate()
 		orbital.orbit_index = orbital_count - 1
 		player.add_child(orbital)
+
+func spawn_blade_orbital() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var orbital_scene = load("res://scenes/abilities/blade_orbital.tscn")
+	if orbital_scene:
+		var orbital = orbital_scene.instantiate()
+		orbital.orbit_index = blade_orbit_count - 1 + orbital_mastery_count
+		player.add_child(orbital)
+
+func spawn_flame_orbital() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var orbital_scene = load("res://scenes/abilities/flame_orbital.tscn")
+	if orbital_scene:
+		var orbital = orbital_scene.instantiate()
+		orbital.orbit_index = flame_orbit_count - 1 + orbital_mastery_count
+		player.add_child(orbital)
+
+func spawn_frost_orbital() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var orbital_scene = load("res://scenes/abilities/frost_orbital.tscn")
+	if orbital_scene:
+		var orbital = orbital_scene.instantiate()
+		orbital.orbit_index = frost_orbit_count - 1 + orbital_mastery_count
+		player.add_child(orbital)
+
+func spawn_chicken() -> void:
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	if chicken_count >= MAX_CHICKENS:
+		return
+
+	chicken_count += 1
+	var chicken_scene = load("res://scenes/abilities/chicken.tscn")
+	if chicken_scene:
+		var chicken = chicken_scene.instantiate()
+		player.get_parent().add_child(chicken)
+
+func _apply_orbital_amplifier() -> void:
+	"""Add +1 to a random orbital type that the player has."""
+	if orbital_amplifier_applied:
+		return  # Only apply once per pickup
+
+	var orbitals_owned: Array = []
+	if has_orbital and orbital_count > 0:
+		orbitals_owned.append("orbital")
+	if has_blade_orbit and blade_orbit_count > 0:
+		orbitals_owned.append("blade")
+	if has_flame_orbit and flame_orbit_count > 0:
+		orbitals_owned.append("flame")
+	if has_frost_orbit and frost_orbit_count > 0:
+		orbitals_owned.append("frost")
+
+	if orbitals_owned.size() == 0:
+		return  # No orbitals to amplify
+
+	orbital_amplifier_applied = true
+	var chosen = orbitals_owned[randi() % orbitals_owned.size()]
+
+	match chosen:
+		"orbital":
+			orbital_count += 1
+			spawn_orbital()
+		"blade":
+			blade_orbit_count += 1
+			spawn_blade_orbital()
+		"flame":
+			flame_orbit_count += 1
+			spawn_flame_orbital()
+		"frost":
+			frost_orbit_count += 1
+			spawn_frost_orbital()
+
+func _apply_orbital_mastery() -> void:
+	"""Add +1 to ALL orbital types the player has."""
+	# Spawn an extra of each orbital type
+	if has_orbital and orbital_count > 0:
+		orbital_count += 1
+		spawn_orbital()
+	if has_blade_orbit and blade_orbit_count > 0:
+		blade_orbit_count += 1
+		spawn_blade_orbital()
+	if has_flame_orbit and flame_orbit_count > 0:
+		flame_orbit_count += 1
+		spawn_flame_orbital()
+	if has_frost_orbit and frost_orbit_count > 0:
+		frost_orbit_count += 1
+		spawn_frost_orbital()
+
+func spawn_blood_pool(position: Vector2) -> void:
+	"""Spawn a blood pool at the given position that damages enemies."""
+	if not has_blood_trail:
+		return
+
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var blood_pool_scene = load("res://scenes/abilities/blood_pool.tscn")
+	if blood_pool_scene:
+		var pool = blood_pool_scene.instantiate()
+		pool.global_position = position
+		pool.duration = blood_trail_duration
+		pool.damage_multiplier = get_summon_damage_multiplier()
+		player.get_parent().add_child(pool)
+
+func get_summon_damage_multiplier() -> float:
+	"""Get damage multiplier for all summons."""
+	var mult = 1.0
+	if has_summon_damage:
+		mult += summon_damage_bonus
+	if has_empathic_bond:
+		mult *= empathic_bond_multiplier
+	return mult
+
+func get_lightning_chain_count() -> int:
+	"""Get total lightning chain count including conductor bonus."""
+	var base = 3  # Default chain count
+	if has_conductor:
+		base += conductor_bonus
+	return base
+
+func get_kill_streak_duration_multiplier() -> float:
+	"""Get duration multiplier for kill streaks (rampage, frenzy, massacre)."""
+	if has_momentum_master:
+		return 1.0 + momentum_master_bonus
+	return 1.0
+
+func try_ability_cascade() -> void:
+	"""Try to trigger ability cascade when using an active ability."""
+	if not has_ability_cascade:
+		return
+
+	if randf() < ability_cascade_chance:
+		# Reset a random active ability cooldown
+		if ActiveAbilityManager:
+			ActiveAbilityManager.reset_random_cooldown()
 
 func spawn_toxic_aura() -> void:
 	var player = get_tree().get_first_node_in_group("player")
@@ -1984,6 +2240,10 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	# Kill Accelerant - reduce ultimate cooldown on kill
 	if has_kill_accelerant and UltimateAbilityManager:
 		UltimateAbilityManager.reduce_cooldown(kill_accelerant_reduction)
+
+	# Blood Trail - spawn damaging blood pool at kill location
+	if has_blood_trail:
+		spawn_blood_pool(enemy.global_position)
 
 # ============================================
 # EXTENDED ABILITY UTILITY FUNCTIONS

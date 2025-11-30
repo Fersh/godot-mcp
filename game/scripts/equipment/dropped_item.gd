@@ -22,6 +22,7 @@ var glow_time: float = 0.0
 @onready var item_base: Polygon2D = $ItemBase
 @onready var item_inner: Polygon2D = $ItemInner
 @onready var shine: Polygon2D = $Shine
+@onready var shadow: Polygon2D = $Shadow
 @onready var rarity_label: Label = $RarityLabel
 @onready var collision_shape: CollisionShape2D = $CollisionShape
 
@@ -40,7 +41,7 @@ func setup(data: ItemData) -> void:
 	item_data = data
 	var rarity_color = data.get_rarity_color()
 
-	# Hide the polygon shapes - we'll show the actual item icon instead
+	# Hide all polygon shapes - we'll show the actual item icon instead
 	if glow_outer:
 		glow_outer.visible = false
 	if glow_inner:
@@ -51,21 +52,25 @@ func setup(data: ItemData) -> void:
 		item_inner.visible = false
 	if shine:
 		shine.visible = false
+	if shadow:
+		shadow.visible = false
+	if rarity_label:
+		rarity_label.visible = false  # Hide rarity label when showing icon
 
 	# Load icon if available
 	if data.icon_path != "" and ResourceLoader.exists(data.icon_path):
 		var texture = load(data.icon_path)
 		if texture and sprite:
 			sprite.texture = texture
-			sprite.scale = Vector2(1.5, 1.5)
+			sprite.scale = Vector2(2.0, 2.0)  # Slightly larger for visibility
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			sprite.visible = true
-			# Add rarity-colored glow/outline effect using modulate
-			sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	else:
 		# Fallback to polygon shapes if no icon
 		if sprite:
 			sprite.visible = false
+		if shadow:
+			shadow.visible = true
 		if glow_outer:
 			glow_outer.visible = true
 			glow_outer.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
@@ -86,12 +91,12 @@ func setup(data: ItemData) -> void:
 				0.7 + rarity_color.b * 0.3,
 				0.7
 			)
-
-	# Set rarity label
-	if rarity_label:
-		rarity_label.text = data.get_rarity_name()
-		rarity_label.add_theme_color_override("font_color", rarity_color)
-		rarity_label.add_theme_font_size_override("font_size", 12)
+		# Show rarity label for fallback
+		if rarity_label:
+			rarity_label.visible = true
+			rarity_label.text = data.get_rarity_name()
+			rarity_label.add_theme_color_override("font_color", rarity_color)
+			rarity_label.add_theme_font_size_override("font_size", 12)
 
 func _process(delta: float) -> void:
 	# Bobbing animation
