@@ -183,6 +183,17 @@ func check_wall_bounce() -> void:
 			can_bounce = false
 
 func _on_body_entered(body: Node2D) -> void:
+	# Check for obstacles (trees, rocks) - they block projectiles
+	if body.is_in_group("obstacles"):
+		if body.has_method("take_damage"):
+			# Calculate damage to obstacle
+			var obstacle_damage = damage * damage_multiplier
+			body.take_damage(obstacle_damage)
+		# Arrows don't pierce obstacles unless they have high pierce
+		if pierce_count <= 0:
+			queue_free()
+		return
+
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		# Skip already pierced enemies
 		if body in pierced_enemies:

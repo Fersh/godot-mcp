@@ -45,7 +45,7 @@ const SPAWN_AREA_RADIUS: int = 150  # Clear area around spawn point
 const PATH_WIDTH: int = 48  # Width of paths
 
 # Decoration density
-const TREE_DENSITY: float = 0.00003  # Trees per pixel squared (~190 trees total)
+const TREE_DENSITY: float = 0.0000105  # Trees per pixel squared (~65 trees, reduced 50%)
 const ROCK_DENSITY: float = 0.00002  # Rocks per pixel squared (~125 rocks)
 const LAMP_SPACING: int = 300  # Approximate spacing between lamps along paths
 const MAGIC_STONE_COUNT: int = 1  # Number of magic stones on map
@@ -511,8 +511,8 @@ func _randomize_tree_appearance(tree: Node2D) -> void:
 		if tex:
 			sprite.texture = tex
 
-		# Bigger trees with variation (2.0 to 3.0x scale)
-		var scale_var = rng.randf_range(2.0, 3.0)
+		# Trees with variation (1.0 to 6.0x scale - 50% to 100% of max)
+		var scale_var = rng.randf_range(1.0, 6.0)
 		sprite.scale = Vector2(scale_var, scale_var)
 
 		# Random flip
@@ -734,9 +734,9 @@ func _is_valid_lamp_position(pos: Vector2) -> bool:
 		if pos.distance_to(other_pos) < LAMP_SPACING * 0.5:
 			return false
 
-	# Check not too close to obstacles
+	# Check not too close to obstacles (trees/rocks) - use larger distance to avoid overlap
 	for obs_pos in obstacle_positions:
-		if pos.distance_to(obs_pos) < 30:
+		if pos.distance_to(obs_pos) < 120:
 			return false
 
 	return true
