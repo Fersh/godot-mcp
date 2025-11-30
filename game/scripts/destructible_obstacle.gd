@@ -167,19 +167,135 @@ func _play_destruction_animation() -> void:
 	tween.chain().tween_callback(queue_free)
 
 func _spawn_destruction_particles() -> void:
-	# Create simple particle effect based on type
-	var particle_color: Color
+	# Different effects for different obstacle types
 	match obstacle_type:
 		"tree":
-			particle_color = Color(0.2, 0.5, 0.15)  # Green leaves
+			_spawn_tree_shatter_effect()
 		"rock":
-			particle_color = Color(0.5, 0.5, 0.5)  # Gray stone
-		"branch":
-			particle_color = Color(0.4, 0.25, 0.1)  # Brown wood
+			_spawn_rock_shatter_effect()
 		_:
-			particle_color = Color(0.5, 0.5, 0.5)
+			_spawn_generic_particles()
 
-	# Spawn several small sprites as particles
+func _spawn_tree_shatter_effect() -> void:
+	# Dramatic shattering effect for trees - like blood splatter but green/brown
+	var leaf_colors = [
+		Color(0.2, 0.55, 0.15),   # Green
+		Color(0.25, 0.6, 0.2),    # Light green
+		Color(0.15, 0.45, 0.1),   # Dark green
+		Color(0.3, 0.5, 0.15),    # Yellow-green
+	]
+	var wood_colors = [
+		Color(0.4, 0.25, 0.1),    # Brown
+		Color(0.35, 0.2, 0.08),   # Dark brown
+		Color(0.5, 0.3, 0.12),    # Light brown
+	]
+
+	# Calculate spawn center based on sprite
+	var spawn_center = global_position
+	if sprite:
+		spawn_center = global_position + sprite.position
+
+	# Spawn many leaf particles (burst outward)
+	var leaf_count = 25
+	for i in range(leaf_count):
+		var particle = Sprite2D.new()
+		particle.texture = _create_leaf_texture()
+		particle.modulate = leaf_colors[randi() % leaf_colors.size()]
+
+		# Start from tree center with random offset
+		var start_offset = Vector2(randf_range(-15, 15), randf_range(-40, 10))
+		particle.global_position = spawn_center + start_offset
+		particle.scale = Vector2(1.0, 1.0) * randf_range(0.4, 1.2)
+		particle.rotation = randf_range(0, TAU)
+		particle.z_index = z_index + 1
+		get_parent().add_child(particle)
+
+		# Burst outward in all directions
+		var angle = randf_range(0, TAU)
+		var distance = randf_range(40, 120)
+		var end_pos = particle.global_position + Vector2(cos(angle), sin(angle)) * distance
+		# Add gravity - leaves fall down
+		end_pos.y += randf_range(20, 60)
+
+		var duration = randf_range(0.4, 0.8)
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "global_position", end_pos, duration).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, duration).set_delay(duration * 0.3)
+		tween.tween_property(particle, "rotation", particle.rotation + randf_range(-4, 4), duration)
+		tween.tween_property(particle, "scale", particle.scale * 0.3, duration)
+		tween.chain().tween_callback(particle.queue_free)
+
+	# Spawn wood splinter particles
+	var wood_count = 12
+	for i in range(wood_count):
+		var particle = Sprite2D.new()
+		particle.texture = _create_splinter_texture()
+		particle.modulate = wood_colors[randi() % wood_colors.size()]
+
+		var start_offset = Vector2(randf_range(-10, 10), randf_range(-20, 20))
+		particle.global_position = spawn_center + start_offset
+		particle.scale = Vector2(1.0, 1.0) * randf_range(0.5, 1.0)
+		particle.rotation = randf_range(0, TAU)
+		particle.z_index = z_index + 1
+		get_parent().add_child(particle)
+
+		# Wood flies out faster and more horizontally
+		var angle = randf_range(-PI * 0.8, PI * 0.8) - PI / 2  # Mostly upward
+		var distance = randf_range(30, 80)
+		var end_pos = particle.global_position + Vector2(cos(angle), sin(angle)) * distance
+		end_pos.y += randf_range(40, 80)  # Gravity
+
+		var duration = randf_range(0.3, 0.6)
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "global_position", end_pos, duration).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, duration).set_delay(duration * 0.4)
+		tween.tween_property(particle, "rotation", particle.rotation + randf_range(-6, 6), duration)
+		tween.chain().tween_callback(particle.queue_free)
+
+func _spawn_rock_shatter_effect() -> void:
+	# Rock debris effect
+	var rock_colors = [
+		Color(0.5, 0.5, 0.5),     # Gray
+		Color(0.4, 0.4, 0.42),    # Dark gray
+		Color(0.6, 0.58, 0.55),   # Light gray
+	]
+
+	var spawn_center = global_position
+	if sprite:
+		spawn_center = global_position + sprite.position
+
+	var debris_count = 15
+	for i in range(debris_count):
+		var particle = Sprite2D.new()
+		particle.texture = _create_rock_debris_texture()
+		particle.modulate = rock_colors[randi() % rock_colors.size()]
+
+		var start_offset = Vector2(randf_range(-10, 10), randf_range(-10, 10))
+		particle.global_position = spawn_center + start_offset
+		particle.scale = Vector2(1.0, 1.0) * randf_range(0.3, 0.8)
+		particle.rotation = randf_range(0, TAU)
+		particle.z_index = z_index + 1
+		get_parent().add_child(particle)
+
+		var angle = randf_range(0, TAU)
+		var distance = randf_range(20, 60)
+		var end_pos = particle.global_position + Vector2(cos(angle), sin(angle)) * distance
+		end_pos.y += randf_range(10, 30)
+
+		var duration = randf_range(0.3, 0.5)
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(particle, "global_position", end_pos, duration).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, duration).set_delay(duration * 0.5)
+		tween.tween_property(particle, "rotation", particle.rotation + randf_range(-3, 3), duration)
+		tween.chain().tween_callback(particle.queue_free)
+
+func _spawn_generic_particles() -> void:
+	# Fallback for other obstacle types
+	var particle_color = Color(0.5, 0.5, 0.5)
+
 	for i in range(8):
 		var particle = Sprite2D.new()
 		particle.texture = _create_particle_texture()
@@ -189,7 +305,6 @@ func _spawn_destruction_particles() -> void:
 		particle.z_index = z_index + 1
 		get_parent().add_child(particle)
 
-		# Animate particle
 		var tween = create_tween()
 		var end_pos = particle.global_position + Vector2(randf_range(-40, 40), randf_range(-60, -20))
 		tween.set_parallel(true)
@@ -202,6 +317,49 @@ func _create_particle_texture() -> Texture2D:
 	# Create a simple square texture for particles
 	var image = Image.create(4, 4, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+func _create_leaf_texture() -> Texture2D:
+	# Create a leaf-shaped texture (diamond/oval shape)
+	var image = Image.create(8, 8, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	# Draw a simple leaf shape
+	for y in range(8):
+		for x in range(8):
+			var cx = x - 4
+			var cy = y - 4
+			# Diamond shape
+			if abs(cx) + abs(cy) <= 3:
+				image.set_pixel(x, y, Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+func _create_splinter_texture() -> Texture2D:
+	# Create an elongated splinter shape
+	var image = Image.create(10, 4, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	# Draw a horizontal bar with pointed ends
+	for x in range(10):
+		var width = 2 if x > 1 and x < 8 else 1
+		for y in range(2 - width / 2, 2 + width):
+			if y >= 0 and y < 4:
+				image.set_pixel(x, y, Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+func _create_rock_debris_texture() -> Texture2D:
+	# Create an irregular rock chunk shape
+	var image = Image.create(6, 6, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	# Draw irregular polygon
+	var pixels = [
+		Vector2i(2, 0), Vector2i(3, 0),
+		Vector2i(1, 1), Vector2i(2, 1), Vector2i(3, 1), Vector2i(4, 1),
+		Vector2i(0, 2), Vector2i(1, 2), Vector2i(2, 2), Vector2i(3, 2), Vector2i(4, 2),
+		Vector2i(1, 3), Vector2i(2, 3), Vector2i(3, 3), Vector2i(4, 3), Vector2i(5, 3),
+		Vector2i(2, 4), Vector2i(3, 4), Vector2i(4, 4),
+		Vector2i(3, 5),
+	]
+	for p in pixels:
+		image.set_pixel(p.x, p.y, Color.WHITE)
 	return ImageTexture.create_from_image(image)
 
 func _create_health_bar() -> void:

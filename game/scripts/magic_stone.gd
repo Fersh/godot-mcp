@@ -13,9 +13,9 @@ var player: Node2D = null
 var glow_intensity: float = 0.0
 var pulse_time: float = 0.0
 
-# Pulsing border
-var border_nodes: Array[ColorRect] = []
-var border_pulse_time: float = 0.0
+# Pulsing outline (duplicate sprite behind main one)
+var outline_sprite: Sprite2D = null
+var outline_pulse_time: float = 0.0
 
 @onready var sprite: Sprite2D = $Sprite
 @onready var glow_sprite: Sprite2D = $GlowSprite
@@ -47,8 +47,8 @@ func _ready() -> void:
 	# Start glow animation
 	_setup_glow()
 
-	# Create pulsing border
-	_create_pulsing_border()
+	# Create pulsing outline (duplicate sprite)
+	_create_outline_effect()
 
 func _process(delta: float) -> void:
 	if is_activated:
@@ -65,25 +65,33 @@ func _process(delta: float) -> void:
 		point_light.energy = 0.6 + pulse * 0.4
 
 	# Subtle float animation
+	var float_offset = sin(pulse_time * 0.7) * 3
 	if sprite:
-		sprite.position.y = -16 + sin(pulse_time * 0.7) * 3
+		sprite.position.y = -16 + float_offset
 	if glow_sprite:
-		glow_sprite.position.y = -16 + sin(pulse_time * 0.7) * 3
+		glow_sprite.position.y = -16 + float_offset
 
-	# Animate pulsing border
-	border_pulse_time += delta * 3.0
-	var border_pulse = (sin(border_pulse_time) + 1.0) * 0.5
-	var border_color = Color(0.3, 0.8, 1.0, 0.4 + border_pulse * 0.5)
-	var border_scale = 1.0 + border_pulse * 0.1
+	# Animate pulsing outline sprite
+	outline_pulse_time += delta * 3.0
+	var outline_pulse = (sin(outline_pulse_time) + 1.0) * 0.5
 
-	for border in border_nodes:
-		if is_instance_valid(border):
-			border.modulate = border_color
-			# Scale border slightly with pulse
-			var base_size = border.get_meta("base_size", border.size)
-			var base_pos = border.get_meta("base_pos", border.position)
-			border.size = base_size * border_scale
-			border.position = base_pos - (base_size * (border_scale - 1.0) * 0.5)
+	if outline_sprite and is_instance_valid(outline_sprite):
+		# Pulse the outline color between cyan and white
+		var outline_color = Color(
+			0.3 + outline_pulse * 0.4,   # R: 0.3-0.7
+			0.7 + outline_pulse * 0.3,   # G: 0.7-1.0
+			1.0,                          # B: always 1.0
+			0.6 + outline_pulse * 0.4    # A: 0.6-1.0
+		)
+		outline_sprite.modulate = outline_color
+
+		# Pulse the scale slightly
+		var base_scale = sprite.scale * 1.15  # 15% larger than main sprite
+		var scale_pulse = 1.0 + outline_pulse * 0.08
+		outline_sprite.scale = base_scale * scale_pulse
+
+		# Match the float position
+		outline_sprite.position.y = -16 + float_offset
 
 	# Check for interaction input when player is nearby
 	if prompt_label and prompt_label.visible:
@@ -136,6 +144,13 @@ func _play_activation_effect() -> void:
 		tween.set_parallel(true)
 		tween.tween_property(glow_sprite, "scale", glow_sprite.scale * 3.0, 0.5)
 		tween.tween_property(glow_sprite, "modulate:a", 0.0, 0.5)
+
+	# Expand and fade outline
+	if outline_sprite and is_instance_valid(outline_sprite):
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(outline_sprite, "scale", outline_sprite.scale * 2.5, 0.5)
+		tween.tween_property(outline_sprite, "modulate:a", 0.0, 0.5)
 
 	# Fade out light
 	if point_light:
@@ -204,107 +219,25 @@ func _create_prompt_label() -> void:
 
 	add_child(prompt_label)
 
-func _create_pulsing_border() -> void:
-	# Create a glowing border around the stone using ColorRects
+func _create_outline_effect() -> void:
+	# Create a duplicate sprite behind the main one for the outline glow effect
+	# This way the glow follows the actual shape of the stone (not a rectangle)
 	if not sprite or not sprite.texture:
 		return
 
-	var tex_size = sprite.texture.get_size() * sprite.scale
-	var border_thickness = 4.0
-	var padding = 8.0  # Extra space around the sprite
+	# Create the outline sprite as a duplicate of the main sprite
+	outline_sprite = Sprite2D.new()
+	outline_sprite.name = "OutlineSprite"
+	outline_sprite.texture = sprite.texture
+	outline_sprite.position = sprite.position
+	outline_sprite.scale = sprite.scale * 1.15  # Slightly larger for outline effect
 
-	var total_width = tex_size.x + padding * 2
-	var total_height = tex_size.y + padding * 2
-	var offset_y = sprite.position.y - tex_size.y * 0.5 - padding
+	# Color it with the glow color
+	outline_sprite.modulate = Color(0.3, 0.8, 1.0, 0.8)
 
-	var border_color = Color(0.3, 0.8, 1.0, 0.6)
+	# Place it behind the main sprite
+	outline_sprite.z_index = sprite.z_index - 1
 
-	# Create container for border
-	var border_container = Node2D.new()
-	border_container.name = "BorderContainer"
-	border_container.z_index = -2
-	add_child(border_container)
-
-	# Top border
-	var top = ColorRect.new()
-	top.size = Vector2(total_width, border_thickness)
-	top.position = Vector2(-total_width / 2, offset_y)
-	top.color = border_color
-	top.set_meta("base_size", top.size)
-	top.set_meta("base_pos", top.position)
-	border_container.add_child(top)
-	border_nodes.append(top)
-
-	# Bottom border
-	var bottom = ColorRect.new()
-	bottom.size = Vector2(total_width, border_thickness)
-	bottom.position = Vector2(-total_width / 2, offset_y + total_height - border_thickness)
-	bottom.color = border_color
-	bottom.set_meta("base_size", bottom.size)
-	bottom.set_meta("base_pos", bottom.position)
-	border_container.add_child(bottom)
-	border_nodes.append(bottom)
-
-	# Left border
-	var left = ColorRect.new()
-	left.size = Vector2(border_thickness, total_height)
-	left.position = Vector2(-total_width / 2, offset_y)
-	left.color = border_color
-	left.set_meta("base_size", left.size)
-	left.set_meta("base_pos", left.position)
-	border_container.add_child(left)
-	border_nodes.append(left)
-
-	# Right border
-	var right = ColorRect.new()
-	right.size = Vector2(border_thickness, total_height)
-	right.position = Vector2(total_width / 2 - border_thickness, offset_y)
-	right.color = border_color
-	right.set_meta("base_size", right.size)
-	right.set_meta("base_pos", right.position)
-	border_container.add_child(right)
-	border_nodes.append(right)
-
-	# Corner accents (brighter)
-	var corner_size = border_thickness * 2
-	var corner_color = Color(0.5, 0.9, 1.0, 0.8)
-
-	# Top-left corner
-	var tl = ColorRect.new()
-	tl.size = Vector2(corner_size, corner_size)
-	tl.position = Vector2(-total_width / 2, offset_y)
-	tl.color = corner_color
-	tl.set_meta("base_size", tl.size)
-	tl.set_meta("base_pos", tl.position)
-	border_container.add_child(tl)
-	border_nodes.append(tl)
-
-	# Top-right corner
-	var tr = ColorRect.new()
-	tr.size = Vector2(corner_size, corner_size)
-	tr.position = Vector2(total_width / 2 - corner_size, offset_y)
-	tr.color = corner_color
-	tr.set_meta("base_size", tr.size)
-	tr.set_meta("base_pos", tr.position)
-	border_container.add_child(tr)
-	border_nodes.append(tr)
-
-	# Bottom-left corner
-	var bl = ColorRect.new()
-	bl.size = Vector2(corner_size, corner_size)
-	bl.position = Vector2(-total_width / 2, offset_y + total_height - corner_size)
-	bl.color = corner_color
-	bl.set_meta("base_size", bl.size)
-	bl.set_meta("base_pos", bl.position)
-	border_container.add_child(bl)
-	border_nodes.append(bl)
-
-	# Bottom-right corner
-	var br = ColorRect.new()
-	br.size = Vector2(corner_size, corner_size)
-	br.position = Vector2(total_width / 2 - corner_size, offset_y + total_height - corner_size)
-	br.color = corner_color
-	br.set_meta("base_size", br.size)
-	br.set_meta("base_pos", br.position)
-	border_container.add_child(br)
-	border_nodes.append(br)
+	# Add before the sprite so it renders behind
+	add_child(outline_sprite)
+	move_child(outline_sprite, 0)  # Move to back

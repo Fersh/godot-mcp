@@ -50,6 +50,11 @@ const ROCK_DENSITY: float = 0.00002  # Rocks per pixel squared (~125 rocks)
 const LAMP_SPACING: int = 300  # Approximate spacing between lamps along paths
 const MAGIC_STONE_COUNT: int = 1  # Number of magic stones on map
 
+# Water ponds/lakes scattered throughout
+const POND_COUNT: int = 8  # Number of water ponds to generate
+const MIN_POND_RADIUS: int = 3  # Minimum pond size in tiles
+const MAX_POND_RADIUS: int = 8  # Maximum pond size in tiles
+
 # Scenes to instantiate
 var tree_scenes: Array[PackedScene] = []
 var rock_scenes: Array[PackedScene] = []
@@ -69,6 +74,8 @@ var obstacle_positions: Array[Vector2] = []
 var lamp_positions: Array[Vector2] = []
 var magic_stone_positions: Array[Vector2] = []
 var path_cells: Dictionary = {}  # Cells that are part of paths
+var water_cells: Dictionary = {}  # Cells that are water (ponds)
+var pond_centers: Array[Vector2] = []  # Center positions of ponds
 
 func _ready() -> void:
 	rng = RandomNumberGenerator.new()
@@ -109,6 +116,9 @@ func generate_map() -> void:
 	# Generate paths from center
 	_generate_paths()
 
+	# Generate water ponds/lakes scattered throughout
+	_generate_ponds()
+
 	# Place decorations
 	_place_dirt_pixels()
 	_place_trees()
@@ -127,6 +137,8 @@ func _clear_existing() -> void:
 	lamp_positions.clear()
 	magic_stone_positions.clear()
 	path_cells.clear()
+	water_cells.clear()
+	pond_centers.clear()
 
 	# Remove all generated children
 	for child in get_children():
@@ -398,6 +410,153 @@ func _mark_straight_path(from: Vector2, to: Vector2, half_width: float) -> void:
 
 		current += step
 
+func _generate_ponds() -> void:
+	# Generate water ponds/lakes scattered throughout the map
+	print("ProceduralMapGenerator: Generating %d ponds..." % POND_COUNT)
+
+	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
+	var min_dist_from_center = SPAWN_AREA_RADIUS + 100  # Keep ponds away from spawn
+	var min_dist_from_path = PATH_WIDTH + 32  # Keep ponds away from paths
+
+	var placed = 0
+	var attempts = 0
+	var max_attempts = POND_COUNT * 30
+
+	while placed < POND_COUNT and attempts < max_attempts:
+		attempts += 1
+
+		# Random position for pond center
+		var pond_x = rng.randf_range(150, MAP_SIZE - 150)
+		var pond_y = rng.randf_range(150, MAP_SIZE - 150)
+		var pond_pos = Vector2(pond_x, pond_y)
+
+		# Check distance from spawn center
+		if pond_pos.distance_to(center) < min_dist_from_center:
+			continue
+
+		# Check distance from paths
+		var too_close_to_path = false
+		for key in path_cells:
+			var path_pos = path_cells[key]
+			if pond_pos.distance_to(path_pos) < min_dist_from_path:
+				too_close_to_path = true
+				break
+		if too_close_to_path:
+			continue
+
+		# Check distance from other ponds
+		var too_close_to_pond = false
+		for other_pond in pond_centers:
+			if pond_pos.distance_to(other_pond) < (MAX_POND_RADIUS * TILE_SIZE * 3):
+				too_close_to_pond = true
+				break
+		if too_close_to_pond:
+			continue
+
+		# Generate this pond
+		var pond_radius = rng.randi_range(MIN_POND_RADIUS, MAX_POND_RADIUS)
+		_create_pond(pond_pos, pond_radius)
+		pond_centers.append(pond_pos)
+		placed += 1
+
+	print("ProceduralMapGenerator: Generated %d ponds" % placed)
+
+func _create_pond(center_pos: Vector2, radius: int) -> void:
+	# Create an organic-shaped pond using tilemap tiles
+	var center_tile_x = int(center_pos.x) / TILE_SIZE
+	var center_tile_y = int(center_pos.y) / TILE_SIZE
+
+	# First pass: determine which tiles are water (using noise for organic shape)
+	var pond_tiles: Dictionary = {}
+
+	for dy in range(-radius - 1, radius + 2):
+		for dx in range(-radius - 1, radius + 2):
+			var tx = center_tile_x + dx
+			var ty = center_tile_y + dy
+
+			# Skip out of bounds
+			if tx < 0 or tx >= MAP_SIZE / TILE_SIZE or ty < 0 or ty >= MAP_SIZE / TILE_SIZE:
+				continue
+
+			# Calculate distance from center with some noise for organic shape
+			var dist = Vector2(dx, dy).length()
+			var noise_offset = sin(dx * 0.8) * cos(dy * 0.8) * 1.5  # Organic variation
+			var effective_radius = radius + noise_offset
+
+			if dist <= effective_radius:
+				var key = "%d_%d" % [tx, ty]
+				pond_tiles[key] = Vector2i(tx, ty)
+				water_cells[key] = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
+
+	# Second pass: place tiles with proper edges
+	for key in pond_tiles:
+		var tile_pos = pond_tiles[key]
+		var tx = tile_pos.x
+		var ty = tile_pos.y
+
+		# Check neighbors to determine tile type
+		var has_top = "%d_%d" % [tx, ty - 1] in pond_tiles
+		var has_bottom = "%d_%d" % [tx, ty + 1] in pond_tiles
+		var has_left = "%d_%d" % [tx - 1, ty] in pond_tiles
+		var has_right = "%d_%d" % [tx + 1, ty] in pond_tiles
+
+		var tile_to_use: Vector2i
+
+		# Determine which tile to use based on neighbors
+		if has_top and has_bottom and has_left and has_right:
+			# Center water
+			tile_to_use = TILE_WATER
+		elif not has_top and has_bottom and has_left and has_right:
+			# Top edge
+			tile_to_use = TILE_WATER_SHORE_TOP
+		elif has_top and not has_bottom and has_left and has_right:
+			# Bottom edge
+			tile_to_use = TILE_WATER_SHORE_BOTTOM
+		elif has_top and has_bottom and not has_left and has_right:
+			# Left edge
+			tile_to_use = TILE_WATER_SHORE_LEFT
+		elif has_top and has_bottom and has_left and not has_right:
+			# Right edge
+			tile_to_use = TILE_WATER_SHORE_RIGHT
+		elif not has_top and has_bottom and not has_left and has_right:
+			# Top-left corner
+			tile_to_use = TILE_WATER_CORNER_TL
+		elif not has_top and has_bottom and has_left and not has_right:
+			# Top-right corner
+			tile_to_use = TILE_WATER_CORNER_TR
+		elif has_top and not has_bottom and not has_left and has_right:
+			# Bottom-left corner
+			tile_to_use = TILE_WATER_CORNER_BL
+		elif has_top and not has_bottom and has_left and not has_right:
+			# Bottom-right corner
+			tile_to_use = TILE_WATER_CORNER_BR
+		else:
+			# Default to center water for any other case
+			tile_to_use = TILE_WATER
+
+		# Place the tile
+		water_tilemap.set_cell(Vector2i(tx, ty), 0, tile_to_use)
+
+	# Create collision for the pond (StaticBody2D)
+	_create_pond_collision(center_pos, radius)
+
+func _create_pond_collision(center_pos: Vector2, radius: int) -> void:
+	# Create a static body for water collision
+	var water_body = StaticBody2D.new()
+	water_body.name = "PondCollision"
+	water_body.collision_layer = 8  # Obstacle layer
+	water_body.collision_mask = 0
+	water_body.position = center_pos
+
+	# Create circular collision shape
+	var collision = CollisionShape2D.new()
+	var shape = CircleShape2D.new()
+	shape.radius = radius * TILE_SIZE * 0.85  # Slightly smaller than visual
+	collision.shape = shape
+	water_body.add_child(collision)
+
+	add_child(water_body)
+
 func _place_dirt_pixels() -> void:
 	# Add scattered dirt pixels throughout the map, especially on roads
 	print("ProceduralMapGenerator: Placing dirt pixels...")
@@ -444,11 +603,13 @@ func _place_dirt_pixels() -> void:
 			rng.randf_range(50, MAP_SIZE - 50)
 		)
 
-		# Skip if on a path (already has plenty)
+		# Skip if on a path (already has plenty) or in water
 		var tx = int(pos.x) / TILE_SIZE
 		var ty = int(pos.y) / TILE_SIZE
 		var key = "%d_%d" % [tx, ty]
 		if key in path_cells:
+			continue
+		if key in water_cells:
 			continue
 
 		var dirt = ColorRect.new()
@@ -716,6 +877,15 @@ func _is_valid_obstacle_position(pos: Vector2, min_distance: float) -> bool:
 	if key in path_cells:
 		return false
 
+	# Check if in water
+	if key in water_cells:
+		return false
+
+	# Check distance from pond centers (extra margin)
+	for pond_pos in pond_centers:
+		if pos.distance_to(pond_pos) < (MAX_POND_RADIUS * TILE_SIZE + 20):
+			return false
+
 	# Check distance from spawn center
 	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
 	if pos.distance_to(center) < SPAWN_AREA_RADIUS + 20:
@@ -737,6 +907,18 @@ func _is_valid_lamp_position(pos: Vector2) -> bool:
 	# Check not too close to obstacles (trees/rocks) - use larger distance to avoid overlap
 	for obs_pos in obstacle_positions:
 		if pos.distance_to(obs_pos) < 120:
+			return false
+
+	# Check not in water
+	var tx = int(pos.x) / TILE_SIZE
+	var ty = int(pos.y) / TILE_SIZE
+	var key = "%d_%d" % [tx, ty]
+	if key in water_cells:
+		return false
+
+	# Check distance from pond centers
+	for pond_pos in pond_centers:
+		if pos.distance_to(pond_pos) < (MAX_POND_RADIUS * TILE_SIZE + 30):
 			return false
 
 	return true
