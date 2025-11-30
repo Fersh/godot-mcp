@@ -154,7 +154,7 @@ static func _create_shield_bash() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.DIRECTION,
 		10.0
-	).with_damage(10.0, 1.0).with_stun(1.0).with_range(60.0).with_knockback(150.0).with_icon("res://assets/sprites/icons/swordsmanskills/PNG/Icon1.png")
+	).with_damage(10.0, 1.0).with_stun(1.0).with_range(60.0).with_knockback(150.0).with_icon("res://assets/sprites/icons/swordsmanskills/PNG/Icon8.png")
 
 static func _create_ground_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -261,7 +261,7 @@ static func _create_earthquake() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
-	).with_damage(40.0, 2.0).with_aoe(400.0).with_stun(2.0).with_duration(2.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon30.png")
+	).with_damage(40.0, 2.0).with_aoe(400.0).with_stun(2.0).with_duration(2.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon48.png")
 
 static func _create_bladestorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -353,7 +353,7 @@ static func _create_quick_roll() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		3.0
-	).with_movement().with_invulnerability(0.3).with_range(100.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon32.png")
+	).with_movement().with_invulnerability(0.3).with_range(100.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon27.png")
 
 static func _create_throw_net() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -401,7 +401,7 @@ static func _create_cluster_bomb() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
 		15.0
-	).with_damage(10.0, 1.0).with_aoe(100.0).with_projectiles(5, 300.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon30.png")
+	).with_damage(10.0, 1.0).with_aoe(100.0).with_projectiles(5, 300.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon31.png")
 
 static func _create_fan_of_knives() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -412,7 +412,7 @@ static func _create_fan_of_knives() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		12.0
-	).with_damage(12.0, 1.0).with_projectiles(12, 400.0).with_aoe(150.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon18.png")
+	).with_damage(12.0, 1.0).with_projectiles(12, 400.0).with_aoe(150.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon26.png")
 
 static func _create_sentry_turret() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -482,7 +482,7 @@ static func _create_explosive_decoy() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
 		28.0
-	).with_damage(60.0, 2.0).with_aoe(120.0).with_duration(2.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon35.png")
+	).with_damage(60.0, 2.0).with_aoe(120.0).with_duration(2.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 18.png")
 
 # ============================================
 # GLOBAL ABILITY CREATORS - COMMON
@@ -519,7 +519,7 @@ static func _create_healing_light() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
-	).with_duration(5.0).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon5.png")
+	).with_duration(5.0).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon14.png")
 
 static func _create_throwing_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -615,7 +615,7 @@ static func _create_black_hole() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
 		30.0
-	).with_damage(50.0, 2.0).with_aoe(150.0).with_duration(3.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 1.png")
+	).with_damage(50.0, 2.0).with_aoe(150.0).with_duration(3.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 2.png")
 
 static func _create_time_stop() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -626,7 +626,7 @@ static func _create_time_stop() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
-	).with_aoe(600.0).with_stun(3.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 30.png")
+	).with_aoe(600.0).with_stun(3.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 28.png")
 
 static func _create_thunderstorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
