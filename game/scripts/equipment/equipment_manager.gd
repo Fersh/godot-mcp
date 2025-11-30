@@ -86,17 +86,18 @@ func _get_random_slot() -> ItemData.Slot:
 		ItemData.Slot.WEAPON,
 		ItemData.Slot.HELMET,
 		ItemData.Slot.CHEST,
-		ItemData.Slot.BOOTS,
-		ItemData.Slot.RING_1,
-		ItemData.Slot.RING_2
+		ItemData.Slot.BELT,
+		ItemData.Slot.LEGS,
+		ItemData.Slot.RING
 	]
 	# Weight weapons slightly higher
 	var weighted = [
 		ItemData.Slot.WEAPON, ItemData.Slot.WEAPON,
 		ItemData.Slot.HELMET,
 		ItemData.Slot.CHEST,
-		ItemData.Slot.BOOTS,
-		ItemData.Slot.RING_1, ItemData.Slot.RING_2
+		ItemData.Slot.BELT,
+		ItemData.Slot.LEGS,
+		ItemData.Slot.RING
 	]
 	return weighted[randi() % weighted.size()]
 
@@ -401,11 +402,7 @@ func get_unequipped_items() -> Array[ItemData]:
 func get_items_for_slot(slot: ItemData.Slot) -> Array[ItemData]:
 	var items: Array[ItemData] = []
 	for item in inventory:
-		# Rings can go in either ring slot
-		if slot in [ItemData.Slot.RING_1, ItemData.Slot.RING_2]:
-			if item.slot in [ItemData.Slot.RING_1, ItemData.Slot.RING_2]:
-				items.append(item)
-		elif item.slot == slot:
+		if item.slot == slot:
 			items.append(item)
 	return items
 

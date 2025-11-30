@@ -121,34 +121,34 @@ const BASE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/spears/spear_1.png"
 	},
 
-	# WEAPONS - Ranged
+	# WEAPONS - Ranged (using Bow folder)
 	"bow_basic": {
 		"display_name": "Bow",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.05},
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_1.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon1.png"
 	},
 	"crossbow_basic": {
 		"display_name": "Crossbow",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.10, "crit_chance": 0.05},
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/crossbows/crossbow_1.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon2.png"
 	},
 	"shortbow_basic": {
 		"display_name": "Short Bow",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"attack_speed": 0.08},
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_2.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon3.png"
 	},
 	"longbow_basic": {
 		"display_name": "Long Bow",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.06, "projectile_speed": 0.15},
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_3.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon4.png"
 	},
 
 	# HELMETS - Using helmet icons (icon1-8 for common base items)
@@ -211,61 +211,91 @@ const BASE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon4.png"
 	},
 
-	# BOOTS - Using staves as boot icons (magical footwear)
-	"boots_basic": {
-		"display_name": "Boots",
-		"slot": ItemData.Slot.BOOTS,
+	# BELT - Using Belt folder
+	"belt_basic": {
+		"display_name": "Belt",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"max_hp": 0.05},
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon1.png"
+	},
+	"sash_basic": {
+		"display_name": "Sash",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"move_speed": 0.04},
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon2.png"
+	},
+	"girdle_basic": {
+		"display_name": "Girdle",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"max_hp": 0.08, "damage_reduction": 0.02},
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon3.png"
+	},
+	"waistband_basic": {
+		"display_name": "Waistband",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"attack_speed": 0.04},
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon4.png"
+	},
+
+	# LEGS - Using Legs folder
+	"leggings_basic": {
+		"display_name": "Leggings",
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.05},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon1.png"
 	},
-	"sandals_basic": {
-		"display_name": "Sandals",
-		"slot": ItemData.Slot.BOOTS,
+	"pants_basic": {
+		"display_name": "Pants",
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
-		"base_stats": {"move_speed": 0.08, "dodge_chance": 0.02},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
+		"base_stats": {"max_hp": 0.06},
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon2.png"
 	},
 	"greaves_basic": {
 		"display_name": "Greaves",
-		"slot": ItemData.Slot.BOOTS,
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.05, "move_speed": 0.02},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon3.png"
 	},
-	"slippers_basic": {
-		"display_name": "Slippers",
-		"slot": ItemData.Slot.BOOTS,
+	"cuisses_basic": {
+		"display_name": "Cuisses",
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
-		"base_stats": {"dodge_chance": 0.05},
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
+		"base_stats": {"damage_reduction": 0.04},
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon4.png"
 	},
 
 	# RINGS
 	"ring_basic": {
 		"display_name": "Ring",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.03},
 		"icon_path": "res://assets/sprites/items/rings/Icon37_01.png"
 	},
 	"band_basic": {
 		"display_name": "Band",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.04},
 		"icon_path": "res://assets/sprites/items/rings/Icon37_02.png"
 	},
 	"signet_basic": {
 		"display_name": "Signet",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"crit_chance": 0.03},
 		"icon_path": "res://assets/sprites/items/rings/Icon37_03.png"
 	},
 	"loop_basic": {
 		"display_name": "Loop",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"attack_speed": 0.04},
 		"icon_path": "res://assets/sprites/items/rings/Icon37_04.png"
@@ -321,7 +351,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/Melee/TRANSPARENT/daggers/dagger_3.png"
 	},
 
-	# Weapons - Ranged
+	# Weapons - Ranged (using Bow folder - unique icons 31-40)
 	"slingshot_deluxe": {
 		"display_name": "Dennis's Slingshot",
 		"description": "The menace approves.",
@@ -329,7 +359,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.10, "projectile_speed": 0.25},
 		"grants_ability": "rubber_walls",
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_4.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon31.png"
 	},
 	"cupids_bow": {
 		"display_name": "Cupid's Discount Bow",
@@ -338,7 +368,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.15},
 		"grants_equipment_ability": "charm_shot",
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_5.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon32.png"
 	},
 	"sniper_special": {
 		"display_name": "360 No Scope",
@@ -347,7 +377,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.15, "crit_chance": 0.15},
 		"grants_ability": "sniper_damage",
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/crossbows/crossbow_5.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon33.png"
 	},
 	"shotgun_bow": {
 		"display_name": "Bow-zooka",
@@ -356,7 +386,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.05, "projectile_count": 2},
 		"grants_equipment_ability": "spread_shot",
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/crossbows/crossbow_4.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon34.png"
 	},
 	"boomerang_bow": {
 		"display_name": "The Comeback Kid",
@@ -365,7 +395,7 @@ const UNIQUE_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.12},
 		"grants_ability": "rear_shot",
-		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_1.png"
+		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon35.png"
 	},
 
 	# Helmets (Unique - icons 31-40)
@@ -426,40 +456,60 @@ const UNIQUE_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon30.png"
 	},
 
-	# Boots
-	"moon_shoes": {
-		"display_name": "Moon Shoes",
+	# Belt (Unique - icons 31-40)
+	"championship_belt": {
+		"display_name": "Championship Belt",
+		"description": "You're the champ now!",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"damage": 0.12, "max_hp": 0.08},
+		"grants_equipment_ability": "champion_spirit",
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon31.png"
+	},
+	"utility_belt": {
+		"display_name": "Utility Belt",
+		"description": "Na na na na na BATMAN!",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"dodge_chance": 0.10, "attack_speed": 0.08},
+		"grants_equipment_ability": "gadgets",
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon32.png"
+	},
+
+	# Legs (Unique - icons 31-40)
+	"moon_pants": {
+		"display_name": "Moon Pants",
 		"description": "Boing boing boing!",
-		"slot": ItemData.Slot.BOOTS,
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.15, "dodge_chance": 0.05},
 		"grants_equipment_ability": "low_gravity",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_5.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon31.png"
 	},
-	"crocs_of_power": {
-		"display_name": "Tactical Crocs",
-		"description": "In sport mode, obviously.",
-		"slot": ItemData.Slot.BOOTS,
+	"cargo_pants": {
+		"display_name": "Tactical Cargos",
+		"description": "So many pockets!",
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.12, "damage": 0.05},
 		"grants_equipment_ability": "sport_mode",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon32.png"
 	},
-	"heelies": {
-		"display_name": "Heely Wheelers",
+	"heely_pants": {
+		"display_name": "Heely Pants",
 		"description": "Rolling into the danger zone.",
-		"slot": ItemData.Slot.BOOTS,
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.20},
 		"grants_equipment_ability": "momentum",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon33.png"
 	},
 
-	# Rings
+	# Rings (Unique)
 	"ring_of_procrastination": {
 		"display_name": "Ring of Tomorrow",
 		"description": "I'll do damage later.",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.08},
 		"grants_equipment_ability": "delayed_damage",
@@ -468,7 +518,7 @@ const UNIQUE_ITEMS: Dictionary = {
 	"mood_ring": {
 		"display_name": "Mood Ring",
 		"description": "Currently: Violent",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"crit_chance": 0.08, "damage": 0.05},
 		"grants_equipment_ability": "mood_swings",
@@ -477,7 +527,7 @@ const UNIQUE_ITEMS: Dictionary = {
 	"one_ring": {
 		"display_name": "The One Ring",
 		"description": "...to rule the arena.",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.10, "max_hp": 0.10},
 		"grants_equipment_ability": "precious",
@@ -630,32 +680,53 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/chest/png/transperent/Icon48.png"
 	},
 
-	# Boots
-	"sonic_shoes": {
-		"display_name": "Red Running Shoes",
+	# Belt (Legendary - icons 43-48)
+	"infinity_belt": {
+		"display_name": "Infinity Belt",
+		"description": "Holds the universe together.",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"damage": 0.20, "max_hp": 0.15, "attack_speed": 0.10},
+		"grants_equipment_ability": "cosmic_power",
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon45.png"
+	},
+	"wrestling_belt": {
+		"display_name": "World Champion Belt",
+		"description": "Undefeated. Unstoppable.",
+		"slot": ItemData.Slot.BELT,
+		"weapon_type": ItemData.WeaponType.NONE,
+		"base_stats": {"damage": 0.25, "max_hp": 0.20},
+		"grants_ability": "frenzy",
+		"grants_equipment_ability": "finishing_move",
+		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon48.png"
+	},
+
+	# Legs (Legendary - icons 43-48)
+	"sonic_pants": {
+		"display_name": "Red Running Pants",
 		"description": "Gotta go fast!",
-		"slot": ItemData.Slot.BOOTS,
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.30, "attack_speed": 0.15},
 		"grants_ability": "adrenaline",
 		"grants_equipment_ability": "spin_dash",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon45.png"
 	},
-	"rocket_boots": {
-		"display_name": "Rocket Boots",
+	"rocket_pants": {
+		"display_name": "Rocket Pants",
 		"description": "OSHA violation in 3... 2...",
-		"slot": ItemData.Slot.BOOTS,
+		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.25, "damage": 0.10},
 		"grants_equipment_ability": "rocket_jump",
-		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
+		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon48.png"
 	},
 
 	# Rings
 	"infinity_gauntlet_ring": {
 		"display_name": "Infinity Ring",
 		"description": "Perfectly balanced, as all things should be.",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.15, "max_hp": 0.15, "crit_chance": 0.15},
 		"grants_equipment_ability": "snap",
@@ -664,7 +735,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 	"wedding_ring": {
 		"display_name": "Ring of Commitment",
 		"description": "Till death do us part. So... soon.",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.25, "damage_reduction": 0.10},
 		"grants_equipment_ability": "til_death",
@@ -673,7 +744,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 	"ring_pop": {
 		"display_name": "Ancient Ring Pop",
 		"description": "Still tastes good after 1000 years.",
-		"slot": ItemData.Slot.RING_1,
+		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "attack_speed": 0.15},
 		"grants_ability": "regeneration",
@@ -827,10 +898,7 @@ static func get_base_item_ids_for_slot(slot: ItemData.Slot) -> Array:
 	for id in BASE_ITEMS:
 		var item = BASE_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
-		# Rings can go in either ring slot
-		if slot == ItemData.Slot.RING_2 and item_slot == ItemData.Slot.RING_1:
-			ids.append(id)
-		elif item_slot == slot:
+		if item_slot == slot:
 			ids.append(id)
 	return ids
 
@@ -849,9 +917,7 @@ static func get_unique_items_for_slot(slot: ItemData.Slot) -> Array:
 	for id in UNIQUE_ITEMS:
 		var item = UNIQUE_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
-		if slot == ItemData.Slot.RING_2 and item_slot == ItemData.Slot.RING_1:
-			items.append(id)
-		elif item_slot == slot:
+		if item_slot == slot:
 			items.append(id)
 	return items
 
@@ -860,8 +926,6 @@ static func get_legendary_items_for_slot(slot: ItemData.Slot) -> Array:
 	for id in LEGENDARY_ITEMS:
 		var item = LEGENDARY_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
-		if slot == ItemData.Slot.RING_2 and item_slot == ItemData.Slot.RING_1:
-			items.append(id)
-		elif item_slot == slot:
+		if item_slot == slot:
 			items.append(id)
 	return items

@@ -5,9 +5,9 @@ enum Slot {
 	WEAPON,
 	HELMET,
 	CHEST,
-	BOOTS,
-	RING_1,
-	RING_2
+	BELT,
+	LEGS,
+	RING
 }
 
 enum Rarity {
@@ -45,9 +45,9 @@ const SLOT_NAMES: Dictionary = {
 	Slot.WEAPON: "Weapon",
 	Slot.HELMET: "Helmet",
 	Slot.CHEST: "Chest",
-	Slot.BOOTS: "Boots",
-	Slot.RING_1: "Ring",
-	Slot.RING_2: "Ring"
+	Slot.BELT: "Belt",
+	Slot.LEGS: "Legs",
+	Slot.RING: "Ring"
 }
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
@@ -162,7 +162,7 @@ func can_be_equipped_by(character_id: String) -> bool:
 	# Check weapon type restrictions
 	if slot == Slot.WEAPON:
 		if weapon_type == WeaponType.MELEE:
-			return character_id == "knight"
+			return character_id in ["knight", "beast", "monk"]
 		elif weapon_type == WeaponType.RANGED:
 			return character_id == "archer"
 	return true

@@ -4,21 +4,21 @@ signal back_pressed
 
 # Equipment slots (in order for display)
 const SLOT_ORDER = [
-	ItemData.Slot.HELMET,
 	ItemData.Slot.WEAPON,
+	ItemData.Slot.HELMET,
 	ItemData.Slot.CHEST,
-	ItemData.Slot.BOOTS,
-	ItemData.Slot.RING_1,
-	ItemData.Slot.RING_2
+	ItemData.Slot.BELT,
+	ItemData.Slot.LEGS,
+	ItemData.Slot.RING
 ]
 
 const SLOT_NAMES = {
-	ItemData.Slot.HELMET: "Helmet",
 	ItemData.Slot.WEAPON: "Weapon",
+	ItemData.Slot.HELMET: "Helmet",
 	ItemData.Slot.CHEST: "Chest",
-	ItemData.Slot.BOOTS: "Boots",
-	ItemData.Slot.RING_1: "Ring",
-	ItemData.Slot.RING_2: "Ring"
+	ItemData.Slot.BELT: "Belt",
+	ItemData.Slot.LEGS: "Legs",
+	ItemData.Slot.RING: "Ring"
 }
 
 # RPG Colors
