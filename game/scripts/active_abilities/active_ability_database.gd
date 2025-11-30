@@ -127,6 +127,60 @@ static func _register_all_abilities() -> void:
 	_register(_create_summon_golem())
 	_register(_create_army_of_the_dead())
 
+	# ============================================
+	# NEW ABILITIES - ZONE & WALL
+	# ============================================
+	_register(_create_flame_wall())
+	_register(_create_ice_barricade())
+	_register(_create_floor_is_lava())
+
+	# ============================================
+	# NEW ABILITIES - TRAPS
+	# ============================================
+	_register(_create_bear_trap())
+	_register(_create_glue_bomb())
+	_register(_create_pressure_mine())
+
+	# ============================================
+	# NEW ABILITIES - STEALTH & DECEPTION
+	# ============================================
+	_register(_create_smoke_bomb())
+	_register(_create_now_you_see_me())
+	_register(_create_pocket_sand())
+
+	# ============================================
+	# NEW ABILITIES - SHOUTS
+	# ============================================
+	_register(_create_terrifying_shout())
+	_register(_create_demoralizing_shout())
+
+	# ============================================
+	# NEW ABILITIES - CHAOS & UTILITY
+	# ============================================
+	_register(_create_mirror_clone())
+	_register(_create_uno_reverse())
+	_register(_create_orbital_strike())
+	_register(_create_summon_party())
+	_register(_create_panic_button())
+	_register(_create_pocket_healer())
+	_register(_create_safe_space())
+	_register(_create_double_or_nothing())
+
+	# ============================================
+	# NEW ABILITIES - SUMMONS & TRANSFORMS
+	# ============================================
+	_register(_create_release_the_hounds())
+	_register(_create_gigantamax())
+	_register(_create_monster_energy())
+	_register(_create_i_see_red())
+
+	# ============================================
+	# NEW ABILITIES - CROWD CONTROL
+	# ============================================
+	_register(_create_vortex())
+	_register(_create_repulsive())
+	_register(_create_dj_drop())
+
 static func _register(ability: ActiveAbilityData) -> void:
 	_abilities[ability.id] = ability
 
@@ -660,3 +714,317 @@ static func _create_army_of_the_dead() -> ActiveAbilityData:
 		ActiveAbilityData.TargetType.SELF,
 		40.0
 	).with_damage(40.0, 2.0).with_aoe(200.0).with_duration(10.0).with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon45.png")
+
+# ============================================
+# NEW ABILITY CREATORS - ZONE & WALL
+# ============================================
+
+static func _create_flame_wall() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"flame_wall",
+		"Flame Wall",
+		"Summon a wall of fire that burns enemies walking through for 4 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.DIRECTION,
+		14.0
+	).with_damage(8.0, 1.0).with_aoe(120.0).with_duration(4.0).with_icon("res://assets/icons/abilities/flame_wall.png")
+
+static func _create_ice_barricade() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"ice_barricade",
+		"Ice Barricade",
+		"Create an ice wall that blocks enemies and explodes after 3s, freezing nearby foes.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.DIRECTION,
+		16.0
+	).with_damage(15.0, 1.2).with_aoe(100.0).with_duration(3.0).with_stun(2.0).with_icon("res://assets/icons/abilities/ice_barricade.png")
+
+static func _create_floor_is_lava() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"floor_is_lava",
+		"The Floor is Lava",
+		"Convert the ground to magma for 5 seconds. Enemies take continuous burn damage.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		30.0
+	).with_damage(6.0, 1.5).with_aoe(250.0).with_duration(5.0).with_icon("res://assets/icons/abilities/floor_is_lava.png")
+
+# ============================================
+# NEW ABILITY CREATORS - TRAPS
+# ============================================
+
+static func _create_bear_trap() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"bear_trap",
+		"Bear Trap",
+		"Place a hidden trap that immobilizes the first enemy for 2 seconds and deals damage.",
+		ActiveAbilityData.Rarity.COMMON,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		8.0
+	).with_damage(20.0, 1.0).with_stun(2.0).with_icon("res://assets/icons/abilities/bear_trap.png")
+
+static func _create_glue_bomb() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"glue_bomb",
+		"Glue Bomb",
+		"Throw a sticky bomb creating a tar zone. Enemies move at 20% speed for 4 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.CLUSTER,
+		12.0
+	).with_aoe(100.0).with_slow(0.8, 4.0).with_duration(4.0).with_icon("res://assets/icons/abilities/glue_bomb.png")
+
+static func _create_pressure_mine() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"pressure_mine",
+		"Pressure Mine",
+		"Plant an invisible mine that explodes when 3+ enemies are nearby for massive damage.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		20.0
+	).with_damage(60.0, 2.5).with_aoe(150.0).with_icon("res://assets/icons/abilities/pressure_mine.png")
+
+# ============================================
+# NEW ABILITY CREATORS - STEALTH & DECEPTION
+# ============================================
+
+static func _create_smoke_bomb() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"smoke_bomb",
+		"Smoke Bomb",
+		"Become invisible for 2 seconds. Enemies lose aggro. Next attack deals 2x damage.",
+		ActiveAbilityData.Rarity.COMMON,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		10.0
+	).with_duration(2.0).with_invulnerability(0.5).with_icon("res://assets/icons/abilities/smoke_bomb.png")
+
+static func _create_now_you_see_me() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"now_you_see_me",
+		"Now You See Me",
+		"Swap places with nearest enemy, confusing all enemies to attack each other for 1.5s.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.NEAREST_ENEMY,
+		15.0
+	).with_range(200.0).with_stun(1.5).with_aoe(150.0).with_icon("res://assets/icons/abilities/now_you_see_me.png")
+
+static func _create_pocket_sand() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"pocket_sand",
+		"Pocket Sand",
+		"Throw sand in enemies' faces. They're blinded and attack randomly for 2 seconds.",
+		ActiveAbilityData.Rarity.COMMON,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		6.0
+	).with_aoe(100.0).with_slow(0.5, 2.0).with_duration(2.0).with_icon("res://assets/icons/abilities/pocket_sand.png")
+
+# ============================================
+# NEW ABILITY CREATORS - SHOUTS
+# ============================================
+
+static func _create_terrifying_shout() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"terrifying_shout",
+		"Terrifying Shout",
+		"Release a barbaric scream that causes nearby enemies to flee in terror for 3 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		18.0
+	).with_aoe(180.0).with_duration(3.0).with_icon("res://assets/icons/abilities/terrifying_shout.png")
+
+static func _create_demoralizing_shout() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"demoralizing_shout",
+		"Demoralizing Shout",
+		"A powerful warcry that weakens nearby enemies, reducing their damage by 40% for 5s.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		20.0
+	).with_aoe(200.0).with_duration(5.0).with_icon("res://assets/icons/abilities/demoralizing_shout.png")
+
+# ============================================
+# NEW ABILITY CREATORS - CHAOS & UTILITY
+# ============================================
+
+static func _create_mirror_clone() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"mirror_clone",
+		"Mirror Clone",
+		"Spawn a clone that fights with your abilities at 50% damage for half the cooldown time.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		35.0
+	).with_damage(0.5, 0.5).with_duration(17.5).with_icon("res://assets/icons/abilities/mirror_clone.png")
+
+static func _create_uno_reverse() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"uno_reverse",
+		"Uno Reverse",
+		"For 3 seconds, all damage you would take is instead dealt to enemies.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		30.0
+	).with_duration(3.0).with_aoe(200.0).with_icon("res://assets/icons/abilities/uno_reverse.png")
+
+static func _create_orbital_strike() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"orbital_strike",
+		"Orbital Strike",
+		"Fire ALL your orbital projectiles at the nearest enemy at once.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.NEAREST_ENEMY,
+		25.0
+	).with_damage(30.0, 2.0).with_range(300.0).with_icon("res://assets/icons/abilities/orbital_strike.png")
+
+static func _create_summon_party() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"summon_party",
+		"Summon Party",
+		"All your summons gain +100% damage and attack speed for 5 seconds. Party time!",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		35.0
+	).with_duration(5.0).with_icon("res://assets/icons/abilities/summon_party.png")
+
+static func _create_panic_button() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"panic_button",
+		"Panic Button",
+		"Push all enemies away and gain 3 seconds of invulnerability. Long cooldown because you panicked.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		30.0
+	).with_aoe(200.0).with_knockback(400.0).with_invulnerability(3.0).with_icon("res://assets/icons/abilities/panic_button.png")
+
+static func _create_pocket_healer() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"pocket_healer",
+		"Pocket Healer",
+		"Summon a healing fairy for 10 seconds that follows you and heals 2% HP per second.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		40.0
+	).with_duration(10.0).with_icon("res://assets/icons/abilities/pocket_healer.png")
+
+static func _create_safe_space() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"safe_space",
+		"Safe Space",
+		"Create a shield bubble. You can't attack out, but nothing can attack in for 3 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		18.0
+	).with_invulnerability(3.0).with_aoe(80.0).with_icon("res://assets/icons/abilities/safe_space.png")
+
+static func _create_double_or_nothing() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"double_or_nothing",
+		"Double or Nothing",
+		"For 5 seconds, your attacks either deal 3x damage or 0 damage. 50/50 each hit.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		25.0
+	).with_duration(5.0).with_icon("res://assets/icons/abilities/double_or_nothing.png")
+
+# ============================================
+# NEW ABILITY CREATORS - SUMMONS & TRANSFORMS
+# ============================================
+
+static func _create_release_the_hounds() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"release_the_hounds",
+		"Release the Hounds",
+		"Summon 5 ghostly wolves that chase down enemies for 8 seconds.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		35.0
+	).with_damage(15.0, 1.0).with_duration(8.0).with_icon("res://assets/icons/abilities/release_the_hounds.png")
+
+static func _create_gigantamax() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"gigantamax",
+		"Gigantamax",
+		"Grow HUGE for 5 seconds. +200% damage, +50% range, but 90% reduced movement speed.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		45.0
+	).with_duration(5.0).with_icon("res://assets/icons/abilities/gigantamax.png")
+
+static func _create_monster_energy() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"monster_energy",
+		"Monster Energy",
+		"+100% attack speed for 5 seconds. Crash afterward: -30% attack speed for 3 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		20.0
+	).with_duration(5.0).with_icon("res://assets/icons/abilities/monster_energy.png")
+
+static func _create_i_see_red() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"i_see_red",
+		"I See Red",
+		"Go berserk. +100% damage, +50% speed, but take 50% more damage for 8 seconds.",
+		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.SELF,
+		40.0
+	).with_duration(8.0).with_icon("res://assets/icons/abilities/i_see_red.png")
+
+# ============================================
+# NEW ABILITY CREATORS - CROWD CONTROL
+# ============================================
+
+static func _create_vortex() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"vortex",
+		"Vortex",
+		"Create a swirling vortex that pulls enemies toward the center for 3 seconds.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.CLUSTER,
+		16.0
+	).with_aoe(150.0).with_duration(3.0).with_icon("res://assets/icons/abilities/vortex.png")
+
+static func _create_repulsive() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"repulsive",
+		"Repulsive",
+		"Constantly push enemies away from you for 4 seconds. Very repulsive indeed.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		14.0
+	).with_aoe(180.0).with_knockback(200.0).with_duration(4.0).with_icon("res://assets/icons/abilities/repulsive.png")
+
+static func _create_dj_drop() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"dj_drop",
+		"DJ Drop",
+		"Drop a sick beat. Enemies are forced to dance (stunned) for 1.5 seconds. They look ridiculous.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.GLOBAL,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		18.0
+	).with_aoe(180.0).with_stun(1.5).with_icon("res://assets/icons/abilities/dj_drop.png")

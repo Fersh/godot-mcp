@@ -188,6 +188,31 @@ enum EffectType {
 
 	# Summon Enhancements
 	SUMMON_DAMAGE,      # Summons deal 25% more damage
+
+	# Zone/Trail Effects (New)
+	BLAZING_TRAIL,      # Leave fire trail while moving
+	TOXIC_TRAITS,       # Leave poison pools while moving
+	SURPRISE_MECHANICS, # Drop mine when hit
+	SORE_LOSER,         # Enemies drop traps on death
+	WALLFLOWER,         # Invisible while standing still
+
+	# Chaos Effects (New)
+	FRIENDLY_FIRE,      # Enemy damage hurts other enemies
+	BUILT_DIFFERENT,    # Random stat boost every 30s
+	WOMBO_COMBO,        # Multi-source damage explosion
+	NINETY_NINE_STACKS, # Status effects can stack 3x
+	GLASS_SOUL,         # Damage % = missing HP %
+	LUCKY_NUMBER_7,     # Every 7th hit auto-crits
+	RISK_REWARD,        # Permanent damage on low HP
+
+	# Summon/Companion Effects (New)
+	EMOTIONAL_SUPPORT,  # Auto-pickup companion
+	HAUNTED,            # Ghost spawns on kills
+	SURVIVORS_GUILT,    # Buff when summons die
+
+	# Scaling Effects (New)
+	GETTING_WARMED_UP,  # +5% attack speed every 30s
+	INTIMIDATING_PRESENCE, # Fear enemies on sight
 }
 
 # Rarity weights for random selection (out of 100)
