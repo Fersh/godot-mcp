@@ -105,7 +105,7 @@ func _load_sounds() -> void:
 
 	# Load single sounds
 	heal_sound = load("res://assets/sounds/heal.mp3")
-	levelup_sound = load("res://assets/sounds/levelup.mp3")
+	levelup_sound = load("res://assets/sounds/levelup 2.mp3")
 	levelup_fanfare = load("res://assets/sounds/medieval_rpg_game_qu_#1-1763518583917.mp3")
 	xp_sound = load("res://assets/sounds/xp.mp3")
 	swoosh_sound = load("res://assets/sounds/swoosh.mp3")

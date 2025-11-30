@@ -44,6 +44,12 @@ func _update_bar_value(value: float) -> void:
 func _on_level_up(new_level: int) -> void:
 	level_label.text = "Lv " + str(new_level)
 
+	# Play level up sound and haptic
+	if SoundManager:
+		SoundManager.play_levelup()
+	if HapticManager:
+		HapticManager.medium()
+
 	# Animate level label with a pulse effect
 	var original_scale = level_label.scale
 	level_label.pivot_offset = level_label.size / 2

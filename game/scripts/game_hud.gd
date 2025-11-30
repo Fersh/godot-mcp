@@ -153,7 +153,7 @@ func _create_ui() -> void:
 	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait_texture.modulate.a = 0.75  # 75% opacity
+	portrait_texture.modulate.a = 0.9  # 90% opacity
 	portrait_clip.add_child(portrait_texture)
 
 	# Portrait border (on top of everything)
@@ -361,8 +361,8 @@ func _setup_portrait() -> void:
 			# Zoom in by 15% from top-center
 			portrait_texture.pivot_offset = Vector2(portrait_texture.size.x / 2, 0)
 			portrait_texture.scale = Vector2(1.15, 1.15)
-			# 75% opacity
-			portrait_texture.modulate.a = 0.75
+			# 90% opacity
+			portrait_texture.modulate.a = 0.9
 
 	# Setup fire effect container for kill streaks
 	_setup_fire_effect()
