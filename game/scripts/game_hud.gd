@@ -313,34 +313,23 @@ func _create_ui() -> void:
 	container.add_child(level_label)
 
 func _setup_portrait() -> void:
-	# Get character portrait from CharacterManager
+	# Get character portrait from dedicated portrait images
 	if not CharacterManager:
 		return
 
-	var character = CharacterManager.get_selected_character()
-	if character == null or character.sprite_texture == null:
+	var character_id = CharacterManager.selected_character_id
+	if character_id == "":
 		return
 
-	# Create an AtlasTexture to show just the face (first frame of idle, zoomed in)
-	var atlas = AtlasTexture.new()
-	atlas.atlas = character.sprite_texture
-
-	# Calculate the region for the first idle frame
-	var frame_w = character.frame_size.x
-	var frame_h = character.frame_size.y
-	var idle_row = character.row_idle
-
-	# Per-character portrait crop settings
-	var crop = _get_portrait_crop_settings(CharacterManager.selected_character_id)
-
-	var face_region_y = idle_row * frame_h + frame_h * crop.start_y
-	var face_height = frame_h * crop.height
-	var face_width = frame_w * crop.width
-	var face_x = (frame_w - face_width) / 2  # Center horizontally
-
-	atlas.region = Rect2(face_x, face_region_y, face_width, face_height)
-
-	portrait_texture.texture = atlas
+	# Load portrait texture from assets/sprites/portraits/
+	var portrait_path = "res://assets/sprites/portraits/" + character_id + ".png"
+	if ResourceLoader.exists(portrait_path):
+		var texture = load(portrait_path) as Texture2D
+		if texture:
+			portrait_texture.texture = texture
+			# Ensure full image is shown centered
+			portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 	# Setup fire effect container for kill streaks
 	_setup_fire_effect()
