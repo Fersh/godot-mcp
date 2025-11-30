@@ -13,13 +13,20 @@ const WATER_BORDER: int = 200  # Water extends 200px beyond playable area
 const CAMERA_WATER_MARGIN: int = 100  # How far camera can see into water
 
 # Tile coordinates in Nature.png (16px grid, 19 columns x 8 rows)
-# Looking at the tileset: large grass area is at rows 4-5, cols 0-5
-# Grass tiles - solid green areas
-const TILE_GRASS_1 := Vector2i(0, 4)  # Plain grass (top-left of large grass block)
-const TILE_GRASS_2 := Vector2i(1, 4)  # Plain grass variant
-const TILE_GRASS_3 := Vector2i(2, 4)  # Plain grass variant
-const TILE_GRASS_4 := Vector2i(0, 5)  # Plain grass
-const TILE_GRASS_5 := Vector2i(1, 5)  # Plain grass
+# Large grass block is at columns 6-11, rows 3-5
+# Light grass tiles - main ground (solid light green)
+const TILE_GRASS_LIGHT_1 := Vector2i(6, 3)  # Light grass
+const TILE_GRASS_LIGHT_2 := Vector2i(7, 3)  # Light grass
+const TILE_GRASS_LIGHT_3 := Vector2i(8, 3)  # Light grass
+const TILE_GRASS_LIGHT_4 := Vector2i(6, 4)  # Light grass
+const TILE_GRASS_LIGHT_5 := Vector2i(7, 4)  # Light grass
+
+# Dark grass tiles - for shading (darker green patches in grass area)
+const TILE_GRASS_DARK_1 := Vector2i(9, 3)  # Darker grass
+const TILE_GRASS_DARK_2 := Vector2i(10, 3)  # Darker grass
+const TILE_GRASS_DARK_3 := Vector2i(9, 4)  # Darker grass
+const TILE_GRASS_DARK_4 := Vector2i(10, 4)  # Darker grass
+const TILE_GRASS_DARK_5 := Vector2i(8, 4)  # Darker grass
 
 # Decorative tiles (bottom rows have individual elements)
 const TILE_GRASS_FLOWER := Vector2i(7, 7)  # Small flowers
@@ -62,9 +69,11 @@ var lamp_scene: PackedScene
 var magic_stone_scene: PackedScene
 
 # TileMap reference
+var grass_tilemap: TileMapLayer  # Base grass layer
 var ground_tilemap: TileMapLayer
 var water_tilemap: TileMapLayer
 var decoration_tilemap: TileMapLayer
+var shade_tilemap: TileMapLayer  # Dark grass shade layer
 
 # RNG for procedural generation
 var rng: RandomNumberGenerator
@@ -123,6 +132,7 @@ func generate_map() -> void:
 	_place_dirt_pixels()
 	_place_trees()
 	_place_rocks()
+	_place_obstacle_shade()  # Add dark grass shade around trees/rocks
 	_place_lamps()
 	_place_magic_stones()
 
@@ -145,17 +155,22 @@ func _clear_existing() -> void:
 		child.queue_free()
 
 func _setup_tilemaps() -> void:
-	# Create a solid grass background using ColorRect
-	var grass_bg = ColorRect.new()
-	grass_bg.name = "GrassBackground"
-	grass_bg.color = Color(0.322, 0.537, 0.243)  # Match the grass green from tileset
-	grass_bg.position = Vector2(-WATER_BORDER, -WATER_BORDER)
-	grass_bg.size = Vector2(MAP_SIZE + WATER_BORDER * 2, MAP_SIZE + WATER_BORDER * 2)
-	grass_bg.z_index = -12
-	add_child(grass_bg)
-
-	# Create tileset from Nature.png for water and decorations
+	# Create tileset from Nature.png
 	var tileset = _create_tileset()
+
+	# Base grass layer - light green tiles from Nature.png
+	grass_tilemap = TileMapLayer.new()
+	grass_tilemap.name = "GrassTileMap"
+	grass_tilemap.tile_set = tileset
+	grass_tilemap.z_index = -12
+	add_child(grass_tilemap)
+
+	# Shade layer - dark grass for variation and tree/rock shadows
+	shade_tilemap = TileMapLayer.new()
+	shade_tilemap.name = "ShadeTileMap"
+	shade_tilemap.tile_set = tileset
+	shade_tilemap.z_index = -11
+	add_child(shade_tilemap)
 
 	# Ground layer - for dirt paths only
 	ground_tilemap = TileMapLayer.new()
@@ -203,10 +218,42 @@ func _create_tileset() -> TileSet:
 	return tileset
 
 func _generate_ground() -> void:
-	# Ground is now handled by a solid ColorRect background
-	# This function now only adds occasional decorative tiles scattered on the grass
+	# Fill the entire map with light grass tiles from Nature.png
 	var tiles_x = MAP_SIZE / TILE_SIZE
 	var tiles_y = MAP_SIZE / TILE_SIZE
+
+	# Array of light grass tiles to randomly choose from
+	var light_grass_tiles = [
+		TILE_GRASS_LIGHT_1,
+		TILE_GRASS_LIGHT_2,
+		TILE_GRASS_LIGHT_3,
+		TILE_GRASS_LIGHT_4,
+		TILE_GRASS_LIGHT_5
+	]
+
+	# Array of dark grass tiles for random variation
+	var dark_grass_tiles = [
+		TILE_GRASS_DARK_1,
+		TILE_GRASS_DARK_2,
+		TILE_GRASS_DARK_3,
+		TILE_GRASS_DARK_4,
+		TILE_GRASS_DARK_5
+	]
+
+	print("ProceduralMapGenerator: Filling ground with grass tiles...")
+
+	# Fill entire map with light grass
+	for y in range(tiles_y):
+		for x in range(tiles_x):
+			var tile_pos = Vector2i(x, y)
+			# Pick a random light grass tile
+			var grass_tile = light_grass_tiles[rng.randi() % light_grass_tiles.size()]
+			grass_tilemap.set_cell(tile_pos, 0, grass_tile)
+
+			# Randomly place dark grass for natural variation (about 8% of tiles)
+			if rng.randf() < 0.08:
+				var dark_tile = dark_grass_tiles[rng.randi() % dark_grass_tiles.size()]
+				shade_tilemap.set_cell(tile_pos, 0, dark_tile)
 
 	# Scatter some decorative elements on the grass (very sparse)
 	for y in range(tiles_y):
@@ -819,6 +866,56 @@ func _adjust_rock_collision(rock: Node2D, texture: Texture2D, scale: float) -> v
 			detection_shape.shape = detect_shape
 			detection_shape.position = collision_shape.position
 
+func _place_obstacle_shade() -> void:
+	# Place dark grass tiles around obstacles (trees/rocks) to create natural shade
+	print("ProceduralMapGenerator: Adding shade around obstacles...")
+
+	var dark_grass_tiles = [
+		TILE_GRASS_DARK_1,
+		TILE_GRASS_DARK_2,
+		TILE_GRASS_DARK_3,
+		TILE_GRASS_DARK_4,
+		TILE_GRASS_DARK_5
+	]
+
+	var shade_count = 0
+
+	for obs_pos in obstacle_positions:
+		# Convert world position to tile position
+		var center_tx = int(obs_pos.x) / TILE_SIZE
+		var center_ty = int(obs_pos.y) / TILE_SIZE
+
+		# Create shade in a radius around the obstacle (3-5 tiles)
+		var shade_radius = rng.randi_range(2, 4)
+
+		for dy in range(-shade_radius, shade_radius + 1):
+			for dx in range(-shade_radius, shade_radius + 1):
+				var tx = center_tx + dx
+				var ty = center_ty + dy
+
+				# Skip if out of bounds
+				if tx < 0 or tx >= MAP_SIZE / TILE_SIZE or ty < 0 or ty >= MAP_SIZE / TILE_SIZE:
+					continue
+
+				# Skip if on path or water
+				var key = "%d_%d" % [tx, ty]
+				if key in path_cells or key in water_cells:
+					continue
+
+				# Calculate distance from obstacle center
+				var dist = Vector2(dx, dy).length()
+
+				# Probability decreases with distance from obstacle
+				var shade_prob = 0.7 - (dist / shade_radius) * 0.5
+
+				if rng.randf() < shade_prob:
+					var tile_pos = Vector2i(tx, ty)
+					var dark_tile = dark_grass_tiles[rng.randi() % dark_grass_tiles.size()]
+					shade_tilemap.set_cell(tile_pos, 0, dark_tile)
+					shade_count += 1
+
+	print("ProceduralMapGenerator: Added %d shade tiles around obstacles" % shade_count)
+
 func _place_lamps() -> void:
 	if not lamp_scene:
 		print("ProceduralMapGenerator: No lamp scene loaded!")
@@ -864,7 +961,7 @@ func _place_magic_stones() -> void:
 
 	var placed = 0
 	var attempts = 0
-	var max_attempts = MAGIC_STONE_COUNT * 20
+	var max_attempts = MAGIC_STONE_COUNT * 50
 
 	# Minimum distance from center (spawn area)
 	var min_dist_from_center = SPAWN_AREA_RADIUS + 200
@@ -874,19 +971,27 @@ func _place_magic_stones() -> void:
 		attempts += 1
 
 		var pos = Vector2(
-			rng.randf_range(100, MAP_SIZE - 100),
-			rng.randf_range(100, MAP_SIZE - 100)
+			rng.randf_range(150, MAP_SIZE - 150),
+			rng.randf_range(150, MAP_SIZE - 150)
 		)
 
 		# Must be far from center
 		if pos.distance_to(center) < min_dist_from_center:
 			continue
 
-		# Must not be on path
+		# Must not be on path (check surrounding tiles too)
 		var tx = int(pos.x) / TILE_SIZE
 		var ty = int(pos.y) / TILE_SIZE
-		var key = "%d_%d" % [tx, ty]
-		if key in path_cells:
+		var on_path = false
+		for dy in range(-2, 3):
+			for dx in range(-2, 3):
+				var key = "%d_%d" % [tx + dx, ty + dy]
+				if key in path_cells:
+					on_path = true
+					break
+			if on_path:
+				break
+		if on_path:
 			continue
 
 		# Must be away from other magic stones
@@ -895,12 +1000,21 @@ func _place_magic_stones() -> void:
 			if pos.distance_to(other_pos) < 400:
 				too_close = true
 				break
-
 		if too_close:
 			continue
 
-		# Must be away from obstacles
-		if not _is_valid_obstacle_position(pos, 50):
+		# Must be away from obstacles (trees/rocks) - larger distance to avoid overlap
+		var too_close_to_obstacle = false
+		for obs_pos in obstacle_positions:
+			if pos.distance_to(obs_pos) < 200:  # 200px from any tree/rock
+				too_close_to_obstacle = true
+				break
+		if too_close_to_obstacle:
+			continue
+
+		# Must not be in water
+		var water_key = "%d_%d" % [tx, ty]
+		if water_key in water_cells:
 			continue
 
 		var stone = magic_stone_scene.instantiate()
@@ -912,16 +1026,20 @@ func _place_magic_stones() -> void:
 	print("ProceduralMapGenerator: Placed %d magic stones" % placed)
 
 func _is_valid_obstacle_position(pos: Vector2, min_distance: float) -> bool:
-	# Check if on a path
+	# Check if on or near a path (check surrounding tiles to prevent trees on road edges)
 	var tx = int(pos.x) / TILE_SIZE
 	var ty = int(pos.y) / TILE_SIZE
-	var key = "%d_%d" % [tx, ty]
 
-	if key in path_cells:
-		return false
+	# Check a 3x3 area around the position for paths
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			var key = "%d_%d" % [tx + dx, ty + dy]
+			if key in path_cells:
+				return false
 
 	# Check if in water
-	if key in water_cells:
+	var water_key = "%d_%d" % [tx, ty]
+	if water_key in water_cells:
 		return false
 
 	# Check distance from pond centers (extra margin)
