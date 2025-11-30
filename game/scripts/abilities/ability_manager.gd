@@ -178,7 +178,7 @@ var killing_frenzy_bonus: float = 0.0
 var killing_frenzy_stacks: int = 0
 var killing_frenzy_timer: float = 0.0
 const KILLING_FRENZY_DECAY_TIME: float = 4.0
-const KILLING_FRENZY_MAX_STACKS: int = 15
+const KILLING_FRENZY_MAX_STACKS: int = 10  # 10 stacks × 5% = 50% max
 
 var has_massacre: bool = false
 var massacre_bonus: float = 0.0

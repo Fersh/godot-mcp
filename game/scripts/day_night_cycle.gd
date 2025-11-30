@@ -29,6 +29,9 @@ var torches: Array[Node] = []
 # Ambient light for overall scene
 var ambient_energy := 1.0
 
+# Character brightness boost (makes characters lighter than environment at night)
+const CHARACTER_BRIGHTNESS_BOOST := 0.4  # How much to counteract night darkness (0-1)
+
 signal time_changed(time_of_day: float, is_night: bool)
 
 func _ready() -> void:
@@ -61,6 +64,9 @@ func _process(delta: float) -> void:
 
 	# Update torch lights
 	_update_torch_lights(night_factor)
+
+	# Update character brightness (make them lighter than environment)
+	_update_character_brightness(night_factor)
 
 	# Emit signal for other systems
 	emit_signal("time_changed", cycle_time, night_factor > 0.3)
@@ -159,8 +165,33 @@ func _update_torch_lights(night_factor: float) -> void:
 			flicker += sin(time_ms * 3.0 + torch_offset * 0.5) * 0.08
 			light.energy = max(0.1, base_energy + flicker)
 			# Also vary the scale slightly for more dynamic effect
-			light.texture_scale = 1.0 + sin(time_ms * 5.0 + torch_offset) * 0.1
+			light.texture_scale = 2.5 + sin(time_ms * 5.0 + torch_offset) * 0.1
 			light.enabled = night_factor > 0.1 or base_energy > 0.2
+
+func _update_character_brightness(night_factor: float) -> void:
+	# Make characters and enemies brighter than the environment during night
+	# by giving them a brighter modulate to counteract the CanvasModulate darkness
+
+	if night_factor <= 0.05:
+		# During day, reset to normal
+		_set_group_brightness("player", Color.WHITE)
+		_set_group_brightness("enemies", Color.WHITE)
+		return
+
+	# Calculate brightness boost based on how dark it is
+	# The darker the night, the more we boost character brightness
+	var boost = 1.0 + (night_factor * CHARACTER_BRIGHTNESS_BOOST)
+	var bright_color = Color(boost, boost, boost, 1.0)
+
+	_set_group_brightness("player", bright_color)
+	_set_group_brightness("enemies", bright_color)
+
+func _set_group_brightness(group_name: String, mod_color: Color) -> void:
+	var nodes = get_tree().get_nodes_in_group(group_name)
+	for node in nodes:
+		if is_instance_valid(node) and node is CanvasItem:
+			# Only modify the self_modulate so it doesn't affect children unexpectedly
+			node.self_modulate = mod_color
 
 func _smooth(t: float) -> float:
 	# Smoothstep for nice transitions

@@ -119,11 +119,22 @@ func update_display() -> void:
 	_update_points_display()
 	_update_coins_display()
 
+func _format_number(num: int) -> String:
+	var str_num = str(num)
+	var result = ""
+	var count = 0
+	for i in range(str_num.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			result = "," + result
+		result = str_num[i] + result
+		count += 1
+	return result
+
 func _update_points_display() -> void:
-	points_label.text = str(int(displayed_points)) + "  POINTS"
+	points_label.text = _format_number(int(displayed_points)) + "  POINTS"
 
 func _update_coins_display() -> void:
-	coins_label.text = str(int(displayed_coins)) + "  COINS"
+	coins_label.text = _format_number(int(displayed_coins)) + "  COINS"
 
 func update_wave_display() -> void:
 	var minutes = int(time_survived) / 60

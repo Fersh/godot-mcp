@@ -119,7 +119,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"killing_frenzy",
 			"Killing Frenzy",
-			"+5% attack speed per kill, resets after 4s",
+			"+5% attack speed per kill (max 50%), resets after 4s",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.KILLING_FRENZY, value = 0.05}]

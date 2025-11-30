@@ -421,82 +421,89 @@ func _apply_permanent_upgrades() -> void:
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
 func take_damage(amount: float) -> void:
-	# Can't take damage if already dead
-	if is_dead:
-		return
+	# If dead, still show damage effects (funny to keep getting beat up)
+	# but don't actually reduce HP further
+	var is_posthumous_damage = is_dead
 
-	# Check for invulnerability (from dodge or abilities)
-	if is_invulnerable:
+	# Check for invulnerability (from dodge or abilities) - but not when dead
+	if is_invulnerable and not is_posthumous_damage:
 		return
 
 	# Apply Mage Arcane Focus damage taken increase
 	var modified_amount = amount
-	if has_arcane_focus and arcane_focus_stacks > 0:
+	if has_arcane_focus and arcane_focus_stacks > 0 and not is_posthumous_damage:
 		modified_amount *= get_arcane_focus_multiplier()
 
-	# Check for dodge first
-	if AbilityManager:
-		var dodge_chance = AbilityManager.get_dodge_chance()
-		if randf() < dodge_chance:
-			# Dodged the attack!
-			spawn_dodge_text()
-			return
-
-	# Check for block
+	# Skip dodge/block/shield checks when dead - just show the damage effects
 	var was_blocked = false
-	if AbilityManager:
-		var block_chance = AbilityManager.get_block_chance()
-		if randf() < block_chance:
-			was_blocked = true
-
-	# Transcendence shields absorb damage first
 	var damage_after_shields = modified_amount
-	if AbilityManager:
-		damage_after_shields = AbilityManager.damage_transcendence_shields(modified_amount)
-		if damage_after_shields <= 0:
-			# All damage absorbed by shields
-			spawn_shield_text()
-			return
 
-	# Calculate total damage reduction
+	if not is_posthumous_damage:
+		# Check for dodge first
+		if AbilityManager:
+			var dodge_chance = AbilityManager.get_dodge_chance()
+			if randf() < dodge_chance:
+				# Dodged the attack!
+				spawn_dodge_text()
+				return
+
+		# Check for block
+		if AbilityManager:
+			var block_chance = AbilityManager.get_block_chance()
+			if randf() < block_chance:
+				was_blocked = true
+
+		# Transcendence shields absorb damage first
+		if AbilityManager:
+			damage_after_shields = AbilityManager.damage_transcendence_shields(modified_amount)
+			if damage_after_shields <= 0:
+				# All damage absorbed by shields
+				spawn_shield_text()
+				return
+
+	# Calculate total damage reduction (skip when dead - just show raw damage)
 	var final_damage = damage_after_shields
-	var total_reduction = 0.0
 
-	# Add permanent upgrade damage reduction
-	if PermanentUpgrades:
-		total_reduction += PermanentUpgrades.get_all_bonuses().get("damage_reduction", 0.0)
+	if not is_posthumous_damage:
+		var total_reduction = 0.0
 
-	# Add equipment damage reduction
-	if AbilityManager:
-		total_reduction += AbilityManager.get_equipment_damage_reduction()
+		# Add permanent upgrade damage reduction
+		if PermanentUpgrades:
+			total_reduction += PermanentUpgrades.get_all_bonuses().get("damage_reduction", 0.0)
 
-	# Add character passive damage reduction (Knight's Iron Will - conditional)
-	if CharacterManager:
-		var bonuses = CharacterManager.get_passive_bonuses()
-		var passive_reduction = bonuses.get("damage_reduction", 0.0)
-		var threshold = bonuses.get("damage_reduction_threshold", 0.0)
-		if passive_reduction > 0 and threshold > 0:
-			var health_percent = current_health / max_health
-			if health_percent < threshold:
-				total_reduction += passive_reduction
+		# Add equipment damage reduction
+		if AbilityManager:
+			total_reduction += AbilityManager.get_equipment_damage_reduction()
 
-	# Add ultimate ability damage reduction
-	total_reduction += get_damage_reduction()
+		# Add character passive damage reduction (Knight's Iron Will - conditional)
+		if CharacterManager:
+			var bonuses = CharacterManager.get_passive_bonuses()
+			var passive_reduction = bonuses.get("damage_reduction", 0.0)
+			var threshold = bonuses.get("damage_reduction_threshold", 0.0)
+			if passive_reduction > 0 and threshold > 0:
+				var health_percent = current_health / max_health
+				if health_percent < threshold:
+					total_reduction += passive_reduction
 
-	# Apply total damage reduction (cap at 90% to allow ultimates to be powerful)
-	total_reduction = min(total_reduction, 0.90)
-	final_damage = damage_after_shields * (1.0 - total_reduction)
+		# Add ultimate ability damage reduction
+		total_reduction += get_damage_reduction()
 
-	# Block reduces damage by 50%
-	if was_blocked:
-		final_damage *= 0.5
+		# Apply total damage reduction (cap at 90% to allow ultimates to be powerful)
+		total_reduction = min(total_reduction, 0.90)
+		final_damage = damage_after_shields * (1.0 - total_reduction)
 
-	current_health -= final_damage
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-	emit_signal("health_changed", current_health, max_health)
+		# Block reduces damage by 50%
+		if was_blocked:
+			final_damage *= 0.5
 
-	# Play player hurt sound
+	# Only reduce HP if not already dead (but still show effects)
+	if not is_posthumous_damage:
+		current_health -= final_damage
+		if health_bar:
+			health_bar.set_health(current_health, max_health)
+		emit_signal("health_changed", current_health, max_health)
+
+	# Play player hurt sound (even when dead - it's funny)
 	if SoundManager:
 		SoundManager.play_player_hurt()
 
@@ -510,17 +517,19 @@ func take_damage(amount: float) -> void:
 	else:
 		spawn_damage_number(final_damage)
 
-	# Trigger Retribution explosion when taking damage (ability)
-	if AbilityManager:
-		AbilityManager.trigger_retribution(global_position)
-		# Trigger Adrenaline Surge (reduces active ability cooldowns)
-		AbilityManager.on_player_damaged()
+	# Skip ability triggers when dead
+	if not is_posthumous_damage:
+		# Trigger Retribution explosion when taking damage (ability)
+		if AbilityManager:
+			AbilityManager.trigger_retribution(global_position)
+			# Trigger Adrenaline Surge (reduces active ability cooldowns)
+			AbilityManager.on_player_damaged()
 
-	# Trigger Knight Retribution passive (damage boost on next attack)
-	if has_retribution and not retribution_ready:
-		_activate_retribution()
+		# Trigger Knight Retribution passive (damage boost on next attack)
+		if has_retribution and not retribution_ready:
+			_activate_retribution()
 
-	# Screen shake and damage flash when taking damage
+	# Screen shake and damage flash when taking damage (even when dead)
 	if JuiceManager:
 		if was_blocked:
 			JuiceManager.shake_small()  # Less shake when blocked
@@ -529,8 +538,10 @@ func take_damage(amount: float) -> void:
 			# 1-frame freeze on player damage for impact (#14)
 			JuiceManager.player_damage_freeze()
 		JuiceManager.damage_flash()
-		JuiceManager.update_player_health(current_health / max_health)
+		if not is_posthumous_damage:
+			JuiceManager.update_player_health(current_health / max_health)
 
+	# Death check - only if not already dead
 	if current_health <= 0 and not is_dead:
 		current_health = 0
 		# Check for Unbreakable Will (Knight ultimate) first

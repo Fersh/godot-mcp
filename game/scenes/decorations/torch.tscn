@@ -28,4 +28,4 @@ position = Vector2(0, -8)
 color = Color(1, 0.7, 0.4, 1)
 energy = 0.3
 texture = SubResource("GradientTexture2D_light")
-texture_scale = 1.0
+texture_scale = 2.5
