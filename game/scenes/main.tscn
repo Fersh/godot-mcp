@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=25 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -22,7 +22,7 @@
 [ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
 [ext_resource type="PackedScene" path="res://scenes/decorations/banner.tscn" id="21_yc10j"]
 [ext_resource type="Script" uid="uid://blnv3drpcd3ac" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
-[ext_resource type="Script" path="res://scripts/ui/offscreen_indicators.gd" id="23_offscreen"]
+[ext_resource type="Script" uid="uid://c3p4h72jb734i" path="res://scripts/ui/offscreen_indicators.gd" id="23_offscreen"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)

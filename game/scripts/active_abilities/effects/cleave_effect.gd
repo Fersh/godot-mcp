@@ -2,8 +2,8 @@ extends Node2D
 
 # Cleave visual effect - uses SlashFX Combo sprite sheet
 
-var arc_radius: float = 80.0
-var arc_angle: float = PI * 0.75  # 135 degrees
+var arc_radius: float = 140.0
+var arc_angle: float = PI * 0.85  # 153 degrees - wider arc
 var direction: Vector2 = Vector2.RIGHT:
 	set(value):
 		direction = value
@@ -19,7 +19,7 @@ func _ready() -> void:
 
 func _setup_sprite() -> void:
 	sprite = AnimatedSprite2D.new()
-	sprite.scale = Vector2(2.5, 2.5)  # Scale up the sprite
+	sprite.scale = Vector2(4.0, 4.0)  # Scale up the sprite for larger cleave
 	sprite.centered = true  # Ensure sprite is centered
 	add_child(sprite)
 

@@ -2,7 +2,7 @@ class_name EnemyBase
 extends CharacterBody2D
 
 # Base stats - override in subclasses or set via exported properties
-@export var speed: float = 52.56  # 73 * 0.72 (28% reduction total)
+@export var speed: float = 47.3  # 73 * 0.72 * 0.9 (10% slower)
 @export var attack_range: float = 50.0
 @export var animation_speed: float = 10.0
 @export var max_health: float = 20.0

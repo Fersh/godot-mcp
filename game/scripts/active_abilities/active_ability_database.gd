@@ -143,7 +143,7 @@ static func _create_cleave() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		8.0  # 8 second cooldown
-	).with_damage(15.0, 1.2).with_aoe(80.0)
+	).with_damage(15.0, 1.2).with_aoe(140.0)
 
 static func _create_shield_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -108,7 +108,7 @@ static func create_archer() -> CharacterData:
 
 	# Balanced damage, faster, less health
 	data.base_health = 25.0
-	data.base_speed = 180.0
+	data.base_speed = 162.0  # 10% slower
 	data.base_attack_cooldown = 1.07
 	data.base_damage = 1.0
 	data.attack_range = 440.0
@@ -158,7 +158,7 @@ static func create_knight() -> CharacterData:
 
 	# Slower, tankier, higher damage
 	data.base_health = 40.0
-	data.base_speed = 140.0
+	data.base_speed = 126.0  # 10% slower
 	data.base_attack_cooldown = 1.1  # 10% slower attack speed (was 1.0)
 	data.base_damage = 1.5
 	data.attack_range = 54.0  # Melee reach (reduced 10% from 60)
@@ -208,7 +208,7 @@ static func create_beast() -> CharacterData:
 
 	# Glass cannon - very fast, high damage, low health
 	data.base_health = 18.0
-	data.base_speed = 220.0
+	data.base_speed = 198.0  # 10% slower
 	data.base_attack_cooldown = 0.65  # Very fast attacks
 	data.base_damage = 1.8
 	data.attack_range = 65.0  # Melee reach
@@ -273,7 +273,7 @@ static func create_mage() -> CharacterData:
 
 	# Slow but powerful - glass cannon caster
 	data.base_health = 20.0
-	data.base_speed = 145.0  # Slowest character
+	data.base_speed = 130.5  # Slowest character, 10% slower
 	data.base_attack_cooldown = 1.4  # Slow attacks
 	data.base_damage = 2.5  # Highest damage multiplier
 	data.attack_range = 440.0  # Same as archer
@@ -330,7 +330,7 @@ static func create_monk() -> CharacterData:
 
 	# Monk stats - fast, combo-focused, medium survivability
 	data.base_health = 22.0
-	data.base_speed = 185.0
+	data.base_speed = 166.5  # 10% slower
 	data.base_attack_cooldown = 0.75  # Fast attacks for combos
 	data.base_damage = 1.15
 	data.attack_range = 58.0  # Medium melee reach

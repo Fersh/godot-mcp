@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@export var speed: float = 129.6  # 180 * 0.72 (28% reduction total)
+@export var speed: float = 116.64  # 180 * 0.72 * 0.9 (10% slower)
 @export var animation_speed: float = 10.0
 @export var attack_cooldown: float = 0.79  # ~1.27 attacks per second (25% slower)
 @export var fire_range: float = 440.0  # 55 frames * 8 pixels/frame

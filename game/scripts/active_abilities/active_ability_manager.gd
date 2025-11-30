@@ -9,7 +9,8 @@ signal dodge_cooldown_updated(remaining: float, total: float)
 
 # Active ability slots (max 3, plus dodge)
 const MAX_ABILITY_SLOTS: int = 3
-const DODGE_COOLDOWN: float = 5.0
+const DODGE_COOLDOWN: float = 5.0  # Single charge cooldown
+const DODGE_COOLDOWN_DOUBLE: float = 10.0  # 10s to recharge both charges
 const DODGE_DISTANCE: float = 120.0
 const DODGE_DURATION: float = 0.15  # How long the dodge movement takes
 
@@ -60,17 +61,13 @@ func _process(delta: float) -> void:
 	# Update dodge cooldown / charge regeneration
 	if dodge_cooldown_timer > 0:
 		dodge_cooldown_timer = max(0.0, dodge_cooldown_timer - delta)
-		emit_signal("dodge_cooldown_updated", dodge_cooldown_timer, DODGE_COOLDOWN)
+		var total_cooldown = DODGE_COOLDOWN_DOUBLE if max_dodge_charges > 1 else DODGE_COOLDOWN
+		emit_signal("dodge_cooldown_updated", dodge_cooldown_timer, total_cooldown)
 
 		# Handle charge regeneration (Double Charge passive)
+		# Both charges recharge together over 10s
 		if dodge_cooldown_timer <= 0 and max_dodge_charges > 1 and dodge_charges < max_dodge_charges:
-			dodge_charges += 1
-			# Start cooldown for next charge if still below max
-			if dodge_charges < max_dodge_charges:
-				var cooldown_mult = 1.0
-				if AbilityManager:
-					cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
-				dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
+			dodge_charges = max_dodge_charges  # Restore all charges at once
 
 	# Keyboard shortcuts for abilities
 	if not get_tree().paused:
@@ -275,12 +272,12 @@ func perform_dodge() -> bool:
 	# Handle charge-based system (Double Charge)
 	if max_dodge_charges > 1:
 		dodge_charges -= 1
-		# Start recharge timer if we're below max
-		if dodge_charges < max_dodge_charges and dodge_cooldown_timer <= 0:
+		# Start recharge timer only when ALL charges are depleted (10s for both)
+		if dodge_charges <= 0 and dodge_cooldown_timer <= 0:
 			var cooldown_mult = 1.0
 			if AbilityManager:
 				cooldown_mult = AbilityManager.get_wind_dancer_cooldown_multiplier()
-			dodge_cooldown_timer = DODGE_COOLDOWN * cooldown_mult
+			dodge_cooldown_timer = DODGE_COOLDOWN_DOUBLE * cooldown_mult
 	else:
 		# Standard single-charge cooldown
 		var cooldown_mult = 1.0
@@ -551,7 +548,16 @@ func get_cooldown_percent(slot: int) -> float:
 
 func get_dodge_cooldown_percent() -> float:
 	"""Get dodge cooldown progress (0 = ready, 1 = just used)."""
-	return dodge_cooldown_timer / DODGE_COOLDOWN
+	var total_cooldown = DODGE_COOLDOWN_DOUBLE if max_dodge_charges > 1 else DODGE_COOLDOWN
+	return dodge_cooldown_timer / total_cooldown
+
+func get_dodge_charges() -> int:
+	"""Get current dodge charges available."""
+	return dodge_charges
+
+func get_max_dodge_charges() -> int:
+	"""Get max dodge charges."""
+	return max_dodge_charges
 
 func reduce_all_cooldowns(amount: float) -> void:
 	"""Reduce all active ability cooldowns by a flat amount (used by Arcane Absorption)."""

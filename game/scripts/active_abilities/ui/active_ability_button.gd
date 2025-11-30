@@ -25,6 +25,7 @@ var cooldown_overlay: ColorRect
 var cooldown_label: Label
 var border: ColorRect
 var touch_area: Control
+var charge_label: Label  # Shows x2 for dodge charges
 
 # Tooltip elements
 var tooltip_panel: PanelContainer = null
@@ -84,6 +85,23 @@ func _create_ui() -> void:
 	# Store border color for drawing
 	border_color = Color(0.5, 0.5, 0.5, 1.0)
 	bg_color = Color(0.1, 0.1, 0.15, 0.95)
+
+	# Charge indicator label (top right corner, for dodge with Double Charge)
+	charge_label = Label.new()
+	charge_label.position = Vector2(button_size.x - 36, 4)  # Top right corner
+	charge_label.size = Vector2(32, 24)
+	charge_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	charge_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	charge_label.add_theme_font_size_override("font_size", int(button_size.x * 0.14))
+	charge_label.add_theme_color_override("font_color", Color(0.4, 1.0, 1.0))  # Cyan
+	charge_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	charge_label.add_theme_constant_override("outline_size", 3)
+	if pixel_font:
+		charge_label.add_theme_font_override("font", pixel_font)
+	charge_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	charge_label.visible = false
+	charge_label.z_index = 10
+	add_child(charge_label)
 
 	# Create tooltip (initially hidden)
 	_create_tooltip()
@@ -332,6 +350,8 @@ func _process(delta: float) -> void:
 	# Update cooldown display
 	if is_dodge:
 		update_cooldown(ActiveAbilityManager.get_dodge_cooldown_percent())
+		# Update charge indicator for Double Charge
+		_update_charge_indicator()
 	elif slot_index >= 0 and ability:
 		update_cooldown(ActiveAbilityManager.get_cooldown_percent(slot_index))
 
@@ -341,6 +361,27 @@ func _process(delta: float) -> void:
 		if touch_hold_timer >= LONG_PRESS_TIME:
 			touch_triggered_tooltip = true
 			_show_tooltip()
+
+func _update_charge_indicator() -> void:
+	"""Update the charge indicator for dodge with Double Charge."""
+	if not is_dodge or not charge_label:
+		return
+
+	var max_charges = ActiveAbilityManager.get_max_dodge_charges()
+	var current_charges = ActiveAbilityManager.get_dodge_charges()
+
+	if max_charges > 1:
+		charge_label.visible = true
+		charge_label.text = "x" + str(current_charges)
+		# Color based on charges available
+		if current_charges >= 2:
+			charge_label.add_theme_color_override("font_color", Color(0.4, 1.0, 1.0))  # Cyan when full
+		elif current_charges == 1:
+			charge_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.4))  # Yellow when 1
+		else:
+			charge_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))  # Gray when empty
+	else:
+		charge_label.visible = false
 
 # ============================================
 # TOOLTIP FUNCTIONS

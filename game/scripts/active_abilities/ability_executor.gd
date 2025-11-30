@@ -462,7 +462,7 @@ func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
 
 	# Aim cleave TOWARDS nearest enemy (extended search range)
-	var target = _get_nearest_enemy(player.global_position, ability.radius * 2.25)
+	var target = _get_nearest_enemy(player.global_position, ability.radius * 2.5)
 	var direction: Vector2
 
 	if target:
@@ -470,8 +470,8 @@ func _execute_cleave(ability: ActiveAbilityData, player: Node2D) -> void:
 	else:
 		direction = _get_attack_direction(player)
 
-	# Hit enemies in arc in front of player
-	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.radius, PI * 0.75)
+	# Hit enemies in arc in front of player (wider 153 degree arc)
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.radius, PI * 0.85)
 
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
