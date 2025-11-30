@@ -219,7 +219,7 @@ static func _create_ground_slam() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		12.0
-	).with_damage(12.0, 1.0).with_aoe(100.0).with_slow(0.5, 2.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon1.png")
+	).with_damage(12.0, 1.0).with_aoe(100.0).with_slow(0.5, 2.0).with_icon("res://assets/icons/abilities/ground_slam.png")
 
 static func _create_spinning_attack() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -315,7 +315,7 @@ static func _create_earthquake() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
-	).with_damage(40.0, 2.0).with_aoe(400.0).with_stun(2.0).with_duration(2.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon48.png")
+	).with_damage(40.0, 2.0).with_aoe(400.0).with_stun(2.0).with_duration(2.0).with_icon("res://assets/icons/abilities/earthquake.png")
 
 static func _create_bladestorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -455,7 +455,7 @@ static func _create_cluster_bomb() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
 		15.0
-	).with_damage(10.0, 1.0).with_aoe(100.0).with_projectiles(5, 300.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon31.png")
+	).with_damage(10.0, 1.0).with_aoe(100.0).with_projectiles(5, 300.0).with_icon("res://assets/icons/abilities/cluster_bomb.png")
 
 static func _create_fan_of_knives() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -466,7 +466,7 @@ static func _create_fan_of_knives() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		12.0
-	).with_damage(12.0, 1.0).with_projectiles(12, 400.0).with_aoe(150.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon26.png")
+	).with_damage(12.0, 1.0).with_projectiles(12, 400.0).with_aoe(150.0).with_icon("res://assets/icons/abilities/fan_of_knives.png")
 
 static func _create_sentry_turret() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -503,7 +503,7 @@ static func _create_ballista_strike() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		25.0
-	).with_damage(80.0, 3.0).with_projectiles(1, 800.0).with_range(600.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon45.png")
+	).with_damage(80.0, 3.0).with_projectiles(1, 800.0).with_range(600.0).with_icon("res://assets/icons/abilities/ballista_strike.png")
 
 static func _create_sentry_network() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -562,7 +562,7 @@ static func _create_frost_nova() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		12.0
-	).with_damage(5.0, 0.5).with_aoe(100.0).with_stun(1.5).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon20.png")
+	).with_damage(5.0, 0.5).with_aoe(100.0).with_stun(1.5).with_icon("res://assets/icons/abilities/frost_nova.png")
 
 static func _create_healing_light() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -584,7 +584,7 @@ static func _create_throwing_bomb() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
 		10.0
-	).with_damage(15.0, 1.0).with_aoe(70.0).with_projectiles(1, 350.0).with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon40.png")
+	).with_damage(15.0, 1.0).with_aoe(70.0).with_projectiles(1, 350.0).with_icon("res://assets/icons/abilities/throwing_bomb.png")
 
 static func _create_blinding_flash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -632,7 +632,7 @@ static func _create_totem_of_frost() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
-	).with_damage(15.0, 0.5).with_aoe(100.0).with_slow(0.5, 1.0).with_duration(6.0).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon30.png")
+	).with_damage(15.0, 0.5).with_aoe(100.0).with_slow(0.5, 1.0).with_duration(6.0).with_icon("res://assets/icons/abilities/totem_of_frost.png")
 
 static func _create_shadowstep() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

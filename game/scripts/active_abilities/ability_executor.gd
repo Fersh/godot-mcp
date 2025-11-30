@@ -122,6 +122,78 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 		"army_of_the_dead":
 			_execute_army_of_the_dead(ability, player)
 
+		# ==========================================
+		# NEW ABILITIES (Zone/Wall, Traps, Stealth, etc.)
+		# ==========================================
+
+		# Zone/Wall Abilities
+		"flame_wall":
+			_execute_flame_wall(ability, player)
+		"ice_barricade":
+			_execute_ice_barricade(ability, player)
+		"floor_is_lava":
+			_execute_floor_is_lava(ability, player)
+
+		# Trap Abilities
+		"bear_trap":
+			_execute_bear_trap(ability, player)
+		"glue_bomb":
+			_execute_glue_bomb(ability, player)
+		"pressure_mine":
+			_execute_pressure_mine(ability, player)
+
+		# Stealth Abilities
+		"smoke_bomb":
+			_execute_smoke_bomb(ability, player)
+		"now_you_see_me":
+			_execute_now_you_see_me(ability, player)
+		"pocket_sand":
+			_execute_pocket_sand(ability, player)
+
+		# Crowd Control Abilities
+		"terrifying_shout":
+			_execute_terrifying_shout(ability, player)
+		"demoralizing_shout":
+			_execute_demoralizing_shout(ability, player)
+		"vortex":
+			_execute_vortex(ability, player)
+		"repulsive":
+			_execute_repulsive(ability, player)
+		"dj_drop":
+			_execute_dj_drop(ability, player)
+
+		# Chaos/Trick Abilities
+		"mirror_clone":
+			_execute_mirror_clone(ability, player)
+		"uno_reverse":
+			_execute_uno_reverse(ability, player)
+		"orbital_strike":
+			_execute_orbital_strike(ability, player)
+
+		# Summon Abilities
+		"summon_party":
+			_execute_summon_party(ability, player)
+		"release_the_hounds":
+			_execute_release_the_hounds(ability, player)
+
+		# Defensive Abilities
+		"panic_button":
+			_execute_panic_button(ability, player)
+		"pocket_healer":
+			_execute_pocket_healer(ability, player)
+		"safe_space":
+			_execute_safe_space(ability, player)
+
+		# Gambling/Transform Abilities
+		"double_or_nothing":
+			_execute_double_or_nothing(ability, player)
+		"gigantamax":
+			_execute_gigantamax(ability, player)
+		"monster_energy":
+			_execute_monster_energy(ability, player)
+		"i_see_red":
+			_execute_i_see_red(ability, player)
+
 		_:
 			push_warning("Unknown ability: " + ability.id)
 
@@ -1866,3 +1938,1464 @@ func _start_periodic_damage(player: Node2D, ability: ActiveAbilityData, screen_w
 				if is_instance_valid(enemy):
 					_deal_damage_to_enemy(enemy, damage_per_tick)
 		)
+
+# ============================================
+# NEW ABILITIES - ZONE/WALL
+# ============================================
+
+func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Create a wall of fire that damages enemies passing through."""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var wall_length = 200.0
+	var wall_width = 40.0
+
+	# Calculate wall center position in front of player
+	var wall_center = player.global_position + direction * 100
+
+	# Create wall visual
+	var wall = Node2D.new()
+	wall.name = "FlameWall"
+	wall.global_position = wall_center
+	wall.rotation = direction.angle()
+	get_tree().current_scene.add_child(wall)
+
+	# Visual representation - animated fire sprites along the wall
+	var fire_count = 5
+	for i in range(fire_count):
+		var offset = (i - fire_count / 2.0) * (wall_length / fire_count)
+		var fire = _create_fire_sprite()
+		fire.position = Vector2(offset, 0)
+		wall.add_child(fire)
+
+	# Deal damage over duration
+	var tick_interval = 0.3
+	var ticks = int(ability.duration / tick_interval)
+	var damage_per_tick = damage / ticks
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(wall):
+				return
+			# Check enemies intersecting the wall area
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			for enemy in enemies:
+				if is_instance_valid(enemy):
+					# Check if enemy is near the wall line
+					var local_pos = wall.to_local(enemy.global_position)
+					if abs(local_pos.x) < wall_length / 2 and abs(local_pos.y) < wall_width / 2:
+						_deal_damage_to_enemy(enemy, damage_per_tick)
+		)
+
+	# Remove wall after duration
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(wall):
+			wall.queue_free()
+	)
+
+	_play_sound("fireball")
+	_screen_shake("small")
+
+func _create_fire_sprite() -> Node2D:
+	"""Create an animated fire sprite for flame wall."""
+	var fire = Node2D.new()
+
+	# Create animated sprite
+	var sprite = AnimatedSprite2D.new()
+	sprite.scale = Vector2(1.5, 1.5)
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
+	var frames = SpriteFrames.new()
+	frames.set_animation_speed("default", 10.0)
+	frames.set_animation_loop("default", true)
+
+	# Try to load fire effect
+	var fire_path = "res://assets/sprites/effects/nyk/Fireball_spritesheet.png"
+	if ResourceLoader.exists(fire_path):
+		var texture = load(fire_path) as Texture2D
+		if texture:
+			var img = texture.get_image()
+			var frame_width = img.get_width() / 6
+			var frame_height = img.get_height()
+			for i in range(6):
+				var frame_img = Image.create(frame_width, frame_height, false, img.get_format())
+				frame_img.blit_rect(img, Rect2i(i * frame_width, 0, frame_width, frame_height), Vector2i.ZERO)
+				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+
+	sprite.sprite_frames = frames
+	sprite.play("default")
+	fire.add_child(sprite)
+
+	return fire
+
+func _execute_ice_barricade(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Create an ice wall that blocks and slows enemies."""
+	var direction = _get_attack_direction(player)
+	var wall_length = 180.0
+
+	# Calculate wall center position in front of player
+	var wall_center = player.global_position + direction * 80
+
+	# Create wall visual
+	var wall = Node2D.new()
+	wall.name = "IceBarricade"
+	wall.global_position = wall_center
+	wall.rotation = direction.angle() + PI / 2  # Perpendicular to direction
+	get_tree().current_scene.add_child(wall)
+
+	# Visual representation - ice blocks along the wall
+	var block_count = 5
+	for i in range(block_count):
+		var offset = (i - block_count / 2.0) * (wall_length / block_count)
+		var block = ColorRect.new()
+		block.size = Vector2(30, 50)
+		block.position = Vector2(offset - 15, -25)
+		block.color = Color(0.7, 0.9, 1.0, 0.8)
+		wall.add_child(block)
+
+	# Slow enemies that touch the wall
+	var tick_interval = 0.5
+	var ticks = int(ability.duration / tick_interval)
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(wall):
+				return
+			var enemies = get_tree().get_nodes_in_group("enemies")
+			for enemy in enemies:
+				if is_instance_valid(enemy):
+					var local_pos = wall.to_local(enemy.global_position)
+					if abs(local_pos.x) < wall_length / 2 and abs(local_pos.y) < 40:
+						_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+						# Push enemy back slightly
+						var push_dir = (enemy.global_position - wall_center).normalized()
+						_apply_knockback_to_enemy(enemy, push_dir, 50.0)
+		)
+
+	# Remove wall after duration with shatter effect
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(wall):
+			_spawn_effect("ice_shatter", wall.global_position)
+			wall.queue_free()
+	)
+
+	_spawn_effect("ice_cast", wall_center)
+	_play_sound("frost")
+	_screen_shake("small")
+
+func _execute_floor_is_lava(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Leave a trail of lava behind you that damages enemies."""
+	var damage = _get_damage(ability)
+	var trail_duration = ability.duration
+	var lava_pools: Array[Node2D] = []
+
+	# Create lava pools at intervals behind player
+	var spawn_interval = 0.2
+	var spawns = int(trail_duration / spawn_interval)
+	var damage_per_pool = damage / spawns
+
+	for i in range(spawns):
+		get_tree().create_timer(spawn_interval * i).timeout.connect(func():
+			if not is_instance_valid(player):
+				return
+
+			# Create lava pool at current player position
+			var pool = _create_lava_pool(player.global_position, damage_per_pool, 3.0)
+			lava_pools.append(pool)
+		)
+
+	_play_sound("fireball")
+
+func _create_lava_pool(position: Vector2, damage: float, lifetime: float) -> Node2D:
+	"""Create a single lava pool that damages enemies."""
+	var pool = Node2D.new()
+	pool.name = "LavaPool"
+	pool.global_position = position
+	pool.z_index = -1
+	get_tree().current_scene.add_child(pool)
+
+	# Visual - orange/red circle
+	var visual = Polygon2D.new()
+	var radius = 35.0
+	var points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		points.append(Vector2(cos(angle), sin(angle)) * radius)
+	visual.polygon = points
+	visual.color = Color(1.0, 0.3, 0.0, 0.7)
+	pool.add_child(visual)
+
+	# Inner glow
+	var inner = Polygon2D.new()
+	var inner_points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		inner_points.append(Vector2(cos(angle), sin(angle)) * (radius * 0.6))
+	inner.polygon = inner_points
+	inner.color = Color(1.0, 0.7, 0.0, 0.8)
+	pool.add_child(inner)
+
+	# Damage enemies standing in pool
+	var tick_interval = 0.3
+	var ticks = int(lifetime / tick_interval)
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(pool):
+				return
+			var enemies = _get_enemies_in_radius(pool.global_position, radius)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage / ticks)
+		)
+
+	# Fade out and remove
+	get_tree().create_timer(lifetime - 0.5).timeout.connect(func():
+		if is_instance_valid(pool):
+			var tween = pool.create_tween()
+			tween.tween_property(pool, "modulate:a", 0.0, 0.5)
+			tween.tween_callback(pool.queue_free)
+	)
+
+	return pool
+
+# ============================================
+# NEW ABILITIES - TRAPS
+# ============================================
+
+func _execute_bear_trap(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Place a hidden trap that immobilizes enemies."""
+	var damage = _get_damage(ability)
+	var trap_pos = player.global_position
+
+	# Create trap visual
+	var trap = Node2D.new()
+	trap.name = "BearTrap"
+	trap.global_position = trap_pos
+	get_tree().current_scene.add_child(trap)
+
+	# Visual - metal trap jaws
+	var base = Polygon2D.new()
+	base.polygon = PackedVector2Array([
+		Vector2(-20, -5), Vector2(20, -5), Vector2(15, 5), Vector2(-15, 5)
+	])
+	base.color = Color(0.4, 0.4, 0.4, 0.9)
+	trap.add_child(base)
+
+	# Teeth
+	for i in range(5):
+		var tooth = Polygon2D.new()
+		var x_offset = (i - 2) * 8
+		tooth.polygon = PackedVector2Array([
+			Vector2(x_offset - 2, -5), Vector2(x_offset + 2, -5), Vector2(x_offset, -15)
+		])
+		tooth.color = Color(0.6, 0.6, 0.6, 1.0)
+		trap.add_child(tooth)
+
+	# Check for enemies stepping on trap
+	var check_interval = 0.1
+	var trap_active = true
+	var trap_radius = 30.0
+
+	var check_timer = func check_trap():
+		if not trap_active or not is_instance_valid(trap):
+			return
+
+		var enemies = _get_enemies_in_radius(trap_pos, trap_radius)
+		if enemies.size() > 0:
+			trap_active = false
+			var target = enemies[0]
+
+			# Snap trap - visual feedback
+			_spawn_effect("punch_impact", trap_pos)
+			_screen_shake("small")
+			_play_sound("swing")
+
+			# Deal damage and stun
+			_deal_damage_to_enemy(target, damage)
+			_apply_stun_to_enemy(target, ability.stun_duration)
+
+			# Remove trap
+			trap.queue_free()
+		else:
+			get_tree().create_timer(check_interval).timeout.connect(check_timer)
+
+	check_timer.call()
+
+	# Trap expires after duration if not triggered
+	get_tree().create_timer(ability.duration + 10.0).timeout.connect(func():
+		if is_instance_valid(trap):
+			trap.queue_free()
+	)
+
+	_play_sound("deploy")
+
+func _execute_glue_bomb(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Throw a bomb that creates a slowing puddle."""
+	var target_pos = _get_enemy_cluster_center(player.global_position, 250.0)
+	var direction = (target_pos - player.global_position).normalized()
+
+	# Create projectile
+	var bomb = Node2D.new()
+	bomb.name = "GlueBomb"
+	bomb.global_position = player.global_position
+	get_tree().current_scene.add_child(bomb)
+
+	# Bomb visual
+	var visual = ColorRect.new()
+	visual.size = Vector2(16, 16)
+	visual.position = Vector2(-8, -8)
+	visual.color = Color(0.2, 0.8, 0.2, 1.0)
+	bomb.add_child(visual)
+
+	# Animate throw
+	var tween = bomb.create_tween()
+	tween.tween_property(bomb, "global_position", target_pos, 0.4).set_trans(Tween.TRANS_QUAD)
+	tween.tween_callback(func():
+		# Create glue puddle
+		_create_glue_puddle(target_pos, ability)
+		bomb.queue_free()
+	)
+
+	_play_sound("throw")
+
+func _create_glue_puddle(position: Vector2, ability: ActiveAbilityData) -> void:
+	"""Create a puddle that slows enemies."""
+	var puddle = Node2D.new()
+	puddle.name = "GluePuddle"
+	puddle.global_position = position
+	puddle.z_index = -1
+	get_tree().current_scene.add_child(puddle)
+
+	var radius = ability.radius
+
+	# Visual - green sticky puddle
+	var visual = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(12):
+		var angle = TAU * i / 12
+		var r = radius * (0.8 + randf() * 0.4)
+		points.append(Vector2(cos(angle), sin(angle)) * r)
+	visual.polygon = points
+	visual.color = Color(0.3, 0.7, 0.2, 0.6)
+	puddle.add_child(visual)
+
+	# Slow enemies in puddle
+	var tick_interval = 0.3
+	var ticks = int(ability.duration / tick_interval)
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(puddle):
+				return
+			var enemies = _get_enemies_in_radius(position, radius)
+			for enemy in enemies:
+				_apply_slow_to_enemy(enemy, ability.slow_percent, 0.5)
+		)
+
+	# Remove puddle
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(puddle):
+			var fade = puddle.create_tween()
+			fade.tween_property(puddle, "modulate:a", 0.0, 0.3)
+			fade.tween_callback(puddle.queue_free)
+	)
+
+	_spawn_effect("poison", position)
+	_screen_shake("small")
+
+func _execute_pressure_mine(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Place an explosive mine that detonates when enemies approach."""
+	var damage = _get_damage(ability)
+	var mine_pos = player.global_position
+
+	# Create mine visual
+	var mine = Node2D.new()
+	mine.name = "PressureMine"
+	mine.global_position = mine_pos
+	get_tree().current_scene.add_child(mine)
+
+	# Visual - circular mine with warning light
+	var base = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(8):
+		var angle = TAU * i / 8
+		points.append(Vector2(cos(angle), sin(angle)) * 15)
+	base.polygon = points
+	base.color = Color(0.3, 0.3, 0.3, 1.0)
+	mine.add_child(base)
+
+	# Blinking light
+	var light = ColorRect.new()
+	light.size = Vector2(6, 6)
+	light.position = Vector2(-3, -3)
+	light.color = Color(1.0, 0.0, 0.0, 1.0)
+	mine.add_child(light)
+
+	# Blink animation
+	var blink_tween = mine.create_tween().set_loops()
+	blink_tween.tween_property(light, "modulate:a", 0.3, 0.5)
+	blink_tween.tween_property(light, "modulate:a", 1.0, 0.5)
+
+	# Check for enemies
+	var check_interval = 0.1
+	var mine_active = true
+	var trigger_radius = 40.0
+	var explosion_radius = ability.radius
+
+	var check_mine = func check():
+		if not mine_active or not is_instance_valid(mine):
+			return
+
+		var enemies = _get_enemies_in_radius(mine_pos, trigger_radius)
+		if enemies.size() > 0:
+			mine_active = false
+
+			# Explosion!
+			_spawn_effect("explosion", mine_pos)
+			_screen_shake("medium")
+			_play_sound("explosion")
+			_impact_pause()
+
+			# Deal damage to all enemies in explosion radius
+			var blast_enemies = _get_enemies_in_radius(mine_pos, explosion_radius)
+			for enemy in blast_enemies:
+				_deal_damage_to_enemy(enemy, damage)
+				_apply_stun_to_enemy(enemy, ability.stun_duration)
+
+			mine.queue_free()
+		else:
+			get_tree().create_timer(check_interval).timeout.connect(check)
+
+	check_mine.call()
+
+	# Mine expires after duration
+	get_tree().create_timer(ability.duration + 15.0).timeout.connect(func():
+		if is_instance_valid(mine):
+			mine.queue_free()
+	)
+
+	_play_sound("deploy")
+
+# ============================================
+# NEW ABILITIES - STEALTH
+# ============================================
+
+func _execute_smoke_bomb(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Drop a smoke bomb that makes you invisible and slows enemies."""
+	var smoke_pos = player.global_position
+
+	# Create smoke cloud
+	var smoke = Node2D.new()
+	smoke.name = "SmokeCloud"
+	smoke.global_position = smoke_pos
+	smoke.z_index = 10
+	get_tree().current_scene.add_child(smoke)
+
+	# Visual - multiple semi-transparent circles
+	for i in range(5):
+		var cloud = Polygon2D.new()
+		var radius = ability.radius * (0.5 + randf() * 0.5)
+		var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		var points: PackedVector2Array = []
+		for j in range(12):
+			var angle = TAU * j / 12
+			points.append(Vector2(cos(angle), sin(angle)) * radius + offset)
+		cloud.polygon = points
+		cloud.color = Color(0.3, 0.3, 0.3, 0.4)
+		smoke.add_child(cloud)
+
+	# Make player semi-invisible
+	var player_sprite = player.get_node_or_null("Sprite2D")
+	if not player_sprite:
+		player_sprite = player.get_node_or_null("AnimatedSprite2D")
+
+	if player_sprite:
+		player_sprite.modulate.a = 0.3
+
+	# Apply invulnerability
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(true, ability.invulnerability_duration)
+
+	# Slow enemies in smoke
+	var tick_interval = 0.3
+	var ticks = int(ability.duration / tick_interval)
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(smoke):
+				return
+			var enemies = _get_enemies_in_radius(smoke_pos, ability.radius)
+			for enemy in enemies:
+				_apply_slow_to_enemy(enemy, ability.slow_percent, 0.5)
+		)
+
+	# End effects
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(smoke):
+			var fade = smoke.create_tween()
+			fade.tween_property(smoke, "modulate:a", 0.0, 0.5)
+			fade.tween_callback(smoke.queue_free)
+
+		if is_instance_valid(player_sprite):
+			player_sprite.modulate.a = 1.0
+	)
+
+	_play_sound("dash")
+	_screen_shake("small")
+
+func _execute_now_you_see_me(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Become completely invisible and untargetable, then reappear with a damaging burst."""
+	var damage = _get_damage(ability)
+	var start_pos = player.global_position
+
+	# Make player invisible
+	var player_sprite = player.get_node_or_null("Sprite2D")
+	if not player_sprite:
+		player_sprite = player.get_node_or_null("AnimatedSprite2D")
+
+	if player_sprite:
+		var fade_out = player_sprite.create_tween()
+		fade_out.tween_property(player_sprite, "modulate:a", 0.0, 0.2)
+
+	# Make player invulnerable
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(true, ability.invulnerability_duration)
+
+	# Spawn vanish effect
+	_spawn_effect("shadowstep", start_pos)
+
+	# Reappear after duration with damage burst
+	get_tree().create_timer(ability.invulnerability_duration).timeout.connect(func():
+		if not is_instance_valid(player):
+			return
+
+		# Fade back in
+		if is_instance_valid(player_sprite):
+			var fade_in = player_sprite.create_tween()
+			fade_in.tween_property(player_sprite, "modulate:a", 1.0, 0.2)
+
+		# Damage burst on reappear
+		var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		_spawn_effect("magic_cast", player.global_position)
+		_screen_shake("medium")
+		_impact_pause()
+	)
+
+	_play_sound("shadowstep")
+
+func _execute_pocket_sand(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Throw sand in enemies' faces, blinding and slowing them."""
+	var direction = _get_attack_direction(player)
+
+	# Get enemies in cone in front
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.6)
+
+	for enemy in enemies:
+		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+		# Visual feedback - yellow particles on enemy
+		_spawn_sand_effect(enemy.global_position)
+
+	# Sand throw visual
+	var sand = Node2D.new()
+	sand.global_position = player.global_position
+	get_tree().current_scene.add_child(sand)
+
+	# Particles spreading outward
+	for i in range(15):
+		var particle = ColorRect.new()
+		particle.size = Vector2(4, 4)
+		particle.color = Color(0.9, 0.8, 0.5, 1.0)
+		sand.add_child(particle)
+
+		var angle = direction.angle() + randf_range(-0.5, 0.5)
+		var dist = randf_range(50, ability.range_distance)
+		var end_pos = Vector2(cos(angle), sin(angle)) * dist
+
+		var ptween = particle.create_tween()
+		ptween.set_parallel(true)
+		ptween.tween_property(particle, "position", end_pos, 0.3)
+		ptween.tween_property(particle, "modulate:a", 0.0, 0.3)
+
+	get_tree().create_timer(0.4).timeout.connect(func():
+		if is_instance_valid(sand):
+			sand.queue_free()
+	)
+
+	_play_sound("throw")
+	_screen_shake("small")
+
+func _spawn_sand_effect(position: Vector2) -> void:
+	"""Spawn sand particles at position."""
+	var effect = Node2D.new()
+	effect.global_position = position
+	get_tree().current_scene.add_child(effect)
+
+	for i in range(8):
+		var p = ColorRect.new()
+		p.size = Vector2(3, 3)
+		p.color = Color(0.9, 0.8, 0.4, 0.8)
+		effect.add_child(p)
+
+		var angle = randf() * TAU
+		var dist = randf_range(10, 30)
+		var end = Vector2(cos(angle), sin(angle)) * dist
+
+		var tw = p.create_tween()
+		tw.tween_property(p, "position", end, 0.3)
+
+	get_tree().create_timer(0.4).timeout.connect(func():
+		if is_instance_valid(effect):
+			effect.queue_free()
+	)
+
+# ============================================
+# NEW ABILITIES - CROWD CONTROL
+# ============================================
+
+func _execute_terrifying_shout(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Let out a terrifying shout that fears enemies, making them run away."""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		# Push enemies away (fear effect)
+		var away_dir = (enemy.global_position - player.global_position).normalized()
+		_apply_knockback_to_enemy(enemy, away_dir, ability.knockback_force * 2)
+		_apply_slow_to_enemy(enemy, 0.3, ability.slow_duration)
+
+	# Visual - shockwave effect
+	_spawn_shout_wave(player.global_position, ability.radius, Color(0.8, 0.2, 0.2, 0.5))
+
+	_spawn_effect("battle_cry", player.global_position)
+	_play_sound("swing")
+	_screen_shake("medium")
+
+func _execute_demoralizing_shout(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Shout that weakens enemies, reducing their damage."""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+		# Visual indicator on affected enemies
+		_spawn_debuff_indicator(enemy)
+
+	# Visual - purple shockwave
+	_spawn_shout_wave(player.global_position, ability.radius, Color(0.5, 0.2, 0.8, 0.5))
+
+	_spawn_effect("battle_cry", player.global_position)
+	_play_sound("swing")
+	_screen_shake("small")
+
+func _spawn_shout_wave(position: Vector2, radius: float, color: Color) -> void:
+	"""Create expanding shockwave visual."""
+	var wave = Node2D.new()
+	wave.global_position = position
+	wave.z_index = 5
+	get_tree().current_scene.add_child(wave)
+
+	var ring = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(32):
+		var angle = TAU * i / 32
+		points.append(Vector2(cos(angle), sin(angle)) * 20)
+	ring.polygon = points
+	ring.color = color
+	wave.add_child(ring)
+
+	var tween = wave.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(wave, "scale", Vector2(radius / 20, radius / 20), 0.3)
+	tween.tween_property(wave, "modulate:a", 0.0, 0.3)
+	tween.chain().tween_callback(wave.queue_free)
+
+func _spawn_debuff_indicator(enemy: Node2D) -> void:
+	"""Show a debuff indicator above enemy."""
+	if not is_instance_valid(enemy):
+		return
+
+	var indicator = ColorRect.new()
+	indicator.size = Vector2(20, 5)
+	indicator.position = Vector2(-10, -50)
+	indicator.color = Color(0.5, 0.2, 0.8, 0.8)
+	enemy.add_child(indicator)
+
+	get_tree().create_timer(2.0).timeout.connect(func():
+		if is_instance_valid(indicator):
+			indicator.queue_free()
+	)
+
+func _execute_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Create a vortex that pulls enemies toward the center."""
+	var target_pos = _get_enemy_cluster_center(player.global_position, 200.0)
+	var damage = _get_damage(ability)
+
+	# Create vortex visual
+	var vortex = Node2D.new()
+	vortex.name = "Vortex"
+	vortex.global_position = target_pos
+	get_tree().current_scene.add_child(vortex)
+
+	# Spinning visual
+	var spiral = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(24):
+		var angle = TAU * i / 24
+		var r = ability.radius * (0.3 + 0.7 * (i / 24.0))
+		points.append(Vector2(cos(angle), sin(angle)) * r)
+	spiral.polygon = points
+	spiral.color = Color(0.3, 0.5, 0.8, 0.4)
+	vortex.add_child(spiral)
+
+	# Spin and pull enemies
+	var tick_interval = 0.1
+	var ticks = int(ability.duration / tick_interval)
+	var damage_per_tick = damage / ticks
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(vortex):
+				return
+
+			vortex.rotation += 0.3
+
+			var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+			for enemy in enemies:
+				# Pull toward center
+				var to_center = (target_pos - enemy.global_position).normalized()
+				_apply_knockback_to_enemy(enemy, to_center, 80.0 * tick_interval)
+				_deal_damage_to_enemy(enemy, damage_per_tick)
+		)
+
+	# Remove vortex
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(vortex):
+			var fade = vortex.create_tween()
+			fade.tween_property(vortex, "modulate:a", 0.0, 0.3)
+			fade.tween_callback(vortex.queue_free)
+	)
+
+	_play_sound("whirlwind")
+	_screen_shake("small")
+
+func _execute_repulsive(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Blast all nearby enemies away from you."""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	var damage = _get_damage(ability)
+
+	for enemy in enemies:
+		var away_dir = (enemy.global_position - player.global_position).normalized()
+		_apply_knockback_to_enemy(enemy, away_dir, ability.knockback_force)
+		_deal_damage_to_enemy(enemy, damage)
+
+	# Visual - expanding ring
+	_spawn_shout_wave(player.global_position, ability.radius, Color(1.0, 0.8, 0.3, 0.6))
+
+	_spawn_effect("holy", player.global_position)
+	_play_sound("swing")
+	_screen_shake("medium")
+	_impact_pause()
+
+func _execute_dj_drop(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Drop the bass! Stun all enemies on screen briefly."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var damage = _get_damage(ability)
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			_apply_stun_to_enemy(enemy, ability.stun_duration)
+			_deal_damage_to_enemy(enemy, damage)
+
+	# Epic visual - screen-wide effect
+	var drop = Node2D.new()
+	drop.global_position = player.global_position
+	drop.z_index = 100
+	get_tree().current_scene.add_child(drop)
+
+	# Multiple expanding rings
+	for i in range(3):
+		get_tree().create_timer(i * 0.1).timeout.connect(func():
+			if not is_instance_valid(drop):
+				return
+			var ring = Polygon2D.new()
+			var points: PackedVector2Array = []
+			for j in range(32):
+				var angle = TAU * j / 32
+				points.append(Vector2(cos(angle), sin(angle)) * 50)
+			ring.polygon = points
+			ring.color = Color(1.0, 0.5, 0.0, 0.6)
+			drop.add_child(ring)
+
+			var tw = ring.create_tween()
+			tw.set_parallel(true)
+			tw.tween_property(ring, "scale", Vector2(20, 20), 0.5)
+			tw.tween_property(ring, "modulate:a", 0.0, 0.5)
+		)
+
+	get_tree().create_timer(0.8).timeout.connect(func():
+		if is_instance_valid(drop):
+			drop.queue_free()
+	)
+
+	_play_sound("ground_slam")
+	_screen_shake("large")
+	_impact_pause()
+
+# ============================================
+# NEW ABILITIES - CHAOS/TRICK
+# ============================================
+
+func _execute_mirror_clone(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Create mirror clones that attack alongside you."""
+	var damage = _get_damage(ability)
+	var clone_count = 2
+
+	for i in range(clone_count):
+		var angle = TAU * i / clone_count
+		var offset = Vector2(cos(angle), sin(angle)) * 60
+		var clone_pos = player.global_position + offset
+
+		_spawn_mirror_clone(clone_pos, damage / clone_count, ability.duration, player)
+
+	_spawn_effect("magic_cast", player.global_position)
+	_play_sound("summon")
+
+func _spawn_mirror_clone(position: Vector2, damage: float, duration: float, player: Node2D) -> void:
+	"""Spawn a single mirror clone."""
+	var clone = Node2D.new()
+	clone.name = "MirrorClone"
+	clone.global_position = position
+	get_tree().current_scene.add_child(clone)
+
+	# Try to copy player sprite
+	var player_sprite = player.get_node_or_null("Sprite2D")
+	if player_sprite and player_sprite.texture:
+		var sprite = Sprite2D.new()
+		sprite.texture = player_sprite.texture
+		sprite.modulate = Color(0.5, 0.8, 1.0, 0.7)  # Blue tint
+		clone.add_child(sprite)
+	else:
+		# Fallback visual
+		var visual = ColorRect.new()
+		visual.size = Vector2(30, 40)
+		visual.position = Vector2(-15, -20)
+		visual.color = Color(0.5, 0.8, 1.0, 0.6)
+		clone.add_child(visual)
+
+	# Clone attacks nearby enemies
+	var attack_interval = 0.5
+	var attacks = int(duration / attack_interval)
+	var damage_per_attack = damage / attacks
+
+	for i in range(attacks):
+		get_tree().create_timer(attack_interval * i).timeout.connect(func():
+			if not is_instance_valid(clone):
+				return
+
+			var target = _get_nearest_enemy(clone.global_position, 150.0)
+			if target and is_instance_valid(target):
+				_deal_damage_to_enemy(target, damage_per_attack)
+				_spawn_effect("slash", target.global_position)
+		)
+
+	# Remove clone
+	get_tree().create_timer(duration).timeout.connect(func():
+		if is_instance_valid(clone):
+			var fade = clone.create_tween()
+			fade.tween_property(clone, "modulate:a", 0.0, 0.3)
+			fade.tween_callback(clone.queue_free)
+	)
+
+func _execute_uno_reverse(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Reflect the next attack back at enemies for massive damage."""
+	var damage = _get_damage(ability)
+
+	# Apply a reflect buff to player
+	if player.has_method("apply_reflect_shield"):
+		player.apply_reflect_shield(damage, ability.duration)
+
+	# Visual shield effect
+	var shield = Node2D.new()
+	shield.name = "UnoReverseShield"
+	player.add_child(shield)
+
+	var visual = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		points.append(Vector2(cos(angle), sin(angle)) * 40)
+	visual.polygon = points
+	visual.color = Color(1.0, 0.3, 0.3, 0.4)
+	shield.add_child(visual)
+
+	# Spin effect
+	var spin = shield.create_tween().set_loops()
+	spin.tween_property(shield, "rotation", TAU, 1.0)
+
+	# For now, just deal damage to nearest enemies as "reflected"
+	get_tree().create_timer(0.5).timeout.connect(func():
+		var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		_spawn_effect("holy", player.global_position)
+		_screen_shake("medium")
+	)
+
+	# Remove shield after duration
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(shield):
+			shield.queue_free()
+	)
+
+	_play_sound("buff")
+
+func _execute_orbital_strike(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Call down a devastating orbital strike on enemy positions."""
+	var damage = _get_damage(ability)
+	var target_pos = _get_enemy_cluster_center(player.global_position, 300.0)
+
+	# Warning indicator
+	var warning = Node2D.new()
+	warning.global_position = target_pos
+	get_tree().current_scene.add_child(warning)
+
+	var indicator = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		points.append(Vector2(cos(angle), sin(angle)) * ability.radius)
+	indicator.polygon = points
+	indicator.color = Color(1.0, 0.0, 0.0, 0.3)
+	warning.add_child(indicator)
+
+	# Blink warning
+	var blink = warning.create_tween().set_loops(int(ability.cast_time * 4))
+	blink.tween_property(indicator, "modulate:a", 0.1, 0.125)
+	blink.tween_property(indicator, "modulate:a", 1.0, 0.125)
+
+	# Strike after cast time
+	get_tree().create_timer(ability.cast_time).timeout.connect(func():
+		if is_instance_valid(warning):
+			warning.queue_free()
+
+		# Create laser beam visual from above
+		var beam = ColorRect.new()
+		beam.size = Vector2(ability.radius * 2, 800)
+		beam.position = Vector2(-ability.radius, -800)
+		beam.color = Color(1.0, 0.8, 0.0, 0.8)
+
+		var beam_node = Node2D.new()
+		beam_node.global_position = target_pos
+		beam_node.z_index = 50
+		beam_node.add_child(beam)
+		get_tree().current_scene.add_child(beam_node)
+
+		# Deal massive damage
+		var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+			_apply_stun_to_enemy(enemy, 1.0)
+
+		_spawn_effect("explosion", target_pos)
+		_screen_shake("large")
+		_impact_pause()
+		_play_sound("explosion")
+
+		# Fade beam
+		var fade = beam_node.create_tween()
+		fade.tween_property(beam_node, "modulate:a", 0.0, 0.3)
+		fade.tween_callback(beam_node.queue_free)
+	)
+
+	_play_sound("meteor")
+
+# ============================================
+# NEW ABILITIES - SUMMONS
+# ============================================
+
+func _execute_summon_party(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Summon a party of adventurers to fight alongside you."""
+	var damage = _get_damage(ability)
+	var party_size = 3
+	var summon_types = ["warrior", "mage", "archer"]
+
+	for i in range(party_size):
+		var angle = TAU * i / party_size
+		var offset = Vector2(cos(angle), sin(angle)) * 70
+		var spawn_pos = player.global_position + offset
+
+		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
+		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+
+		_spawn_party_member(spawn_pos, damage / party_size, ability.duration, summon_types[i])
+
+	_spawn_effect("magic_cast", player.global_position)
+	_play_sound("summon")
+	_screen_shake("small")
+
+func _spawn_party_member(position: Vector2, damage: float, duration: float, member_type: String) -> void:
+	"""Spawn a single party member summon."""
+	var member = Node2D.new()
+	member.name = "PartyMember_" + member_type
+	member.global_position = position
+	get_tree().current_scene.add_child(member)
+
+	# Color based on type
+	var color: Color
+	match member_type:
+		"warrior":
+			color = Color(0.8, 0.3, 0.3, 0.8)  # Red
+		"mage":
+			color = Color(0.3, 0.3, 0.8, 0.8)  # Blue
+		"archer":
+			color = Color(0.3, 0.8, 0.3, 0.8)  # Green
+		_:
+			color = Color(0.8, 0.8, 0.8, 0.8)
+
+	var visual = ColorRect.new()
+	visual.size = Vector2(24, 32)
+	visual.position = Vector2(-12, -16)
+	visual.color = color
+	member.add_child(visual)
+
+	# Attack behavior
+	var attack_interval = 0.6
+	var attacks = int(duration / attack_interval)
+	var damage_per_attack = damage / attacks
+	var attack_range = 120.0 if member_type == "archer" else 60.0
+
+	for i in range(attacks):
+		get_tree().create_timer(attack_interval * i).timeout.connect(func():
+			if not is_instance_valid(member):
+				return
+
+			var target = _get_nearest_enemy(member.global_position, attack_range)
+			if target and is_instance_valid(target):
+				# Move toward target if melee
+				if member_type == "warrior":
+					member.global_position = member.global_position.lerp(target.global_position, 0.3)
+
+				_deal_damage_to_enemy(target, damage_per_attack)
+
+				match member_type:
+					"warrior":
+						_spawn_effect("slash", target.global_position)
+					"mage":
+						_spawn_effect("magic_cast", target.global_position)
+					"archer":
+						_spawn_effect("arrow_impact", target.global_position)
+		)
+
+	# Remove after duration
+	get_tree().create_timer(duration).timeout.connect(func():
+		if is_instance_valid(member):
+			var fade = member.create_tween()
+			fade.tween_property(member, "modulate:a", 0.0, 0.3)
+			fade.tween_callback(member.queue_free)
+	)
+
+func _execute_release_the_hounds(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Release attack dogs that chase and bite enemies."""
+	var damage = _get_damage(ability)
+	var hound_count = 3
+
+	for i in range(hound_count):
+		var angle = randf() * TAU
+		var offset = Vector2(cos(angle), sin(angle)) * 40
+		var spawn_pos = player.global_position + offset
+
+		_spawn_hound(spawn_pos, damage / hound_count, ability.duration)
+
+	_spawn_effect("dash_smoke", player.global_position)
+	_play_sound("summon")
+
+func _spawn_hound(position: Vector2, damage: float, duration: float) -> void:
+	"""Spawn an attack hound."""
+	var hound = Node2D.new()
+	hound.name = "AttackHound"
+	hound.global_position = position
+	get_tree().current_scene.add_child(hound)
+
+	# Simple dog visual
+	var body = ColorRect.new()
+	body.size = Vector2(25, 15)
+	body.position = Vector2(-12, -7)
+	body.color = Color(0.5, 0.35, 0.2, 1.0)
+	hound.add_child(body)
+
+	# Head
+	var head = ColorRect.new()
+	head.size = Vector2(12, 12)
+	head.position = Vector2(10, -10)
+	head.color = Color(0.5, 0.35, 0.2, 1.0)
+	hound.add_child(head)
+
+	# Chase and attack behavior
+	var tick_interval = 0.15
+	var ticks = int(duration / tick_interval)
+	var damage_per_bite = damage / (ticks / 3)  # Bite every ~0.45s
+	var bite_counter = 0
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(hound):
+				return
+
+			var target = _get_nearest_enemy(hound.global_position, 300.0)
+			if target and is_instance_valid(target):
+				# Chase target
+				var to_target = (target.global_position - hound.global_position)
+				var chase_speed = 8.0
+				hound.global_position += to_target.normalized() * chase_speed
+
+				# Flip based on direction
+				if to_target.x < 0:
+					hound.scale.x = -1
+				else:
+					hound.scale.x = 1
+
+				# Bite if close
+				if to_target.length() < 30:
+					bite_counter += 1
+					if bite_counter >= 3:
+						bite_counter = 0
+						_deal_damage_to_enemy(target, damage_per_bite)
+						_spawn_effect("punch_impact", target.global_position)
+		)
+
+	# Remove after duration
+	get_tree().create_timer(duration).timeout.connect(func():
+		if is_instance_valid(hound):
+			hound.queue_free()
+	)
+
+# ============================================
+# NEW ABILITIES - DEFENSIVE
+# ============================================
+
+func _execute_panic_button(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Emergency escape - become invulnerable and dash away."""
+	var start_pos = player.global_position
+
+	# Find safest direction (away from most enemies)
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var avg_enemy_pos = Vector2.ZERO
+	var count = 0
+
+	for enemy in enemies:
+		if is_instance_valid(enemy) and start_pos.distance_to(enemy.global_position) < 300:
+			avg_enemy_pos += enemy.global_position
+			count += 1
+
+	var escape_dir: Vector2
+	if count > 0:
+		avg_enemy_pos /= count
+		escape_dir = (start_pos - avg_enemy_pos).normalized()
+	else:
+		escape_dir = Vector2.DOWN
+
+	# Make invulnerable
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(true, ability.invulnerability_duration)
+
+	# Dash away
+	var end_pos = start_pos + escape_dir * ability.range_distance
+	end_pos.x = clamp(end_pos.x, -60, 1596)
+	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+
+	var tween = create_tween()
+	tween.tween_property(player, "global_position", end_pos, 0.2)
+
+	# Heal a bit
+	if player.has_method("heal"):
+		player.heal(player.max_health * 0.1)  # 10% heal
+
+	_spawn_effect("dash_smoke", start_pos)
+	_spawn_effect("holy", end_pos)
+	_play_sound("dash")
+	_screen_shake("small")
+
+func _execute_pocket_healer(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Summon a healing fairy that follows and heals you."""
+	var total_heal = player.max_health * 0.3  # 30% max HP over duration
+
+	# Create healer visual
+	var healer = Node2D.new()
+	healer.name = "PocketHealer"
+	player.add_child(healer)
+	healer.position = Vector2(30, -30)
+
+	# Fairy visual
+	var fairy = ColorRect.new()
+	fairy.size = Vector2(12, 12)
+	fairy.position = Vector2(-6, -6)
+	fairy.color = Color(0.3, 1.0, 0.5, 0.8)
+	healer.add_child(fairy)
+
+	# Glow
+	var glow = ColorRect.new()
+	glow.size = Vector2(20, 20)
+	glow.position = Vector2(-10, -10)
+	glow.color = Color(0.3, 1.0, 0.5, 0.3)
+	healer.add_child(glow)
+
+	# Bob animation
+	var bob = healer.create_tween().set_loops()
+	bob.tween_property(healer, "position:y", -40, 0.5).set_trans(Tween.TRANS_SINE)
+	bob.tween_property(healer, "position:y", -30, 0.5).set_trans(Tween.TRANS_SINE)
+
+	# Heal over time
+	var tick_interval = 0.5
+	var ticks = int(ability.duration / tick_interval)
+	var heal_per_tick = total_heal / ticks
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if is_instance_valid(player) and player.has_method("heal"):
+				player.heal(heal_per_tick)
+				# Small heal visual
+				_spawn_effect("healing_light", player.global_position)
+		)
+
+	# Remove after duration
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(healer):
+			healer.queue_free()
+	)
+
+	_play_sound("heal")
+
+func _execute_safe_space(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Create a protective barrier that blocks projectiles and slows enemies."""
+	var barrier_pos = player.global_position
+
+	# Create barrier visual
+	var barrier = Node2D.new()
+	barrier.name = "SafeSpace"
+	barrier.global_position = barrier_pos
+	get_tree().current_scene.add_child(barrier)
+
+	# Dome visual
+	var dome = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(24):
+		var angle = TAU * i / 24
+		points.append(Vector2(cos(angle), sin(angle)) * ability.radius)
+	dome.polygon = points
+	dome.color = Color(0.3, 0.8, 1.0, 0.3)
+	barrier.add_child(dome)
+
+	# Border
+	var border = Line2D.new()
+	border.width = 3.0
+	border.default_color = Color(0.3, 0.8, 1.0, 0.8)
+	for i in range(25):
+		var angle = TAU * i / 24
+		border.add_point(Vector2(cos(angle), sin(angle)) * ability.radius)
+	barrier.add_child(border)
+
+	# Slow enemies entering barrier and give player slight damage reduction
+	var tick_interval = 0.2
+	var ticks = int(ability.duration / tick_interval)
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(barrier):
+				return
+			var enemies = _get_enemies_in_radius(barrier_pos, ability.radius)
+			for enemy in enemies:
+				_apply_slow_to_enemy(enemy, ability.slow_percent, 0.3)
+		)
+
+	# Remove barrier
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(barrier):
+			var fade = barrier.create_tween()
+			fade.tween_property(barrier, "modulate:a", 0.0, 0.3)
+			fade.tween_callback(barrier.queue_free)
+	)
+
+	_spawn_effect("shield", barrier_pos)
+	_play_sound("buff")
+
+# ============================================
+# NEW ABILITIES - GAMBLING/TRANSFORM
+# ============================================
+
+func _execute_double_or_nothing(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Gamble! 50% chance to deal double damage, 50% chance to deal nothing."""
+	var base_damage = _get_damage(ability)
+	var roll = randf()
+
+	if roll < 0.5:
+		# WIN - Double damage!
+		var damage = base_damage * 2
+		var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+		# Gold effect
+		_spawn_effect("holy", player.global_position)
+		_screen_shake("large")
+		_impact_pause()
+
+		# Visual feedback - gold burst
+		var win = Node2D.new()
+		win.global_position = player.global_position
+		get_tree().current_scene.add_child(win)
+
+		for i in range(20):
+			var coin = ColorRect.new()
+			coin.size = Vector2(8, 8)
+			coin.color = Color(1.0, 0.85, 0.0, 1.0)
+			win.add_child(coin)
+
+			var angle = randf() * TAU
+			var dist = randf_range(50, 150)
+			var end = Vector2(cos(angle), sin(angle)) * dist
+
+			var tw = coin.create_tween()
+			tw.set_parallel(true)
+			tw.tween_property(coin, "position", end, 0.5)
+			tw.tween_property(coin, "modulate:a", 0.0, 0.5)
+
+		get_tree().create_timer(0.6).timeout.connect(func():
+			if is_instance_valid(win):
+				win.queue_free()
+		)
+	else:
+		# LOSE - Nothing happens
+		_spawn_effect("magic_cast", player.global_position)
+
+		# Sad effect - gray poof
+		var lose = ColorRect.new()
+		lose.size = Vector2(50, 50)
+		lose.position = player.global_position - Vector2(25, 25)
+		lose.color = Color(0.5, 0.5, 0.5, 0.5)
+		get_tree().current_scene.add_child(lose)
+
+		var tw = lose.create_tween()
+		tw.tween_property(lose, "modulate:a", 0.0, 0.3)
+		tw.tween_callback(lose.queue_free)
+
+	_play_sound("swing")
+
+func _execute_gigantamax(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Grow to giant size! Increased damage and knockback, but bigger hitbox."""
+	var original_scale = player.scale
+	var giant_scale = original_scale * 2.0
+
+	# Grow animation
+	var grow = player.create_tween()
+	grow.tween_property(player, "scale", giant_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	# Apply damage boost
+	if player.has_method("apply_damage_boost"):
+		player.apply_damage_boost(1.5, ability.duration)  # 50% more damage
+
+	# Stomp damage while giant
+	var stomp_interval = 0.5
+	var stomps = int(ability.duration / stomp_interval)
+	var damage = _get_damage(ability)
+
+	for i in range(stomps):
+		get_tree().create_timer(stomp_interval * i).timeout.connect(func():
+			if not is_instance_valid(player):
+				return
+			var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage / stomps)
+				var away = (enemy.global_position - player.global_position).normalized()
+				_apply_knockback_to_enemy(enemy, away, ability.knockback_force)
+		)
+
+	# Shrink back after duration
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(player):
+			var shrink = player.create_tween()
+			shrink.tween_property(player, "scale", original_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	)
+
+	_spawn_effect("impact_smoke", player.global_position)
+	_play_sound("buff")
+	_screen_shake("medium")
+
+func _execute_monster_energy(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Drink a monster energy! Massive speed and attack speed boost."""
+	# Speed boost (applied via player method or stat)
+	if player.has_method("apply_speed_boost"):
+		player.apply_speed_boost(1.5, ability.duration)  # 50% speed
+
+	# Attack speed boost
+	if player.has_method("apply_attack_speed_boost"):
+		player.apply_attack_speed_boost(1.3, ability.duration)  # 30% attack speed
+
+	# Green aura effect
+	var aura = Node2D.new()
+	aura.name = "MonsterEnergyAura"
+	player.add_child(aura)
+
+	var glow = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(12):
+		var angle = TAU * i / 12
+		points.append(Vector2(cos(angle), sin(angle)) * 40)
+	glow.polygon = points
+	glow.color = Color(0.0, 1.0, 0.2, 0.3)
+	aura.add_child(glow)
+
+	# Pulse animation
+	var pulse = aura.create_tween().set_loops()
+	pulse.tween_property(aura, "scale", Vector2(1.2, 1.2), 0.3)
+	pulse.tween_property(aura, "scale", Vector2(1.0, 1.0), 0.3)
+
+	# Remove after duration
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(aura):
+			aura.queue_free()
+	)
+
+	_spawn_effect("holy", player.global_position)
+	_play_sound("buff")
+
+func _execute_i_see_red(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Enter a berserker rage! Deal more damage but take more damage."""
+	var damage = _get_damage(ability)
+
+	# Damage boost (high)
+	if player.has_method("apply_damage_boost"):
+		player.apply_damage_boost(2.0, ability.duration)  # Double damage!
+
+	# Red visual tint
+	var player_sprite = player.get_node_or_null("Sprite2D")
+	if not player_sprite:
+		player_sprite = player.get_node_or_null("AnimatedSprite2D")
+
+	if player_sprite:
+		player_sprite.modulate = Color(1.5, 0.5, 0.5, 1.0)
+
+	# Periodic damage around player (rage aura)
+	var tick_interval = 0.3
+	var ticks = int(ability.duration / tick_interval)
+	var damage_per_tick = damage / ticks
+
+	for i in range(ticks):
+		get_tree().create_timer(tick_interval * i).timeout.connect(func():
+			if not is_instance_valid(player):
+				return
+			var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage_per_tick)
+		)
+
+	# End rage
+	get_tree().create_timer(ability.duration).timeout.connect(func():
+		if is_instance_valid(player_sprite):
+			player_sprite.modulate = Color.WHITE
+	)
+
+	_spawn_effect("fire_cast", player.global_position)
+	_play_sound("battle_cry")
+	_screen_shake("medium")
