@@ -1,274 +1,209 @@
 extends Node2D
 
 ## Procedural Map Generator
-## Creates a 2500x2500 playable area surrounded by water.
-## Scatters trees, rocks, lamps, and rare magic stones.
+## Creates an organic map with irregular edges, scattered dirt, and fog of war.
 
 signal map_generated(map_bounds: Rect2)
 
 # Map configuration
-const MAP_SIZE: int = 2500  # 2500x2500 playable area
+const MAP_SIZE: int = 2500
 const TILE_SIZE: int = 16
-const WATER_BORDER: int = 200  # Water extends 200px beyond playable area
-const CAMERA_WATER_MARGIN: int = 100  # How far camera can see into water
 
-# Tile coordinates in Nature.png (16px grid, 19 columns x 8 rows)
-# Large grass block is at columns 6-11, rows 3-5
-# Light grass tiles - main ground (solid light green)
-const TILE_GRASS_LIGHT_1 := Vector2i(6, 3)  # Light grass
-const TILE_GRASS_LIGHT_2 := Vector2i(7, 3)  # Light grass
-const TILE_GRASS_LIGHT_3 := Vector2i(8, 3)  # Light grass
-const TILE_GRASS_LIGHT_4 := Vector2i(6, 4)  # Light grass
-const TILE_GRASS_LIGHT_5 := Vector2i(7, 4)  # Light grass
+# Tile coordinates in Nature.png
+const TILE_GRASS_LIGHT_1 := Vector2i(6, 3)
+const TILE_GRASS_LIGHT_2 := Vector2i(7, 3)
+const TILE_GRASS_LIGHT_3 := Vector2i(8, 3)
+const TILE_GRASS_LIGHT_4 := Vector2i(6, 4)
+const TILE_GRASS_LIGHT_5 := Vector2i(7, 4)
 
-# Dark grass tiles - for shading (darker green patches in grass area)
-const TILE_GRASS_DARK_1 := Vector2i(9, 3)  # Darker grass
-const TILE_GRASS_DARK_2 := Vector2i(10, 3)  # Darker grass
-const TILE_GRASS_DARK_3 := Vector2i(9, 4)  # Darker grass
-const TILE_GRASS_DARK_4 := Vector2i(10, 4)  # Darker grass
-const TILE_GRASS_DARK_5 := Vector2i(8, 4)  # Darker grass
+const TILE_GRASS_DARK_1 := Vector2i(9, 3)
+const TILE_GRASS_DARK_2 := Vector2i(10, 3)
+const TILE_GRASS_DARK_3 := Vector2i(9, 4)
+const TILE_GRASS_DARK_4 := Vector2i(10, 4)
+const TILE_GRASS_DARK_5 := Vector2i(8, 4)
 
-# Decorative tiles (bottom rows have individual elements)
-const TILE_GRASS_FLOWER := Vector2i(7, 7)  # Small flowers
-const TILE_GRASS_MUSHROOM := Vector2i(9, 7)  # Mushroom
+const TILE_GRASS_FLOWER := Vector2i(7, 7)
+const TILE_GRASS_MUSHROOM := Vector2i(9, 7)
 
-# Water tiles - the pond area at top-left (0,0 to 2,2)
-const TILE_WATER := Vector2i(1, 1)  # Center water
-const TILE_WATER_SHORE_TOP := Vector2i(1, 0)  # Shore top edge
-const TILE_WATER_SHORE_BOTTOM := Vector2i(1, 2)  # Shore bottom edge
-const TILE_WATER_SHORE_LEFT := Vector2i(0, 1)  # Shore left edge
-const TILE_WATER_SHORE_RIGHT := Vector2i(2, 1)  # Shore right edge
-const TILE_WATER_CORNER_TL := Vector2i(0, 0)  # Corner top-left (inner)
-const TILE_WATER_CORNER_TR := Vector2i(2, 0)  # Corner top-right (inner)
-const TILE_WATER_CORNER_BL := Vector2i(0, 2)  # Corner bottom-left (inner)
-const TILE_WATER_CORNER_BR := Vector2i(2, 2)  # Corner bottom-right (inner)
+const TILE_DIRT := Vector2i(4, 1)
+const TILE_DIRT_2 := Vector2i(5, 1)
 
-# Path tiles - dirt area at cols 4-5
-const TILE_DIRT := Vector2i(4, 1)  # Dirt/cleared ground center
-const TILE_DIRT_2 := Vector2i(5, 1)  # Dirt variant
-
-# Central spawn area config
-const SPAWN_AREA_RADIUS: int = 150  # Clear area around spawn point
-const PATH_WIDTH: int = 48  # Width of paths
+# Spawn area
+const SPAWN_AREA_RADIUS: int = 120
 
 # Decoration density
-const TREE_DENSITY: float = 0.0000105  # Trees per pixel squared (~65 trees, reduced 50%)
-const ROCK_DENSITY: float = 0.00002  # Rocks per pixel squared (~125 rocks)
-const LAMP_SPACING: int = 300  # Approximate spacing between lamps along paths
-const MAGIC_STONE_COUNT: int = 1  # Number of magic stones on map
+const TREE_DENSITY: float = 0.000015
+const ROCK_DENSITY: float = 0.000025
+const LAMP_COUNT: int = 30
+const MAGIC_STONE_COUNT: int = 1
 
-# Water ponds/lakes scattered throughout
-const POND_COUNT: int = 8  # Number of water ponds to generate
-const MIN_POND_RADIUS: int = 3  # Minimum pond size in tiles
-const MAX_POND_RADIUS: int = 8  # Maximum pond size in tiles
+# Dirt patches
+const DIRT_PATCH_COUNT: int = 100
+const WATER_INLET_COUNT: int = 3
 
-# Scenes to instantiate
+# Fog of war
+const FOG_REVEAL_RADIUS: float = 300.0
+const FOG_SCALE: int = 4  # Downscale for performance
+
+# Scenes
 var tree_scenes: Array[PackedScene] = []
 var rock_scenes: Array[PackedScene] = []
 var lamp_scene: PackedScene
 var magic_stone_scene: PackedScene
 
-# TileMap reference
-var grass_tilemap: TileMapLayer  # Base grass layer
-var ground_tilemap: TileMapLayer
-var water_tilemap: TileMapLayer
+# Tilemaps
+var grass_tilemap: TileMapLayer
+var dirt_tilemap: TileMapLayer
 var decoration_tilemap: TileMapLayer
-var shade_tilemap: TileMapLayer  # Dark grass shade layer
 
-# RNG for procedural generation
+# Fog of war
+var fog_sprite: Sprite2D
+var fog_image: Image
+var fog_texture: ImageTexture
+
+# RNG
 var rng: RandomNumberGenerator
 
-# Generated data
+# Data
 var obstacle_positions: Array[Vector2] = []
 var lamp_positions: Array[Vector2] = []
 var magic_stone_positions: Array[Vector2] = []
-var path_cells: Dictionary = {}  # Cells that are part of paths
-var water_cells: Dictionary = {}  # Cells that are water (ponds)
-var pond_centers: Array[Vector2] = []  # Center positions of ponds
+var land_cells: Dictionary = {}
+var water_cells: Dictionary = {}
+var dirt_cells: Dictionary = {}
+var _spawn_center: Vector2 = Vector2.ZERO
+
+# Player reference
+var player: Node2D = null
 
 func _ready() -> void:
 	rng = RandomNumberGenerator.new()
 	rng.randomize()
-
 	_load_scenes()
 
+func _process(_delta: float) -> void:
+	_update_fog_of_war()
+
 func _load_scenes() -> void:
-	# Load tree scenes
 	var tree1 = load("res://scenes/environment/destructible_tree.tscn")
 	if tree1:
 		tree_scenes.append(tree1)
 
-	# Load rock scene
 	var rock1 = load("res://scenes/environment/destructible_rock.tscn")
 	if rock1:
 		rock_scenes.append(rock1)
 
-	# Load lamp scene
 	lamp_scene = load("res://scenes/environment/lamp.tscn")
-
-	# Load magic stone scene
 	magic_stone_scene = load("res://scenes/environment/magic_stone.tscn")
 
 func generate_map() -> void:
 	print("ProceduralMapGenerator: Starting map generation...")
 
-	# Clear any existing generated content
 	_clear_existing()
-
-	# Create tilemaps
 	_setup_tilemaps()
-
-	# Generate terrain
-	_generate_ground()
-	_generate_water_boundary()
-
-	# Generate paths from center
-	_generate_paths()
-
-	# Generate water ponds/lakes scattered throughout
-	_generate_ponds()
-
-	# Place decorations
-	_place_dirt_pixels()
+	_generate_land_shape()
+	_generate_water()
+	_generate_grass()
+	_place_dirt_patches()
 	_place_trees()
 	_place_rocks()
-	_place_obstacle_shade()  # Add dark grass shade around trees/rocks
 	_place_lamps()
 	_place_magic_stones()
+	_setup_fog_of_war()
 
-	# Calculate and emit map bounds
-	var bounds = Rect2(0, 0, MAP_SIZE, MAP_SIZE)
-	emit_signal("map_generated", bounds)
-
+	emit_signal("map_generated", Rect2(0, 0, MAP_SIZE, MAP_SIZE))
 	print("ProceduralMapGenerator: Map generation complete!")
 
 func _clear_existing() -> void:
 	obstacle_positions.clear()
 	lamp_positions.clear()
 	magic_stone_positions.clear()
-	path_cells.clear()
+	land_cells.clear()
 	water_cells.clear()
-	pond_centers.clear()
+	dirt_cells.clear()
 
-	# Remove all generated children
 	for child in get_children():
 		child.queue_free()
 
 func _setup_tilemaps() -> void:
-	# Create tileset from Nature.png
 	var tileset = _create_tileset()
 
-	# Base grass layer - light green tiles from Nature.png
 	grass_tilemap = TileMapLayer.new()
 	grass_tilemap.name = "GrassTileMap"
 	grass_tilemap.tile_set = tileset
 	grass_tilemap.z_index = -12
 	add_child(grass_tilemap)
 
-	# Shade layer - dark grass for variation and tree/rock shadows
-	shade_tilemap = TileMapLayer.new()
-	shade_tilemap.name = "ShadeTileMap"
-	shade_tilemap.tile_set = tileset
-	shade_tilemap.z_index = -11
-	add_child(shade_tilemap)
+	dirt_tilemap = TileMapLayer.new()
+	dirt_tilemap.name = "DirtTileMap"
+	dirt_tilemap.tile_set = tileset
+	dirt_tilemap.z_index = -11
+	add_child(dirt_tilemap)
 
-	# Ground layer - for dirt paths only
-	ground_tilemap = TileMapLayer.new()
-	ground_tilemap.name = "GroundTileMap"
-	ground_tilemap.tile_set = tileset
-	ground_tilemap.z_index = -10
-	add_child(ground_tilemap)
-
-	# Water layer (on top of ground at edges)
-	water_tilemap = TileMapLayer.new()
-	water_tilemap.name = "WaterTileMap"
-	water_tilemap.tile_set = tileset
-	water_tilemap.z_index = -9
-	add_child(water_tilemap)
-
-	# Decoration layer (flowers, mushrooms)
 	decoration_tilemap = TileMapLayer.new()
 	decoration_tilemap.name = "DecorationTileMap"
 	decoration_tilemap.tile_set = tileset
-	decoration_tilemap.z_index = -8
+	decoration_tilemap.z_index = -10
 	add_child(decoration_tilemap)
 
 func _create_tileset() -> TileSet:
 	var tileset = TileSet.new()
 	tileset.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
-	# Add the Nature.png as a source
 	var source = TileSetAtlasSource.new()
 	var texture = load("res://assets/enviro/gowl/Tiles/Nature.png")
 	if texture:
 		source.texture = texture
 		source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
-		# Create tiles for the entire texture
 		var cols = texture.get_width() / TILE_SIZE
 		var rows = texture.get_height() / TILE_SIZE
 
 		for y in range(rows):
 			for x in range(cols):
-				var atlas_coords = Vector2i(x, y)
-				source.create_tile(atlas_coords)
+				source.create_tile(Vector2i(x, y))
 
 		tileset.add_source(source, 0)
 
 	return tileset
 
-func _generate_ground() -> void:
-	# Fill the entire map with light grass tiles from Nature.png
+func _generate_land_shape() -> void:
+	print("ProceduralMapGenerator: Generating organic land shape...")
+
 	var tiles_x = MAP_SIZE / TILE_SIZE
 	var tiles_y = MAP_SIZE / TILE_SIZE
 
-	# Array of light grass tiles to randomly choose from
-	var light_grass_tiles = [
-		TILE_GRASS_LIGHT_1,
-		TILE_GRASS_LIGHT_2,
-		TILE_GRASS_LIGHT_3,
-		TILE_GRASS_LIGHT_4,
-		TILE_GRASS_LIGHT_5
-	]
+	# Use noise for organic edges
+	var noise = FastNoiseLite.new()
+	noise.seed = rng.randi()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.006
 
-	# Array of dark grass tiles for random variation
-	var dark_grass_tiles = [
-		TILE_GRASS_DARK_1,
-		TILE_GRASS_DARK_2,
-		TILE_GRASS_DARK_3,
-		TILE_GRASS_DARK_4,
-		TILE_GRASS_DARK_5
-	]
+	# Set spawn center
+	_spawn_center = Vector2(
+		rng.randf_range(MAP_SIZE * 0.35, MAP_SIZE * 0.65),
+		rng.randf_range(MAP_SIZE * 0.35, MAP_SIZE * 0.65)
+	)
 
-	print("ProceduralMapGenerator: Filling ground with grass tiles...")
-
-	# Fill entire map with light grass
+	# Determine land cells using noise
 	for y in range(tiles_y):
 		for x in range(tiles_x):
-			var tile_pos = Vector2i(x, y)
-			# Pick a random light grass tile
-			var grass_tile = light_grass_tiles[rng.randi() % light_grass_tiles.size()]
-			grass_tilemap.set_cell(tile_pos, 0, grass_tile)
+			var world_pos = Vector2(x * TILE_SIZE + TILE_SIZE/2, y * TILE_SIZE + TILE_SIZE/2)
+			var dist_from_center = world_pos.distance_to(Vector2(MAP_SIZE/2, MAP_SIZE/2))
 
-			# Randomly place dark grass for natural variation (about 8% of tiles)
-			if rng.randf() < 0.08:
-				var dark_tile = dark_grass_tiles[rng.randi() % dark_grass_tiles.size()]
-				shade_tilemap.set_cell(tile_pos, 0, dark_tile)
+			var noise_val = noise.get_noise_2d(x * 2, y * 2)
+			var land_radius = 950 + noise_val * 250
+			var edge_noise = noise.get_noise_2d(x * 4, y * 4) * 60
 
-	# Scatter some decorative elements on the grass (very sparse)
-	for y in range(tiles_y):
-		for x in range(tiles_x):
-			# Very sparse decorations
-			if rng.randf() < 0.003:
-				var tile_pos = Vector2i(x, y)
-				var deco = TILE_GRASS_FLOWER if rng.randf() < 0.7 else TILE_GRASS_MUSHROOM
-				decoration_tilemap.set_cell(tile_pos, 0, deco)
+			if dist_from_center < land_radius + edge_noise:
+				land_cells["%d_%d" % [x, y]] = Vector2i(x, y)
 
-func _generate_water_boundary() -> void:
-	# Create animated water around the edges using actual water tiles
-	print("ProceduralMapGenerator: Generating water boundary with tiles...")
+func _generate_water() -> void:
+	print("ProceduralMapGenerator: Generating water...")
 
-	# Load water animation frames
+	var tiles_x = MAP_SIZE / TILE_SIZE
+	var tiles_y = MAP_SIZE / TILE_SIZE
+
 	var water_frames = [
 		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim1.png"),
 		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim2.png"),
@@ -276,457 +211,164 @@ func _generate_water_boundary() -> void:
 		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim4.png")
 	]
 
-	# Create container for water tiles
 	var water_container = Node2D.new()
-	water_container.name = "WaterBoundary"
-	water_container.z_index = -11
+	water_container.name = "WaterContainer"
+	water_container.z_index = -13
 	add_child(water_container)
 
-	# Calculate tile counts
-	var tiles_across = int((MAP_SIZE + WATER_BORDER * 2) / TILE_SIZE) + 1
-	var border_tiles = int(WATER_BORDER / TILE_SIZE) + 1
+	# Add water inlets cutting into land
+	for i in range(WATER_INLET_COUNT):
+		_create_water_inlet(tiles_x, tiles_y)
 
-	# Create animated water tiles for all four edges
-	# Top edge
-	for x in range(-border_tiles, tiles_across):
-		for y in range(-border_tiles, 0):
-			_create_animated_water_tile(water_container, x, y, water_frames)
+	# Place water where there's no land (only near edges)
+	for y in range(-3, tiles_y + 3):
+		for x in range(-3, tiles_x + 3):
+			var key = "%d_%d" % [x, y]
+			if key not in land_cells:
+				if _is_near_land(x, y, 3):
+					water_cells[key] = Vector2i(x, y)
+					_create_water_tile(water_container, x, y, water_frames)
 
-	# Bottom edge
-	for x in range(-border_tiles, tiles_across):
-		for y in range(int(MAP_SIZE / TILE_SIZE), int(MAP_SIZE / TILE_SIZE) + border_tiles):
-			_create_animated_water_tile(water_container, x, y, water_frames)
+func _is_near_land(x: int, y: int, radius: int) -> bool:
+	for dy in range(-radius, radius + 1):
+		for dx in range(-radius, radius + 1):
+			if land_cells.has("%d_%d" % [x + dx, y + dy]):
+				return true
+	return false
 
-	# Left edge (excluding corners already done)
-	for x in range(-border_tiles, 0):
-		for y in range(0, int(MAP_SIZE / TILE_SIZE)):
-			_create_animated_water_tile(water_container, x, y, water_frames)
+func _create_water_inlet(tiles_x: int, tiles_y: int) -> void:
+	var edge = rng.randi() % 4
+	var start_pos: Vector2i
+	var direction: Vector2i
 
-	# Right edge (excluding corners already done)
-	for x in range(int(MAP_SIZE / TILE_SIZE), int(MAP_SIZE / TILE_SIZE) + border_tiles):
-		for y in range(0, int(MAP_SIZE / TILE_SIZE)):
-			_create_animated_water_tile(water_container, x, y, water_frames)
+	match edge:
+		0:  # Top
+			start_pos = Vector2i(rng.randi_range(tiles_x/4, 3*tiles_x/4), 0)
+			direction = Vector2i(0, 1)
+		1:  # Right
+			start_pos = Vector2i(tiles_x - 1, rng.randi_range(tiles_y/4, 3*tiles_y/4))
+			direction = Vector2i(-1, 0)
+		2:  # Bottom
+			start_pos = Vector2i(rng.randi_range(tiles_x/4, 3*tiles_x/4), tiles_y - 1)
+			direction = Vector2i(0, -1)
+		3:  # Left
+			start_pos = Vector2i(0, rng.randi_range(tiles_y/4, 3*tiles_y/4))
+			direction = Vector2i(1, 0)
 
-	# Add shore tiles along the edges using Nature.png tileset
-	_add_shore_tiles()
+	var inlet_length = rng.randi_range(10, 25)
+	var inlet_width = rng.randi_range(4, 10)
 
-func _create_animated_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Array) -> void:
-	# Create an AnimatedSprite2D for each water tile
-	var water_sprite = AnimatedSprite2D.new()
-	water_sprite.position = Vector2(tile_x * TILE_SIZE + TILE_SIZE / 2, tile_y * TILE_SIZE + TILE_SIZE / 2)
+	for d in range(inlet_length):
+		var pos = start_pos + direction * d
+		var width = max(2, inlet_width - int(d * 0.4))
 
-	# Create sprite frames
-	var sprite_frames = SpriteFrames.new()
-	sprite_frames.add_animation("default")
-	sprite_frames.set_animation_loop("default", true)
-	sprite_frames.set_animation_speed("default", 4.0)  # 4 FPS for gentle wave
+		for w in range(-width, width + 1):
+			var tx = pos.x + (w if direction.y != 0 else 0)
+			var ty = pos.y + (w if direction.x != 0 else 0)
+
+			if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
+				land_cells.erase("%d_%d" % [tx, ty])
+
+func _create_water_tile(container: Node2D, tile_x: int, tile_y: int, frames: Array) -> void:
+	var sprite = AnimatedSprite2D.new()
+	sprite.position = Vector2(tile_x * TILE_SIZE + TILE_SIZE/2, tile_y * TILE_SIZE + TILE_SIZE/2)
+
+	var sf = SpriteFrames.new()
+	sf.add_animation("default")
+	sf.set_animation_loop("default", true)
+	sf.set_animation_speed("default", 4.0)
 
 	for frame in frames:
 		if frame:
-			sprite_frames.add_frame("default", frame)
+			sf.add_frame("default", frame)
 
-	water_sprite.sprite_frames = sprite_frames
-	water_sprite.play("default")
+	sprite.sprite_frames = sf
+	sprite.play("default")
+	sprite.frame = rng.randi() % max(1, frames.size())
 
-	# Randomize starting frame for variety
-	water_sprite.frame = randi() % frames.size()
+	container.add_child(sprite)
 
-	container.add_child(water_sprite)
+func _generate_grass() -> void:
+	print("ProceduralMapGenerator: Generating grass...")
 
-func _add_shore_tiles() -> void:
-	# Add shore/edge tiles along the boundary using Nature.png tileset
-	var tiles_x = int(MAP_SIZE / TILE_SIZE)
-	var tiles_y = int(MAP_SIZE / TILE_SIZE)
+	var light_tiles = [TILE_GRASS_LIGHT_1, TILE_GRASS_LIGHT_2, TILE_GRASS_LIGHT_3, TILE_GRASS_LIGHT_4, TILE_GRASS_LIGHT_5]
+	var dark_tiles = [TILE_GRASS_DARK_1, TILE_GRASS_DARK_2, TILE_GRASS_DARK_3, TILE_GRASS_DARK_4, TILE_GRASS_DARK_5]
 
-	# Top shore (grass to water transition)
-	for x in range(tiles_x):
-		water_tilemap.set_cell(Vector2i(x, -1), 0, TILE_WATER_SHORE_BOTTOM)
+	for key in land_cells:
+		var pos = land_cells[key]
+		var tile = light_tiles[rng.randi() % light_tiles.size()]
+		grass_tilemap.set_cell(pos, 0, tile)
 
-	# Bottom shore
-	for x in range(tiles_x):
-		water_tilemap.set_cell(Vector2i(x, tiles_y), 0, TILE_WATER_SHORE_TOP)
+		# Random dark grass variation
+		if rng.randf() < 0.12:
+			var dark = dark_tiles[rng.randi() % dark_tiles.size()]
+			decoration_tilemap.set_cell(pos, 0, dark)
 
-	# Left shore
-	for y in range(tiles_y):
-		water_tilemap.set_cell(Vector2i(-1, y), 0, TILE_WATER_SHORE_RIGHT)
+		# Very sparse flowers/mushrooms
+		if rng.randf() < 0.004:
+			var deco = TILE_GRASS_FLOWER if rng.randf() < 0.7 else TILE_GRASS_MUSHROOM
+			decoration_tilemap.set_cell(pos, 0, deco)
 
-	# Right shore
-	for y in range(tiles_y):
-		water_tilemap.set_cell(Vector2i(tiles_x, y), 0, TILE_WATER_SHORE_LEFT)
+func _place_dirt_patches() -> void:
+	print("ProceduralMapGenerator: Placing dirt patches...")
 
-	# Corners
-	water_tilemap.set_cell(Vector2i(-1, -1), 0, TILE_WATER_CORNER_BR)
-	water_tilemap.set_cell(Vector2i(tiles_x, -1), 0, TILE_WATER_CORNER_BL)
-	water_tilemap.set_cell(Vector2i(-1, tiles_y), 0, TILE_WATER_CORNER_TR)
-	water_tilemap.set_cell(Vector2i(tiles_x, tiles_y), 0, TILE_WATER_CORNER_TL)
+	var dirt_tiles = [TILE_DIRT, TILE_DIRT_2]
 
-func _generate_paths() -> void:
-	# Create 4 paths from center going to each direction using ColorRects
-	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
-	var path_color = Color(0.588, 0.463, 0.314)  # Dirt brown color
+	for i in range(DIRT_PATCH_COUNT):
+		# Random position on land
+		var attempts = 0
+		while attempts < 20:
+			var x = rng.randi_range(50, MAP_SIZE - 50)
+			var y = rng.randi_range(50, MAP_SIZE - 50)
+			var tx = x / TILE_SIZE
+			var ty = y / TILE_SIZE
 
-	# Mark spawn area as path (clear) - for obstacle placement checks
-	_mark_circular_path(center, SPAWN_AREA_RADIUS)
-
-	# Create circular spawn area visual
-	var spawn_circle = _create_circle_polygon(center, SPAWN_AREA_RADIUS, path_color)
-	spawn_circle.name = "SpawnArea"
-	spawn_circle.z_index = -11
-	add_child(spawn_circle)
-
-	# Create paths in 4 cardinal directions using ColorRects
-	# North path
-	var path_north = ColorRect.new()
-	path_north.name = "PathNorth"
-	path_north.color = path_color
-	path_north.position = Vector2(center.x - PATH_WIDTH / 2, 0)
-	path_north.size = Vector2(PATH_WIDTH, center.y - SPAWN_AREA_RADIUS + 20)
-	path_north.z_index = -11
-	add_child(path_north)
-	_mark_straight_path(center, Vector2(center.x, 0), PATH_WIDTH / 2)
-
-	# South path
-	var path_south = ColorRect.new()
-	path_south.name = "PathSouth"
-	path_south.color = path_color
-	path_south.position = Vector2(center.x - PATH_WIDTH / 2, center.y + SPAWN_AREA_RADIUS - 20)
-	path_south.size = Vector2(PATH_WIDTH, MAP_SIZE - center.y - SPAWN_AREA_RADIUS + 20)
-	path_south.z_index = -11
-	add_child(path_south)
-	_mark_straight_path(center, Vector2(center.x, MAP_SIZE), PATH_WIDTH / 2)
-
-	# East path
-	var path_east = ColorRect.new()
-	path_east.name = "PathEast"
-	path_east.color = path_color
-	path_east.position = Vector2(center.x + SPAWN_AREA_RADIUS - 20, center.y - PATH_WIDTH / 2)
-	path_east.size = Vector2(MAP_SIZE - center.x - SPAWN_AREA_RADIUS + 20, PATH_WIDTH)
-	path_east.z_index = -11
-	add_child(path_east)
-	_mark_straight_path(center, Vector2(MAP_SIZE, center.y), PATH_WIDTH / 2)
-
-	# West path
-	var path_west = ColorRect.new()
-	path_west.name = "PathWest"
-	path_west.color = path_color
-	path_west.position = Vector2(0, center.y - PATH_WIDTH / 2)
-	path_west.size = Vector2(center.x - SPAWN_AREA_RADIUS + 20, PATH_WIDTH)
-	path_west.z_index = -11
-	add_child(path_west)
-	_mark_straight_path(center, Vector2(0, center.y), PATH_WIDTH / 2)
-
-func _create_circle_polygon(center: Vector2, radius: float, color: Color) -> Polygon2D:
-	# Create a circular polygon for the spawn area
-	var polygon = Polygon2D.new()
-	polygon.color = color
-
-	var points: PackedVector2Array = []
-	var segments = 32
-	for i in range(segments):
-		var angle = (i / float(segments)) * TAU
-		points.append(Vector2(cos(angle), sin(angle)) * radius)
-
-	polygon.polygon = points
-	polygon.position = center
-	return polygon
-
-func _mark_circular_path(center: Vector2, radius: float) -> void:
-	# Mark all cells within radius as path
-	var min_x = int(center.x - radius) / TILE_SIZE
-	var max_x = int(center.x + radius) / TILE_SIZE
-	var min_y = int(center.y - radius) / TILE_SIZE
-	var max_y = int(center.y + radius) / TILE_SIZE
-
-	for ty in range(min_y, max_y + 1):
-		for tx in range(min_x, max_x + 1):
-			var cell_center = Vector2(tx * TILE_SIZE + TILE_SIZE / 2, ty * TILE_SIZE + TILE_SIZE / 2)
-			if cell_center.distance_to(center) <= radius:
-				var key = "%d_%d" % [tx, ty]
-				path_cells[key] = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
-
-func _mark_straight_path(from: Vector2, to: Vector2, half_width: float) -> void:
-	# Mark cells along a straight line as path
-	var direction = (to - from).normalized()
-	var length = from.distance_to(to)
-	var perpendicular = Vector2(-direction.y, direction.x)
-
-	var step = TILE_SIZE / 2.0
-	var current = 0.0
-
-	while current < length:
-		var center = from + direction * current
-
-		# Mark cells across the width
-		for w in range(-int(half_width / TILE_SIZE) - 1, int(half_width / TILE_SIZE) + 2):
-			var pos = center + perpendicular * (w * TILE_SIZE)
-			var tx = int(pos.x) / TILE_SIZE
-			var ty = int(pos.y) / TILE_SIZE
-
-			if tx >= 0 and tx < MAP_SIZE / TILE_SIZE and ty >= 0 and ty < MAP_SIZE / TILE_SIZE:
-				var key = "%d_%d" % [tx, ty]
-				path_cells[key] = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
-
-		current += step
-
-func _generate_ponds() -> void:
-	# Generate water ponds/lakes scattered throughout the map
-	print("ProceduralMapGenerator: Generating %d ponds..." % POND_COUNT)
-
-	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
-	var min_dist_from_center = SPAWN_AREA_RADIUS + 100  # Keep ponds away from spawn
-	var min_dist_from_path = PATH_WIDTH + 32  # Keep ponds away from paths
-
-	var placed = 0
-	var attempts = 0
-	var max_attempts = POND_COUNT * 30
-
-	while placed < POND_COUNT and attempts < max_attempts:
-		attempts += 1
-
-		# Random position for pond center
-		var pond_x = rng.randf_range(150, MAP_SIZE - 150)
-		var pond_y = rng.randf_range(150, MAP_SIZE - 150)
-		var pond_pos = Vector2(pond_x, pond_y)
-
-		# Check distance from spawn center
-		if pond_pos.distance_to(center) < min_dist_from_center:
-			continue
-
-		# Check distance from paths
-		var too_close_to_path = false
-		for key in path_cells:
-			var path_pos = path_cells[key]
-			if pond_pos.distance_to(path_pos) < min_dist_from_path:
-				too_close_to_path = true
+			if land_cells.has("%d_%d" % [tx, ty]):
+				# Create organic dirt patch
+				var patch_size = rng.randi_range(2, 7)
+				_create_dirt_patch(tx, ty, patch_size, dirt_tiles)
 				break
-		if too_close_to_path:
-			continue
+			attempts += 1
 
-		# Check distance from other ponds
-		var too_close_to_pond = false
-		for other_pond in pond_centers:
-			if pond_pos.distance_to(other_pond) < (MAX_POND_RADIUS * TILE_SIZE * 3):
-				too_close_to_pond = true
-				break
-		if too_close_to_pond:
-			continue
-
-		# Generate this pond
-		var pond_radius = rng.randi_range(MIN_POND_RADIUS, MAX_POND_RADIUS)
-		_create_pond(pond_pos, pond_radius)
-		pond_centers.append(pond_pos)
-		placed += 1
-
-	print("ProceduralMapGenerator: Generated %d ponds" % placed)
-
-func _create_pond(center_pos: Vector2, radius: int) -> void:
-	# Create an organic-shaped pond using tilemap tiles for edges and animated sprites for center
-	var center_tile_x = int(center_pos.x) / TILE_SIZE
-	var center_tile_y = int(center_pos.y) / TILE_SIZE
-
-	# Load water animation frames for center tiles
-	var water_frames = [
-		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim1.png"),
-		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim2.png"),
-		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim3.png"),
-		load("res://assets/enviro/gowl/Tiles/Water/WaterAnim4.png")
-	]
-
-	# Container for this pond's animated water
-	var pond_water_container = Node2D.new()
-	pond_water_container.name = "PondWater_%d_%d" % [center_tile_x, center_tile_y]
-	pond_water_container.z_index = -9
-	add_child(pond_water_container)
-
-	# First pass: determine which tiles are water (using noise for organic shape)
-	var pond_tiles: Dictionary = {}
-
-	for dy in range(-radius - 1, radius + 2):
-		for dx in range(-radius - 1, radius + 2):
-			var tx = center_tile_x + dx
-			var ty = center_tile_y + dy
-
-			# Skip out of bounds
-			if tx < 0 or tx >= MAP_SIZE / TILE_SIZE or ty < 0 or ty >= MAP_SIZE / TILE_SIZE:
-				continue
-
-			# Calculate distance from center with some noise for organic shape
+func _create_dirt_patch(center_x: int, center_y: int, size: int, dirt_tiles: Array) -> void:
+	for dy in range(-size, size + 1):
+		for dx in range(-size, size + 1):
 			var dist = Vector2(dx, dy).length()
-			var noise_offset = sin(dx * 0.8) * cos(dy * 0.8) * 1.5  # Organic variation
-			var effective_radius = radius + noise_offset
-
-			if dist <= effective_radius:
+			if dist <= size and rng.randf() < (1.0 - dist / size * 0.5):
+				var tx = center_x + dx
+				var ty = center_y + dy
 				var key = "%d_%d" % [tx, ty]
-				pond_tiles[key] = Vector2i(tx, ty)
-				water_cells[key] = Vector2(tx * TILE_SIZE, ty * TILE_SIZE)
 
-	# Second pass: place tiles with proper edges
-	for key in pond_tiles:
-		var tile_pos = pond_tiles[key]
-		var tx = tile_pos.x
-		var ty = tile_pos.y
-
-		# Check neighbors to determine tile type
-		var has_top = "%d_%d" % [tx, ty - 1] in pond_tiles
-		var has_bottom = "%d_%d" % [tx, ty + 1] in pond_tiles
-		var has_left = "%d_%d" % [tx - 1, ty] in pond_tiles
-		var has_right = "%d_%d" % [tx + 1, ty] in pond_tiles
-
-		var is_center = has_top and has_bottom and has_left and has_right
-
-		if is_center:
-			# Use animated water sprite for center tiles
-			_create_animated_water_tile(pond_water_container, tx, ty, water_frames)
-		else:
-			# Use tilemap for edge/shore tiles
-			var tile_to_use: Vector2i
-
-			if not has_top and has_bottom and has_left and has_right:
-				tile_to_use = TILE_WATER_SHORE_TOP
-			elif has_top and not has_bottom and has_left and has_right:
-				tile_to_use = TILE_WATER_SHORE_BOTTOM
-			elif has_top and has_bottom and not has_left and has_right:
-				tile_to_use = TILE_WATER_SHORE_LEFT
-			elif has_top and has_bottom and has_left and not has_right:
-				tile_to_use = TILE_WATER_SHORE_RIGHT
-			elif not has_top and has_bottom and not has_left and has_right:
-				tile_to_use = TILE_WATER_CORNER_TL
-			elif not has_top and has_bottom and has_left and not has_right:
-				tile_to_use = TILE_WATER_CORNER_TR
-			elif has_top and not has_bottom and not has_left and has_right:
-				tile_to_use = TILE_WATER_CORNER_BL
-			elif has_top and not has_bottom and has_left and not has_right:
-				tile_to_use = TILE_WATER_CORNER_BR
-			else:
-				# Default - use animated water for isolated or unusual configurations
-				_create_animated_water_tile(pond_water_container, tx, ty, water_frames)
-				continue
-
-			water_tilemap.set_cell(Vector2i(tx, ty), 0, tile_to_use)
-
-	# Create collision for the pond (StaticBody2D)
-	_create_pond_collision(center_pos, radius)
-
-func _create_pond_collision(center_pos: Vector2, radius: int) -> void:
-	# Create a static body for water collision
-	var water_body = StaticBody2D.new()
-	water_body.name = "PondCollision"
-	water_body.collision_layer = 8  # Obstacle layer
-	water_body.collision_mask = 0
-	water_body.position = center_pos
-
-	# Create circular collision shape
-	var collision = CollisionShape2D.new()
-	var shape = CircleShape2D.new()
-	shape.radius = radius * TILE_SIZE * 0.85  # Slightly smaller than visual
-	collision.shape = shape
-	water_body.add_child(collision)
-
-	add_child(water_body)
-
-func _place_dirt_pixels() -> void:
-	# Add scattered dirt pixels throughout the map, especially on roads
-	print("ProceduralMapGenerator: Placing dirt pixels...")
-
-	var dirt_colors = [
-		Color(0.45, 0.35, 0.22),  # Light brown
-		Color(0.35, 0.25, 0.15),  # Dark brown
-		Color(0.50, 0.40, 0.28),  # Lighter tan
-		Color(0.30, 0.22, 0.12),  # Darker brown
-	]
-
-	# Create a container for dirt pixels
-	var dirt_container = Node2D.new()
-	dirt_container.name = "DirtPixels"
-	dirt_container.z_index = -10  # Below obstacles, above grass
-	add_child(dirt_container)
-
-	var dirt_count = 0
-
-	# Place more dirt on paths/roads
-	for key in path_cells:
-		var cell_pos = path_cells[key]
-
-		# Each path cell gets 2-4 dirt pixels
-		var pixels_per_cell = rng.randi_range(2, 4)
-		for i in range(pixels_per_cell):
-			var pixel_pos = cell_pos + Vector2(
-				rng.randf_range(0, TILE_SIZE),
-				rng.randf_range(0, TILE_SIZE)
-			)
-
-			var dirt = ColorRect.new()
-			dirt.color = dirt_colors[rng.randi() % dirt_colors.size()]
-			dirt.size = Vector2(rng.randf_range(2, 5), rng.randf_range(2, 5))
-			dirt.position = pixel_pos
-			dirt_container.add_child(dirt)
-			dirt_count += 1
-
-	# Scatter some dirt on the grass areas too (more sparse)
-	var grass_dirt_count = 800  # Number of dirt spots on grass
-	for i in range(grass_dirt_count):
-		var pos = Vector2(
-			rng.randf_range(50, MAP_SIZE - 50),
-			rng.randf_range(50, MAP_SIZE - 50)
-		)
-
-		# Skip if on a path (already has plenty) or in water
-		var tx = int(pos.x) / TILE_SIZE
-		var ty = int(pos.y) / TILE_SIZE
-		var key = "%d_%d" % [tx, ty]
-		if key in path_cells:
-			continue
-		if key in water_cells:
-			continue
-
-		var dirt = ColorRect.new()
-		dirt.color = dirt_colors[rng.randi() % dirt_colors.size()]
-		dirt.size = Vector2(rng.randf_range(2, 4), rng.randf_range(2, 4))
-		dirt.position = pos
-		dirt_container.add_child(dirt)
-		dirt_count += 1
-
-	print("ProceduralMapGenerator: Placed %d dirt pixels" % dirt_count)
+				if land_cells.has(key) and not water_cells.has(key):
+					var tile = dirt_tiles[rng.randi() % dirt_tiles.size()]
+					dirt_tilemap.set_cell(Vector2i(tx, ty), 0, tile)
+					dirt_cells[key] = Vector2i(tx, ty)
 
 func _place_trees() -> void:
 	if tree_scenes.is_empty():
-		print("ProceduralMapGenerator: No tree scenes loaded!")
 		return
 
-	# Calculate number of trees based on density
 	var area = MAP_SIZE * MAP_SIZE
 	var tree_count = int(area * TREE_DENSITY)
-
 	print("ProceduralMapGenerator: Placing %d trees..." % tree_count)
 
 	var placed = 0
 	var attempts = 0
-	var max_attempts = tree_count * 10
 
-	while placed < tree_count and attempts < max_attempts:
+	while placed < tree_count and attempts < tree_count * 10:
 		attempts += 1
+		var pos = Vector2(rng.randf_range(100, MAP_SIZE - 100), rng.randf_range(100, MAP_SIZE - 100))
 
-		var pos = Vector2(
-			rng.randf_range(100, MAP_SIZE - 100),
-			rng.randf_range(100, MAP_SIZE - 100)
-		)
-
-		# Check if position is valid (not on path, not too close to other obstacles)
-		# Use larger minimum distance (150) to prevent tree overlap with bigger trees
-		if _is_valid_obstacle_position(pos, 150):
-			var tree = tree_scenes[rng.randi() % tree_scenes.size()].instantiate()
+		if _is_valid_position(pos, 100):
+			var tree = tree_scenes[0].instantiate()
 			tree.global_position = pos
-			# Vary the tree type visually
-			_randomize_tree_appearance(tree)
+			_randomize_tree(tree)
 			add_child(tree)
 			obstacle_positions.append(pos)
 			placed += 1
 
-	print("ProceduralMapGenerator: Placed %d trees" % placed)
-
-func _randomize_tree_appearance(tree: Node2D) -> void:
-	# Load different tree textures randomly
-	var tree_textures = [
+func _randomize_tree(tree: Node2D) -> void:
+	var textures = [
 		"res://assets/enviro/gowl/Trees/Tree1.png",
 		"res://assets/enviro/gowl/Trees/Tree2.png",
 		"res://assets/enviro/gowl/Trees/Tree3.png"
@@ -734,84 +376,57 @@ func _randomize_tree_appearance(tree: Node2D) -> void:
 
 	var sprite = tree.get_node_or_null("Sprite")
 	if sprite and sprite is Sprite2D:
-		var tex_path = tree_textures[rng.randi() % tree_textures.size()]
-		var tex = load(tex_path)
+		var tex = load(textures[rng.randi() % textures.size()])
 		if tex:
 			sprite.texture = tex
 
-		# Trees with variation (1.0 to 6.0x scale - 50% to 100% of max)
-		var scale_var = rng.randf_range(1.0, 6.0)
-		sprite.scale = Vector2(scale_var, scale_var)
+		var scale_val = rng.randf_range(1.5, 5.0)
+		sprite.scale = Vector2(scale_val, scale_val)
 
-		# Random flip
 		if rng.randf() < 0.5:
 			sprite.flip_h = true
 
-	# Update shadow too
 	var shadow = tree.get_node_or_null("Shadow")
 	if shadow and shadow is Sprite2D and sprite:
 		shadow.texture = sprite.texture
 		shadow.scale = Vector2(sprite.scale.x * 0.9, sprite.scale.y * 0.4)
-		# Move shadow down based on tree scale
 		shadow.position.y = 12 + (sprite.scale.y - 1.5) * 8
 		if sprite.flip_h:
 			shadow.flip_h = true
 
-	# Adjust collision shape based on tree scale
-	var collision_shape = tree.get_node_or_null("CollisionShape2D")
-	var detection_shape = tree.get_node_or_null("DetectionArea/DetectionShape")
-	if collision_shape and sprite:
-		# Scale collision and move it to base of tree trunk
+	var collision = tree.get_node_or_null("CollisionShape2D")
+	if collision and sprite:
 		var scale_factor = sprite.scale.x
-		var base_collision_y = 20 + (scale_factor - 1.5) * 12  # Move down as tree gets bigger
-		collision_shape.position.y = base_collision_y
-
-		# Scale the collision shape size
-		var rect_shape = RectangleShape2D.new()
-		rect_shape.size = Vector2(24 * scale_factor * 0.5, 16 * scale_factor * 0.4)
-		collision_shape.shape = rect_shape
-
-		# Update detection shape too
-		if detection_shape:
-			detection_shape.position.y = base_collision_y
-			var detect_shape = RectangleShape2D.new()
-			detect_shape.size = rect_shape.size
-			detection_shape.shape = detect_shape
+		collision.position.y = 20 + (scale_factor - 1.5) * 12
+		var shape = RectangleShape2D.new()
+		shape.size = Vector2(24 * scale_factor * 0.5, 16 * scale_factor * 0.4)
+		collision.shape = shape
 
 func _place_rocks() -> void:
 	if rock_scenes.is_empty():
-		print("ProceduralMapGenerator: No rock scenes loaded!")
 		return
 
 	var area = MAP_SIZE * MAP_SIZE
 	var rock_count = int(area * ROCK_DENSITY)
-
 	print("ProceduralMapGenerator: Placing %d rocks..." % rock_count)
 
 	var placed = 0
 	var attempts = 0
-	var max_attempts = rock_count * 10
 
-	while placed < rock_count and attempts < max_attempts:
+	while placed < rock_count and attempts < rock_count * 10:
 		attempts += 1
+		var pos = Vector2(rng.randf_range(50, MAP_SIZE - 50), rng.randf_range(50, MAP_SIZE - 50))
 
-		var pos = Vector2(
-			rng.randf_range(30, MAP_SIZE - 30),
-			rng.randf_range(30, MAP_SIZE - 30)
-		)
-
-		if _is_valid_obstacle_position(pos, 40):
-			var rock = rock_scenes[rng.randi() % rock_scenes.size()].instantiate()
+		if _is_valid_position(pos, 50):
+			var rock = rock_scenes[0].instantiate()
 			rock.global_position = pos
-			_randomize_rock_appearance(rock)
+			_randomize_rock(rock)
 			add_child(rock)
 			obstacle_positions.append(pos)
 			placed += 1
 
-	print("ProceduralMapGenerator: Placed %d rocks" % placed)
-
-func _randomize_rock_appearance(rock: Node2D) -> void:
-	var rock_textures = [
+func _randomize_rock(rock: Node2D) -> void:
+	var textures = [
 		"res://assets/enviro/gowl/Rocks and Chest/Rocks/Rock1.png",
 		"res://assets/enviro/gowl/Rocks and Chest/Rocks/Rock2.png",
 		"res://assets/enviro/gowl/Rocks and Chest/Rocks/Rock3.png",
@@ -822,280 +437,161 @@ func _randomize_rock_appearance(rock: Node2D) -> void:
 
 	var sprite = rock.get_node_or_null("Sprite")
 	if sprite and sprite is Sprite2D:
-		var tex_path = rock_textures[rng.randi() % rock_textures.size()]
-		var tex = load(tex_path)
+		var tex = load(textures[rng.randi() % textures.size()])
 		if tex:
 			sprite.texture = tex
 
-		# Smaller rocks (0.4 to 0.7x scale)
-		var scale_var = rng.randf_range(0.4, 0.7)
-		sprite.scale = Vector2(scale_var, scale_var)
+		var scale_val = rng.randf_range(0.4, 0.8)
+		sprite.scale = Vector2(scale_val, scale_val)
 
 		if rng.randf() < 0.5:
 			sprite.flip_h = true
 
-		# Adjust collision shape to match the scaled rock size
-		_adjust_rock_collision(rock, tex, scale_var)
-
-func _adjust_rock_collision(rock: Node2D, texture: Texture2D, scale: float) -> void:
-	# Adjust the collision shape to match the actual rock size
-	var collision_shape = rock.get_node_or_null("CollisionShape2D")
-	var detection_shape = rock.get_node_or_null("DetectionArea/DetectionShape")
-
-	if texture and collision_shape:
-		# Calculate collision size based on texture and scale
-		var tex_width = texture.get_width() * scale
-		var tex_height = texture.get_height() * scale
-
-		# Rock collision should be at the base, roughly 60% width and 40% height
-		var collision_width = tex_width * 0.6
-		var collision_height = tex_height * 0.4
-
-		# Create a new rectangle shape with the adjusted size
-		var rect_shape = RectangleShape2D.new()
-		rect_shape.size = Vector2(collision_width, collision_height)
-		collision_shape.shape = rect_shape
-
-		# Position collision at base of rock (sprite is offset upward)
-		collision_shape.position = Vector2(0, tex_height * 0.1)
-
-		# Update detection area shape too
-		if detection_shape:
-			var detect_shape = RectangleShape2D.new()
-			detect_shape.size = Vector2(collision_width, collision_height)
-			detection_shape.shape = detect_shape
-			detection_shape.position = collision_shape.position
-
-func _place_obstacle_shade() -> void:
-	# Place dark grass tiles around obstacles (trees/rocks) to create natural shade
-	print("ProceduralMapGenerator: Adding shade around obstacles...")
-
-	var dark_grass_tiles = [
-		TILE_GRASS_DARK_1,
-		TILE_GRASS_DARK_2,
-		TILE_GRASS_DARK_3,
-		TILE_GRASS_DARK_4,
-		TILE_GRASS_DARK_5
-	]
-
-	var shade_count = 0
-
-	for obs_pos in obstacle_positions:
-		# Convert world position to tile position
-		var center_tx = int(obs_pos.x) / TILE_SIZE
-		var center_ty = int(obs_pos.y) / TILE_SIZE
-
-		# Create shade in a radius around the obstacle (3-5 tiles)
-		var shade_radius = rng.randi_range(2, 4)
-
-		for dy in range(-shade_radius, shade_radius + 1):
-			for dx in range(-shade_radius, shade_radius + 1):
-				var tx = center_tx + dx
-				var ty = center_ty + dy
-
-				# Skip if out of bounds
-				if tx < 0 or tx >= MAP_SIZE / TILE_SIZE or ty < 0 or ty >= MAP_SIZE / TILE_SIZE:
-					continue
-
-				# Skip if on path or water
-				var key = "%d_%d" % [tx, ty]
-				if key in path_cells or key in water_cells:
-					continue
-
-				# Calculate distance from obstacle center
-				var dist = Vector2(dx, dy).length()
-
-				# Probability decreases with distance from obstacle
-				var shade_prob = 0.7 - (dist / shade_radius) * 0.5
-
-				if rng.randf() < shade_prob:
-					var tile_pos = Vector2i(tx, ty)
-					var dark_tile = dark_grass_tiles[rng.randi() % dark_grass_tiles.size()]
-					shade_tilemap.set_cell(tile_pos, 0, dark_tile)
-					shade_count += 1
-
-	print("ProceduralMapGenerator: Added %d shade tiles around obstacles" % shade_count)
-
 func _place_lamps() -> void:
 	if not lamp_scene:
-		print("ProceduralMapGenerator: No lamp scene loaded!")
 		return
 
-	print("ProceduralMapGenerator: Placing lamps along paths...")
-
-	# Place lamps along the paths - but beside them, not on them
-	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
-	var directions = [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]
-
-	for dir in directions:
-		var current_dist = SPAWN_AREA_RADIUS + LAMP_SPACING / 2
-
-		while current_dist < MAP_SIZE / 2 - 50:
-			var pos = center + dir * current_dist
-
-			# Offset to be BESIDE the path, not on it
-			# PATH_WIDTH / 2 gets to the edge, then add 20 to place it off the road
-			var side_offset = PATH_WIDTH / 2 + 20
-			var perpendicular = Vector2(-dir.y, dir.x)
-
-			# Alternate sides for visual variety
-			var side = 1 if int(current_dist / LAMP_SPACING) % 2 == 0 else -1
-			var lamp_pos = pos + perpendicular * (side_offset * side)
-
-			if _is_valid_lamp_position(lamp_pos):
-				var lamp = lamp_scene.instantiate()
-				lamp.global_position = lamp_pos
-				add_child(lamp)
-				lamp_positions.append(lamp_pos)
-
-			current_dist += LAMP_SPACING
-
-	print("ProceduralMapGenerator: Placed %d lamps" % lamp_positions.size())
-
-func _place_magic_stones() -> void:
-	if not magic_stone_scene:
-		print("ProceduralMapGenerator: No magic stone scene loaded!")
-		return
-
-	print("ProceduralMapGenerator: Placing %d magic stones..." % MAGIC_STONE_COUNT)
+	print("ProceduralMapGenerator: Placing %d lamps..." % LAMP_COUNT)
 
 	var placed = 0
 	var attempts = 0
-	var max_attempts = MAGIC_STONE_COUNT * 50
 
-	# Minimum distance from center (spawn area)
-	var min_dist_from_center = SPAWN_AREA_RADIUS + 200
-	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
-
-	while placed < MAGIC_STONE_COUNT and attempts < max_attempts:
+	while placed < LAMP_COUNT and attempts < LAMP_COUNT * 20:
 		attempts += 1
+		var pos = Vector2(rng.randf_range(150, MAP_SIZE - 150), rng.randf_range(150, MAP_SIZE - 150))
 
-		var pos = Vector2(
-			rng.randf_range(150, MAP_SIZE - 150),
-			rng.randf_range(150, MAP_SIZE - 150)
-		)
+		if _is_valid_lamp_position(pos):
+			var lamp = lamp_scene.instantiate()
+			lamp.global_position = pos
+			add_child(lamp)
+			lamp_positions.append(pos)
+			placed += 1
 
-		# Must be far from center
-		if pos.distance_to(center) < min_dist_from_center:
-			continue
+func _place_magic_stones() -> void:
+	if not magic_stone_scene:
+		return
 
-		# Must not be on path (check surrounding tiles too)
-		var tx = int(pos.x) / TILE_SIZE
-		var ty = int(pos.y) / TILE_SIZE
-		var on_path = false
-		for dy in range(-2, 3):
-			for dx in range(-2, 3):
-				var key = "%d_%d" % [tx + dx, ty + dy]
-				if key in path_cells:
-					on_path = true
-					break
-			if on_path:
-				break
-		if on_path:
-			continue
+	print("ProceduralMapGenerator: Placing magic stones...")
 
-		# Must be away from other magic stones
-		var too_close = false
-		for other_pos in magic_stone_positions:
-			if pos.distance_to(other_pos) < 400:
-				too_close = true
-				break
-		if too_close:
-			continue
+	var placed = 0
+	var attempts = 0
 
-		# Must be away from obstacles (trees/rocks) - larger distance to avoid overlap
-		var too_close_to_obstacle = false
-		for obs_pos in obstacle_positions:
-			if pos.distance_to(obs_pos) < 200:  # 200px from any tree/rock
-				too_close_to_obstacle = true
-				break
-		if too_close_to_obstacle:
-			continue
+	while placed < MAGIC_STONE_COUNT and attempts < 100:
+		attempts += 1
+		var pos = Vector2(rng.randf_range(200, MAP_SIZE - 200), rng.randf_range(200, MAP_SIZE - 200))
 
-		# Must not be in water
-		var water_key = "%d_%d" % [tx, ty]
-		if water_key in water_cells:
-			continue
+		if pos.distance_to(_spawn_center) > SPAWN_AREA_RADIUS + 300:
+			if _is_valid_position(pos, 150):
+				var stone = magic_stone_scene.instantiate()
+				stone.global_position = pos
+				add_child(stone)
+				magic_stone_positions.append(pos)
+				placed += 1
 
-		var stone = magic_stone_scene.instantiate()
-		stone.global_position = pos
-		add_child(stone)
-		magic_stone_positions.append(pos)
-		placed += 1
-
-	print("ProceduralMapGenerator: Placed %d magic stones" % placed)
-
-func _is_valid_obstacle_position(pos: Vector2, min_distance: float) -> bool:
-	# Check if on or near a path (check surrounding tiles to prevent trees on road edges)
+func _is_valid_position(pos: Vector2, min_dist: float) -> bool:
 	var tx = int(pos.x) / TILE_SIZE
 	var ty = int(pos.y) / TILE_SIZE
+	var key = "%d_%d" % [tx, ty]
 
-	# Check a 3x3 area around the position for paths
-	for dy in range(-1, 2):
-		for dx in range(-1, 2):
-			var key = "%d_%d" % [tx + dx, ty + dy]
-			if key in path_cells:
-				return false
-
-	# Check if in water
-	var water_key = "%d_%d" % [tx, ty]
-	if water_key in water_cells:
+	# Must be on land
+	if not land_cells.has(key):
 		return false
 
-	# Check distance from pond centers (extra margin)
-	for pond_pos in pond_centers:
-		if pos.distance_to(pond_pos) < (MAX_POND_RADIUS * TILE_SIZE + 20):
-			return false
-
-	# Check distance from spawn center
-	var center = Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
-	if pos.distance_to(center) < SPAWN_AREA_RADIUS + 20:
+	# Not in water
+	if water_cells.has(key):
 		return false
 
-	# Check distance from other obstacles
-	for other_pos in obstacle_positions:
-		if pos.distance_to(other_pos) < min_distance:
+	# Away from spawn
+	if pos.distance_to(_spawn_center) < SPAWN_AREA_RADIUS + 30:
+		return false
+
+	# Away from other obstacles
+	for other in obstacle_positions:
+		if pos.distance_to(other) < min_dist:
 			return false
 
 	return true
 
 func _is_valid_lamp_position(pos: Vector2) -> bool:
-	# Check distance from other lamps
-	for other_pos in lamp_positions:
-		if pos.distance_to(other_pos) < LAMP_SPACING * 0.5:
-			return false
-
-	# Check not too close to obstacles (trees/rocks) - use larger distance to avoid overlap
-	for obs_pos in obstacle_positions:
-		if pos.distance_to(obs_pos) < 120:
-			return false
-
-	# Check not in water
 	var tx = int(pos.x) / TILE_SIZE
 	var ty = int(pos.y) / TILE_SIZE
-	var key = "%d_%d" % [tx, ty]
-	if key in water_cells:
+
+	if not land_cells.has("%d_%d" % [tx, ty]):
 		return false
 
-	# Check distance from pond centers
-	for pond_pos in pond_centers:
-		if pos.distance_to(pond_pos) < (MAX_POND_RADIUS * TILE_SIZE + 30):
+	if water_cells.has("%d_%d" % [tx, ty]):
+		return false
+
+	for other in lamp_positions:
+		if pos.distance_to(other) < 200:
+			return false
+
+	for obs in obstacle_positions:
+		if pos.distance_to(obs) < 80:
 			return false
 
 	return true
 
+# Fog of War
+func _setup_fog_of_war() -> void:
+	print("ProceduralMapGenerator: Setting up fog of war...")
+
+	var fog_width = MAP_SIZE / FOG_SCALE
+	var fog_height = MAP_SIZE / FOG_SCALE
+
+	fog_image = Image.create(fog_width, fog_height, false, Image.FORMAT_RGBA8)
+	fog_image.fill(Color(0, 0, 0, 0.85))  # Dark fog
+
+	fog_texture = ImageTexture.create_from_image(fog_image)
+
+	fog_sprite = Sprite2D.new()
+	fog_sprite.name = "FogOfWar"
+	fog_sprite.texture = fog_texture
+	fog_sprite.centered = false
+	fog_sprite.scale = Vector2(FOG_SCALE, FOG_SCALE)
+	fog_sprite.z_index = 100  # On top of everything
+	add_child(fog_sprite)
+
+	# Find player
+	await get_tree().process_frame
+	var players = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		player = players[0]
+
+func _update_fog_of_war() -> void:
+	if not player or not fog_image or not fog_texture:
+		return
+
+	var player_pos = player.global_position
+	var fog_x = int(player_pos.x / FOG_SCALE)
+	var fog_y = int(player_pos.y / FOG_SCALE)
+	var reveal_radius = int(FOG_REVEAL_RADIUS / FOG_SCALE)
+
+	# Reveal area around player
+	for dy in range(-reveal_radius, reveal_radius + 1):
+		for dx in range(-reveal_radius, reveal_radius + 1):
+			var px = fog_x + dx
+			var py = fog_y + dy
+
+			if px >= 0 and px < fog_image.get_width() and py >= 0 and py < fog_image.get_height():
+				var dist = Vector2(dx, dy).length()
+				if dist <= reveal_radius:
+					# Gradual fade at edges
+					var alpha = 0.0
+					if dist > reveal_radius * 0.7:
+						alpha = (dist - reveal_radius * 0.7) / (reveal_radius * 0.3) * 0.85
+					fog_image.set_pixel(px, py, Color(0, 0, 0, alpha))
+
+	fog_texture.update(fog_image)
+
 # Public API
 func get_spawn_position() -> Vector2:
+	if _spawn_center != Vector2.ZERO:
+		return _spawn_center
 	return Vector2(MAP_SIZE / 2, MAP_SIZE / 2)
 
 func get_map_bounds() -> Rect2:
 	return Rect2(0, 0, MAP_SIZE, MAP_SIZE)
 
 func get_camera_bounds() -> Rect2:
-	# Camera can see slightly into the water
-	return Rect2(
-		-CAMERA_WATER_MARGIN,
-		-CAMERA_WATER_MARGIN,
-		MAP_SIZE + CAMERA_WATER_MARGIN * 2,
-		MAP_SIZE + CAMERA_WATER_MARGIN * 2
-	)
+	return Rect2(-50, -50, MAP_SIZE + 100, MAP_SIZE + 100)
