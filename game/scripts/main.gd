@@ -18,8 +18,12 @@ var virtual_joystick = null
 var joystick_scene: PackedScene = preload("res://scenes/ui/virtual_joystick.tscn")
 
 var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
+var continue_screen_script = preload("res://scripts/continue_screen.gd")
 var game_time: float = 0.0
 var kill_count: int = 0
+
+# Continue system - once per run
+var continue_used: bool = false
 
 # Track dropped items for proximity detection
 var nearby_item: Node2D = null
@@ -100,9 +104,113 @@ func _on_player_level_up(new_level: int) -> void:
 			ability_selection.show_choices(choices)
 
 func _on_player_died() -> void:
-	# Wait for death animation then show game over
-	await get_tree().create_timer(3.5).timeout
-	show_game_over()
+	# Wait for death animation
+	await get_tree().create_timer(2.0).timeout
+
+	# Check if continue is available (once per run)
+	if not continue_used:
+		_show_continue_screen()
+	else:
+		# Wait remaining time and show game over
+		await get_tree().create_timer(1.5).timeout
+		show_game_over()
+
+func _show_continue_screen() -> void:
+	"""Show the continue screen with archangel animation."""
+	var continue_screen = CanvasLayer.new()
+	continue_screen.set_script(continue_screen_script)
+	continue_screen.name = "ContinueScreen"
+	add_child(continue_screen)
+
+	# Setup with player reference
+	if continue_screen.has_method("setup"):
+		continue_screen.setup(player)
+
+	# Connect to the choice signal
+	continue_screen.continue_chosen.connect(_on_continue_chosen)
+
+func _on_continue_chosen(accepted: bool) -> void:
+	"""Handle the player's continue choice."""
+	continue_used = true  # Mark continue as used regardless of choice
+
+	if accepted:
+		# Revive the player at 50% HP
+		_revive_player()
+	else:
+		# Proceed to game over
+		show_game_over()
+
+func _revive_player() -> void:
+	"""Revive the player at 50% HP and show REVIVED effect."""
+	# Unpause first
+	get_tree().paused = false
+
+	# Show REVIVED text effect (similar to phoenix)
+	_show_revived_effect()
+
+	# Revive player at 50% HP
+	if player and is_instance_valid(player) and player.has_method("revive_with_percent"):
+		player.revive_with_percent(0.5)  # 50% HP
+
+	# Knock back nearby enemies for safety
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = player.global_position.distance_to(enemy.global_position)
+			if dist < 200:
+				var direction = (enemy.global_position - player.global_position).normalized()
+				if enemy.has_method("apply_knockback"):
+					enemy.apply_knockback(direction * 400)
+
+func _show_revived_effect() -> void:
+	"""Show the REVIVED text effect on screen."""
+	# Create overlay canvas layer
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	canvas.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(canvas)
+
+	# Create centered label
+	var label = Label.new()
+	label.text = "REVIVED"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER)
+
+	# Load pixel font
+	var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 1.0))  # Green/healing color
+
+	# Shadow for visibility
+	label.add_theme_color_override("font_shadow_color", Color(0.1, 0.4, 0.2, 1.0))
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+
+	# Start invisible and scaled down
+	label.modulate.a = 0.0
+	label.scale = Vector2(0.5, 0.5)
+	label.pivot_offset = label.size / 2
+
+	canvas.add_child(label)
+
+	# Animate: fade in, scale up, hold, then fade out
+	var tween = create_tween()
+	tween.tween_property(label, "modulate:a", 1.0, 0.2)
+	tween.parallel().tween_property(label, "scale", Vector2(1.2, 1.2), 0.2).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1)
+	tween.tween_interval(1.0)  # Hold
+	tween.tween_property(label, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(func(): canvas.queue_free())
+
+	# Screen effects
+	if JuiceManager:
+		JuiceManager.shake_medium()
+
+	if HapticManager:
+		HapticManager.medium()
 
 func show_game_over(gave_up: bool = false) -> void:
 	get_tree().paused = true
