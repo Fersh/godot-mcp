@@ -52,6 +52,10 @@ func _on_ready() -> void:
 	# Emit spawn signal for health bar
 	emit_signal("boss_spawned", self)
 
+	# Start boss music
+	if SoundManager:
+		SoundManager.play_boss_music(self)
+
 # Override in subclasses
 func _setup_boss() -> void:
 	pass
@@ -142,6 +146,11 @@ func take_damage(amount: float, is_crit: bool = false) -> void:
 func die() -> void:
 	emit_signal("boss_died", self)
 	emit_signal("boss_health_changed", 0, max_health)
+
+	# End boss music
+	if SoundManager:
+		SoundManager.on_boss_died()
+
 	super.die()
 
 # Override for boss-specific rewards

@@ -19,9 +19,9 @@ func _ready() -> void:
 	# Update displays
 	_update_coin_display()
 
-	# Stop any music from previous game session
+	# Play main menu music (1. Stolen Future)
 	if SoundManager:
-		SoundManager.stop_music()
+		SoundManager.play_menu_music()
 
 func _style_golden_button(button: Button) -> void:
 	# Golden/yellow button with wooden bottom border (matching reference image)

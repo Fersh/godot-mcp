@@ -38,6 +38,10 @@ func _on_ready() -> void:
 	_setup_elite()
 	_init_attack_cooldowns()
 
+	# Start elite music (unless this is a boss subclass)
+	if enemy_rarity == "elite" and SoundManager:
+		SoundManager.play_elite_music(self)
+
 # Override in subclasses to setup specific elite properties
 func _setup_elite() -> void:
 	pass
@@ -176,6 +180,10 @@ func die() -> void:
 
 	# Emit elite died signal for UI
 	elite_died.emit(self)
+
+	# End elite music (only if this is an elite, not a boss)
+	if enemy_rarity == "elite" and SoundManager:
+		SoundManager.on_elite_died()
 
 	if SoundManager:
 		SoundManager.play_enemy_death()

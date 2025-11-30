@@ -35,7 +35,7 @@ func _ready() -> void:
 	if player_gave_up and title_label:
 		title_label.text = "YOU COWARD"
 
-	# Play game over music (will switch to music2 when it ends)
+	# Play game over music (5. Aurora)
 	if SoundManager:
 		SoundManager.play_game_over_music()
 

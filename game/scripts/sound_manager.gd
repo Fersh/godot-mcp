@@ -1,6 +1,7 @@
 extends Node
 
 # Sound Manager - handles all game sound effects with pooling and random variations
+# Also manages dynamic music system with boss/elite/menu music transitions
 
 # Sound pools for randomization
 var swing_sounds: Array[AudioStream] = []
@@ -23,17 +24,63 @@ var block_sound: AudioStream
 var audio_players: Array[AudioStreamPlayer] = []
 const POOL_SIZE: int = 16
 
-# Music player (separate from SFX pool)
+# ============================================
+# MUSIC SYSTEM
+# ============================================
+
+# Music players - main for background, overlay for boss/elite
 var music_player: AudioStreamPlayer
-var music1: AudioStream
-var music2: AudioStream
+var overlay_music_player: AudioStreamPlayer
+
+# Music tracks
+var music1: AudioStream  # In-game track 1
+var music2: AudioStream  # In-game track 2
+var menu_music: AudioStream  # Main menu music (1. Stolen Future)
+var boss_music: AudioStream  # Boss music (3. Lost)
+var elite_music: AudioStream  # Elite music (4. Awakened)
+var game_over_music: AudioStream  # Game over music (5. Aurora)
+
+# Music state
+enum MusicState { NONE, MENU, GAME, BOSS, ELITE, GAME_OVER }
+var current_music_state: MusicState = MusicState.NONE
+var previous_music_state: MusicState = MusicState.NONE
+
+# Background music state for resuming after boss/elite
+var background_music_position: float = 0.0
+var background_music_stream: AudioStream = null
+var in_game_music_loop: bool = false
 var play_music2_on_finish: bool = false
-var in_game_music_loop: bool = false  # When true, cycle music1 -> music2 -> music1...
+
+# Fade settings
+const FADE_DURATION: float = 5.0  # Fade out duration for boss music
+const FADE_IN_DURATION: float = 2.0  # Fade in duration
+const MUSIC_VOLUME_DB: float = -10.0  # Normal music volume
+const OVERLAY_VOLUME_DB: float = -6.0  # Boss/elite music slightly louder
+
+# Elite music timer
+var elite_music_timer: float = 0.0
+const ELITE_MUSIC_MAX_DURATION: float = 30.0  # Max 30 seconds for elite music
+
+# Active boss/elite tracking
+var active_boss: Node = null
+var active_elite: Node = null
+
+# Tweens for fading
+var fade_tween: Tween = null
+var overlay_fade_tween: Tween = null
 
 func _ready() -> void:
 	_load_sounds()
 	_create_audio_pool()
-	_setup_music_player()
+	_setup_music_players()
+	_load_music_tracks()
+
+func _process(delta: float) -> void:
+	# Handle elite music timeout
+	if current_music_state == MusicState.ELITE and elite_music_timer > 0:
+		elite_music_timer -= delta
+		if elite_music_timer <= 0:
+			_end_overlay_music()
 
 func _load_sounds() -> void:
 	# Load swing sounds (swing, swing2-5)
@@ -73,38 +120,63 @@ func _create_audio_pool() -> void:
 		add_child(player)
 		audio_players.append(player)
 
-func _setup_music_player() -> void:
+func _setup_music_players() -> void:
+	# Main music player for background/menu/game over
 	music_player = AudioStreamPlayer.new()
 	music_player.bus = "Master"
-	music_player.volume_db = -10.0  # Background music quieter than SFX
+	music_player.volume_db = MUSIC_VOLUME_DB
 	add_child(music_player)
-
-	# Connect finished signal
 	music_player.finished.connect(_on_music_finished)
 
-	# Load music
+	# Overlay music player for boss/elite (plays on top, background fades)
+	overlay_music_player = AudioStreamPlayer.new()
+	overlay_music_player.bus = "Master"
+	overlay_music_player.volume_db = OVERLAY_VOLUME_DB
+	add_child(overlay_music_player)
+	overlay_music_player.finished.connect(_on_overlay_music_finished)
+
+func _load_music_tracks() -> void:
+	# In-game music (existing)
 	music1 = load("res://assets/sounds/music1.mp3")
 	music2 = load("res://assets/sounds/music2.mp3")
+
+	# New contextual music tracks
+	if ResourceLoader.exists("res://assets/sounds/1. Stolen Future.mp3"):
+		menu_music = load("res://assets/sounds/1. Stolen Future.mp3")
+	if ResourceLoader.exists("res://assets/sounds/3. Lost.mp3"):
+		boss_music = load("res://assets/sounds/3. Lost.mp3")
+	if ResourceLoader.exists("res://assets/sounds/4. Awakened.mp3"):
+		elite_music = load("res://assets/sounds/4. Awakened.mp3")
+	if ResourceLoader.exists("res://assets/sounds/5. Aurora.mp3"):
+		game_over_music = load("res://assets/sounds/5. Aurora.mp3")
 
 func _on_music_finished() -> void:
 	if GameSettings and not GameSettings.music_enabled:
 		return
 
-	# In-game music loop: cycle music1 -> music2 -> music1...
-	if in_game_music_loop:
-		if music_player.stream == music1 and music2:
-			music_player.stream = music2
-			music_player.play()
-		elif music_player.stream == music2 and music1:
-			music_player.stream = music1
-			music_player.play()
-		return
+	match current_music_state:
+		MusicState.GAME:
+			# In-game music loop: cycle music1 -> music2 -> music1...
+			if in_game_music_loop:
+				if music_player.stream == music1 and music2:
+					music_player.stream = music2
+					music_player.play()
+				elif music_player.stream == music2 and music1:
+					music_player.stream = music1
+					music_player.play()
 
-	# Game over: play music1 once, then switch to music2
-	if play_music2_on_finish and music2:
-		music_player.stream = music2
-		music_player.play()
-		play_music2_on_finish = false
+		MusicState.MENU:
+			# Loop menu music
+			if menu_music:
+				music_player.play()
+
+		MusicState.GAME_OVER:
+			# Game over music doesn't loop - just ends
+			pass
+
+func _on_overlay_music_finished() -> void:
+	# Boss/elite music finished naturally - return to background music
+	_end_overlay_music()
 
 func _get_available_player() -> AudioStreamPlayer:
 	for player in audio_players:
@@ -181,34 +253,191 @@ func play_block() -> void:
 	# Attack blocked
 	_play_sound(block_sound, -3.0, 0.1)
 
-# Music controls
+# ============================================
+# MUSIC CONTROL API
+# ============================================
+
+func play_menu_music() -> void:
+	"""Play main menu music (1. Stolen Future) - loops until game starts."""
+	if GameSettings and not GameSettings.music_enabled:
+		return
+
+	_stop_all_music()
+	current_music_state = MusicState.MENU
+
+	if menu_music:
+		music_player.stream = menu_music
+		music_player.volume_db = MUSIC_VOLUME_DB
+		music_player.play()
+
 func play_music() -> void:
-	if music_player and music1:
-		# Check if music is enabled
-		if GameSettings and not GameSettings.music_enabled:
-			return
-		play_music2_on_finish = false
-		in_game_music_loop = true  # Enable cycling between music1 and music2
+	"""Start in-game background music (cycles music1 <-> music2)."""
+	if GameSettings and not GameSettings.music_enabled:
+		return
+
+	_stop_all_music()
+	current_music_state = MusicState.GAME
+	in_game_music_loop = true
+
+	if music1:
 		music_player.stream = music1
+		music_player.volume_db = MUSIC_VOLUME_DB
 		music_player.play()
 
 func play_game_over_music() -> void:
-	"""Play music1 once, then switch to music2 when it ends."""
-	if music_player and music1:
-		if GameSettings and not GameSettings.music_enabled:
-			return
-		in_game_music_loop = false  # Stop the game loop cycling
-		play_music2_on_finish = true
-		music_player.stream = music1
+	"""Play game over music (5. Aurora)."""
+	if GameSettings and not GameSettings.music_enabled:
+		return
+
+	_stop_all_music()
+	current_music_state = MusicState.GAME_OVER
+	in_game_music_loop = false
+
+	if game_over_music:
+		music_player.stream = game_over_music
+		music_player.volume_db = MUSIC_VOLUME_DB
 		music_player.play()
 
+func play_boss_music(boss: Node = null) -> void:
+	"""Play boss music (3. Lost) - fades out background, plays until boss dies or song ends."""
+	if GameSettings and not GameSettings.music_enabled:
+		return
+	if not boss_music:
+		return
+
+	# Don't interrupt existing boss music
+	if current_music_state == MusicState.BOSS:
+		return
+
+	active_boss = boss
+	_start_overlay_music(boss_music, MusicState.BOSS)
+
+func play_elite_music(elite: Node = null) -> void:
+	"""Play elite music (4. Awakened) - plays until elite dies or 30 seconds, whichever first."""
+	if GameSettings and not GameSettings.music_enabled:
+		return
+	if not elite_music:
+		return
+
+	# Don't interrupt boss music with elite music
+	if current_music_state == MusicState.BOSS:
+		return
+
+	# Don't interrupt existing elite music
+	if current_music_state == MusicState.ELITE:
+		return
+
+	active_elite = elite
+	elite_music_timer = ELITE_MUSIC_MAX_DURATION
+	_start_overlay_music(elite_music, MusicState.ELITE)
+
+func on_boss_died() -> void:
+	"""Called when boss dies - end boss music and return to background."""
+	if current_music_state == MusicState.BOSS:
+		active_boss = null
+		_end_overlay_music()
+
+func on_elite_died() -> void:
+	"""Called when elite dies - end elite music and return to background."""
+	if current_music_state == MusicState.ELITE:
+		active_elite = null
+		elite_music_timer = 0.0
+		_end_overlay_music()
+
 func stop_music() -> void:
-	if music_player:
-		music_player.stop()
+	"""Stop all music immediately."""
+	_stop_all_music()
+	current_music_state = MusicState.NONE
 
 func set_music_volume(volume_db: float) -> void:
 	if music_player:
 		music_player.volume_db = volume_db
+
+# ============================================
+# INTERNAL MUSIC HELPERS
+# ============================================
+
+func _stop_all_music() -> void:
+	"""Stop all music players and cancel any fades."""
+	if fade_tween:
+		fade_tween.kill()
+		fade_tween = null
+	if overlay_fade_tween:
+		overlay_fade_tween.kill()
+		overlay_fade_tween = null
+
+	if music_player:
+		music_player.stop()
+	if overlay_music_player:
+		overlay_music_player.stop()
+
+	in_game_music_loop = false
+	elite_music_timer = 0.0
+	active_boss = null
+	active_elite = null
+
+func _start_overlay_music(track: AudioStream, state: MusicState) -> void:
+	"""Start boss/elite music with fade transition."""
+	# Save current background music state
+	if music_player.playing:
+		background_music_position = music_player.get_playback_position()
+		background_music_stream = music_player.stream
+	previous_music_state = current_music_state
+	current_music_state = state
+
+	# Cancel any existing fade
+	if fade_tween:
+		fade_tween.kill()
+
+	# Fade out background music over FADE_DURATION seconds
+	fade_tween = create_tween()
+	fade_tween.tween_property(music_player, "volume_db", -40.0, FADE_DURATION)
+	fade_tween.tween_callback(func():
+		music_player.stop()
+	)
+
+	# Start overlay music immediately (fade in)
+	overlay_music_player.stream = track
+	overlay_music_player.volume_db = -30.0  # Start quiet
+	overlay_music_player.play()
+
+	if overlay_fade_tween:
+		overlay_fade_tween.kill()
+	overlay_fade_tween = create_tween()
+	overlay_fade_tween.tween_property(overlay_music_player, "volume_db", OVERLAY_VOLUME_DB, FADE_IN_DURATION)
+
+func _end_overlay_music() -> void:
+	"""End boss/elite music and fade back to background music."""
+	if current_music_state != MusicState.BOSS and current_music_state != MusicState.ELITE:
+		return
+
+	# Cancel any existing fades
+	if overlay_fade_tween:
+		overlay_fade_tween.kill()
+
+	# Fade out overlay music
+	overlay_fade_tween = create_tween()
+	overlay_fade_tween.tween_property(overlay_music_player, "volume_db", -40.0, FADE_IN_DURATION)
+	overlay_fade_tween.tween_callback(func():
+		overlay_music_player.stop()
+	)
+
+	# Restore background music state
+	current_music_state = previous_music_state if previous_music_state == MusicState.GAME else MusicState.GAME
+
+	# Resume background music from where it left off
+	if background_music_stream and current_music_state == MusicState.GAME:
+		if fade_tween:
+			fade_tween.kill()
+
+		music_player.stream = background_music_stream
+		music_player.volume_db = -30.0  # Start quiet
+		music_player.play()
+		music_player.seek(background_music_position)
+		in_game_music_loop = true
+
+		fade_tween = create_tween()
+		fade_tween.tween_property(music_player, "volume_db", MUSIC_VOLUME_DB, FADE_IN_DURATION)
 
 # ============================================
 # ACTIVE ABILITY SOUNDS
