@@ -7,7 +7,7 @@ class_name ActiveAbilityBar
 # Ultimate button: centered above the 2x2 grid
 
 const BUTTON_SIZE := Vector2(101, 101)  # Standard button size (10% smaller than 112)
-const ABILITY1_SIZE := Vector2(138, 138)  # Ability 1 is larger (25% larger)
+const ABILITY1_SIZE := Vector2(124, 124)  # Ability 1 is larger (reduced 10%)
 const ULTIMATE_SIZE := Vector2(120, 120)  # Ultimate button size
 const GRID_SPACING := 8  # Space between buttons
 const MARGIN_RIGHT := 80  # 20px more left

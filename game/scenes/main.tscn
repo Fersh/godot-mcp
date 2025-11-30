@@ -1,11 +1,10 @@
-[gd_scene load_steps=25 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=19 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemy.tscn" id="2_enemy"]
 [ext_resource type="Script" uid="uid://q6og53h2jqiu" path="res://scripts/enemy_spawner.gd" id="3_spawner"]
 [ext_resource type="PackedScene" path="res://scenes/game_hud.tscn" id="4_game_hud"]
-[ext_resource type="Texture2D" uid="uid://d0a4q8jtga3fw" path="res://assets/enviro/arena5.png" id="5_arena"]
 [ext_resource type="PackedScene" path="res://scenes/stats_display.tscn" id="6_stats"]
 [ext_resource type="PackedScene" uid="uid://diimf5rw8jlto" path="res://scenes/ability_selection.tscn" id="7_ability_selection"]
 [ext_resource type="PackedScene" uid="uid://kcwlkidhjrtq" path="res://scenes/juice_overlay.tscn" id="8_juice"]
@@ -19,37 +18,17 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy_kobold_priest.tscn" id="17_kobold_priest"]
 [ext_resource type="PackedScene" path="res://scenes/boss_minotaur.tscn" id="18_minotaur"]
 [ext_resource type="PackedScene" path="res://scenes/elite_goblin_king.tscn" id="19_goblin_king"]
-[ext_resource type="PackedScene" path="res://scenes/decorations/torch.tscn" id="20_gqmmt"]
-[ext_resource type="PackedScene" path="res://scenes/decorations/banner.tscn" id="21_yc10j"]
 [ext_resource type="Script" uid="uid://blnv3drpcd3ac" path="res://scripts/day_night_cycle.gd" id="22_daynight"]
 [ext_resource type="Script" uid="uid://c3p4h72jb734i" path="res://scripts/ui/offscreen_indicators.gd" id="23_offscreen"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
-size = Vector2(1848, 449)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
 
-[node name="Background" type="Sprite2D" parent="."]
-z_index = -10
-position = Vector2(764, 690)
-scale = Vector2(0.75, 0.75)
-texture = ExtResource("5_arena")
-
 [node name="DayNightCycle" type="CanvasModulate" parent="."]
 script = ExtResource("22_daynight")
 
-[node name="TopWall" type="StaticBody2D" parent="."]
-position = Vector2(768, 60)
-collision_layer = 2
-collision_mask = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
-position = Vector2(-10, 136)
-shape = SubResource("RectangleShape2D_topwall")
-
 [node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(768, 691)
+position = Vector2(1250, 1250)
 
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("3_spawner")
@@ -79,98 +58,3 @@ visible = false
 
 [node name="OffscreenIndicators" type="CanvasLayer" parent="."]
 script = ExtResource("23_offscreen")
-
-[node name="Torch" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(94, 241.00006)
-
-[node name="Torch7" parent="." instance=ExtResource("20_gqmmt")]
-visible = false
-position = Vector2(94, 241.00006)
-
-[node name="Torch2" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(382.00003, 241.00006)
-
-[node name="Torch3" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(566, 241.00008)
-
-[node name="Torch4" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(918, 241.00008)
-
-[node name="Torch5" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1118.0001, 241.00008)
-
-[node name="Torch6" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1398, 241.00006)
-
-[node name="Banner" parent="." instance=ExtResource("21_yc10j")]
-position = Vector2(240, 231.00008)
-
-[node name="Banner2" parent="." instance=ExtResource("21_yc10j")]
-position = Vector2(472, 231.00006)
-
-[node name="Banner3" parent="." instance=ExtResource("21_yc10j")]
-position = Vector2(1016, 231.00006)
-
-[node name="Banner4" parent="." instance=ExtResource("21_yc10j")]
-position = Vector2(1264.0001, 231.00006)
-
-[node name="Banner5" parent="." instance=ExtResource("21_yc10j")]
-position = Vector2(1520.0001, 231.00008)
-
-[node name="Torch8" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(-87, 476)
-
-[node name="Torch9" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1613.9998, 476)
-
-[node name="Torch10" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(-87, 633)
-
-[node name="Torch11" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1613.9998, 633)
-
-[node name="Torch12" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(-87.00001, 809.00006)
-
-[node name="Torch13" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1613.9998, 809.00006)
-
-[node name="Torch14" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(-87, 1009)
-
-[node name="Torch15" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1613.9998, 1009)
-
-[node name="Torch16" parent="." instance=ExtResource("20_gqmmt")]
-visible = false
-position = Vector2(-87, 1241.0001)
-
-[node name="Torch17" parent="." instance=ExtResource("20_gqmmt")]
-visible = false
-position = Vector2(1613.9998, 1241.0001)
-
-[node name="Torch18" parent="." instance=ExtResource("20_gqmmt")]
-visible = false
-position = Vector2(-87, 1377.0001)
-
-[node name="Torch20" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(96.99999, 1377)
-
-[node name="Torch21" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(377.00003, 1377)
-
-[node name="Torch22" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(569, 1377)
-
-[node name="Torch23" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(929, 1377)
-
-[node name="Torch24" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1121.0001, 1377)
-
-[node name="Torch25" parent="." instance=ExtResource("20_gqmmt")]
-position = Vector2(1401, 1377)
-
-[node name="Torch19" parent="." instance=ExtResource("20_gqmmt")]
-visible = false
-position = Vector2(1613.9998, 1377.0001)

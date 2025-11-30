@@ -13,10 +13,16 @@ extends Node2D
 @export var ramp_up_time: float = 90.0
 @export var min_spawn_distance: float = 200.0
 
-const ARENA_WIDTH = 1736  # Expanded 100px each side
-const ARENA_HEIGHT = 1382
-const ARENA_LEFT = -60
-const ARENA_RIGHT = 1596
+# Dynamic arena bounds (set by procedural map generator)
+var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
+
+# Legacy constants for backwards compatibility
+var ARENA_WIDTH: float = 2500
+var ARENA_HEIGHT: float = 2500
+var ARENA_LEFT: float = 0
+var ARENA_RIGHT: float = 2500
+var ARENA_TOP: float = 0
+var ARENA_BOTTOM: float = 2500
 
 # Spawn scaling - increases enemy count over time
 const SCALING_START_TIME: float = 150.0  # 2.5 minutes
@@ -220,18 +226,32 @@ func get_scene_for_type(enemy_type: String) -> PackedScene:
 			return enemy_scene
 
 func get_spawn_position() -> Vector2:
-	# Spawn from left, right, or bottom only (no top spawns)
+	# Spawn from all 4 edges of the arena
 	var roll = randf()
 	var pos: Vector2
+	var margin = 50.0
 
-	if roll < 0.333:
+	if roll < 0.25:
 		# Left (spawn just outside left boundary)
-		pos = Vector2(ARENA_LEFT - 50, randf_range(50, ARENA_HEIGHT - 50))
-	elif roll < 0.666:
+		pos = Vector2(ARENA_LEFT - margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
+	elif roll < 0.5:
 		# Right (spawn just outside right boundary)
-		pos = Vector2(ARENA_RIGHT + 50, randf_range(50, ARENA_HEIGHT - 50))
+		pos = Vector2(ARENA_RIGHT + margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
+	elif roll < 0.75:
+		# Top
+		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_TOP - margin)
 	else:
 		# Bottom
-		pos = Vector2(randf_range(ARENA_LEFT, ARENA_RIGHT), ARENA_HEIGHT + 50)
+		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_BOTTOM + margin)
 
 	return pos
+
+func set_arena_bounds(bounds: Rect2) -> void:
+	"""Set the arena boundaries for enemy spawning."""
+	arena_bounds = bounds
+	ARENA_LEFT = bounds.position.x
+	ARENA_TOP = bounds.position.y
+	ARENA_RIGHT = bounds.end.x
+	ARENA_BOTTOM = bounds.end.y
+	ARENA_WIDTH = bounds.size.x
+	ARENA_HEIGHT = bounds.size.y

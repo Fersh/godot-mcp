@@ -10,11 +10,14 @@ extends Node2D
 @export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
 @export var warning_duration: float = 3.0  # How long to show warning
 
-# Arena bounds for spawn positioning
-const ARENA_WIDTH = 1736  # Expanded 100px each side
-const ARENA_HEIGHT = 1382
-const ARENA_LEFT = -60
-const ARENA_RIGHT = 1596
+# Arena bounds for spawn positioning (dynamic, set by procedural map)
+var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
+var ARENA_WIDTH: float = 2500
+var ARENA_HEIGHT: float = 2500
+var ARENA_LEFT: float = 0
+var ARENA_RIGHT: float = 2500
+var ARENA_TOP: float = 0
+var ARENA_BOTTOM: float = 2500
 const SPAWN_MARGIN = 100  # Spawn this far from edges
 
 # Spawn state
@@ -532,30 +535,46 @@ func _on_elite_died(_elite: Node) -> void:
 	elite_health_bar_container.visible = false
 
 func _get_spawn_position() -> Vector2:
-	# Spawn from left, right, or bottom only (no top spawns)
+	# Spawn from all 4 edges of the arena
 	var roll = randf()
 	var pos: Vector2
 
-	if roll < 0.333:
+	if roll < 0.25:
 		# Left (spawn outside left boundary)
 		pos = Vector2(
 			ARENA_LEFT - SPAWN_MARGIN,
-			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
+			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
 		)
-	elif roll < 0.666:
+	elif roll < 0.5:
 		# Right (spawn outside right boundary)
 		pos = Vector2(
 			ARENA_RIGHT + SPAWN_MARGIN,
-			randf_range(SPAWN_MARGIN, ARENA_HEIGHT - SPAWN_MARGIN)
+			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
+		)
+	elif roll < 0.75:
+		# Top
+		pos = Vector2(
+			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
+			ARENA_TOP - SPAWN_MARGIN
 		)
 	else:
 		# Bottom
 		pos = Vector2(
-			randf_range(ARENA_LEFT, ARENA_RIGHT),
-			ARENA_HEIGHT + SPAWN_MARGIN
+			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
+			ARENA_BOTTOM + SPAWN_MARGIN
 		)
 
 	return pos
+
+func set_arena_bounds(bounds: Rect2) -> void:
+	"""Set the arena boundaries for elite/boss spawning."""
+	arena_bounds = bounds
+	ARENA_LEFT = bounds.position.x
+	ARENA_TOP = bounds.position.y
+	ARENA_RIGHT = bounds.end.x
+	ARENA_BOTTOM = bounds.end.y
+	ARENA_WIDTH = bounds.size.x
+	ARENA_HEIGHT = bounds.size.y
 
 func on_elite_killed(elite: Node) -> void:
 	# Remove from tracking

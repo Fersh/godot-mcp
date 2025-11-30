@@ -3,6 +3,8 @@ extends Node2D
 @onready var player: CharacterBody2D = $Player
 @onready var ability_selection: CanvasLayer = $AbilitySelection
 @onready var item_pickup_ui: CanvasLayer = $ItemPickupUI
+@onready var enemy_spawner: Node2D = $EnemySpawner
+@onready var elite_spawner: Node2D = $EliteSpawner
 
 # Active ability UI components (untyped to allow script assignment)
 var active_ability_bar = null
@@ -19,6 +21,10 @@ var joystick_scene: PackedScene = preload("res://scenes/ui/virtual_joystick.tscn
 
 var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
 var continue_screen_script = preload("res://scripts/continue_screen.gd")
+
+# Procedural map generator
+var procedural_map_scene: PackedScene = preload("res://scenes/environment/procedural_map.tscn")
+var procedural_map: Node2D = null
 var game_time: float = 0.0
 var kill_count: int = 0
 
@@ -38,6 +44,9 @@ var kill_streak_ui = null
 
 func _ready() -> void:
 	add_to_group("main")
+
+	# Generate procedural map first
+	_setup_procedural_map()
 
 	# Connect player signals
 	if player:
@@ -73,6 +82,47 @@ func _ready() -> void:
 	# (allows UI to initialize first)
 	get_tree().create_timer(0.1).timeout.connect(_show_initial_ability_selection)
 
+func _setup_procedural_map() -> void:
+	"""Initialize and generate the procedural map."""
+	# Remove static background if it exists
+	var background = get_node_or_null("Background")
+	if background:
+		background.queue_free()
+
+	# Remove static torches and banners (they'll be replaced by procedural ones)
+	for child in get_children():
+		if child.name.begins_with("Torch") or child.name.begins_with("Banner"):
+			child.queue_free()
+
+	# Create procedural map
+	procedural_map = procedural_map_scene.instantiate()
+	procedural_map.name = "ProceduralMap"
+	add_child(procedural_map)
+	move_child(procedural_map, 0)  # Move to back (first child = behind others)
+
+	# Generate the map
+	procedural_map.generate_map()
+
+	# Get bounds from the map generator
+	var map_bounds = procedural_map.get_map_bounds()
+	var camera_bounds = procedural_map.get_camera_bounds()
+	var spawn_pos = procedural_map.get_spawn_position()
+
+	# Configure player bounds and camera
+	if player:
+		player.set_arena_bounds(map_bounds, camera_bounds)
+		player.global_position = spawn_pos
+
+	# Configure enemy spawner bounds
+	if enemy_spawner and enemy_spawner.has_method("set_arena_bounds"):
+		enemy_spawner.set_arena_bounds(map_bounds)
+
+	# Configure elite spawner bounds
+	if elite_spawner and elite_spawner.has_method("set_arena_bounds"):
+		elite_spawner.set_arena_bounds(map_bounds)
+
+	print("Main: Procedural map initialized with bounds: ", map_bounds)
+
 func _process(delta: float) -> void:
 	game_time += delta
 
@@ -84,8 +134,8 @@ func _process(delta: float) -> void:
 	_check_nearby_items()
 
 func _on_player_level_up(new_level: int) -> void:
-	# Delay ability selection to let level up animation play (1.25s)
-	await get_tree().create_timer(1.25).timeout
+	# Delay ability selection to let level up animation play (1.0s)
+	await get_tree().create_timer(1.0).timeout
 
 	# No abilities at max level (20)
 	if player and new_level >= player.MAX_LEVEL:

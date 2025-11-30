@@ -39,6 +39,13 @@ func _physics_process(delta: float) -> void:
 		sprite.frame = int(animation_frame)
 
 func _on_body_entered(body: Node2D) -> void:
+	# Check for obstacles first - they block projectiles
+	if body.is_in_group("obstacles"):
+		if body.has_method("take_damage"):
+			body.take_damage(damage)
+		queue_free()
+		return
+
 	if body.is_in_group("player") and body.has_method("take_damage"):
 		body.take_damage(damage)
 		queue_free()

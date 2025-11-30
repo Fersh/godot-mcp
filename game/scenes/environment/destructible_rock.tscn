@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/destructible_obstacle.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enviro/gowl/Rocks and Chest/Rocks/Rock1.png" id="2_rock"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_collision"]
+size = Vector2(40, 24)
+
+[node name="DestructibleRock" type="StaticBody2D"]
+z_index = 0
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_script")
+max_health = 100.0
+obstacle_type = "rock"
+
+[node name="Sprite" type="Sprite2D" parent="."]
+z_index = 0
+position = Vector2(0, -8)
+scale = Vector2(1.2, 1.2)
+texture = ExtResource("2_rock")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_collision")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="DetectionShape" type="CollisionShape2D" parent="DetectionArea"]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_collision")

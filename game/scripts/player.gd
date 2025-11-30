@@ -48,6 +48,10 @@ var accumulated_heal: float = 0.0
 var joystick: Control = null
 var joystick_direction: Vector2 = Vector2.ZERO
 
+# Dynamic arena bounds (set by procedural map generator)
+var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
+var arena_margin: float = 40.0
+
 # Character data
 var character_data: CharacterData = null
 var is_melee: bool = false
@@ -620,7 +624,27 @@ func register_joystick(js: Control) -> void:
 func _on_joystick_direction_changed(direction: Vector2) -> void:
 	joystick_direction = direction
 
+func set_arena_bounds(bounds: Rect2, camera_bounds: Rect2 = Rect2()) -> void:
+	"""Set the arena boundaries and optionally update camera limits."""
+	arena_bounds = bounds
+
+	# Update camera limits if provided
+	if camera_bounds.size.x > 0 and camera:
+		camera.limit_left = int(camera_bounds.position.x)
+		camera.limit_top = int(camera_bounds.position.y)
+		camera.limit_right = int(camera_bounds.end.x)
+		camera.limit_bottom = int(camera_bounds.end.y)
+	elif camera:
+		# Default: use arena bounds with small margin
+		camera.limit_left = int(bounds.position.x - 100)
+		camera.limit_top = int(bounds.position.y - 100)
+		camera.limit_right = int(bounds.end.x + 100)
+		camera.limit_bottom = int(bounds.end.y + 100)
+
 func _physics_process(delta: float) -> void:
+	# Update z_index based on Y position for depth sorting with trees
+	z_index = int(global_position.y / 10)
+
 	# If dead, only update death animation
 	if is_dead:
 		update_death_animation(delta)
@@ -834,11 +858,9 @@ func _physics_process(delta: float) -> void:
 	if has_arcane_focus:
 		_update_arcane_focus(delta, direction.length() < 0.1)
 
-	# Keep player within arena bounds (expanded horizontally by 100px each side)
-	const ARENA_HEIGHT = 1382
-	const MARGIN_Y = 40
-	position.x = clamp(position.x, -60, 1596)
-	position.y = clamp(position.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
+	# Keep player within dynamic arena bounds
+	position.x = clamp(position.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+	position.y = clamp(position.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
 
 	# Auto-attack (apply temp attack speed boost and flow bonus)
 	attack_timer += delta
@@ -1611,173 +1633,66 @@ func _spawn_heal_particles() -> void:
 		tween.chain().tween_callback(particle.queue_free)
 
 func _spawn_level_up_effect() -> void:
-	"""Holy light beam level up effect - ethereal, soft, divine with sun strike sprite."""
+	"""Holy Heal level up effect with sprite animation and white screen flash."""
 	var effect_container = Node2D.new()
-	effect_container.global_position = global_position
-	get_parent().add_child(effect_container)
+	effect_container.position = Vector2.ZERO  # Local position relative to player
+	add_child(effect_container)  # Add as child of player so it follows
 
-	# === SUN STRIKE SPRITE ANIMATION ===
-	var sun_strike_texture = load("res://assets/sprites/effects/pack/4 sun strike/sun-strike.png")
-	if sun_strike_texture:
-		var sun_strike = Sprite2D.new()
-		sun_strike.texture = sun_strike_texture
-		sun_strike.hframes = 8  # 8 frames in the spritesheet
-		sun_strike.vframes = 1
-		sun_strike.frame = 0
-		sun_strike.scale = Vector2(3.0, 3.0)  # Scale up for visibility
-		sun_strike.position = Vector2(0, -60)  # Position above player (lowered 40px)
-		sun_strike.modulate.a = 0.9
-		effect_container.add_child(sun_strike)
+	# === HOLY HEAL SPRITE ANIMATION ===
+	var holy_heal_sprite = Sprite2D.new()
+	holy_heal_sprite.scale = Vector2(3.75, 3.75)
+	holy_heal_sprite.position = Vector2(0, -60)
+	holy_heal_sprite.modulate.a = 0.0
+	effect_container.add_child(holy_heal_sprite)
+
+	# Load Holy Heal frames
+	var holy_heal_frames: Array[Texture2D] = []
+	for i in range(1, 9):
+		var frame_path = "res://assets/sprites/effects/40/Other/Holy Heal/holy-heal%02d.png" % i
+		if ResourceLoader.exists(frame_path):
+			holy_heal_frames.append(load(frame_path))
+
+	if holy_heal_frames.size() > 0:
+		holy_heal_sprite.texture = holy_heal_frames[0]
 
 		# Animate through frames
-		var frame_tween = sun_strike.create_tween()
-		frame_tween.tween_property(sun_strike, "modulate:a", 1.0, 0.05)
-		for f in range(1, 8):
-			frame_tween.tween_callback(func(): sun_strike.frame = f)
-			frame_tween.tween_interval(0.06)  # ~16fps animation
-		frame_tween.tween_property(sun_strike, "modulate:a", 0.0, 0.15)
+		var frame_tween = holy_heal_sprite.create_tween()
+		frame_tween.tween_property(holy_heal_sprite, "modulate:a", 1.0, 0.05)
+		for f in range(holy_heal_frames.size()):
+			frame_tween.tween_callback(func(): holy_heal_sprite.texture = holy_heal_frames[f])
+			frame_tween.tween_interval(0.08)
+		frame_tween.tween_property(holy_heal_sprite, "modulate:a", 0.0, 0.2)
 
-	# === ETHEREAL LIGHT BEAM ===
-	var beam_container = Node2D.new()
-	beam_container.modulate.a = 0.0
-	effect_container.add_child(beam_container)
-
-	# Soft outer glow (wide, very transparent)
-	var outer_glow = Polygon2D.new()
-	outer_glow.polygon = [
-		Vector2(-70, -600), Vector2(70, -600),
-		Vector2(45, 0), Vector2(-45, 0)
-	]
-	outer_glow.color = Color(1.0, 0.98, 0.85, 0.15)
-	beam_container.add_child(outer_glow)
-
-	# Middle beam layer
-	var mid_beam = Polygon2D.new()
-	mid_beam.polygon = [
-		Vector2(-40, -600), Vector2(40, -600),
-		Vector2(28, 0), Vector2(-28, 0)
-	]
-	mid_beam.color = Color(1.0, 0.97, 0.8, 0.3)
-	beam_container.add_child(mid_beam)
-
-	# Bright core beam
-	var core_beam = Polygon2D.new()
-	core_beam.polygon = [
-		Vector2(-18, -600), Vector2(18, -600),
-		Vector2(12, 0), Vector2(-12, 0)
-	]
-	core_beam.color = Color(1.0, 1.0, 0.95, 0.7)
-	beam_container.add_child(core_beam)
-
-	# Innermost white-hot center
-	var inner_core = Polygon2D.new()
-	inner_core.polygon = [
-		Vector2(-6, -600), Vector2(6, -600),
-		Vector2(4, 0), Vector2(-4, 0)
-	]
-	inner_core.color = Color(1.0, 1.0, 1.0, 0.9)
-	beam_container.add_child(inner_core)
-
-	# Floating light motes rising through beam
-	for i in range(20):
-		var mote = Polygon2D.new()
-		var mote_size = randf_range(2, 5)
-		var points: Array[Vector2] = []
-		for j in range(6):
-			var angle = (float(j) / 6) * TAU
-			points.append(Vector2(cos(angle), sin(angle)) * mote_size)
-		mote.polygon = points
-		mote.color = Color(1.0, 1.0, 0.9, 0.0)
-
-		var start_x = randf_range(-30, 30)
-		var start_y = randf_range(0, 100)
-		mote.position = Vector2(start_x, start_y)
-		beam_container.add_child(mote)
-
-		var mote_tween = mote.create_tween()
-		mote_tween.tween_interval(randf_range(0.0, 0.5))
-		mote_tween.tween_property(mote, "modulate:a", randf_range(0.5, 1.0), 0.15)
-		mote_tween.tween_property(mote, "position:y", start_y - randf_range(200, 450), randf_range(0.5, 0.9)).set_ease(Tween.EASE_OUT)
-		mote_tween.parallel().tween_property(mote, "modulate:a", 0.0, 0.4).set_delay(0.3)
-		mote_tween.parallel().tween_property(mote, "scale", Vector2(0.3, 0.3), 0.6)
-
-	# === BEAM ANIMATION ===
-	var beam_tween = beam_container.create_tween()
-	beam_tween.tween_property(beam_container, "modulate:a", 1.0, 0.12).set_ease(Tween.EASE_OUT)
-	beam_tween.tween_interval(0.4)
-
-	# === HOLY IMPACT ===
-	beam_tween.tween_callback(func():
-		# Soft radial burst of light
-		for r in range(3):
-			var ring = Polygon2D.new()
-			var ring_points: Array[Vector2] = []
-			var segments = 24
-			for i in range(segments + 1):
-				var angle = (float(i) / segments) * TAU
-				ring_points.append(Vector2(cos(angle), sin(angle)) * 25)
-			ring.polygon = ring_points
-			ring.color = Color(1.0, 1.0, 0.9, 0.4 - r * 0.1)
-			effect_container.add_child(ring)
-
-			var ring_tween = ring.create_tween()
-			ring_tween.tween_interval(r * 0.06)
-			ring_tween.set_parallel(true)
-			ring_tween.tween_property(ring, "scale", Vector2(6.0 + r * 2, 6.0 + r * 2), 0.5).set_ease(Tween.EASE_OUT)
-			ring_tween.tween_property(ring, "modulate:a", 0.0, 0.4)
-
-		# Central divine flash
-		var flash = Polygon2D.new()
-		var flash_points: Array[Vector2] = []
-		for i in range(12):
-			var angle = (float(i) / 12) * TAU
-			var radius = 30 if i % 2 == 0 else 15
-			flash_points.append(Vector2(cos(angle), sin(angle)) * radius)
-		flash.polygon = flash_points
-		flash.color = Color(1.0, 1.0, 0.95, 1.0)
-		effect_container.add_child(flash)
-
-		var flash_tween = flash.create_tween()
-		flash_tween.set_parallel(true)
-		flash_tween.tween_property(flash, "scale", Vector2(2.5, 2.5), 0.12).set_ease(Tween.EASE_OUT)
-		flash_tween.tween_property(flash, "modulate:a", 0.0, 0.2)
-
-		# Soft light particles drifting outward
-		for i in range(16):
-			var particle = Polygon2D.new()
-			var p_points: Array[Vector2] = []
-			var p_size = randf_range(3, 7)
-			for j in range(6):
-				var a = (float(j) / 6) * TAU
-				p_points.append(Vector2(cos(a), sin(a)) * p_size)
-			particle.polygon = p_points
-			particle.color = Color(1.0, 1.0, 0.92, 0.8)
-			effect_container.add_child(particle)
-
-			var angle = (float(i) / 16) * TAU + randf_range(-0.2, 0.2)
-			particle.position = Vector2(cos(angle), sin(angle)) * 10
-
-			var end_dist = randf_range(70, 130)
-			var end_pos = Vector2(cos(angle), sin(angle)) * end_dist
-
-			var p_tween = particle.create_tween()
-			p_tween.set_parallel(true)
-			p_tween.tween_property(particle, "position", end_pos, randf_range(0.35, 0.55)).set_ease(Tween.EASE_OUT)
-			p_tween.tween_property(particle, "modulate:a", 0.0, randf_range(0.3, 0.45)).set_delay(0.1)
-			p_tween.tween_property(particle, "scale", Vector2(0.2, 0.2), 0.5)
-
-		# Fade beam gracefully
-		var beam_fade = beam_container.create_tween()
-		beam_fade.tween_property(beam_container, "modulate:a", 0.0, 0.35).set_ease(Tween.EASE_IN)
-	)
+	# === WHITE SCREEN FLASH ===
+	_spawn_level_up_screen_flash()
 
 	# Cleanup
 	var cleanup_tween = effect_container.create_tween()
-	cleanup_tween.tween_interval(1.3)
+	cleanup_tween.tween_interval(1.2)
 	cleanup_tween.tween_callback(effect_container.queue_free)
 
 	# Brief invulnerability on level up (0.3s)
 	set_invulnerable(true, 0.3)
+
+func _spawn_level_up_screen_flash() -> void:
+	"""Create a white light pulse that flashes the entire screen."""
+	# Create a CanvasLayer to render on top of everything
+	var flash_layer = CanvasLayer.new()
+	flash_layer.layer = 100  # High layer to be on top
+	get_tree().root.add_child(flash_layer)
+
+	# White overlay covering the screen
+	var flash_overlay = ColorRect.new()
+	flash_overlay.color = Color(1.0, 1.0, 1.0, 0.0)
+	flash_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash_layer.add_child(flash_overlay)
+
+	# Animate the flash - quick pulse in, slower fade out
+	var flash_tween = flash_overlay.create_tween()
+	flash_tween.tween_property(flash_overlay, "color:a", 0.6, 0.08).set_ease(Tween.EASE_OUT)
+	flash_tween.tween_property(flash_overlay, "color:a", 0.0, 0.4).set_ease(Tween.EASE_IN)
+	flash_tween.tween_callback(flash_layer.queue_free)
 
 	# Knock back nearby enemies
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -2035,11 +1950,9 @@ func dash_toward(target_pos: Vector2) -> void:
 	# Calculate end position
 	var end_pos = global_position + direction * dash_distance
 
-	# Clamp to arena bounds (expanded horizontally)
-	const ARENA_HEIGHT = 1382
-	const MARGIN_Y = 40
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
+	# Clamp to dynamic arena bounds
+	end_pos.x = clamp(end_pos.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+	end_pos.y = clamp(end_pos.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
 
 	# Update facing direction
 	if direction.x > 0:
@@ -2151,11 +2064,9 @@ func _perform_flow_dash(target_pos: Vector2) -> void:
 	# Calculate end position
 	var end_pos = global_position + direction * dash_distance
 
-	# Clamp to arena bounds (expanded horizontally)
-	const ARENA_HEIGHT = 1382
-	const MARGIN_Y = 40
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
+	# Clamp to dynamic arena bounds
+	end_pos.x = clamp(end_pos.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+	end_pos.y = clamp(end_pos.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
 
 	# Update facing direction
 	if direction.x > 0:

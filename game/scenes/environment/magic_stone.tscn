@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/magic_stone.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/enviro/gowl/Rocks and Chest/MagicStoons/MagicStones1.png" id="2_stone"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_collision"]
+size = Vector2(16, 12)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_interaction"]
+radius = 50.0
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
+width = 64
+height = 64
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1.0, 0.5)
+
+[node name="MagicStone" type="StaticBody2D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="GlowSprite" type="Sprite2D" parent="."]
+z_index = -1
+position = Vector2(0, -8)
+modulate = Color(0.4, 0.7, 1, 0.5)
+scale = Vector2(2.6, 2.6)
+texture = ExtResource("2_stone")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+z_index = 0
+position = Vector2(0, -8)
+scale = Vector2(2.0, 2.0)
+texture = ExtResource("2_stone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_collision")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="InteractionShape" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("CircleShape2D_interaction")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(0, -12)
+color = Color(0.4, 0.7, 1, 1)
+energy = 0.5
+texture = SubResource("GradientTexture2D_glow")
+texture_scale = 2.0

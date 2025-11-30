@@ -98,7 +98,7 @@ func _ready() -> void:
 	add_to_group("enemies")
 
 	collision_layer = 4
-	collision_mask = 1
+	collision_mask = 9  # Layer 1 (player) + Layer 8 (obstacles)
 
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
@@ -113,6 +113,9 @@ func _on_ready() -> void:
 	pass
 
 func _physics_process(delta: float) -> void:
+	# Update z_index based on Y position for depth sorting with trees
+	z_index = int(global_position.y / 10)
+
 	if is_dying:
 		update_death_animation(delta)
 		return
