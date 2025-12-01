@@ -54,11 +54,11 @@ const SLOT_NAMES: Dictionary = {
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
 const BASE_DROP_WEIGHTS: Dictionary = {
-	Rarity.COMMON: 75.0,
-	Rarity.MAGIC: 20.0,
-	Rarity.RARE: 4.0,
-	Rarity.UNIQUE: 0.8,
-	Rarity.LEGENDARY: 0.2
+	Rarity.COMMON: 82.0,
+	Rarity.MAGIC: 15.0,
+	Rarity.RARE: 2.5,
+	Rarity.UNIQUE: 0.4,
+	Rarity.LEGENDARY: 0.1
 }
 
 # Unique identifier for this specific item instance

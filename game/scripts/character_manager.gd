@@ -179,9 +179,9 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["berserker_rage_aoe_radius"] = 120.0  # AOE radius
 			bonuses["berserker_rage_damage_multiplier"] = 2.0  # Double damage on spin
 		"assassin":
-			# Shadow Dance: After hitting 3 enemies, vanish for 1.5s, first attack from stealth +100% damage
+			# Shadow Dance: After hitting 5 enemies, vanish and dash attack with +100% damage
 			bonuses["has_shadow_dance"] = 1.0
-			bonuses["shadow_dance_hits_required"] = 3  # Hits to trigger vanish
+			bonuses["shadow_dance_hits_required"] = 5  # Hits to trigger vanish
 			bonuses["shadow_dance_duration"] = 1.5  # Vanish duration
 			bonuses["shadow_dance_damage_bonus"] = 1.0  # +100% damage from stealth
 			bonuses["is_hybrid_attacker"] = 1.0  # Flag for hybrid melee/ranged

@@ -131,7 +131,8 @@ func _create_ui() -> void:
 	reroll_button = Button.new()
 	reroll_button.name = "RerollButton"
 	reroll_button.text = "Reroll"
-	reroll_button.custom_minimum_size = Vector2(150, 36)
+	reroll_button.custom_minimum_size = Vector2(80, 36)
+	reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		reroll_button.add_theme_font_override("font", pixel_font)
 	reroll_button.add_theme_font_size_override("font_size", 11)
@@ -207,7 +208,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	reroll_used = false
 	if reroll_button:
 		reroll_button.disabled = true  # Disabled during rolling
-		reroll_button.text = "REROLL (1x)"
+		reroll_button.text = "Reroll"
 
 	# Get pool for slot machine effect
 	var is_melee = CharacterManager.get_selected_character().attack_type == CharacterData.AttackType.MELEE if CharacterManager else false
@@ -507,7 +508,6 @@ func _on_reroll_pressed() -> void:
 	reroll_used = true
 	if reroll_button:
 		reroll_button.disabled = true
-		reroll_button.text = "REROLL (USED)"
 
 	# Play sound
 	if SoundManager and SoundManager.has_method("play_click"):

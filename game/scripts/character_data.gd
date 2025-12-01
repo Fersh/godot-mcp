@@ -527,6 +527,6 @@ static func create_assassin() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Shadow Dance"
-	data.passive_description = "After hitting 3 enemies, vanish for 1.5s. First attack from stealth deals +100% damage."
+	data.passive_description = "After hitting 5 enemies, vanish and dash to nearest enemy dealing +100% damage."
 
 	return data

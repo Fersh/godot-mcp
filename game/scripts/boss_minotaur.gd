@@ -111,15 +111,15 @@ func _setup_boss() -> void:
 			"type": AttackType.SPECIAL,
 			"name": "slam",
 			"range": slam_range,
-			"cooldown": 5.0,
-			"priority": 6
+			"cooldown": 6.0,
+			"priority": 4
 		},
 		{
 			"type": AttackType.MELEE,
 			"name": "melee",
 			"range": melee_range,
-			"cooldown": 3.0,
-			"priority": 5
+			"cooldown": 1.5,
+			"priority": 8
 		}
 	]
 

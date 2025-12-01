@@ -372,13 +372,13 @@ func _create_home_button() -> void:
 	home_btn.custom_minimum_size = Vector2(50, 50)
 	home_btn.pressed.connect(_on_main_menu_pressed)
 
-	# Create icon from spritesheet (6 cols x 19 rows, 16x16 per icon)
-	# Home icon is at row 1, column 2 (0-indexed)
-	var icons_texture = load("res://assets/sprites/icons.png")
+	# Create icon from StonePixel spritesheet (5 cols x 4 rows, 32x32 per icon)
+	# Home icon is at row 1, column 2 (0-indexed) - 2nd row, 3rd icon
+	var icons_texture = load("res://assets/sprites/effects/ui/StonePixel/Icons/32x32.png")
 	if icons_texture:
 		var atlas = AtlasTexture.new()
 		atlas.atlas = icons_texture
-		atlas.region = Rect2(2 * 16, 1 * 16, 16, 16)  # col 2, row 1
+		atlas.region = Rect2(2 * 32, 1 * 32, 32, 32)  # col 2, row 1
 
 		var icon_rect = TextureRect.new()
 		icon_rect.texture = atlas
@@ -392,14 +392,14 @@ func _create_home_button() -> void:
 		center.add_child(icon_rect)
 		home_btn.add_child(center)
 
-	# Style the button
+	# Style the button - light brown/beige background
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.2, 0.25, 0.9)
+	style.bg_color = Color(0.76, 0.60, 0.42, 0.95)
 	style.set_corner_radius_all(8)
 	home_btn.add_theme_stylebox_override("normal", style)
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.3, 0.3, 0.35, 0.9)
+	style_hover.bg_color = Color(0.82, 0.68, 0.50, 0.95)
 	style_hover.set_corner_radius_all(8)
 	home_btn.add_theme_stylebox_override("hover", style_hover)
 

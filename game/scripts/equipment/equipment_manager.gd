@@ -286,10 +286,10 @@ func _scale_item_stats(item: ItemData) -> void:
 
 # Check if an item should drop from this enemy
 func should_drop_item(enemy_type: String = "normal") -> bool:
-	var base_chance = 0.01  # 1% base drop rate
+	var base_chance = 0.005  # 0.5% base drop rate (halved)
 
 	# Time bonus
-	base_chance += current_game_time / 600.0 * 0.01  # +1% over 10 minutes
+	base_chance += current_game_time / 600.0 * 0.005  # +0.5% over 10 minutes
 
 	# Enemy type bonus
 	match enemy_type:

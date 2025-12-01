@@ -126,7 +126,7 @@ var row_disappear: int = -1
 var frames_melee_attack: int = 8
 var frames_disappear: int = 8
 var shadow_dance_hit_count: int = 0
-var shadow_dance_hits_required: int = 3
+var shadow_dance_hits_required: int = 5
 var shadow_dance_duration: float = 1.5
 var shadow_dance_damage_bonus: float = 1.0
 var is_stealthed: bool = false
@@ -456,7 +456,7 @@ func _apply_character_passive() -> void:
 	# Initialize Assassin Shadow Dance system
 	if bonuses.get("has_shadow_dance", 0.0) > 0.0:
 		has_shadow_dance = true
-		shadow_dance_hits_required = int(bonuses.get("shadow_dance_hits_required", 3))
+		shadow_dance_hits_required = int(bonuses.get("shadow_dance_hits_required", 5))
 		shadow_dance_duration = bonuses.get("shadow_dance_duration", 1.5)
 		shadow_dance_damage_bonus = bonuses.get("shadow_dance_damage_bonus", 1.0)
 		shadow_dance_hit_count = 0
@@ -1662,10 +1662,10 @@ func _enter_stealth() -> void:
 	# Visual feedback - become semi-transparent
 	modulate.a = 0.4
 
-	# Add buff display
+	# Add buff display (indefinite until attack)
 	active_buffs["shadow_dance"] = {
-		"timer": stealth_timer,
-		"duration": shadow_dance_duration,
+		"timer": -1,
+		"duration": -1,
 		"name": "Shadow Dance",
 		"description": "+100% Damage (Stealthed)",
 		"color": Color(0.5, 0.3, 0.8)  # Purple
@@ -1702,6 +1702,10 @@ func _shadow_dance_dash_attack() -> void:
 	# Calculate dash target position (slightly in front of enemy)
 	var to_enemy = (nearest_enemy.global_position - global_position).normalized()
 	var dash_target = nearest_enemy.global_position - to_enemy * (assassin_melee_range * 0.5)
+
+	# Clamp to arena bounds
+	dash_target.x = clamp(dash_target.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+	dash_target.y = clamp(dash_target.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
 
 	# Update facing direction
 	facing_right = to_enemy.x > 0
@@ -1790,7 +1794,7 @@ func _shadow_dance_strike(target_enemy: Node2D) -> void:
 			JuiceManager.shake_crit()
 		else:
 			JuiceManager.shake_small()
-		JuiceManager.hitstop_small()
+		JuiceManager.hitstop_micro()
 
 	# Exit stealth after the strike
 	_exit_stealth()
@@ -2524,13 +2528,8 @@ func _update_active_ability_timers(delta: float) -> void:
 		if retribution_timer <= 0:
 			_consume_retribution()
 
-	# Update Assassin Shadow Dance stealth timer
-	if has_shadow_dance and is_stealthed:
-		stealth_timer -= delta
-		if active_buffs.has("shadow_dance"):
-			active_buffs["shadow_dance"].timer = stealth_timer
-		if stealth_timer <= 0:
-			_exit_stealth()
+	# Assassin Shadow Dance stealth - lasts until attack (no timer)
+	# Stealth ends when _shadow_dance_strike completes
 
 	# Update ultimate ability timers
 	_update_ultimate_timers(delta)
