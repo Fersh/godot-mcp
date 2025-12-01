@@ -3614,29 +3614,35 @@ func _execute_monster_energy(ability: ActiveAbilityData, player: Node2D) -> void
 	if player.has_method("apply_attack_speed_boost"):
 		player.apply_attack_speed_boost(1.3, ability.duration)  # 30% attack speed
 
-	# Green aura effect
-	var aura = Node2D.new()
-	aura.name = "MonsterEnergyAura"
-	player.add_child(aura)
+	# Fire aura effect below player's feet
+	var fire_aura = AnimatedSprite2D.new()
+	fire_aura.name = "MonsterEnergyAura"
+	fire_aura.position = Vector2(0, 20)  # Below player's feet
+	fire_aura.z_index = -1  # Render behind the player
+	fire_aura.scale = Vector2(0.5, 0.5)
 
-	var glow = Polygon2D.new()
-	var points: PackedVector2Array = []
-	for i in range(12):
-		var angle = TAU * i / 12
-		points.append(Vector2(cos(angle), sin(angle)) * 40)
-	glow.polygon = points
-	glow.color = Color(0.0, 1.0, 0.2, 0.3)
-	aura.add_child(glow)
+	# Create sprite frames from the fire aura images
+	var frames = SpriteFrames.new()
+	frames.add_animation("fire")
+	frames.set_animation_loop("fire", true)
+	frames.set_animation_speed("fire", 24.0)  # 24 FPS
 
-	# Pulse animation
-	var pulse = aura.create_tween().set_loops()
-	pulse.tween_property(aura, "scale", Vector2(1.2, 1.2), 0.3)
-	pulse.tween_property(aura, "scale", Vector2(1.0, 1.0), 0.3)
+	# Load all 67 frames (1_0.png to 1_66.png)
+	for i in range(67):
+		var path = "res://assets/sprites/effects/Fire Aura/5/1_%d.png" % i
+		if ResourceLoader.exists(path):
+			var texture = load(path)
+			if texture:
+				frames.add_frame("fire", texture)
+
+	fire_aura.sprite_frames = frames
+	fire_aura.play("fire")
+	player.add_child(fire_aura)
 
 	# Remove after duration
 	get_tree().create_timer(ability.duration).timeout.connect(func():
-		if is_instance_valid(aura):
-			aura.queue_free()
+		if is_instance_valid(fire_aura):
+			fire_aura.queue_free()
 	)
 
 	_spawn_effect("holy", player.global_position)
