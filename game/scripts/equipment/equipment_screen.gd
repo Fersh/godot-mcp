@@ -389,6 +389,65 @@ func _style_dropdown(dropdown: OptionButton) -> void:
 	dropdown.add_theme_stylebox_override("focus", style)
 	dropdown.add_theme_color_override("font_color", COLOR_TEXT)
 
+	# Style the popup menu (dropdown items)
+	var popup = dropdown.get_popup()
+	if popup:
+		# Remove radio/check icons by setting them to empty
+		popup.hide_on_checkable_item_selection = true
+		popup.hide_on_item_selection = true
+
+		# Apply pixel font to popup
+		if pixel_font:
+			popup.add_theme_font_override("font", pixel_font)
+		popup.add_theme_font_size_override("font_size", 14)
+
+		# Style the popup panel
+		var popup_style = StyleBoxFlat.new()
+		popup_style.bg_color = Color(0.12, 0.10, 0.14, 0.98)
+		popup_style.border_color = Color(0.4, 0.35, 0.3, 1)
+		popup_style.set_border_width_all(2)
+		popup_style.set_corner_radius_all(4)
+		popup_style.content_margin_left = 8
+		popup_style.content_margin_right = 8
+		popup_style.content_margin_top = 8
+		popup_style.content_margin_bottom = 8
+		popup.add_theme_stylebox_override("panel", popup_style)
+
+		# Style for hover state on items
+		var hover_style = StyleBoxFlat.new()
+		hover_style.bg_color = Color(0.3, 0.25, 0.35, 1)
+		hover_style.set_corner_radius_all(3)
+		hover_style.content_margin_left = 14
+		hover_style.content_margin_right = 14
+		hover_style.content_margin_top = 12
+		hover_style.content_margin_bottom = 12
+		popup.add_theme_stylebox_override("hover", hover_style)
+
+		# Normal item style (larger padding)
+		var normal_style = StyleBoxFlat.new()
+		normal_style.bg_color = Color(0, 0, 0, 0)
+		normal_style.content_margin_left = 14
+		normal_style.content_margin_right = 14
+		normal_style.content_margin_top = 12
+		normal_style.content_margin_bottom = 12
+		popup.add_theme_stylebox_override("normal", normal_style)
+
+		# Increase vertical separation between items
+		popup.add_theme_constant_override("v_separation", 12)
+
+		# Set font colors
+		popup.add_theme_color_override("font_color", COLOR_TEXT)
+		popup.add_theme_color_override("font_hover_color", Color(1, 1, 1))
+
+		# Hide the checkmark/radio icons by making them transparent
+		popup.add_theme_constant_override("check_v_offset", 0)
+		popup.add_theme_color_override("font_accelerator_color", Color(0, 0, 0, 0))
+
+		# Remove icons from all items (no checkmarks)
+		for i in range(popup.item_count):
+			popup.set_item_icon(i, null)
+			popup.set_item_as_checkable(i, false)
+
 func _on_character_selected(index: int) -> void:
 	if SoundManager:
 		SoundManager.play_click()
