@@ -79,43 +79,96 @@ func _process(delta: float) -> void:
 			preview_sprite.region_rect = region
 
 func _build_ui() -> void:
-	# Header
-	header = PanelContainer.new()
-	header.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	header.offset_bottom = 60
-	_style_header()
-	add_child(header)
+	# Background
+	var background = TextureRect.new()
+	background.set_anchors_preset(Control.PRESET_FULL_RECT)
+	if ResourceLoader.exists("res://assets/menu12.png"):
+		background.texture = load("res://assets/menu12.png")
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	background.modulate = Color(1, 1, 1, 0.8)
+	add_child(background)
 
-	# Title
+	# Main VBox container (like shop)
+	var main_vbox = VBoxContainer.new()
+	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(main_vbox)
+
+	# Header panel (like shop)
+	header = PanelContainer.new()
+	header.custom_minimum_size = Vector2(0, 95)
+	_style_header()
+	main_vbox.add_child(header)
+
+	# Title centered in header
 	title_label = Label.new()
 	title_label.text = "PRINCESSES"
+	title_label.set_anchors_preset(Control.PRESET_CENTER)
+	title_label.offset_left = -100
+	title_label.offset_right = 100
+	title_label.offset_top = 5
+	title_label.offset_bottom = 35
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
-	title_label.add_theme_font_size_override("font_size", 24)
+	title_label.add_theme_font_size_override("font_size", 20)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.85))
 	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
-	title_label.add_theme_constant_override("shadow_offset_x", 3)
-	title_label.add_theme_constant_override("shadow_offset_y", 3)
+	title_label.add_theme_constant_override("shadow_offset_x", 2)
+	title_label.add_theme_constant_override("shadow_offset_y", 2)
 	header.add_child(title_label)
 
-	# Back button
+	# Coins container (right side of header, like shop)
+	coin_display = HBoxContainer.new()
+	coin_display.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	coin_display.offset_left = -160
+	coin_display.offset_right = -40
+	coin_display.offset_top = 5
+	coin_display.offset_bottom = 35
+	coin_display.add_theme_constant_override("separation", 6)
+	coin_display.alignment = BoxContainer.ALIGNMENT_END
+	header.add_child(coin_display)
+
+	var coin_icon = Label.new()
+	coin_icon.text = "●"
+	if pixel_font:
+		coin_icon.add_theme_font_override("font", pixel_font)
+	coin_icon.add_theme_font_size_override("font_size", 20)
+	coin_icon.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))
+	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coin_display.add_child(coin_icon)
+
+	coin_amount = Label.new()
+	coin_amount.text = "0"
+	if pixel_font:
+		coin_amount.add_theme_font_override("font", pixel_font)
+	coin_amount.add_theme_font_size_override("font_size", 16)
+	coin_amount.add_theme_color_override("font_color", Color.WHITE)
+	coin_amount.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	coin_amount.add_theme_constant_override("shadow_offset_x", 1)
+	coin_amount.add_theme_constant_override("shadow_offset_y", 1)
+	coin_amount.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coin_display.add_child(coin_amount)
+
+	if StatsManager:
+		coin_amount.text = str(StatsManager.spendable_coins)
+
+	# Back button (positioned like shop)
 	back_button = Button.new()
-	back_button.text = "<"
-	back_button.position = Vector2(10, 10)
-	back_button.custom_minimum_size = Vector2(50, 40)
+	back_button.text = "< BACK"
+	back_button.offset_left = 100
+	back_button.offset_top = 25
+	back_button.offset_right = 190
+	back_button.offset_bottom = 70
 	back_button.pressed.connect(_on_back_pressed)
 	_style_back_button(back_button)
 	add_child(back_button)
 
-	# Coin display
-	_create_coin_display()
-
-	# Main container
+	# Main container (positioned below header)
 	var main_container = HBoxContainer.new()
 	main_container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_container.offset_top = 70
+	main_container.offset_top = 105
 	main_container.offset_left = 20
 	main_container.offset_right = -20
 	main_container.offset_bottom = -80
@@ -181,38 +234,13 @@ func _build_ui() -> void:
 	_style_gray_button(clear_button)
 	bottom_bar.add_child(clear_button)
 
-func _create_coin_display() -> void:
-	coin_display = HBoxContainer.new()
-	coin_display.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	coin_display.offset_left = -120
-	coin_display.offset_right = -10
-	coin_display.offset_top = 15
-	coin_display.offset_bottom = 45
-	coin_display.add_theme_constant_override("separation", 5)
-	add_child(coin_display)
-
-	var coin_icon = Label.new()
-	coin_icon.text = "$"
-	coin_icon.add_theme_font_size_override("font_size", 20)
-	coin_icon.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	coin_display.add_child(coin_icon)
-
-	coin_amount = Label.new()
-	coin_amount.text = "0"
-	if pixel_font:
-		coin_amount.add_theme_font_override("font", pixel_font)
-	coin_amount.add_theme_font_size_override("font_size", 16)
-	coin_amount.add_theme_color_override("font_color", Color.WHITE)
-	coin_display.add_child(coin_amount)
-
-	if StatsManager:
-		coin_amount.text = str(StatsManager.spendable_coins)
-
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.08, 0.12, 0.95)
+	style.bg_color = Color(0.06, 0.055, 0.09, 0.0)
 	style.border_width_bottom = 2
-	style.border_color = Color(0.5, 0.3, 0.5)
+	style.border_color = Color(0.15, 0.14, 0.2, 0.0)
+	style.content_margin_left = 60
+	style.content_margin_right = 60
 	header.add_theme_stylebox_override("panel", style)
 
 func _style_preview_panel() -> void:
@@ -529,27 +557,47 @@ func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func _style_back_button(button: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.25, 0.22, 0.3, 0.9)
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 4
-	style.border_color = Color(0.15, 0.12, 0.2)
-	style.set_corner_radius_all(6)
-	button.add_theme_stylebox_override("normal", style)
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 4
+	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+	style_normal.content_margin_left = 16
+	style_normal.content_margin_right = 16
 
-	var hover = style.duplicate()
-	hover.bg_color = Color(0.35, 0.32, 0.4, 0.95)
-	button.add_theme_stylebox_override("hover", hover)
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 4
+	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+	style_hover.content_margin_left = 16
+	style_hover.content_margin_right = 16
 
-	var pressed = style.duplicate()
-	pressed.bg_color = Color(0.2, 0.18, 0.25, 0.95)
-	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_normal)
+	button.add_theme_stylebox_override("focus", style_normal)
+
+	button.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
+	button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	button.add_theme_constant_override("shadow_offset_x", 2)
+	button.add_theme_constant_override("shadow_offset_y", 2)
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_font_size_override("font_size", 12)
 
 func _style_pink_button(button: Button) -> void:
 	var style = StyleBoxFlat.new()
