@@ -300,8 +300,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_scale = 1.7  # Similar size to monk (96x96 frames)
 			sprite_pos = Vector2(38, 38)
 		"assassin":
-			sprite_scale = 1.8  # Reduced to match other characters
-			sprite_pos = Vector2(38, 38)
+			sprite_scale = 1.62  # Reduced 10% more to match other characters
+			sprite_pos = Vector2(38, 33)  # Moved up 5px
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)

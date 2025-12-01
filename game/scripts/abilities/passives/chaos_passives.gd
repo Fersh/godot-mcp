@@ -102,7 +102,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ninety_nine_stacks",
 			"99 Stacks",
-			"Your status effects can stack up to 3x (9x with second copy, 27x with third).",
+			"Your status effects can stack up to 3x.",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.NINETY_NINE_STACKS, value = 3.0}]  # stack multiplier

@@ -410,7 +410,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"Enemies explode on death",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.ON_KILL,
-			[{effect_type = AbilityData.EffectType.DEATH_EXPLOSION, value = 15.0}]  # explosion damage
+			[{effect_type = AbilityData.EffectType.DEATH_EXPLOSION, value = 8.0}]  # explosion damage (toned down)
 		),
 		AbilityData.new(
 			"thundercaller",

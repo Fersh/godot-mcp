@@ -21,24 +21,24 @@ enum ClassType {
 	RANGED,  # Archer only
 }
 
-# Rarity weights for random selection
-# Rare has small chance at level 1, increases at 5/10
+# Rarity weights for random selection - boosted rare/legendary at all levels
+# Legendaries can now appear at level 1!
 const RARITY_WEIGHTS_LEVEL_1 = {
-	Rarity.COMMON: 85,
-	Rarity.RARE: 15,
-	Rarity.LEGENDARY: 0
-}
-
-const RARITY_WEIGHTS_LEVEL_5 = {
-	Rarity.COMMON: 50,
-	Rarity.RARE: 40,
+	Rarity.COMMON: 55,
+	Rarity.RARE: 35,
 	Rarity.LEGENDARY: 10
 }
 
-const RARITY_WEIGHTS_LEVEL_10 = {
-	Rarity.COMMON: 20,
+const RARITY_WEIGHTS_LEVEL_5 = {
+	Rarity.COMMON: 35,
 	Rarity.RARE: 45,
-	Rarity.LEGENDARY: 35
+	Rarity.LEGENDARY: 20
+}
+
+const RARITY_WEIGHTS_LEVEL_10 = {
+	Rarity.COMMON: 15,
+	Rarity.RARE: 45,
+	Rarity.LEGENDARY: 40
 }
 
 # Core properties

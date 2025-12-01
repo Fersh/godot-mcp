@@ -215,12 +215,12 @@ enum EffectType {
 	INTIMIDATING_PRESENCE, # Fear enemies on sight
 }
 
-# Rarity weights for random selection (out of 100)
+# Rarity weights for random selection (out of 100) - boosted rare/legendary/mythic
 const RARITY_WEIGHTS = {
-	Rarity.COMMON: 55,
-	Rarity.RARE: 28,
-	Rarity.LEGENDARY: 12,
-	Rarity.MYTHIC: 5
+	Rarity.COMMON: 40,
+	Rarity.RARE: 35,
+	Rarity.LEGENDARY: 17,
+	Rarity.MYTHIC: 8
 }
 
 var id: String

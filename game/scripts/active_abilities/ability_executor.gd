@@ -271,8 +271,11 @@ func _get_attack_direction(player: Node2D) -> Vector2:
 	return Vector2.RIGHT
 
 func _deal_damage_to_enemy(enemy: Node2D, damage: float, is_crit: bool = false) -> void:
-	"""Apply damage to an enemy."""
+	"""Apply damage to an enemy. Mark for flying head effect if this kill them."""
 	if enemy.has_method("take_damage"):
+		# Mark for ability kill before dealing damage (flying head effect)
+		if enemy.has_method("mark_ability_kill"):
+			enemy.mark_ability_kill()
 		enemy.take_damage(damage, is_crit)
 
 func _apply_stun_to_enemy(enemy: Node2D, duration: float) -> void:
@@ -380,6 +383,8 @@ func _get_mapped_effect(effect_id: String) -> String:
 
 		# Fire effects
 		"avatar_of_war", "fire_aura":
+			return "fire_cast"
+		"flame_wall":
 			return "fire_cast"
 
 		# Dark/Magic effects
@@ -529,6 +534,18 @@ func _impact_pause() -> void:
 	"""Trigger a 1-frame pause for impact feel."""
 	if JuiceManager:
 		JuiceManager.hitstop_micro()
+
+func _impact_pause_large() -> void:
+	"""Trigger a longer pause with chromatic pulse for legendary abilities."""
+	if JuiceManager:
+		JuiceManager.hitstop_medium()
+		JuiceManager.chromatic_pulse(0.6)
+
+func _impact_pause_epic() -> void:
+	"""Trigger an epic pause with maximum chromatic for ultimate-tier effects."""
+	if JuiceManager:
+		JuiceManager.hitstop_large()
+		JuiceManager.chromatic_pulse(1.0)
 
 # ============================================
 # MELEE ABILITIES - COMMON
@@ -962,7 +979,7 @@ func _execute_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	_play_sound("bladestorm")
 	_screen_shake("large")
-	_impact_pause()
+	_impact_pause_large()  # Legendary juice
 
 func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -1349,7 +1366,8 @@ func _execute_arrow_storm(ability: ActiveAbilityData, player: Node2D) -> void:
 		)
 
 	_play_sound("arrow_storm")
-	_screen_shake("medium")
+	_screen_shake("large")  # Legendary juice
+	_impact_pause_large()
 
 func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 	# Random target position within radius of player
@@ -1461,7 +1479,8 @@ func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> v
 		)
 
 	_play_sound("arrow_storm")
-	_screen_shake("medium")
+	_screen_shake("large")  # Legendary juice
+	_impact_pause_large()
 
 func _spawn_barrage_arrow(target_pos: Vector2, damage: float, _radius: float) -> void:
 	"""Spawn a visual arrow that falls from above and impacts at target position."""
@@ -1753,17 +1772,19 @@ func _execute_black_hole(ability: ActiveAbilityData, player: Node2D) -> void:
 						enemy.apply_knockback(to_center * pull_force * pull_interval)
 		)
 
-	# Explode at end
+	# Explode at end with epic juice
 	get_tree().create_timer(ability.duration).timeout.connect(func():
 		var enemies = _get_enemies_in_radius(target_pos, ability.radius)
 		for enemy in enemies:
 			_deal_damage_to_enemy(enemy, damage)
 		_spawn_effect("black_hole_explosion", target_pos)
 		_screen_shake("large")
-		_impact_pause()
+		_impact_pause_epic()  # Legendary explosion
 	)
 
 	_play_sound("black_hole")
+	_screen_shake("medium")  # Initial activation shake
+	_impact_pause_large()
 
 func _execute_time_stop(ability: ActiveAbilityData, player: Node2D) -> void:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -1775,7 +1796,7 @@ func _execute_time_stop(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("time_stop", player.global_position)
 	_play_sound("time_stop")
 	_screen_shake("large")
-	_impact_pause()
+	_impact_pause_epic()  # Legendary - time stop needs epic feel
 
 func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
@@ -1859,7 +1880,8 @@ func _execute_army_of_the_dead(ability: ActiveAbilityData, player: Node2D) -> vo
 
 	_spawn_effect("dark_summon", player.global_position)
 	_play_sound("summon")
-	_screen_shake("medium")
+	_screen_shake("large")  # Legendary juice
+	_impact_pause_large()
 
 func _start_skeleton_attacks(position: Vector2, ability: ActiveAbilityData, player: Node2D, index: int) -> void:
 	"""Manual skeleton AI if effect doesn't have setup."""
@@ -2493,31 +2515,35 @@ func _execute_now_you_see_me(ability: ActiveAbilityData, player: Node2D) -> void
 	_play_sound("shadowstep")
 
 func _execute_pocket_sand(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Throw sand in enemies' faces, blinding and slowing them."""
-	var direction = _get_attack_direction(player)
+	"""Throw sand and flash a blinding light - now with stun and damage!"""
+	var damage = _get_damage(ability)
 
-	# Get enemies in cone in front
-	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.6)
+	# Get ALL enemies in radius (360 degree AoE)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
 	for enemy in enemies:
+		if ability.base_damage > 0:
+			_deal_damage_to_enemy(enemy, damage)
 		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
+		if ability.stun_duration > 0:
+			_apply_stun_to_enemy(enemy, ability.stun_duration)
 		# Visual feedback - yellow particles on enemy
 		_spawn_sand_effect(enemy.global_position)
 
-	# Sand throw visual
+	# Sand throw visual - now 360 degrees
 	var sand = Node2D.new()
 	sand.global_position = player.global_position
 	get_tree().current_scene.add_child(sand)
 
-	# Particles spreading outward
-	for i in range(15):
+	# Particles spreading outward in all directions
+	for i in range(24):
 		var particle = ColorRect.new()
 		particle.size = Vector2(4, 4)
 		particle.color = Color(0.9, 0.8, 0.5, 1.0)
 		sand.add_child(particle)
 
-		var angle = direction.angle() + randf_range(-0.5, 0.5)
-		var dist = randf_range(50, ability.range_distance)
+		var angle = (float(i) / 24.0) * TAU + randf_range(-0.2, 0.2)
+		var dist = randf_range(50, ability.radius)
 		var end_pos = Vector2(cos(angle), sin(angle)) * dist
 
 		var ptween = particle.create_tween()
@@ -2525,13 +2551,17 @@ func _execute_pocket_sand(ability: ActiveAbilityData, player: Node2D) -> void:
 		ptween.tween_property(particle, "position", end_pos, 0.3)
 		ptween.tween_property(particle, "modulate:a", 0.0, 0.3)
 
+	# Flash effect (from Blinding Flash)
+	_spawn_effect("blinding_flash", player.global_position)
+
 	get_tree().create_timer(0.4).timeout.connect(func():
 		if is_instance_valid(sand):
 			sand.queue_free()
 	)
 
-	_play_sound("throw")
-	_screen_shake("small")
+	_play_sound("flash")
+	_screen_shake("medium")
+	_impact_pause()
 
 func _spawn_sand_effect(position: Vector2) -> void:
 	"""Spawn sand particles at position."""

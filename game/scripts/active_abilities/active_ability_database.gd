@@ -107,7 +107,7 @@ static func _register_all_abilities() -> void:
 	_register(_create_frost_nova())
 	_register(_create_healing_light())
 	_register(_create_throwing_bomb())
-	_register(_create_blinding_flash())
+	# Blinding Flash merged into Pocket Sand
 
 	# ============================================
 	# GLOBAL - RARE
@@ -197,7 +197,7 @@ static func _create_cleave() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		8.0  # 8 second cooldown
-	).with_damage(15.0, 1.2).with_aoe(140.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon5.png")
+	).with_damage(18.0, 1.3).with_aoe(160.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon5.png")  # Buffed
 
 static func _create_shield_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -230,7 +230,7 @@ static func _create_spinning_attack() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		6.0
-	).with_damage(8.0, 0.8).with_aoe(70.0).with_icon("res://assets/icons/abilities/spinning_attack.png")
+	).with_damage(12.0, 1.0).with_aoe(100.0).with_icon("res://assets/icons/abilities/spinning_attack.png")  # Buffed
 
 static func _create_dash_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -256,7 +256,7 @@ static func _create_whirlwind() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		18.0
-	).with_damage(5.0, 1.0).with_aoe(90.0).with_duration(3.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon10.png")
+	).with_damage(8.0, 1.2).with_aoe(110.0).with_duration(3.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon10.png")  # Buffed
 
 static func _create_seismic_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -310,12 +310,12 @@ static func _create_earthquake() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"earthquake",
 		"Earthquake",
-		"Quake the entire screen! All enemies take heavy damage and are stunned.",
+		"Shake the ground violently, damaging and stunning nearby enemies.",
 		ActiveAbilityData.Rarity.LEGENDARY,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
-		35.0
-	).with_damage(40.0, 2.0).with_aoe(400.0).with_stun(2.0).with_duration(2.0).with_icon("res://assets/icons/abilities/earthquake.png")
+		38.0  # Longer cooldown
+	).with_damage(30.0, 1.6).with_aoe(280.0).with_stun(1.2).with_duration(1.5).with_icon("res://assets/icons/abilities/earthquake.png")
 
 static func _create_bladestorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -477,7 +477,7 @@ static func _create_sentry_turret() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		18.0
-	).with_damage(5.0, 0.6).with_duration(8.0).with_aoe(180.0).with_icon("res://assets/icons/abilities/sentry_turret.png")
+	).with_damage(8.0, 0.8).with_duration(10.0).with_aoe(200.0).with_icon("res://assets/icons/abilities/sentry_turret.png")  # Buffed
 
 # ============================================
 # RANGED ABILITY CREATORS - LEGENDARY
@@ -492,7 +492,7 @@ static func _create_arrow_storm() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
-	).with_damage(15.0, 1.0).with_aoe(500.0).with_duration(3.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon1.png")
+	).with_damage(25.0, 1.3).with_aoe(500.0).with_duration(3.0).with_icon("res://assets/sprites/icons/archerskills/PNG/Icon1.png")  # Buffed
 
 static func _create_ballista_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -525,7 +525,7 @@ static func _create_rain_of_vengeance() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		38.0
-	).with_damage(8.0, 1.2).with_aoe(600.0).with_duration(5.0).with_slow(0.4, 2.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 35.png")
+	).with_damage(15.0, 1.5).with_aoe(600.0).with_duration(5.0).with_slow(0.4, 2.0).with_icon("res://assets/sprites/icons/demonskills/PNG/Group 35.png")  # Buffed
 
 static func _create_explosive_decoy() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -610,7 +610,7 @@ static func _create_chain_lightning() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		14.0
-	).with_damage(12.0, 1.0).with_range(200.0).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon1.png")  # Jump range
+	).with_damage(18.0, 1.2).with_range(220.0).with_icon("res://assets/sprites/icons/mageskills/PNG/Icon1.png")  # Jump range - Buffed
 
 static func _create_meteor_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -632,7 +632,7 @@ static func _create_totem_of_frost() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
-	).with_damage(15.0, 0.5).with_aoe(100.0).with_slow(0.5, 1.0).with_duration(6.0).with_icon("res://assets/icons/abilities/totem_of_frost.png")
+	).with_damage(18.0, 0.8).with_aoe(120.0).with_slow(0.6, 1.5).with_duration(8.0).with_icon("res://assets/icons/abilities/totem_of_frost.png")  # Buffed
 
 static func _create_shadowstep() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -816,15 +816,16 @@ static func _create_now_you_see_me() -> ActiveAbilityData:
 	).with_range(200.0).with_stun(1.5).with_aoe(150.0).with_icon("res://assets/icons/abilities/now_you_see_me.png")
 
 static func _create_pocket_sand() -> ActiveAbilityData:
+	# Now includes Blinding Flash effect - upgraded to Rare
 	return ActiveAbilityData.new(
 		"pocket_sand",
 		"Pocket Sand",
-		"Throw sand in enemies' faces. They're blinded and attack randomly for 2 seconds.",
-		ActiveAbilityData.Rarity.COMMON,
+		"Throw sand and flash a blinding light! Enemies are slowed and briefly stunned.",
+		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
-		6.0
-	).with_aoe(100.0).with_slow(0.5, 2.0).with_duration(2.0).with_icon("res://assets/icons/abilities/pocket_sand.png")
+		8.0
+	).with_damage(5.0, 0.5).with_aoe(150.0).with_slow(0.6, 3.0).with_stun(0.8).with_duration(3.0).with_icon("res://assets/icons/abilities/pocket_sand.png")
 
 # ============================================
 # NEW ABILITY CREATORS - SHOUTS

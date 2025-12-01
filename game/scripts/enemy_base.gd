@@ -24,6 +24,7 @@ var player: Node2D = null
 var current_health: float
 var is_dying: bool = false
 var died_from_crit: bool = false
+var died_from_ability: bool = false  # Track ability kills for flying head effect
 var attack_timer: float = 0.0
 var can_attack: bool = true
 
@@ -247,6 +248,9 @@ func apply_knockback(force: Vector2) -> void:
 	knockback_velocity = force
 
 func apply_stagger() -> void:
+	# Bosses and elites cannot be staggered
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
 	is_staggered = true
 	stagger_timer = STAGGER_DURATION
 	is_winding_up = false
@@ -257,7 +261,10 @@ func apply_stagger() -> void:
 # ============================================
 
 func apply_stun(duration: float) -> void:
-	"""Apply stun effect - enemy cannot move or attack."""
+	"""Apply stun effect - enemy cannot move or attack. Bosses/elites are immune."""
+	# Bosses and elites cannot be stunned
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
 	is_stunned = true
 	stun_timer = max(stun_timer, duration)  # Don't reduce existing stun
 	is_winding_up = false
@@ -407,7 +414,18 @@ func spawn_death_particles() -> void:
 	particles.global_position = global_position
 	if particles.has_method("set_crit_kill"):
 		particles.set_crit_kill(died_from_crit)
+
+	# Flying head effect for ability kills
+	if died_from_ability and particles.has_method("set_ability_kill") and sprite:
+		var frame_width = sprite.texture.get_width() / COLS_PER_ROW
+		var frame_height = sprite.texture.get_height() / 8  # Assume 8 rows
+		particles.set_ability_kill(sprite.texture, sprite.frame, Vector2(frame_width, frame_height))
+
 	get_parent().add_child(particles)
+
+func mark_ability_kill() -> void:
+	"""Mark this enemy as killed by an active ability for extra gore effects."""
+	died_from_ability = true
 
 func update_death_animation(delta: float) -> void:
 	animation_frame += animation_speed * delta
