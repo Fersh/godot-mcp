@@ -1653,8 +1653,128 @@ func _enter_stealth() -> void:
 	}
 	emit_signal("buff_changed", active_buffs)
 
-	# Play disappear animation briefly then return to idle-ish state
-	# The actual animation will be handled in update_animation
+	# Shadow Dance: Dash to nearest enemy and perform melee attack
+	_shadow_dance_dash_attack()
+
+func _shadow_dance_dash_attack() -> void:
+	"""Dash to nearest enemy and perform a melee attack from stealth."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	if enemies.is_empty():
+		return
+
+	# Find nearest enemy
+	var nearest_enemy: Node2D = null
+	var nearest_dist: float = 999999.0
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist < nearest_dist:
+				nearest_dist = dist
+				nearest_enemy = enemy
+
+	if nearest_enemy == null:
+		return
+
+	# Only dash if enemy is within reasonable range (not too far)
+	var max_dash_range = 400.0
+	if nearest_dist > max_dash_range:
+		return
+
+	# Calculate dash target position (slightly in front of enemy)
+	var to_enemy = (nearest_enemy.global_position - global_position).normalized()
+	var dash_target = nearest_enemy.global_position - to_enemy * (assassin_melee_range * 0.5)
+
+	# Update facing direction
+	facing_right = to_enemy.x > 0
+	attack_direction = to_enemy
+
+	# Smooth dash using tween
+	var dash_duration = 0.15
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_EXPO)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "global_position", dash_target, dash_duration)
+
+	# Spawn dash trail effect
+	_spawn_shadow_trail()
+
+	# Perform melee attack after dash completes
+	tween.tween_callback(_shadow_dance_strike.bind(nearest_enemy))
+
+func _spawn_shadow_trail() -> void:
+	"""Spawn a purple shadow trail during the dash."""
+	var trail_count = 5
+	for i in range(trail_count):
+		var delay = i * 0.025
+		get_tree().create_timer(delay).timeout.connect(func():
+			if not is_instance_valid(self):
+				return
+			var ghost = Sprite2D.new()
+			ghost.texture = sprite.texture
+			ghost.hframes = sprite.hframes
+			ghost.vframes = sprite.vframes
+			ghost.frame = sprite.frame
+			ghost.global_position = global_position
+			ghost.flip_h = sprite.flip_h
+			ghost.scale = sprite.scale
+			ghost.modulate = Color(0.5, 0.2, 0.8, 0.6)  # Purple ghost
+			ghost.z_index = z_index - 1
+			get_parent().add_child(ghost)
+			# Fade out
+			var ghost_tween = ghost.create_tween()
+			ghost_tween.tween_property(ghost, "modulate:a", 0.0, 0.3)
+			ghost_tween.tween_callback(ghost.queue_free)
+		)
+
+func _shadow_dance_strike(target_enemy: Node2D) -> void:
+	"""Perform the stealth strike on the target enemy."""
+	if not is_instance_valid(target_enemy):
+		return
+
+	# Play melee attack animation
+	if row_melee_attack >= 0:
+		current_row = row_melee_attack
+		animation_frame = 0.0
+		is_attacking = true
+
+	# Play sound
+	if SoundManager:
+		SoundManager.play_swing()
+
+	# Spawn swipe effect
+	spawn_swipe_effect()
+
+	# Calculate damage with stealth bonus already applied
+	var melee_damage = 10.0 * base_damage
+	if AbilityManager:
+		melee_damage *= AbilityManager.get_damage_multiplier()
+	melee_damage *= (1.0 + shadow_dance_damage_bonus)  # +100% damage from stealth
+
+	# Check for crit
+	var crit_chance = AbilityManager.get_crit_chance() if AbilityManager else 0.05
+	var is_crit = randf() < crit_chance
+	var final_damage = melee_damage
+	if is_crit:
+		final_damage *= (AbilityManager.get_crit_damage_multiplier() if AbilityManager else 2.0)
+
+	# Apply damage
+	if target_enemy.has_method("take_damage"):
+		target_enemy.take_damage(final_damage, is_crit)
+
+	# Stagger
+	if target_enemy.has_method("apply_stagger"):
+		target_enemy.apply_stagger()
+
+	# Screen shake for impact
+	if JuiceManager:
+		if is_crit:
+			JuiceManager.shake_crit()
+		else:
+			JuiceManager.shake_small()
+		JuiceManager.hitstop_small()
+
+	# Exit stealth after the strike
+	_exit_stealth()
 
 func _exit_stealth() -> void:
 	is_stealthed = false

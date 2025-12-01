@@ -50,9 +50,11 @@ func set_ability_kill(enemy_texture: Texture2D, frame: int, frame_size: Vector2)
 		if JuiceManager:
 			JuiceManager.hitstop_medium()
 			Engine.time_scale = 0.4
-			get_tree().create_timer(0.15).timeout.connect(func():
-				Engine.time_scale = 1.0
-			)
+			var tree = get_tree()
+			if tree:
+				tree.create_timer(0.15).timeout.connect(func():
+					Engine.time_scale = 1.0
+				)
 
 func spawn_flying_head() -> void:
 	"""Spawn a clipped head region that flies off with rotation."""
