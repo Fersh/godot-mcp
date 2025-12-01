@@ -35,6 +35,9 @@ func _ready() -> void:
 	if player_gave_up and title_label:
 		title_label.text = "YOU COWARD"
 
+	# Show difficulty info for challenge mode deaths
+	_show_difficulty_info()
+
 	# Play game over music (5. Aurora)
 	if SoundManager:
 		SoundManager.play_game_over_music()
@@ -719,3 +722,34 @@ func _flash_personal_best(stat_label: Label) -> void:
 	# Haptic feedback
 	if HapticManager:
 		HapticManager.light()
+
+func _show_difficulty_info() -> void:
+	"""Show difficulty/mode info below the title for challenge mode runs."""
+	if not DifficultyManager:
+		return
+
+	# Only show for challenge mode
+	if not DifficultyManager.is_challenge_mode():
+		return
+
+	# Create difficulty info label below the title
+	var diff_info = Label.new()
+	var diff_name = DifficultyManager.get_difficulty_name()
+	diff_info.text = "Challenge Mode: %s" % diff_name
+	diff_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	if pixel_font:
+		diff_info.add_theme_font_override("font", pixel_font)
+	diff_info.add_theme_font_size_override("font_size", 12)
+	diff_info.add_theme_color_override("font_color", DifficultyManager.get_difficulty_color())
+	diff_info.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	diff_info.add_theme_constant_override("shadow_offset_x", 2)
+	diff_info.add_theme_constant_override("shadow_offset_y", 2)
+
+	# Position below title
+	if title_label:
+		var parent = title_label.get_parent()
+		if parent:
+			var title_idx = title_label.get_index()
+			parent.add_child(diff_info)
+			parent.move_child(diff_info, title_idx + 1)

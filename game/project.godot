@@ -34,6 +34,7 @@ HapticManager="*res://scripts/haptic_manager.gd"
 UltimateAbilityManager="*res://scripts/ultimate_abilities/ultimate_ability_manager.gd"
 KillStreakManager="*res://scripts/kill_streak_manager.gd"
 BloodSplatter="*res://scenes/effects/blood_screen_splatter.tscn"
+DifficultyManager="*res://scripts/difficulty_manager.gd"
 
 [display]
 

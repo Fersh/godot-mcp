@@ -167,8 +167,8 @@ func _on_play_pressed() -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
-	# Go to character select screen
-	get_tree().change_scene_to_file("res://scenes/character_select.tscn")
+	# Go to difficulty/mode selection screen
+	get_tree().change_scene_to_file("res://scenes/difficulty_select.tscn")
 
 func _on_gear_pressed() -> void:
 	if SoundManager:

@@ -36,6 +36,10 @@ const ULTIMATE_ABILITY_LEVEL: int = 15
 
 var kill_streak_ui = null
 
+# Challenge mode controller
+var challenge_controller = null
+var challenge_controller_script = preload("res://scripts/challenge_mode_controller.gd")
+
 func _ready() -> void:
 	add_to_group("main")
 
@@ -68,6 +72,9 @@ func _ready() -> void:
 
 	# Setup kill streak UI (#1)
 	_setup_kill_streak_ui()
+
+	# Setup challenge mode if selected
+	_setup_challenge_mode()
 
 	# Show level 1 active ability selection after a short delay
 	# (allows UI to initialize first)
@@ -421,3 +428,30 @@ func _setup_kill_streak_ui() -> void:
 		kill_streak_ui.set_script(ui_script)
 		kill_streak_ui.name = "KillStreakUI"
 		add_child(kill_streak_ui)
+
+# ============================================
+# CHALLENGE MODE SETUP
+# ============================================
+
+func _setup_challenge_mode() -> void:
+	"""Initialize challenge mode controller if in challenge mode."""
+	if not DifficultyManager or not DifficultyManager.is_challenge_mode():
+		return
+
+	# Find the spawners
+	var enemy_spawner = get_node_or_null("EnemySpawner")
+	var elite_spawner = get_node_or_null("EliteSpawner")
+
+	if not enemy_spawner or not elite_spawner:
+		push_warning("Challenge mode: Could not find spawners")
+		return
+
+	# Create the challenge controller
+	challenge_controller = Node.new()
+	challenge_controller.set_script(challenge_controller_script)
+	challenge_controller.name = "ChallengeController"
+	add_child(challenge_controller)
+
+	# Setup with references
+	if challenge_controller.has_method("setup"):
+		challenge_controller.setup(enemy_spawner, elite_spawner, player)

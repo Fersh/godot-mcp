@@ -32,6 +32,9 @@ const SCALING_BONUS: float = 0.10        # 10% more spawns per interval
 var spawn_timer: float = 0.0
 var game_time: float = 0.0
 
+# Spawning control (for challenge mode)
+var is_spawning_enabled: bool = true
+
 # Wave timing configuration (in seconds)
 # Phase 1: 0:00 - 0:30   - Primarily ratfolk (starter enemies)
 # Phase 2: 0:30 - 2:30   - Orcs phase in, ratfolk phase out
@@ -52,10 +55,19 @@ const TRANSITION_DURATION: float = 90.0  # 1.5 minutes for smooth transitions
 
 func _process(delta: float) -> void:
 	game_time += delta
+
+	# Don't spawn if disabled (challenge mode after boss killed)
+	if not is_spawning_enabled:
+		return
+
 	spawn_timer += delta
 
 	var ramp_progress = clamp(game_time / ramp_up_time, 0.0, 1.0)
 	var current_interval = lerp(initial_spawn_interval, final_spawn_interval, ramp_progress)
+
+	# Apply difficulty spawn rate multiplier (lower interval = faster spawns)
+	if DifficultyManager:
+		current_interval /= DifficultyManager.get_spawn_rate_multiplier()
 
 	if spawn_timer >= current_interval:
 		spawn_timer = 0.0
@@ -255,3 +267,19 @@ func set_arena_bounds(bounds: Rect2) -> void:
 	ARENA_BOTTOM = bounds.end.y
 	ARENA_WIDTH = bounds.size.x
 	ARENA_HEIGHT = bounds.size.y
+
+# ============================================
+# CHALLENGE MODE CONTROLS
+# ============================================
+
+func stop_spawning() -> void:
+	"""Stop all enemy spawning (called when challenge mode boss is killed)."""
+	is_spawning_enabled = false
+
+func start_spawning() -> void:
+	"""Resume enemy spawning."""
+	is_spawning_enabled = true
+
+func get_game_time() -> float:
+	"""Get the current game time in seconds."""
+	return game_time

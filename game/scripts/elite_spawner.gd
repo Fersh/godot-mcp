@@ -44,6 +44,14 @@ var total_bosses_killed: int = 0
 var active_elites: Array[Node] = []
 var active_boss: Node = null
 
+# Challenge mode integration
+var is_challenge_mode: bool = false
+var challenge_mode_spawning_paused: bool = false
+
+# Signals for challenge mode
+signal boss_killed_challenge()
+signal elite_killed_challenge()
+
 # Notification UI
 var elite_notification: CanvasLayer = null
 var notification_label: Label = null
@@ -90,7 +98,11 @@ func _process(delta: float) -> void:
 				_do_spawn()
 				pending_spawn = false
 
-	# Check if it's time to spawn
+	# In challenge mode, don't auto-spawn - controller handles timing
+	if is_challenge_mode:
+		return
+
+	# Check if it's time to spawn (only in endless mode)
 	if spawn_timer >= spawn_interval and not warning_active:
 		spawn_timer = 0.0
 		_start_warning()
@@ -523,6 +535,9 @@ func _on_boss_died(_boss: Node) -> void:
 	total_bosses_killed += 1  # Track for scaling next boss
 	# Hide health bar (CanvasLayer doesn't support modulate)
 	boss_health_bar_container.visible = false
+	# Emit signal for challenge mode controller
+	if is_challenge_mode:
+		boss_killed_challenge.emit()
 
 func _on_elite_health_changed(current: float, max_hp: float) -> void:
 	if max_hp > 0:
@@ -533,6 +548,9 @@ func _on_elite_died(_elite: Node) -> void:
 	total_elites_killed += 1  # Track for scaling next elite
 	# Hide health bar
 	elite_health_bar_container.visible = false
+	# Emit signal for challenge mode controller
+	if is_challenge_mode:
+		elite_killed_challenge.emit()
 
 func _get_spawn_position() -> Vector2:
 	# Spawn from all 4 edges of the arena
@@ -613,3 +631,41 @@ func _flash_screen_dark(is_boss: bool) -> void:
 	var tween = create_tween()
 	tween.tween_property(dark_overlay, "color:a", intensity, 0.1)
 	tween.tween_property(dark_overlay, "color:a", 0.0, 0.4)
+
+# ============================================
+# CHALLENGE MODE FUNCTIONS
+# ============================================
+
+func set_challenge_mode(enabled: bool) -> void:
+	"""Enable or disable challenge mode (disables auto-spawning)."""
+	is_challenge_mode = enabled
+
+func force_spawn_elite() -> void:
+	"""Force spawn an elite immediately (for challenge mode milestones)."""
+	# Temporarily set spawn_count to an even number to ensure elite spawns
+	var original_count = spawn_count
+	if spawn_count % 2 == 1:
+		spawn_count = spawn_count - 1
+	_start_warning()
+	# Note: spawn_count will be incremented by _do_spawn
+
+func force_spawn_boss() -> void:
+	"""Force spawn a boss immediately (for challenge mode final boss)."""
+	# Temporarily set spawn_count to an odd number to ensure boss spawns
+	if spawn_count % 2 == 0:
+		spawn_count = spawn_count + 1
+	_start_warning()
+	# Note: spawn_count will be incremented by _do_spawn
+
+func is_boss_alive() -> bool:
+	"""Check if there's currently an active boss."""
+	return active_boss != null and is_instance_valid(active_boss)
+
+func get_active_enemies_count() -> int:
+	"""Get the total count of active elite enemies and boss."""
+	var count = 0
+	active_elites = active_elites.filter(func(e): return is_instance_valid(e))
+	count += active_elites.size()
+	if is_boss_alive():
+		count += 1
+	return count

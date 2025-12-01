@@ -12,6 +12,9 @@ var run_time: float = 0.0
 var run_level: int = 1
 var run_wave: int = 0
 var run_points: int = 0
+var run_game_mode: int = 0  # 0 = Endless, 1 = Challenge
+var run_difficulty: int = 0  # DifficultyTier enum value
+var run_victory: bool = false  # Did player complete challenge mode?
 
 # Lifetime stats (persisted)
 var total_kills: int = 0
@@ -88,6 +91,14 @@ func reset_run() -> void:
 	run_level = 1
 	run_wave = 0
 	run_points = 0
+	run_victory = false
+	# Capture current mode/difficulty from DifficultyManager
+	if DifficultyManager:
+		run_game_mode = DifficultyManager.current_mode
+		run_difficulty = DifficultyManager.current_difficulty
+	else:
+		run_game_mode = 0
+		run_difficulty = 0
 
 # Get current run stats as dictionary
 func get_run_stats() -> Dictionary:
@@ -97,8 +108,15 @@ func get_run_stats() -> Dictionary:
 		"time": run_time,
 		"level": run_level,
 		"wave": run_wave,
-		"points": run_points
+		"points": run_points,
+		"game_mode": run_game_mode,
+		"difficulty": run_difficulty,
+		"victory": run_victory,
 	}
+
+func set_victory(value: bool) -> void:
+	"""Mark the current run as a victory (for challenge mode)."""
+	run_victory = value
 
 # Get lifetime stats as dictionary
 func get_lifetime_stats() -> Dictionary:

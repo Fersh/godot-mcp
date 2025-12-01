@@ -93,6 +93,9 @@ var animation_frame: float = 0.0
 @onready var health_bar: Node2D = $HealthBar
 
 func _ready() -> void:
+	# Apply difficulty multipliers before setting up health
+	_apply_difficulty_scaling()
+
 	current_health = max_health
 	base_speed = speed  # Store base speed for slow calculations
 	player = get_tree().get_first_node_in_group("player")
@@ -108,6 +111,13 @@ func _ready() -> void:
 		sprite.material = sprite.material.duplicate()
 
 	_on_ready()
+
+func _apply_difficulty_scaling() -> void:
+	"""Apply difficulty multipliers to enemy stats."""
+	if DifficultyManager:
+		max_health *= DifficultyManager.get_health_multiplier()
+		attack_damage *= DifficultyManager.get_damage_multiplier()
+		speed *= DifficultyManager.get_speed_multiplier()
 
 # Override in subclasses for custom initialization
 func _on_ready() -> void:
