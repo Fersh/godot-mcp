@@ -947,13 +947,9 @@ func _setup_curse_icons() -> void:
 	if enabled_curses.is_empty():
 		return
 
-	# Calculate spacing to evenly distribute icons across full width
-	var num_curses = enabled_curses.size()
-	var total_icon_width = num_curses * CURSE_ICON_SIZE
-	var remaining_space = CURSE_ROW_TOTAL_WIDTH - total_icon_width
-	var spacing = 0
-	if num_curses > 1:
-		spacing = int(remaining_space / (num_curses - 1))
+	# Fixed spacing so 20 curses fill the full width (333px)
+	# 20 icons * 14px = 280px, leaving 53px for 19 gaps = ~3px each
+	var spacing = 3
 	curse_container.add_theme_constant_override("separation", spacing)
 
 	# Create an icon for each curse
