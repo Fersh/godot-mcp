@@ -129,7 +129,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"massacre",
 			"Massacre",
 			"+2% damage and speed per kill, resets after 3s",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MASSACRE, value = 0.02}]
 		),

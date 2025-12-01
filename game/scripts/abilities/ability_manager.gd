@@ -1047,7 +1047,7 @@ func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 	var cumulative = 0.0
 	var selected_rarity = AbilityData.Rarity.COMMON
 
-	for rarity in [AbilityData.Rarity.MYTHIC, AbilityData.Rarity.LEGENDARY, AbilityData.Rarity.RARE, AbilityData.Rarity.COMMON]:
+	for rarity in [AbilityData.Rarity.LEGENDARY, AbilityData.Rarity.EPIC, AbilityData.Rarity.RARE, AbilityData.Rarity.COMMON]:
 		cumulative += AbilityData.RARITY_WEIGHTS[rarity]
 		if roll <= cumulative and by_rarity.has(rarity) and by_rarity[rarity].size() > 0:
 			selected_rarity = rarity

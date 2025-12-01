@@ -100,7 +100,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"double_charge",
 			"Double Charge",
 			"Dodge gains a second charge",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.DOUBLE_CHARGE, value = 1.0}]
 		),
@@ -108,7 +108,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"elemental_infusion",
 			"Elemental Infusion",
 			"Active abilities apply your elemental effects",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ELEMENTAL_INFUSION, value = 1.0}]
 		),
@@ -116,7 +116,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"phantom_strike",
 			"Phantom Strike",
 			"Dodging through enemies deals area damage",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.PHANTOM_STRIKE, value = 25.0}]  # base damage
 		),
@@ -124,7 +124,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"ability_echo",
 			"Ability Echo",
 			"10% chance for active abilities to trigger twice",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ABILITY_ECHO, value = 0.10}]
 		),
@@ -357,7 +357,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"orbital_defense",
 			"Orbital Defense",
 			"A projectile orbits around you",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.ORBITAL, value = 1.0}]
 		),
@@ -365,7 +365,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"tesla_coil",
 			"Tesla Coil",
 			"Lightning arcs to nearby enemies",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.TESLA_COIL, value = 10.0}]  # damage
 		),
@@ -373,7 +373,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"cull_the_weak",
 			"Cull the Weak",
 			"Instantly kill enemies under 20% HP",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CULL_WEAK, value = 0.2}]
 		),
@@ -381,7 +381,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"ring_of_fire",
 			"Ring of Fire",
 			"Periodically fires 360-degree spread",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.RING_OF_FIRE, value = 8.0}]  # projectile count
 		),
@@ -389,7 +389,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"toxic_cloud",
 			"Toxic Cloud",
 			"Damages nearby enemies over time",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.TOXIC_CLOUD, value = 3.0}]  # DPS
 		),
@@ -397,7 +397,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"glass_cannon",
 			"Glass Cannon",
 			"+80% Damage, -30 Max HP",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.STAT_BOOST,
 			[
 				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.8},
@@ -408,7 +408,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"death_detonation",
 			"Death Detonation",
 			"Enemies explode on death",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.DEATH_EXPLOSION, value = 8.0}]  # explosion damage (toned down)
 		),
@@ -416,7 +416,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"thundercaller",
 			"Thundercaller",
 			"Strikes random enemies with lightning",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.LIGHTNING_STRIKE, value = 6.0}]  # damage (halved)
 		),
@@ -424,7 +424,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"drone_support",
 			"Drone Support",
 			"Summons a drone that shoots enemies",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.DRONE, value = 1.0}]
 		),
@@ -432,7 +432,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"blood_money",
 			"Blood Money",
 			"Picking up coins heals you for 1% HP",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BLOOD_MONEY, value = 1.0}]  # HP per coin
 		),
@@ -440,7 +440,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			"divine_shield",
 			"Divine Shield",
 			"Invulnerable for 2 seconds after taking damage",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.DIVINE_SHIELD, value = 2.0}]  # duration in seconds
 		),
@@ -455,7 +455,7 @@ static func get_mythic_abilities() -> Array[AbilityData]:
 			"phoenix",
 			"Phoenix",
 			"Revive once per run with 50% HP and explosion",
-			AbilityData.Rarity.MYTHIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.PHOENIX, value = 0.5}]  # revive with 50% HP
 		),
@@ -463,7 +463,7 @@ static func get_mythic_abilities() -> Array[AbilityData]:
 			"boomerang",
 			"Boomerang",
 			"Projectiles fly out and return, hitting twice",
-			AbilityData.Rarity.MYTHIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.RANGED_ONLY,
 			[{effect_type = AbilityData.EffectType.BOOMERANG, value = 1.0}]
 		),
@@ -551,7 +551,7 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			"barrage",
 			"Barrage",
 			"+3 Projectiles, +Spread, -20% Damage",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.RANGED_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 3.0},
@@ -571,7 +571,7 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			"scattergun",
 			"Scattergun",
 			"+2 Projectiles, increased spread",
-			AbilityData.Rarity.LEGENDARY,  # Very powerful, made legendary
+			AbilityData.Rarity.EPIC,  # Very powerful, made legendary
 			AbilityData.Type.RANGED_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 2.0},
@@ -582,7 +582,7 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			"ricochet",
 			"Ricochet",
 			"Arrows bounce to a nearby enemy on hit",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.RANGED_ONLY,
 			[{effect_type = AbilityData.EffectType.RICOCHET, value = 1.0}]  # number of bounces
 		),
@@ -702,7 +702,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			"whirlwind",
 			"Whirlwind",
 			"Spin attack every 3 seconds",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.WHIRLWIND, value = 3.0}]
 		),
@@ -710,7 +710,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			"titans_grip",
 			"Titan's Grip",
 			"+100% Damage, -50% Move Speed",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.MELEE_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.DAMAGE, value = 1.0},
@@ -721,7 +721,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			"berserker_rage",
 			"Berserker Rage",
 			"+50% Damage & Attack Speed when below 30% HP",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.FRENZY, value = 0.5}]
 		),
@@ -729,7 +729,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			"blade_beam",
 			"Blade Beam",
 			"Auto attacking fires an extra projectile",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.BLADE_BEAM, value = 1.0}]
 		),
@@ -737,7 +737,7 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			"extra_strike",
 			"Extra Strike",
 			"Auto attacks hit twice",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.MELEE_ONLY,
 			[{effect_type = AbilityData.EffectType.DOUBLE_STRIKE, value = 1.0}]
 		),

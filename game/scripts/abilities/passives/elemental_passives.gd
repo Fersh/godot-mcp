@@ -71,7 +71,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"chain_reaction",
 			"Chain Reaction",
 			"Status effects spread to 2 nearby enemies on kill",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CHAIN_REACTION, value = 2.0}]
 		),

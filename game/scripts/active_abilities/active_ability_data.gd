@@ -4,7 +4,9 @@ class_name ActiveAbilityData
 enum Rarity {
 	COMMON,
 	RARE,
-	LEGENDARY
+	EPIC,
+	LEGENDARY,
+	MYTHIC
 }
 
 enum TargetType {
@@ -21,24 +23,23 @@ enum ClassType {
 	RANGED,  # Archer only
 }
 
-# Rarity weights for random selection - boosted rare/legendary at all levels
-# Legendaries can now appear at level 1!
+# Rarity weights for random selection
 const RARITY_WEIGHTS_LEVEL_1 = {
 	Rarity.COMMON: 55,
 	Rarity.RARE: 35,
-	Rarity.LEGENDARY: 10
+	Rarity.EPIC: 10
 }
 
 const RARITY_WEIGHTS_LEVEL_5 = {
 	Rarity.COMMON: 35,
 	Rarity.RARE: 45,
-	Rarity.LEGENDARY: 20
+	Rarity.EPIC: 20
 }
 
 const RARITY_WEIGHTS_LEVEL_10 = {
 	Rarity.COMMON: 15,
 	Rarity.RARE: 45,
-	Rarity.LEGENDARY: 40
+	Rarity.EPIC: 40
 }
 
 # Core properties
@@ -156,11 +157,15 @@ func with_icon(p_icon_path: String) -> ActiveAbilityData:
 static func get_rarity_color(p_rarity: Rarity) -> Color:
 	match p_rarity:
 		Rarity.COMMON:
-			return Color(0.8, 0.8, 0.8)  # Gray/white
+			return Color(0.9, 0.9, 0.9)  # White
 		Rarity.RARE:
 			return Color(0.3, 0.5, 1.0)  # Blue
+		Rarity.EPIC:
+			return Color(0.6, 0.2, 0.8)  # Purple
 		Rarity.LEGENDARY:
-			return Color(1.0, 0.8, 0.2)  # Gold
+			return Color(1.0, 0.85, 0.0)  # Yellow
+		Rarity.MYTHIC:
+			return Color(1.0, 0.2, 0.3)  # Red
 	return Color.WHITE
 
 static func get_rarity_name(p_rarity: Rarity) -> String:
@@ -169,8 +174,12 @@ static func get_rarity_name(p_rarity: Rarity) -> String:
 			return "Common"
 		Rarity.RARE:
 			return "Rare"
+		Rarity.EPIC:
+			return "Epic"
 		Rarity.LEGENDARY:
 			return "Legendary"
+		Rarity.MYTHIC:
+			return "Mythic"
 	return "Unknown"
 
 static func get_rarity_weights_for_level(level: int) -> Dictionary:

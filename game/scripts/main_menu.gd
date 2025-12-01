@@ -7,7 +7,11 @@ extends CanvasLayer
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 
 var curse_label: Label = null
+var version_label: Label = null
 var pixel_font: Font = null
+
+const VERSION = "1.0.0"
+const BUILD = 8
 
 func _ready() -> void:
 	# Load pixel font
@@ -29,6 +33,7 @@ func _ready() -> void:
 	# Update displays
 	_update_coin_display()
 	_update_curse_display()
+	_create_version_label()
 
 	# Play main menu music (1. Stolen Future)
 	if SoundManager:
@@ -64,8 +69,29 @@ func _update_curse_display() -> void:
 		add_child(curse_label)
 
 	var multiplier = PrincessManager.get_total_bonus_multiplier()
-	curse_label.text = "%d Curse%s Active (%dx Bonus)" % [curse_count, "s" if curse_count > 1 else "", multiplier]
+	var mult_str = "%.1fx" % multiplier if fmod(multiplier, 1.0) != 0 else "%dx" % int(multiplier)
+	curse_label.text = "%d Curse%s Active (%s Bonus)" % [curse_count, "s" if curse_count > 1 else "", mult_str]
 	curse_label.visible = true
+
+func _create_version_label() -> void:
+	"""Create version/build label in bottom left corner."""
+	version_label = Label.new()
+	version_label.text = "v%s (Build %d)" % [VERSION, BUILD]
+	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	version_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	version_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	version_label.offset_left = 10
+	version_label.offset_bottom = -10
+	version_label.offset_top = -30
+	version_label.offset_right = 200
+	if pixel_font:
+		version_label.add_theme_font_override("font", pixel_font)
+	version_label.add_theme_font_size_override("font_size", 10)
+	version_label.add_theme_color_override("font_color", Color.WHITE)
+	version_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	version_label.add_theme_constant_override("shadow_offset_x", 1)
+	version_label.add_theme_constant_override("shadow_offset_y", 1)
+	add_child(version_label)
 
 func _style_golden_button(button: Button) -> void:
 	# Golden/yellow button with wooden bottom border (matching reference image)

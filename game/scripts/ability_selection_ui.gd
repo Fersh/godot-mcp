@@ -346,8 +346,10 @@ func _get_particle_intensity(rarity: AbilityData.Rarity) -> float:
 	match rarity:
 		AbilityData.Rarity.RARE:
 			return 1.2
+		AbilityData.Rarity.EPIC:
+			return 1.6
 		AbilityData.Rarity.LEGENDARY:
-			return 1.8
+			return 2.0
 		AbilityData.Rarity.MYTHIC:
 			return 2.5
 		_:
@@ -357,10 +359,12 @@ func _get_particle_density(rarity: AbilityData.Rarity) -> float:
 	match rarity:
 		AbilityData.Rarity.RARE:
 			return 10.0
+		AbilityData.Rarity.EPIC:
+			return 14.0
 		AbilityData.Rarity.LEGENDARY:
-			return 16.0
+			return 20.0
 		AbilityData.Rarity.MYTHIC:
-			return 24.0
+			return 28.0
 		_:
 			return 0.0
 
@@ -399,12 +403,15 @@ func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 		AbilityData.Rarity.RARE:
 			style.bg_color = Color(0.1, 0.15, 0.25, 0.95)
 			style.border_color = Color(0.3, 0.5, 1.0)
+		AbilityData.Rarity.EPIC:
+			style.bg_color = Color(0.15, 0.1, 0.2, 0.95)  # Purple-tinted background
+			style.border_color = AbilityData.get_rarity_color(rarity)
 		AbilityData.Rarity.LEGENDARY:
-			style.bg_color = Color(0.2, 0.15, 0.1, 0.95)
+			style.bg_color = Color(0.2, 0.18, 0.1, 0.95)  # Yellow-tinted background
 			style.border_color = AbilityData.get_rarity_color(rarity)
 		AbilityData.Rarity.MYTHIC:
 			style.bg_color = Color(0.18, 0.08, 0.1, 0.95)  # Dark red-tinted background
-			style.border_color = AbilityData.get_rarity_color(rarity)  # Red mythic border
+			style.border_color = AbilityData.get_rarity_color(rarity)
 		_:
 			# Fallback for unknown rarity
 			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
@@ -562,10 +569,12 @@ func _get_rarity_freeze_frames(rarity: AbilityData.Rarity) -> int:
 	match rarity:
 		AbilityData.Rarity.RARE:
 			return 2
+		AbilityData.Rarity.EPIC:
+			return 3
 		AbilityData.Rarity.LEGENDARY:
 			return 4
 		AbilityData.Rarity.MYTHIC:
-			return 6
+			return 5
 		_:
 			return 0
 
@@ -586,10 +595,12 @@ func _play_rarity_reveal_effect(button: Button, rarity: AbilityData.Rarity) -> v
 	match rarity:
 		AbilityData.Rarity.RARE:
 			intensity = 1.0
+		AbilityData.Rarity.EPIC:
+			intensity = 1.3
 		AbilityData.Rarity.LEGENDARY:
-			intensity = 1.5
+			intensity = 1.7
 		AbilityData.Rarity.MYTHIC:
-			intensity = 2.0
+			intensity = 2.2
 
 	# Create flash overlay - brighter for higher rarity
 	var flash = ColorRect.new()
@@ -643,20 +654,25 @@ func _play_rarity_reveal_effect(button: Button, rarity: AbilityData.Rarity) -> v
 	scale_tween.tween_property(button, "scale", Vector2(scale_amount, scale_amount), 0.08).set_ease(Tween.EASE_OUT)
 	scale_tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
 
-	# Create sparkle particles for rare and above
-	if rarity != AbilityData.Rarity.COMMON:
-		var sparkle_count = 4
-		match rarity:
-			AbilityData.Rarity.RARE:
-				sparkle_count = 6
-			AbilityData.Rarity.LEGENDARY:
-				sparkle_count = 10
-			AbilityData.Rarity.MYTHIC:
-				sparkle_count = 16
-		_spawn_sparkles_count(button, rarity_color, sparkle_count)
+	# Create sparkle particles for all rarities
+	var sparkle_count = 5
+	match rarity:
+		AbilityData.Rarity.COMMON:
+			sparkle_count = 5
+		AbilityData.Rarity.RARE:
+			sparkle_count = 10
+		AbilityData.Rarity.EPIC:
+			sparkle_count = 15
+		AbilityData.Rarity.LEGENDARY:
+			sparkle_count = 20
+		AbilityData.Rarity.MYTHIC:
+			sparkle_count = 25
+	_spawn_sparkles_count(button, rarity_color, sparkle_count)
 
-	# Screen shake for legendary and mythic
-	if rarity == AbilityData.Rarity.LEGENDARY and JuiceManager:
+	# Screen shake for epic and above
+	if rarity == AbilityData.Rarity.EPIC and JuiceManager:
+		JuiceManager.shake_small()
+	elif rarity == AbilityData.Rarity.LEGENDARY and JuiceManager:
 		JuiceManager.shake_small()
 	elif rarity == AbilityData.Rarity.MYTHIC and JuiceManager:
 		JuiceManager.shake_medium()

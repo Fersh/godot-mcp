@@ -29,7 +29,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"ability_cascade",
 			"Ability Cascade",
 			"Using an ability has 20% chance to reset another",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ABILITY_CASCADE, value = 0.20}]
 		),

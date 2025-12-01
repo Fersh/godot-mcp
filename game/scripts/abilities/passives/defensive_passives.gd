@@ -64,7 +64,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"mirror_shield",
 			"Mirror Shield",
 			"Reflect a projectile every 5 seconds",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MIRROR_SHIELD, value = 5.0}]
 		),
@@ -74,7 +74,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"thundershock",
 			"Thundershock",
 			"Taking damage strikes nearby enemies",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.THUNDERSHOCK, value = 25.0}]
 		),

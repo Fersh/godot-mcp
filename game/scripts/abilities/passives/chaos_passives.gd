@@ -45,7 +45,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"sore_loser",
 			"Sore Loser",
 			"Enemies have a 25% chance to drop a trap on death that damages other enemies.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.SORE_LOSER, value = 0.25}]  # 25% chance
 		),
@@ -73,7 +73,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"friendly_fire",
 			"Friendly Fire",
 			"10% of damage enemies deal hurts other enemies too.",
-			AbilityData.Rarity.MYTHIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.FRIENDLY_FIRE, value = 0.10}]  # 10% damage transfer
 		),
@@ -83,7 +83,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"built_different",
 			"Built Different",
 			"Gain a random stat boost every 30 seconds.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BUILT_DIFFERENT, value = 30.0}]  # seconds between changes
 		),
@@ -103,7 +103,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"ninety_nine_stacks",
 			"99 Stacks",
 			"Your status effects can stack up to 3x.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.NINETY_NINE_STACKS, value = 3.0}]  # stack multiplier
 		),
@@ -113,7 +113,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"glass_soul",
 			"Glass Soul",
 			"Deal bonus damage equal to your missing HP percentage.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.GLASS_SOUL, value = 1.0}]  # 1:1 ratio
 		),
@@ -137,7 +137,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"risk_reward",
 			"Risk/Reward",
 			"+5% permanent damage (this run) each time you drop below 10% HP.",
-			AbilityData.Rarity.MYTHIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.RISK_REWARD, value = 0.05}]  # 5% per trigger
 		),
@@ -161,7 +161,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"haunted",
 			"Haunted",
 			"Every 10th kill spawns a ghost that fights for you for 5 seconds.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 10.0}]  # every 10 kills
 		),
@@ -171,7 +171,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"survivors_guilt",
 			"Survivor's Guilt",
 			"When a summon dies, gain +25% damage for 10 seconds.",
-			AbilityData.Rarity.MYTHIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.SURVIVORS_GUILT, value = 0.25}]  # 25% damage boost
 		),
@@ -195,7 +195,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"intimidating_presence",
 			"Intimidating Presence",
 			"Enemies within close range have 10% chance to flee when they first see you.",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.INTIMIDATING_PRESENCE, value = 0.10}]  # 10% flee chance
 		),

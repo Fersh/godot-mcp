@@ -54,7 +54,6 @@ func _create_pixel_art_sword() -> void:
 	# Create a custom drawing node
 	var sword_drawer = Node2D.new()
 	sword_drawer.name = "SwordDrawer"
-	sword_drawer.set_script(preload("res://scripts/abilities/blade_orbital_drawer.gd") if ResourceLoader.exists("res://scripts/abilities/blade_orbital_drawer.gd") else null)
 	add_child(sword_drawer)
 
 	# Fallback: draw using ColorRects in pixel art style

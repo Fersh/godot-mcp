@@ -311,7 +311,7 @@ static func _create_earthquake() -> ActiveAbilityData:
 		"earthquake",
 		"Earthquake",
 		"Shake the ground violently, damaging and stunning nearby enemies.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		38.0  # Longer cooldown
@@ -322,7 +322,7 @@ static func _create_bladestorm() -> ActiveAbilityData:
 		"bladestorm",
 		"Bladestorm",
 		"Spin at high speed for 3 seconds, dragging enemies in a vortex of blades.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		30.0
@@ -333,7 +333,7 @@ static func _create_omnislash() -> ActiveAbilityData:
 		"omnislash",
 		"Omnislash",
 		"Dash between nearby enemies, striking rapid hits distributed among them.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.CLUSTER,
 		28.0
@@ -344,7 +344,7 @@ static func _create_avatar_of_war() -> ActiveAbilityData:
 		"avatar_of_war",
 		"Avatar of War",
 		"Transform into a powerful form for 8s. +50% damage, -30% damage taken.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
 		40.0
@@ -355,7 +355,7 @@ static func _create_divine_shield() -> ActiveAbilityData:
 		"divine_shield",
 		"Divine Shield",
 		"Become invulnerable for 3 seconds and reflect damage back to attackers.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
 		45.0
@@ -471,7 +471,7 @@ static func _create_fan_of_knives() -> ActiveAbilityData:
 static func _create_sentry_turret() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"sentry_turret",
-		"Sentry Turret",
+		"Sentry Totem",
 		"Deploy a turret that auto-fires at enemies for 8 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
@@ -488,7 +488,7 @@ static func _create_arrow_storm() -> ActiveAbilityData:
 		"arrow_storm",
 		"Arrow Storm",
 		"Call upon a massive volley blanketing the screen in arrows.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
@@ -499,7 +499,7 @@ static func _create_ballista_strike() -> ActiveAbilityData:
 		"ballista_strike",
 		"Ballista Strike",
 		"Fire an immense bolt for huge single-target damage that pierces.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		25.0
@@ -510,7 +510,7 @@ static func _create_sentry_network() -> ActiveAbilityData:
 		"sentry_network",
 		"Sentry Network",
 		"Deploy three turrets that auto-fire at enemies for 10 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		30.0
@@ -521,7 +521,7 @@ static func _create_rain_of_vengeance() -> ActiveAbilityData:
 		"rain_of_vengeance",
 		"Rain of Vengeance",
 		"Dark arrows rain down in waves across the screen, slowing and damaging all.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		38.0
@@ -532,7 +532,7 @@ static func _create_explosive_decoy() -> ActiveAbilityData:
 		"explosive_decoy",
 		"Explosive Decoy",
 		"Throw a decoy that taunts enemies, then explodes after 2 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
 		28.0
@@ -666,7 +666,7 @@ static func _create_black_hole() -> ActiveAbilityData:
 		"black_hole",
 		"Black Hole",
 		"Open a void that pulls in enemies and explodes after 3 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
 		30.0
@@ -677,7 +677,7 @@ static func _create_time_stop() -> ActiveAbilityData:
 		"time_stop",
 		"Time Stop",
 		"Freeze time for enemies for 3 seconds while you move freely.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		35.0
@@ -688,7 +688,7 @@ static func _create_thunderstorm() -> ActiveAbilityData:
 		"thunderstorm",
 		"Thunderstorm",
 		"Channel the heavens - lightning strikes all enemies repeatedly.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		32.0
@@ -699,7 +699,7 @@ static func _create_summon_golem() -> ActiveAbilityData:
 		"summon_golem",
 		"Summon Golem",
 		"Summon a giant golem that taunts enemies and deals damage for 15 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		45.0
@@ -710,7 +710,7 @@ static func _create_army_of_the_dead() -> ActiveAbilityData:
 		"army_of_the_dead",
 		"Army of the Dead",
 		"Summon 5 skeleton warriors that fight alongside you for 10 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		40.0
@@ -747,7 +747,7 @@ static func _create_floor_is_lava() -> ActiveAbilityData:
 		"floor_is_lava",
 		"The Floor is Lava",
 		"Convert the ground to magma for 5 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		30.0
@@ -784,7 +784,7 @@ static func _create_pressure_mine() -> ActiveAbilityData:
 		"pressure_mine",
 		"Pressure Mine",
 		"Plant an invisible mine that explodes when 3+ enemies are nearby for massive damage.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
@@ -863,7 +863,7 @@ static func _create_mirror_clone() -> ActiveAbilityData:
 		"mirror_clone",
 		"Mirror Clone",
 		"Spawn a clone that fights with your abilities at 50% damage for half the cooldown time.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		35.0
@@ -874,7 +874,7 @@ static func _create_uno_reverse() -> ActiveAbilityData:
 		"uno_reverse",
 		"Uno Reverse",
 		"For 3 seconds, all damage you would take is instead dealt to enemies.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		30.0
@@ -885,7 +885,7 @@ static func _create_orbital_strike() -> ActiveAbilityData:
 		"orbital_strike",
 		"Orbital Strike",
 		"Fire ALL your orbital projectiles at the nearest enemy at once.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		25.0
@@ -896,7 +896,7 @@ static func _create_summon_party() -> ActiveAbilityData:
 		"summon_party",
 		"Summon Party",
 		"All your summons gain +100% damage and attack speed for 5 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		35.0
@@ -918,7 +918,7 @@ static func _create_pocket_healer() -> ActiveAbilityData:
 		"pocket_healer",
 		"Pocket Healer",
 		"Summon a healing fairy for 10 seconds that follows you and heals 2% HP per second.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		40.0
@@ -940,7 +940,7 @@ static func _create_double_or_nothing() -> ActiveAbilityData:
 		"double_or_nothing",
 		"Double or Nothing",
 		"For 5 seconds, your attacks either deal 3x damage or 0 damage. 50/50 each hit.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		25.0
@@ -955,7 +955,7 @@ static func _create_release_the_hounds() -> ActiveAbilityData:
 		"release_the_hounds",
 		"Release the Hounds",
 		"Summon 5 ghostly wolves that chase down enemies for 8 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		35.0
@@ -966,7 +966,7 @@ static func _create_gigantamax() -> ActiveAbilityData:
 		"gigantamax",
 		"Gigantamax",
 		"Grow HUGE for 5 seconds. +200% damage, +50% range, but 90% reduced movement speed.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		45.0
@@ -988,7 +988,7 @@ static func _create_i_see_red() -> ActiveAbilityData:
 		"i_see_red",
 		"I See Red",
 		"Go berserk. +100% damage, +50% speed, but take 50% more damage for 8 seconds.",
-		ActiveAbilityData.Rarity.LEGENDARY,
+		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		40.0

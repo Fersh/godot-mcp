@@ -43,6 +43,28 @@ const PREFIXES: Dictionary = {
 	"Snug": {"damage_reduction": 0.08},
 	"Like a Hug": {"damage_reduction": 0.10},
 	"Plot Armor": {"damage_reduction": 0.15},
+
+	# NEW: Crit damage prefixes
+	"Brutal": {"crit_damage": 0.20},
+	"Savage": {"crit_damage": 0.30},
+
+	# NEW: Cooldown reduction prefixes
+	"Hasty": {"cooldown_reduction": 0.08},
+	"Restless": {"cooldown_reduction": 0.12},
+
+	# NEW: HP on kill prefixes
+	"Hungry": {"hp_on_kill": 2.0},
+	"Ravenous": {"hp_on_kill": 4.0},
+
+	# NEW: AOE size prefixes
+	"Wide": {"aoe_size": 0.15},
+	"Massive": {"aoe_size": 0.25},
+
+	# NEW: Thorns prefix
+	"Thorny": {"thorns": 5.0},
+
+	# NEW: Execute damage prefix
+	"Merciless": {"execute_damage": 0.25},
 }
 
 const SUFFIXES: Dictionary = {
@@ -80,6 +102,30 @@ const SUFFIXES: Dictionary = {
 	"of Nope": {"dodge_chance": 0.08},
 	"of the Matrix": {"dodge_chance": 0.10},
 	"of Blocking Haters": {"block_chance": 0.08},
+
+	# NEW: Crit damage suffixes
+	"of Carnage": {"crit_damage": 0.25},
+	"of Slaughter": {"crit_damage": 0.35},
+
+	# NEW: Cooldown reduction suffix
+	"of Haste": {"cooldown_reduction": 0.10},
+
+	# NEW: HP on kill suffixes
+	"of Draining": {"hp_on_kill": 3.0},
+	"of Leeching": {"hp_on_kill": 5.0},
+
+	# NEW: AOE size suffix
+	"of Explosions": {"aoe_size": 0.20},
+
+	# NEW: Thorns suffix
+	"of Vengeance": {"thorns": 8.0},
+
+	# NEW: Execute damage suffix
+	"of Reaping": {"execute_damage": 0.30},
+
+	# NEW: Summon damage suffixes
+	"of Summoning": {"summon_damage": 0.15},
+	"of Minions": {"summon_damage": 0.25},
 }
 
 # Base item templates by slot
@@ -355,8 +401,8 @@ const BASE_ITEMS: Dictionary = {
 	},
 }
 
-# Unique items (purple) - fixed names and abilities
-const UNIQUE_ITEMS: Dictionary = {
+# Epic items (purple) - unique names with equipment abilities
+const EPIC_ITEMS: Dictionary = {
 	# Weapons - Melee (Swords - Knight)
 	"bonk_stick": {
 		"display_name": "The Bonk Stick",
@@ -1154,10 +1200,10 @@ static func get_random_suffix() -> Dictionary:
 	var key = keys[randi() % keys.size()]
 	return {"name": key, "stats": SUFFIXES[key]}
 
-static func get_unique_items_for_slot(slot: ItemData.Slot, character_id: String = "") -> Array:
+static func get_epic_items_for_slot(slot: ItemData.Slot, character_id: String = "") -> Array:
 	var items = []
-	for id in UNIQUE_ITEMS:
-		var item = UNIQUE_ITEMS[id]
+	for id in EPIC_ITEMS:
+		var item = EPIC_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
 		if item_slot != slot:
 			continue

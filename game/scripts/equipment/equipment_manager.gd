@@ -22,10 +22,10 @@ enum SortBy {
 # Sell prices by rarity
 const SELL_PRICES: Dictionary = {
 	ItemData.Rarity.COMMON: 5,
-	ItemData.Rarity.MAGIC: 15,
-	ItemData.Rarity.RARE: 50,
-	ItemData.Rarity.UNIQUE: 150,
-	ItemData.Rarity.LEGENDARY: 500
+	ItemData.Rarity.RARE: 20,
+	ItemData.Rarity.EPIC: 75,
+	ItemData.Rarity.LEGENDARY: 250,
+	ItemData.Rarity.MYTHIC: 1000
 }
 
 const SAVE_PATH = "user://equipment.save"
@@ -91,12 +91,10 @@ func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> Item
 	match rarity:
 		ItemData.Rarity.COMMON:
 			_generate_common_item(item, slot, character_id)
-		ItemData.Rarity.MAGIC:
-			_generate_magic_item(item, slot, character_id)
 		ItemData.Rarity.RARE:
 			_generate_rare_item(item, slot, character_id)
-		ItemData.Rarity.UNIQUE:
-			_generate_unique_item(item, slot, character_id)
+		ItemData.Rarity.EPIC:
+			_generate_epic_item(item, slot, character_id)
 		ItemData.Rarity.LEGENDARY:
 			_generate_legendary_item(item, slot, character_id)
 
@@ -135,39 +133,48 @@ func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
 	# Time bonus: every 60 seconds, shift weights toward rarer items
 	var time_bonus = current_game_time / 60.0
 	weights[ItemData.Rarity.COMMON] = max(20.0, weights[ItemData.Rarity.COMMON] - time_bonus * 5)
-	weights[ItemData.Rarity.MAGIC] += time_bonus * 2
-	weights[ItemData.Rarity.RARE] += time_bonus * 1.5
-	weights[ItemData.Rarity.UNIQUE] += time_bonus * 0.8
-	weights[ItemData.Rarity.LEGENDARY] += time_bonus * 0.3
+	weights[ItemData.Rarity.RARE] += time_bonus * 2
+	weights[ItemData.Rarity.EPIC] += time_bonus * 1.5
+	weights[ItemData.Rarity.LEGENDARY] += time_bonus * 0.5
 
 	# Enemy type bonus
 	match enemy_type:
 		"elite":
-			weights[ItemData.Rarity.RARE] *= 2.0
-			weights[ItemData.Rarity.UNIQUE] *= 2.0
-			weights[ItemData.Rarity.LEGENDARY] *= 1.5
+			weights[ItemData.Rarity.EPIC] *= 2.0
+			weights[ItemData.Rarity.LEGENDARY] *= 2.0
 		"boss":
 			weights[ItemData.Rarity.COMMON] *= 0.2
-			weights[ItemData.Rarity.MAGIC] *= 0.5
-			weights[ItemData.Rarity.RARE] *= 2.0
-			weights[ItemData.Rarity.UNIQUE] *= 3.0
+			weights[ItemData.Rarity.RARE] *= 0.5
+			weights[ItemData.Rarity.EPIC] *= 2.5
 			weights[ItemData.Rarity.LEGENDARY] *= 4.0
 
 	# Calculate total and roll
 	var total = 0.0
-	for rarity in weights:
-		total += weights[rarity]
+	for r in weights:
+		total += weights[r]
 
 	var roll = randf() * total
 	var cumulative = 0.0
 
-	for rarity in [ItemData.Rarity.LEGENDARY, ItemData.Rarity.UNIQUE,
-				   ItemData.Rarity.RARE, ItemData.Rarity.MAGIC, ItemData.Rarity.COMMON]:
-		cumulative += weights[rarity]
+	for r in [ItemData.Rarity.LEGENDARY, ItemData.Rarity.EPIC,
+			  ItemData.Rarity.RARE, ItemData.Rarity.COMMON]:
+		cumulative += weights[r]
 		if roll <= cumulative:
-			return rarity
+			return r
 
 	return ItemData.Rarity.COMMON
+
+func _roll_stat(stat_name: String, is_affix: bool = false) -> float:
+	var ranges = ItemData.AFFIX_STAT_RANGES if is_affix else ItemData.BASE_STAT_RANGES
+	if not ranges.has(stat_name):
+		return 0.0
+	var min_val = ranges[stat_name][0]
+	var max_val = ranges[stat_name][1]
+	var rolled = randf_range(min_val, max_val)
+	# Ensure percentage stats don't roll to 0 - minimum 1%
+	if rolled < 0.01 and stat_name not in ["knockback", "thorns", "hp_on_kill"]:
+		rolled = 0.01
+	return rolled
 
 func _generate_common_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
 	# Use character-filtered items for weapons
@@ -187,23 +194,46 @@ func _generate_common_item(item: ItemData, slot: ItemData.Slot, character_id: St
 	item.display_name = base.get("display_name", "Item")
 	item.icon_path = base.get("icon_path", "")
 	item.weapon_type = base.get("weapon_type", ItemData.WeaponType.NONE)
-	item.base_stats = base.get("base_stats", {}).duplicate()
 
-func _generate_magic_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
-	# Start with common base
+	# Roll 1-2 base stats (Common gets 1-2 stats)
+	var num_stats = randi_range(1, 2)
+	var template_stats = base.get("base_stats", {})
+	var available_stats = template_stats.keys()
+	if available_stats.size() == 0:
+		available_stats = ["damage", "max_hp"]  # Fallback
+
+	item.base_stats = {}
+	for i in range(mini(num_stats, available_stats.size())):
+		var stat = available_stats[i]
+		item.base_stats[stat] = _roll_stat(stat, false)
+
+func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	# Start with common base (gets 2 base stats for Rare)
 	_generate_common_item(item, slot, character_id)
 
-	# Add one magic property (prefix OR suffix)
+	# Force 2 base stats for Rare
+	if item.base_stats.size() < 2:
+		var all_stats = ItemData.BASE_STAT_RANGES.keys()
+		while item.base_stats.size() < 2:
+			var stat = all_stats[randi() % all_stats.size()]
+			if not item.base_stats.has(stat):
+				item.base_stats[stat] = _roll_stat(stat, false)
+
+	# Add one affix (prefix OR suffix) with rolled stats
 	if randf() > 0.5:
 		var prefix_data = ItemDatabase.get_random_prefix()
 		item.prefix = prefix_data.name
-		item.magic_stats = prefix_data.stats.duplicate()
+		item.magic_stats = {}
+		for stat in prefix_data.stats:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 	else:
 		var suffix_data = ItemDatabase.get_random_suffix()
 		item.suffix = suffix_data.name
-		item.magic_stats = suffix_data.stats.duplicate()
+		item.magic_stats = {}
+		for stat in suffix_data.stats:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 
-	# Upgrade icons for magic rarity (icons 9-18)
+	# Upgrade icons for Rare rarity (icons 9-18)
 	var icon_num = randi_range(9, 18)
 	match slot:
 		ItemData.Slot.HELMET:
@@ -220,66 +250,51 @@ func _generate_magic_item(item: ItemData, slot: ItemData.Slot, character_id: Str
 			elif item.weapon_type == ItemData.WeaponType.DAGGER:
 				item.icon_path = "res://assets/sprites/items/daggers/PNG/Transperent/Icon%d.png" % icon_num
 
-func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
-	# Start with common base
-	_generate_common_item(item, slot, character_id)
-
-	# Add two magic properties (prefix AND suffix)
-	var prefix_data = ItemDatabase.get_random_prefix()
-	var suffix_data = ItemDatabase.get_random_suffix()
-
-	item.prefix = prefix_data.name
-	item.suffix = suffix_data.name
-
-	# Combine stats
-	item.magic_stats = prefix_data.stats.duplicate()
-	for stat in suffix_data.stats:
-		if item.magic_stats.has(stat):
-			item.magic_stats[stat] += suffix_data.stats[stat]
-		else:
-			item.magic_stats[stat] = suffix_data.stats[stat]
-
-	# Upgrade icons for rare rarity (icons 19-30)
-	var icon_num = randi_range(19, 30)
-	match slot:
-		ItemData.Slot.HELMET:
-			item.icon_path = "res://assets/sprites/items/helmet/PNG/Transperent/Icon%d.png" % icon_num
-		ItemData.Slot.CHEST:
-			item.icon_path = "res://assets/sprites/items/chest/PNG/Transperent/Icon%d.png" % icon_num
-		ItemData.Slot.BELT:
-			item.icon_path = "res://assets/sprites/items/Belt/PNG/Transperent/Icon%d.png" % icon_num
-		ItemData.Slot.LEGS:
-			item.icon_path = "res://assets/sprites/items/Legs/PNG/Transperent/Icon%d.png" % icon_num
-		ItemData.Slot.WEAPON:
-			if item.weapon_type == ItemData.WeaponType.RANGED:
-				item.icon_path = "res://assets/sprites/items/Bow/PNG/Transperent/Icon%d.png" % icon_num
-			elif item.weapon_type == ItemData.WeaponType.DAGGER:
-				item.icon_path = "res://assets/sprites/items/daggers/PNG/Transperent/Icon%d.png" % icon_num
-
-func _generate_unique_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
-	var unique_ids = ItemDatabase.get_unique_items_for_slot(slot, character_id)
-	if unique_ids.size() == 0:
-		# Fallback to rare
+func _generate_epic_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	# Try to get a named Epic item
+	var epic_ids = ItemDatabase.get_epic_items_for_slot(slot, character_id)
+	if epic_ids.size() == 0:
+		# Fallback to Rare if no Epic items for this slot
 		_generate_rare_item(item, slot, character_id)
 		return
 
-	var unique_id = unique_ids[randi() % unique_ids.size()]
-	var unique = ItemDatabase.UNIQUE_ITEMS[unique_id]
+	var epic_id = epic_ids[randi() % epic_ids.size()]
+	var epic = ItemDatabase.EPIC_ITEMS[epic_id]
 
-	item.base_id = unique_id
-	item.display_name = unique.get("display_name", "Unique Item")
-	item.description = unique.get("description", "")
-	item.icon_path = unique.get("icon_path", "")
-	item.weapon_type = unique.get("weapon_type", ItemData.WeaponType.NONE)
-	item.base_stats = unique.get("base_stats", {}).duplicate()
-	item.grants_ability = unique.get("grants_ability", "")
-	item.grants_equipment_ability = unique.get("grants_equipment_ability", "")
+	item.base_id = epic_id
+	item.display_name = epic.get("display_name", "Epic Item")
+	item.description = epic.get("description", "")
+	item.icon_path = epic.get("icon_path", "")
+	item.weapon_type = epic.get("weapon_type", ItemData.WeaponType.NONE)
+	item.grants_equipment_ability = epic.get("grants_equipment_ability", "")
+
+	# Roll 2-3 base stats from template
+	var template_stats = epic.get("base_stats", {})
+	item.base_stats = {}
+	var num_stats = randi_range(2, 3)
+	var stat_keys = template_stats.keys()
+	for i in range(mini(num_stats, stat_keys.size())):
+		var stat = stat_keys[i]
+		item.base_stats[stat] = _roll_stat(stat, false)
+
+	# Roll prefix + suffix stats (hidden in name - Epic has unique names)
+	var prefix_data = ItemDatabase.get_random_prefix()
+	var suffix_data = ItemDatabase.get_random_suffix()
+
+	item.magic_stats = {}
+	for stat in prefix_data.stats:
+		item.magic_stats[stat] = _roll_stat(stat, true)
+	for stat in suffix_data.stats:
+		if item.magic_stats.has(stat):
+			item.magic_stats[stat] += _roll_stat(stat, true)
+		else:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 
 func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
 	var legendary_ids = ItemDatabase.get_legendary_items_for_slot(slot, character_id)
 	if legendary_ids.size() == 0:
-		# Fallback to unique
-		_generate_unique_item(item, slot, character_id)
+		# Fallback to Epic
+		_generate_epic_item(item, slot, character_id)
 		return
 
 	var legendary_id = legendary_ids[randi() % legendary_ids.size()]
@@ -290,9 +305,29 @@ func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id:
 	item.description = legendary.get("description", "")
 	item.icon_path = legendary.get("icon_path", "")
 	item.weapon_type = legendary.get("weapon_type", ItemData.WeaponType.NONE)
-	item.base_stats = legendary.get("base_stats", {}).duplicate()
 	item.grants_ability = legendary.get("grants_ability", "")
 	item.grants_equipment_ability = legendary.get("grants_equipment_ability", "")
+
+	# Roll 2 base stats from template
+	var template_stats = legendary.get("base_stats", {})
+	item.base_stats = {}
+	var stat_keys = template_stats.keys()
+	for i in range(mini(2, stat_keys.size())):
+		var stat = stat_keys[i]
+		item.base_stats[stat] = _roll_stat(stat, false)
+
+	# Roll prefix + suffix stats (hidden in name - Legendary has unique names)
+	var prefix_data = ItemDatabase.get_random_prefix()
+	var suffix_data = ItemDatabase.get_random_suffix()
+
+	item.magic_stats = {}
+	for stat in prefix_data.stats:
+		item.magic_stats[stat] = _roll_stat(stat, true)
+	for stat in suffix_data.stats:
+		if item.magic_stats.has(stat):
+			item.magic_stats[stat] += _roll_stat(stat, true)
+		else:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 
 func _scale_item_stats(item: ItemData) -> void:
 	# Scale base stats with item level (5% per level)
@@ -711,12 +746,10 @@ func combine_items(item_ids: Array) -> ItemData:
 
 	# Generate item based on new rarity
 	match new_rarity:
-		ItemData.Rarity.MAGIC:
-			_generate_magic_item(new_item, new_item.slot, character_id)
 		ItemData.Rarity.RARE:
 			_generate_rare_item(new_item, new_item.slot, character_id)
-		ItemData.Rarity.UNIQUE:
-			_generate_unique_item(new_item, new_item.slot, character_id)
+		ItemData.Rarity.EPIC:
+			_generate_epic_item(new_item, new_item.slot, character_id)
 		ItemData.Rarity.LEGENDARY:
 			_generate_legendary_item(new_item, new_item.slot, character_id)
 

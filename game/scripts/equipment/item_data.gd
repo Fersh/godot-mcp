@@ -11,11 +11,11 @@ enum Slot {
 }
 
 enum Rarity {
-	COMMON,    # White - 1 base stat
-	MAGIC,     # Blue - base + 1 magic property
-	RARE,      # Yellow - base + 2 magic properties
-	UNIQUE,    # Purple - fixed name, special ability
-	LEGENDARY  # Gold - fixed name, powerful special ability
+	COMMON,    # White - 1-2 base stats
+	RARE,      # Blue - 2 base + 1 affix (was MAGIC)
+	EPIC,      # Purple - 2-3 base + prefix + suffix, unique names (combines old RARE+UNIQUE)
+	LEGENDARY, # Yellow - 2 base + prefix + suffix + ability, unique names
+	MYTHIC     # Red - future
 }
 
 enum WeaponType {
@@ -26,21 +26,21 @@ enum WeaponType {
 	DAGGER  # Daggers for assassins
 }
 
-# Rarity colors (WoW-style)
+# Rarity colors
 const RARITY_COLORS: Dictionary = {
 	Rarity.COMMON: Color(0.9, 0.9, 0.9, 1.0),      # White
-	Rarity.MAGIC: Color(0.4, 0.6, 1.0, 1.0),       # Blue
-	Rarity.RARE: Color(1.0, 0.85, 0.2, 1.0),       # Yellow
-	Rarity.UNIQUE: Color(0.7, 0.3, 0.9, 1.0),      # Purple
-	Rarity.LEGENDARY: Color(1.0, 0.6, 0.1, 1.0)   # Gold/Orange
+	Rarity.RARE: Color(0.4, 0.6, 1.0, 1.0),        # Blue
+	Rarity.EPIC: Color(0.7, 0.3, 0.9, 1.0),        # Purple
+	Rarity.LEGENDARY: Color(1.0, 0.85, 0.2, 1.0), # Yellow
+	Rarity.MYTHIC: Color(1.0, 0.2, 0.2, 1.0)      # Red
 }
 
 const RARITY_NAMES: Dictionary = {
 	Rarity.COMMON: "Common",
-	Rarity.MAGIC: "Magic",
 	Rarity.RARE: "Rare",
-	Rarity.UNIQUE: "Unique",
-	Rarity.LEGENDARY: "Legendary"
+	Rarity.EPIC: "Epic",
+	Rarity.LEGENDARY: "Legendary",
+	Rarity.MYTHIC: "Mythic"
 }
 
 const SLOT_NAMES: Dictionary = {
@@ -54,11 +54,44 @@ const SLOT_NAMES: Dictionary = {
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
 const BASE_DROP_WEIGHTS: Dictionary = {
-	Rarity.COMMON: 82.0,
-	Rarity.MAGIC: 15.0,
-	Rarity.RARE: 2.5,
-	Rarity.UNIQUE: 0.4,
-	Rarity.LEGENDARY: 0.1
+	Rarity.COMMON: 70.0,
+	Rarity.RARE: 22.0,
+	Rarity.EPIC: 6.5,
+	Rarity.LEGENDARY: 1.5,
+	Rarity.MYTHIC: 0.0  # Disabled for now
+}
+
+# Stat roll ranges: {"stat_name": [min, max]}
+const BASE_STAT_RANGES: Dictionary = {
+	"damage": [0.03, 0.12],
+	"max_hp": [0.05, 0.15],
+	"attack_speed": [0.03, 0.10],
+	"move_speed": [0.02, 0.08],
+	"crit_chance": [0.02, 0.08],
+	"dodge_chance": [0.02, 0.06],
+	"damage_reduction": [0.02, 0.08],
+	"xp_gain": [0.05, 0.15],
+	"luck": [0.03, 0.10],
+	"knockback": [10.0, 40.0],
+	"melee_range": [0.05, 0.15],
+	"projectile_speed": [0.05, 0.15]
+}
+
+const AFFIX_STAT_RANGES: Dictionary = {
+	"damage": [0.05, 0.15],
+	"max_hp": [0.08, 0.20],
+	"attack_speed": [0.05, 0.15],
+	"move_speed": [0.05, 0.12],
+	"crit_chance": [0.03, 0.12],
+	"crit_damage": [0.15, 0.35],
+	"cooldown_reduction": [0.05, 0.12],
+	"hp_on_kill": [1.0, 5.0],
+	"aoe_size": [0.10, 0.25],
+	"thorns": [3.0, 10.0],
+	"execute_damage": [0.15, 0.30],
+	"summon_damage": [0.10, 0.25],
+	"dodge_chance": [0.03, 0.10],
+	"damage_reduction": [0.05, 0.12]
 }
 
 # Unique identifier for this specific item instance
@@ -98,9 +131,11 @@ const BASE_DROP_WEIGHTS: Dictionary = {
 @export var equipped_by: String = ""
 
 func get_full_name() -> String:
-	if rarity == Rarity.UNIQUE or rarity == Rarity.LEGENDARY:
+	# Epic and Legendary always use unique display_name (no prefix/suffix in name)
+	if rarity == Rarity.EPIC or rarity == Rarity.LEGENDARY:
 		return display_name
 
+	# Common and Rare use procedural naming
 	var name_parts = []
 	if prefix != "":
 		name_parts.append(prefix)
@@ -227,7 +262,6 @@ static func from_save_dict(data: Dictionary) -> ItemData:
 	item.description = data.get("description", "")
 	item.icon_path = data.get("icon_path", "")
 	item.slot = data.get("slot", Slot.WEAPON)
-	item.rarity = data.get("rarity", Rarity.COMMON)
 	item.weapon_type = data.get("weapon_type", WeaponType.NONE)
 	item.base_stats = data.get("base_stats", {})
 	item.magic_stats = data.get("magic_stats", {})
@@ -237,4 +271,17 @@ static func from_save_dict(data: Dictionary) -> ItemData:
 	item.grants_equipment_ability = data.get("grants_equipment_ability", "")
 	item.item_level = data.get("item_level", 1)
 	item.equipped_by = data.get("equipped_by", "")
+
+	# Migration: Convert old rarity values to new system
+	# Old: 0=COMMON, 1=MAGIC, 2=RARE, 3=UNIQUE, 4=LEGENDARY
+	# New: 0=COMMON, 1=RARE, 2=EPIC, 3=LEGENDARY, 4=MYTHIC
+	var old_rarity = data.get("rarity", 0)
+	match old_rarity:
+		0: item.rarity = Rarity.COMMON     # COMMON → COMMON
+		1: item.rarity = Rarity.RARE       # MAGIC → RARE (Blue)
+		2: item.rarity = Rarity.EPIC       # RARE → EPIC (Purple)
+		3: item.rarity = Rarity.EPIC       # UNIQUE → EPIC (Purple)
+		4: item.rarity = Rarity.LEGENDARY  # LEGENDARY → LEGENDARY
+		_: item.rarity = Rarity.COMMON
+
 	return item

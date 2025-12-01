@@ -139,7 +139,7 @@
 			dependencies = (
 			);
 			name = "Rogue Arena";
-			productName = "Rogue Arena";
+			productName = "Save Some Princess";
 			productReference = D0BCFE3418AEBDA2004A7AAE /* Rogue Arena.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -331,7 +331,7 @@
 					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Delusional.Rogue;
-				INFOPLIST_KEY_CFBundleDisplayName = "Rogue Arena";
+				INFOPLIST_KEY_CFBundleDisplayName = "Save Some Princess";
 				PRODUCT_NAME = "Rogue Arena";
 				EXECUTABLE_NAME = "Rogue Arena";
 				MARKETING_VERSION = 1.0.0;
@@ -367,7 +367,7 @@
 					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Delusional.Rogue;
-				INFOPLIST_KEY_CFBundleDisplayName = "Rogue Arena";
+				INFOPLIST_KEY_CFBundleDisplayName = "Save Some Princess";
 				PRODUCT_NAME = "Rogue Arena";
 				EXECUTABLE_NAME = "Rogue Arena";
 				MARKETING_VERSION = 1.0.0;

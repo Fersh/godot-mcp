@@ -11,7 +11,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"ceremonial_dagger",
 			"Ceremonial Dagger",
 			"Kills fire 2 homing daggers at enemies",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 2.0}]
 		),
@@ -21,7 +21,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"missile_barrage",
 			"Missile Barrage",
 			"25% chance to fire homing missiles",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MISSILE_BARRAGE, value = 0.25}]
 		),
@@ -31,7 +31,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"soul_reaper",
 			"Soul Reaper",
 			"Kills heal 1% HP and grant stacking damage",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.SOUL_REAPER, value = 0.01}]
 		),
@@ -41,7 +41,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"summoner_aid",
 			"Summoner's Aid",
 			"Summon a skeleton every 10 seconds",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.SUMMONER, value = 10.0}]
 		),
@@ -51,7 +51,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"mind_control",
 			"Mind Control",
 			"5% chance to charm enemies on hit",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MIND_CONTROL, value = 0.05}]
 		),
@@ -61,7 +61,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"blood_debt",
 			"Blood Debt",
 			"+50% damage, take 10% of damage dealt",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BLOOD_DEBT, value = 0.5}]
 		),
@@ -71,7 +71,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"chrono_trigger",
 			"Chrono Trigger",
 			"Freeze all enemies for 1s every 10s",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.CHRONO_TRIGGER, value = 10.0}]
 		),
@@ -81,7 +81,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"unlimited_power",
 			"Unlimited Power",
 			"+2% permanent damage per kill (max 40%)",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.UNLIMITED_POWER, value = 0.02}]
 		),
@@ -91,7 +91,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"wind_dancer",
 			"One With The Wind",
 			"50% reduced dodge cooldown, invisibility on dodge",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.WIND_DANCER, value = 0.5}]
 		),
@@ -101,7 +101,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"empathic_bond",
 			"Empathic Bond",
 			"Auras and orbitals have double effect",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.EMPATHIC_BOND, value = 2.0}]
 		),
@@ -111,7 +111,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"fortune_favor",
 			"Fortune's Favor",
 			"Chance to get better loot (+25%)",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.FORTUNE_FAVOR, value = 0.25}]
 		),

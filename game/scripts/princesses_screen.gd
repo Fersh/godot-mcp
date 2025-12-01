@@ -549,7 +549,8 @@ func _update_multiplier_display() -> void:
 		multiplier_label.add_theme_color_override("font_color", Color.WHITE)
 	else:
 		var total_mult = PrincessManager.get_total_bonus_multiplier()
-		multiplier_label.text = "%d curse%s active: %dx Points & Coins" % [count, "s" if count > 1 else "", total_mult]
+		var mult_str = "%.1fx" % total_mult if fmod(total_mult, 1.0) != 0 else "%dx" % int(total_mult)
+		multiplier_label.text = "%d curse%s active: %s Points & Coins" % [count, "s" if count > 1 else "", mult_str]
 		multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 
 func _on_princess_selected(index: int) -> void:

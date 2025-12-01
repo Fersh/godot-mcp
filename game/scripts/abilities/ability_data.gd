@@ -4,9 +4,9 @@ class_name AbilityData
 enum Rarity {
 	COMMON,
 	RARE,
+	EPIC,
 	LEGENDARY,
-	MYTHIC,
-	ULTIMATE
+	MYTHIC
 }
 
 enum Type {
@@ -215,12 +215,12 @@ enum EffectType {
 	INTIMIDATING_PRESENCE, # Fear enemies on sight
 }
 
-# Rarity weights for random selection (out of 100) - boosted rare/legendary/mythic
+# Rarity weights for random selection (out of 100)
 const RARITY_WEIGHTS = {
 	Rarity.COMMON: 40,
 	Rarity.RARE: 35,
-	Rarity.LEGENDARY: 17,
-	Rarity.MYTHIC: 8
+	Rarity.EPIC: 17,
+	Rarity.LEGENDARY: 8
 }
 
 var id: String
@@ -242,15 +242,15 @@ func _init(p_id: String, p_name: String, p_desc: String, p_rarity: Rarity, p_typ
 static func get_rarity_color(rarity: Rarity) -> Color:
 	match rarity:
 		Rarity.COMMON:
-			return Color(0.8, 0.8, 0.8)  # Gray/white
+			return Color(0.9, 0.9, 0.9)  # White
 		Rarity.RARE:
 			return Color(0.3, 0.5, 1.0)  # Blue
+		Rarity.EPIC:
+			return Color(0.6, 0.2, 0.8)  # Purple
 		Rarity.LEGENDARY:
-			return Color(1.0, 0.8, 0.2)  # Gold
+			return Color(1.0, 0.85, 0.0)  # Yellow
 		Rarity.MYTHIC:
 			return Color(1.0, 0.2, 0.3)  # Red
-		Rarity.ULTIMATE:
-			return Color(1.0, 0.84, 0.0)  # Pure divine gold
 	return Color.WHITE
 
 static func get_rarity_name(rarity: Rarity) -> String:
@@ -259,10 +259,10 @@ static func get_rarity_name(rarity: Rarity) -> String:
 			return "Common"
 		Rarity.RARE:
 			return "Rare"
+		Rarity.EPIC:
+			return "Epic"
 		Rarity.LEGENDARY:
 			return "Legendary"
 		Rarity.MYTHIC:
 			return "Mythic"
-		Rarity.ULTIMATE:
-			return "Ultimate"
 	return "Unknown"
