@@ -471,7 +471,7 @@ func _update_preview() -> void:
 	passive_title_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview_passive_container.add_child(passive_title_container)
 	var passive_title = Label.new()
-	passive_title.text = "PASSIVE: " + char_data.passive_name
+	passive_title.text = "TRAIT: " + char_data.passive_name
 	passive_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	passive_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	passive_title.add_theme_font_size_override("font_size", 12)

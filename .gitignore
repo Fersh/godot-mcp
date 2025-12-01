@@ -30,11 +30,16 @@ coverage/
 # Godot generated files
 .godot/
 
-# iOS export files (large binaries)
+# iOS/Android export files (large binaries)
 *.xcframework/
 *.xcarchive/
 *.xcodeproj/
 *.ipa
+*.apk
+*.aab
+*.pck
+*.dSYM/
+*.app/
 MoltenVK.xcframework/
 exportOptions.plist
 Rogue Arena/
