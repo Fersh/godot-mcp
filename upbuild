@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Increment build number by 1 across all project files
+# Files updated:
+# - game/export_presets.cfg (application/version)
+# - game/DistributionSummary.plist (buildNumber)
+# - game/Rogue Arena.xcodeproj/project.pbxproj (CURRENT_PROJECT_VERSION)
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GAME_DIR="$SCRIPT_DIR/game"
+
+# Get current build number from export_presets.cfg
+CURRENT_BUILD=$(grep 'application/version=' "$GAME_DIR/export_presets.cfg" | sed 's/application\/version="\([0-9]*\)"/\1/')
+
+if [ -z "$CURRENT_BUILD" ]; then
+    echo "Error: Could not find current build number"
+    exit 1
+fi
+
+NEW_BUILD=$((CURRENT_BUILD + 1))
+
+echo "Updating build number: $CURRENT_BUILD -> $NEW_BUILD"
+
+# Update export_presets.cfg
+sed -i '' "s/application\/version=\"$CURRENT_BUILD\"/application\/version=\"$NEW_BUILD\"/" "$GAME_DIR/export_presets.cfg"
+echo "  ✓ export_presets.cfg"
+
+# Update DistributionSummary.plist
+sed -i '' "s/<key>buildNumber<\/key>\\
+			<string>$CURRENT_BUILD<\/string>/<key>buildNumber<\/key>\\
+			<string>$NEW_BUILD<\/string>/" "$GAME_DIR/DistributionSummary.plist"
+echo "  ✓ DistributionSummary.plist"
+
+# Update project.pbxproj (both Debug and Release)
+sed -i '' "s/CURRENT_PROJECT_VERSION = $CURRENT_BUILD;/CURRENT_PROJECT_VERSION = $NEW_BUILD;/g" "$GAME_DIR/Rogue Arena.xcodeproj/project.pbxproj"
+echo "  ✓ project.pbxproj"
+
+echo ""
+echo "Build updated to $NEW_BUILD"

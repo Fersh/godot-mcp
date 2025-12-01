@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Increment version by 0.0.1 across all project files
+# Files updated:
+# - game/DistributionSummary.plist (versionNumber)
+# - game/Rogue Arena.xcodeproj/project.pbxproj (MARKETING_VERSION)
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GAME_DIR="$SCRIPT_DIR/game"
+
+# Get current version from project.pbxproj
+CURRENT_VERSION=$(grep 'MARKETING_VERSION = ' "$GAME_DIR/Rogue Arena.xcodeproj/project.pbxproj" | head -1 | sed 's/.*MARKETING_VERSION = \([0-9.]*\);.*/\1/')
+
+if [ -z "$CURRENT_VERSION" ]; then
+    echo "Error: Could not find current version"
+    exit 1
+fi
+
+# Parse version components
+MAJOR=$(echo "$CURRENT_VERSION" | cut -d. -f1)
+MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+PATCH=$(echo "$CURRENT_VERSION" | cut -d. -f3)
+
+# Increment patch version
+NEW_PATCH=$((PATCH + 1))
+NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+
+echo "Updating version: $CURRENT_VERSION -> $NEW_VERSION"
+
+# Update DistributionSummary.plist
+sed -i '' "s/<key>versionNumber<\/key>\\
+			<string>$CURRENT_VERSION<\/string>/<key>versionNumber<\/key>\\
+			<string>$NEW_VERSION<\/string>/" "$GAME_DIR/DistributionSummary.plist"
+echo "  ✓ DistributionSummary.plist"
+
+# Update project.pbxproj (both Debug and Release)
+sed -i '' "s/MARKETING_VERSION = $CURRENT_VERSION;/MARKETING_VERSION = $NEW_VERSION;/g" "$GAME_DIR/Rogue Arena.xcodeproj/project.pbxproj"
+echo "  ✓ project.pbxproj"
+
+echo ""
+echo "Version updated to $NEW_VERSION"

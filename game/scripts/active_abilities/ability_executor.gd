@@ -1029,14 +1029,51 @@ func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
 	if player.has_method("apply_damage_boost"):
 		player.apply_damage_boost(1.5, ability.duration)
 
-	# Visual effect - make player glow red
+	# Transform into barbarian visually (except if already barbarian)
+	var is_barbarian = false
+	if player.get("character_data") and player.character_data.id == "barbarian":
+		is_barbarian = true
+
 	if player.has_node("Sprite2D"):
 		var sprite = player.get_node("Sprite2D")
-		sprite.modulate = Color(1.5, 0.8, 0.8)
-		get_tree().create_timer(ability.duration).timeout.connect(func():
-			if is_instance_valid(sprite):
-				sprite.modulate = Color.WHITE
-		)
+
+		if not is_barbarian:
+			# Store original sprite configuration
+			var original_texture = sprite.texture
+			var original_hframes = sprite.hframes
+			var original_vframes = sprite.vframes
+			var original_scale = sprite.scale
+			var original_offset = sprite.offset
+
+			# Load barbarian sprite
+			var barbarian_texture = load("res://assets/sprites/characters/barbarian.png")
+			if barbarian_texture:
+				sprite.texture = barbarian_texture
+				sprite.hframes = 8
+				sprite.vframes = 6
+				sprite.scale = Vector2(1.6, 1.6)
+				sprite.offset = Vector2.ZERO
+
+			# Red glow effect
+			sprite.modulate = Color(1.5, 0.8, 0.8)
+
+			# Restore original after duration
+			get_tree().create_timer(ability.duration).timeout.connect(func():
+				if is_instance_valid(sprite):
+					sprite.texture = original_texture
+					sprite.hframes = original_hframes
+					sprite.vframes = original_vframes
+					sprite.scale = original_scale
+					sprite.offset = original_offset
+					sprite.modulate = Color.WHITE
+			)
+		else:
+			# Barbarian just gets glow effect
+			sprite.modulate = Color(1.5, 0.8, 0.8)
+			get_tree().create_timer(ability.duration).timeout.connect(func():
+				if is_instance_valid(sprite):
+					sprite.modulate = Color.WHITE
+			)
 
 	_spawn_effect("avatar_of_war", player.global_position, player)
 	_play_sound("buff")
