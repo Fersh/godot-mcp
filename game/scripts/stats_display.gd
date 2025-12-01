@@ -139,4 +139,4 @@ func _update_coins_display() -> void:
 func update_wave_display() -> void:
 	var minutes = int(time_survived) / 60
 	var seconds = int(time_survived) % 60
-	wave_label.text = str(minutes).pad_zeros(2) + ":" + str(seconds).pad_zeros(2) + "  WAVE"
+	wave_label.text = str(minutes).pad_zeros(2) + ":" + str(seconds).pad_zeros(2) + "  TIME"

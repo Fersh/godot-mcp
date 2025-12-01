@@ -24,10 +24,6 @@ var player: Node2D = null
 # Pixel font for UI
 var pixel_font: Font = null
 
-# Timer display UI
-var timer_display: CanvasLayer = null
-var timer_label: Label = null
-
 # Victory screen
 var victory_ui: CanvasLayer = null
 
@@ -41,8 +37,6 @@ func _ready() -> void:
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
-
-	_setup_timer_display()
 
 func setup(p_enemy_spawner: Node2D, p_elite_spawner: Node2D, p_player: Node2D) -> void:
 	"""Initialize the controller with required references."""
@@ -60,7 +54,6 @@ func _process(delta: float) -> void:
 		return
 
 	game_time += delta
-	_update_timer_display()
 
 	# Check milestones (elite spawns at 2.5m, 5m, 7.5m)
 	for i in range(MILESTONE_TIMES.size()):
@@ -80,63 +73,6 @@ func _process(delta: float) -> void:
 	# Check if all enemies are cleared after boss is dead
 	if spawning_stopped and not challenge_complete:
 		_check_victory_condition()
-
-func _setup_timer_display() -> void:
-	"""Create the challenge timer display at top of screen."""
-	timer_display = CanvasLayer.new()
-	timer_display.layer = 50
-	add_child(timer_display)
-
-	var container = Control.new()
-	container.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	timer_display.add_child(container)
-
-	# Timer label
-	timer_label = Label.new()
-	timer_label.text = "10:00"
-	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	timer_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	timer_label.anchor_top = 0.02
-	timer_label.anchor_bottom = 0.02
-	timer_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	timer_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	if pixel_font:
-		timer_label.add_theme_font_override("font", pixel_font)
-	timer_label.add_theme_font_size_override("font_size", 16)
-	timer_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-	timer_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	timer_label.add_theme_constant_override("shadow_offset_x", 2)
-	timer_label.add_theme_constant_override("shadow_offset_y", 2)
-
-	container.add_child(timer_label)
-
-func _update_timer_display() -> void:
-	"""Update the countdown timer display."""
-	if not timer_label:
-		return
-
-	var remaining = max(0, FINAL_BOSS_TIME - game_time)
-	var mins = int(remaining) / 60
-	var secs = int(remaining) % 60
-	timer_label.text = "%d:%02d" % [mins, secs]
-
-	# Change color based on time remaining
-	if remaining <= 60:
-		timer_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))  # Red
-	elif remaining <= 150:
-		timer_label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))  # Orange
-	else:
-		timer_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))  # Yellow
-
-	# After boss spawned, show "CLEAR ALL ENEMIES"
-	if final_boss_triggered and not final_boss_killed:
-		timer_label.text = "DEFEAT THE BOSS"
-		timer_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2))
-	elif spawning_stopped and not challenge_complete:
-		timer_label.text = "CLEAR REMAINING"
-		timer_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 
 func _trigger_milestone(index: int) -> void:
 	"""Trigger an elite spawn at a milestone."""

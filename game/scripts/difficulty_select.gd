@@ -16,8 +16,8 @@ var back_button: Button = null
 # Font
 var pixel_font: Font = null
 
-# Selected values
-var selected_mode: DifficultyManager.GameMode = DifficultyManager.GameMode.ENDLESS
+# Selected values (default to Challenge mode)
+var selected_mode: DifficultyManager.GameMode = DifficultyManager.GameMode.CHALLENGE
 var selected_difficulty: DifficultyManager.DifficultyTier = DifficultyManager.DifficultyTier.JUVENILE
 
 func _ready() -> void:
@@ -66,13 +66,13 @@ func _build_ui() -> void:
 	mode_container.add_theme_constant_override("separation", 20)
 	main_container.add_child(mode_container)
 
-	endless_btn = _create_mode_button("ENDLESS", "Classic survival - how long can you last?")
-	endless_btn.pressed.connect(_on_endless_selected)
-	mode_container.add_child(endless_btn)
-
 	challenge_btn = _create_mode_button("CHALLENGE", "10-minute run with boss encounters")
 	challenge_btn.pressed.connect(_on_challenge_selected)
 	mode_container.add_child(challenge_btn)
+
+	endless_btn = _create_mode_button("ENDLESS", "Classic survival - how long can you last?")
+	endless_btn.pressed.connect(_on_endless_selected)
+	mode_container.add_child(endless_btn)
 
 	# Difficulty selection (only shown in Challenge mode)
 	var diff_title = Label.new()

@@ -1001,32 +1001,124 @@ func _execute_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(true, ability.invulnerability_duration)
 
 	var damage_per_hit = _get_damage(ability) / 12.0  # 12 hits total
-	var hit_count = 0
 	var slash_delay = ability.invulnerability_duration / 12.0
+	var dash_duration = slash_delay * 0.6  # Dash takes 60% of the time, rest is attack
 
-	# Perform slashes
-	for i in range(12):
-		var delay = slash_delay * i
-		get_tree().create_timer(delay).timeout.connect(func():
-			if valid_enemies.is_empty():
-				return
-			var target = valid_enemies[hit_count % valid_enemies.size()]
-			if is_instance_valid(target):
-				player.global_position = target.global_position + Vector2(randf_range(-30, 30), randf_range(-30, 30))
-				_deal_damage_to_enemy(target, damage_per_hit)
-				_spawn_effect("slash", target.global_position)
-			hit_count += 1
-		)
-
-	# End invulnerability after all slashes
-	get_tree().create_timer(ability.invulnerability_duration).timeout.connect(func():
-		if player.has_method("set_invulnerable"):
-			player.set_invulnerable(false)
+	# Sort enemies by distance for more natural movement
+	valid_enemies.sort_custom(func(a, b):
+		return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position)
 	)
+
+	# Perform smooth dashing omnislash
+	_omnislash_chain(player, valid_enemies, 0, 12, damage_per_hit, slash_delay, dash_duration, ability)
 
 	_play_sound("omnislash")
 	_screen_shake("large")
 	_impact_pause()
+
+func _omnislash_chain(player: Node2D, enemies: Array, hit_index: int, total_hits: int, damage: float, delay: float, dash_duration: float, ability: ActiveAbilityData) -> void:
+	"""Recursively chain omnislash dashes between enemies."""
+	if hit_index >= total_hits or not is_instance_valid(player):
+		# End invulnerability after all slashes
+		if player.has_method("set_invulnerable"):
+			player.set_invulnerable(false)
+		return
+
+	if enemies.is_empty():
+		if player.has_method("set_invulnerable"):
+			player.set_invulnerable(false)
+		return
+
+	# Get target enemy (cycle through available enemies)
+	var target_index = hit_index % enemies.size()
+	var target = enemies[target_index]
+
+	# Skip invalid targets, find next valid one
+	while not is_instance_valid(target) and enemies.size() > 0:
+		enemies.remove_at(target_index)
+		if enemies.is_empty():
+			if player.has_method("set_invulnerable"):
+				player.set_invulnerable(false)
+			return
+		target_index = hit_index % enemies.size()
+		target = enemies[target_index]
+
+	if not is_instance_valid(target):
+		if player.has_method("set_invulnerable"):
+			player.set_invulnerable(false)
+		return
+
+	# Calculate dash target position (slightly offset from enemy)
+	var direction = (target.global_position - player.global_position).normalized()
+	var dash_target = target.global_position - direction * 30  # Stop 30 pixels from enemy
+
+	# Spawn dash trail effect (like shadow dance)
+	_spawn_omnislash_trail(player)
+
+	# Smooth dash to target using tween
+	var tween = player.create_tween()
+	tween.set_trans(Tween.TRANS_EXPO)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(player, "global_position", dash_target, dash_duration)
+
+	# On dash complete, deal damage and continue chain
+	tween.tween_callback(func():
+		if is_instance_valid(target):
+			# Update player facing direction
+			if "facing_right" in player:
+				player.facing_right = target.global_position.x > player.global_position.x
+			if "sprite" in player and player.sprite:
+				player.sprite.flip_h = target.global_position.x < player.global_position.x
+
+			# Deal damage
+			_deal_damage_to_enemy(target, damage)
+			_spawn_effect("slash", target.global_position)
+
+			# Small screen shake per hit
+			if hit_index % 3 == 0:
+				_screen_shake("small")
+
+		# Continue to next slash after a brief pause
+		get_tree().create_timer(delay - dash_duration).timeout.connect(func():
+			_omnislash_chain(player, enemies, hit_index + 1, total_hits, damage, delay, dash_duration, ability)
+		)
+	)
+
+func _spawn_omnislash_trail(player: Node2D) -> void:
+	"""Spawn a trail effect during omnislash dashes."""
+	if not is_instance_valid(player):
+		return
+
+	var sprite = player.get_node_or_null("Sprite2D")
+	if not sprite:
+		return
+
+	# Create multiple ghost images
+	var trail_count = 4
+	for i in range(trail_count):
+		var ghost_delay = i * 0.02
+		get_tree().create_timer(ghost_delay).timeout.connect(func():
+			if not is_instance_valid(player) or not is_instance_valid(sprite):
+				return
+
+			var ghost = Sprite2D.new()
+			ghost.texture = sprite.texture
+			ghost.hframes = sprite.hframes
+			ghost.vframes = sprite.vframes
+			ghost.frame = sprite.frame
+			ghost.flip_h = sprite.flip_h
+			ghost.global_position = player.global_position
+			ghost.scale = sprite.scale
+			ghost.offset = sprite.offset
+			ghost.modulate = Color(1.0, 0.8, 0.3, 0.6)  # Golden trail
+			ghost.z_index = player.z_index - 1
+			get_tree().current_scene.add_child(ghost)
+
+			# Fade out
+			var ghost_tween = ghost.create_tween()
+			ghost_tween.tween_property(ghost, "modulate:a", 0.0, 0.2)
+			ghost_tween.tween_callback(ghost.queue_free)
+		)
 
 func _execute_avatar_of_war(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Transform: +50% damage, -30% damage taken
@@ -2797,6 +2889,8 @@ func _execute_dj_drop(ability: ActiveAbilityData, player: Node2D) -> void:
 		if is_instance_valid(enemy):
 			_apply_stun_to_enemy(enemy, ability.stun_duration)
 			_deal_damage_to_enemy(enemy, damage)
+			# Apply DANCE status effect label
+			_apply_dance_status(enemy, ability.stun_duration)
 
 	# Epic visual - screen-wide effect
 	var drop = Node2D.new()
@@ -2834,6 +2928,45 @@ func _execute_dj_drop(ability: ActiveAbilityData, player: Node2D) -> void:
 	_screen_shake("large")
 	_impact_pause()
 
+func _apply_dance_status(enemy: Node2D, duration: float) -> void:
+	"""Apply a pink DANCE status label above an enemy's health bar."""
+	if not is_instance_valid(enemy):
+		return
+
+	# Create the DANCE label
+	var dance_label = Label.new()
+	dance_label.name = "DanceStatus"
+	dance_label.text = "DANCE"
+	dance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dance_label.position = Vector2(-25, -75)  # Above health bar
+
+	# Pink styling
+	dance_label.add_theme_font_size_override("font_size", 10)
+	dance_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.7))  # Pink
+	dance_label.add_theme_color_override("font_shadow_color", Color(0.5, 0.1, 0.3, 0.8))
+	dance_label.add_theme_constant_override("shadow_offset_x", 1)
+	dance_label.add_theme_constant_override("shadow_offset_y", 1)
+
+	# Try to load pixel font
+	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+		var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+		dance_label.add_theme_font_override("font", pixel_font)
+
+	enemy.add_child(dance_label)
+
+	# Animate: bob up and down while active
+	var bob_tween = dance_label.create_tween().set_loops(int(duration / 0.3))
+	bob_tween.tween_property(dance_label, "position:y", -80.0, 0.15).set_ease(Tween.EASE_IN_OUT)
+	bob_tween.tween_property(dance_label, "position:y", -75.0, 0.15).set_ease(Tween.EASE_IN_OUT)
+
+	# Remove after duration
+	get_tree().create_timer(duration).timeout.connect(func():
+		if is_instance_valid(dance_label):
+			var fade = dance_label.create_tween()
+			fade.tween_property(dance_label, "modulate:a", 0.0, 0.2)
+			fade.tween_callback(dance_label.queue_free)
+	)
+
 # ============================================
 # NEW ABILITIES - CHAOS/TRICK
 # ============================================
@@ -2854,20 +2987,28 @@ func _execute_mirror_clone(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("summon")
 
 func _spawn_mirror_clone(position: Vector2, damage: float, duration: float, player: Node2D) -> void:
-	"""Spawn a single mirror clone."""
+	"""Spawn a single mirror clone that perfectly mirrors the player's appearance and attacks."""
 	var clone = Node2D.new()
 	clone.name = "MirrorClone"
 	clone.global_position = position
-	clone.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(clone)
 
-	# Try to copy player sprite
+	# Get player sprite and copy all properties exactly
 	var player_sprite = player.get_node_or_null("Sprite2D")
+	var clone_sprite: Sprite2D = null
+
 	if player_sprite and player_sprite.texture:
-		var sprite = Sprite2D.new()
-		sprite.texture = player_sprite.texture
-		sprite.modulate = Color(0.5, 0.8, 1.0, 0.7)  # Blue tint
-		clone.add_child(sprite)
+		clone_sprite = Sprite2D.new()
+		clone_sprite.name = "Sprite"
+		clone_sprite.texture = player_sprite.texture
+		clone_sprite.hframes = player_sprite.hframes
+		clone_sprite.vframes = player_sprite.vframes
+		clone_sprite.frame = player_sprite.frame
+		clone_sprite.flip_h = player_sprite.flip_h
+		clone_sprite.scale = player_sprite.scale
+		clone_sprite.offset = player_sprite.offset
+		clone_sprite.modulate = Color(0.5, 0.8, 1.0, 0.8)  # Blue tint
+		clone.add_child(clone_sprite)
 	else:
 		# Fallback visual
 		var visual = ColorRect.new()
@@ -2876,23 +3017,67 @@ func _spawn_mirror_clone(position: Vector2, damage: float, duration: float, play
 		visual.color = Color(0.5, 0.8, 1.0, 0.6)
 		clone.add_child(visual)
 
-	# Clone attacks nearby enemies
-	var attack_interval = 0.5
-	var attacks = int(duration / attack_interval)
-	var damage_per_attack = damage / attacks
+	# Get player's attack cooldown for synced attacks
+	var player_attack_cooldown = player.attack_cooldown if "attack_cooldown" in player else 0.5
+	var player_animation_speed = player.animation_speed if "animation_speed" in player else 10.0
 
-	for i in range(attacks):
-		get_tree().create_timer(attack_interval * i).timeout.connect(func():
-			if not is_instance_valid(clone):
-				return
+	# Store reference to sync animations
+	var clone_data = {
+		"sprite": clone_sprite,
+		"player": player,
+		"player_sprite": player_sprite,
+		"attack_timer": 0.0,
+		"attack_cooldown": player_attack_cooldown,
+		"animation_speed": player_animation_speed,
+		"damage_per_attack": damage / (duration / player_attack_cooldown),
+		"is_attacking": false,
+		"attack_frame": 0.0
+	}
 
+	# Sync animation with player every frame
+	var sync_timer = 0.0
+	var attack_timer = 0.0
+
+	# Create a timer node to process clone logic
+	var process_timer = Timer.new()
+	process_timer.wait_time = 0.016  # ~60fps
+	process_timer.autostart = true
+	clone.add_child(process_timer)
+
+	process_timer.timeout.connect(func():
+		if not is_instance_valid(clone) or not is_instance_valid(player):
+			return
+
+		# Sync sprite frame and flip with player
+		if clone_sprite and player_sprite:
+			clone_sprite.frame = player_sprite.frame
+			clone_sprite.flip_h = player_sprite.flip_h
+
+		# Clone attacks when player attacks (check if player is attacking)
+		if "is_attacking" in player and player.is_attacking:
+			# Find and damage nearest enemy during attack
 			var target = _get_nearest_enemy(clone.global_position, 150.0)
 			if target and is_instance_valid(target):
-				_deal_damage_to_enemy(target, damage_per_attack)
-				_spawn_effect("slash", target.global_position)
-		)
+				# Only deal damage once per attack animation
+				if not clone_data.is_attacking:
+					clone_data.is_attacking = true
+					_deal_damage_to_enemy(target, clone_data.damage_per_attack)
+					_spawn_effect("slash", target.global_position)
+		else:
+			clone_data.is_attacking = false
 
-	# Remove clone
+		# Move clone to maintain offset from player
+		var to_player = player.global_position - clone.global_position
+		if to_player.length() > 100:
+			# Teleport if too far
+			var angle = clone.global_position.angle_to_point(player.global_position)
+			clone.global_position = player.global_position + Vector2(cos(angle + PI), sin(angle + PI)) * 60
+		elif to_player.length() > 70:
+			# Smoothly follow
+			clone.global_position += to_player.normalized() * 200 * 0.016
+	)
+
+	# Remove clone after duration
 	get_tree().create_timer(duration).timeout.connect(func():
 		if is_instance_valid(clone):
 			var fade = clone.create_tween()
