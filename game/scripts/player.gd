@@ -218,6 +218,9 @@ func _ready() -> void:
 		if starting_hp_percent < 1.0:
 			current_health = max_health * starting_hp_percent
 
+	# Apply princess curse effects
+	_apply_curse_effects()
+
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
@@ -512,6 +515,11 @@ func _apply_permanent_upgrades() -> void:
 	var pickup_bonus = bonuses.get("pickup_range", 0.0)
 	pickup_range_multiplier = 1.0 + pickup_bonus
 
+func _apply_curse_effects() -> void:
+	"""Apply princess curse effects that modify player stats at start of run."""
+	if CurseEffects:
+		CurseEffects.apply_to_player_stats(self)
+
 func take_damage(amount: float) -> void:
 	# If dead, still show damage effects (funny to keep getting beat up)
 	# but don't actually reduce HP further
@@ -525,6 +533,10 @@ func take_damage(amount: float) -> void:
 	var modified_amount = amount
 	if has_arcane_focus and arcane_focus_stacks > 0 and not is_posthumous_damage:
 		modified_amount *= get_arcane_focus_multiplier()
+
+	# Apply Fragile curse (increased damage taken)
+	if not is_posthumous_damage and CurseEffects:
+		modified_amount = CurseEffects.modify_damage_taken(modified_amount)
 
 	# Skip dodge/block/shield checks when dead - just show the damage effects
 	var was_blocked = false
@@ -2126,10 +2138,13 @@ func add_xp(amount: float) -> void:
 		current_level += 1
 		# XP scaling: 1.5x for levels 1-10, then 1.15x after level 10
 		# This allows faster progression in late game to reach ~level 20 by 20 mins
-		if current_level <= 10:
-			xp_to_next_level *= 1.5
-		else:
-			xp_to_next_level *= 1.15
+		var level_multiplier = 1.5 if current_level <= 10 else 1.15
+
+		# Apply Corrupted XP curse (increased XP requirements)
+		if CurseEffects:
+			level_multiplier *= CurseEffects.get_xp_requirement_multiplier()
+
+		xp_to_next_level *= level_multiplier
 
 		# Apply automatic level bonuses (5% damage and health per level)
 		if AbilityManager:
@@ -2173,6 +2188,10 @@ func heal(amount: float, _play_sound: bool = true, show_particles: bool = false,
 	# Apply reduced healing modifier (Nightmare+ difficulty)
 	var healing_mult = DifficultyManager.get_healing_multiplier() if DifficultyManager else 1.0
 	var modified_amount = amount * healing_mult
+
+	# Apply Famine curse (reduced healing)
+	if CurseEffects:
+		modified_amount = CurseEffects.modify_healing(modified_amount)
 
 	var actual_heal = min(modified_amount, max_health - current_health)
 	if actual_heal <= 0:

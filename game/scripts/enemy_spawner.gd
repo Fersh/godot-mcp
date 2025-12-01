@@ -69,6 +69,10 @@ func _process(delta: float) -> void:
 	if DifficultyManager:
 		current_interval /= DifficultyManager.get_spawn_rate_multiplier()
 
+	# Apply Horde Mode curse (even faster spawns)
+	if CurseEffects:
+		current_interval /= CurseEffects.get_spawn_rate_multiplier()
+
 	if spawn_timer >= current_interval:
 		spawn_timer = 0.0
 		spawn_enemy()
@@ -87,9 +91,13 @@ func spawn_enemy() -> void:
 		var enemy = scene.instantiate()
 		enemy.global_position = get_spawn_position()
 
-		# Check for champion spawn (Nightmare+ difficulty)
+		# Check for champion spawn (Nightmare+ difficulty or curse)
 		if _should_spawn_champion():
 			_make_champion(enemy)
+
+		# Apply Berserk Enemies curse (faster enemy movement)
+		if CurseEffects:
+			CurseEffects.modify_enemy_stats(enemy)
 
 		get_parent().add_child(enemy)
 
@@ -297,9 +305,18 @@ const CHAMPION_SPAWN_CHANCE: float = 0.08  # 8% chance per enemy
 
 func _should_spawn_champion() -> bool:
 	"""Check if this enemy should be a champion."""
-	if not DifficultyManager or not DifficultyManager.has_champion_enemies():
-		return false
-	return randf() < CHAMPION_SPAWN_CHANCE
+	# Check difficulty-based champions
+	if DifficultyManager and DifficultyManager.has_champion_enemies():
+		if randf() < CHAMPION_SPAWN_CHANCE:
+			return true
+
+	# Check Champion's Gauntlet curse
+	if CurseEffects:
+		var curse_chance = CurseEffects.get_champion_chance()
+		if curse_chance > 0 and randf() < curse_chance:
+			return true
+
+	return false
 
 func _make_champion(enemy: Node) -> void:
 	"""Transform a normal enemy into a champion with buffs."""

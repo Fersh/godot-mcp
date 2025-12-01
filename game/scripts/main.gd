@@ -109,7 +109,8 @@ func _on_player_level_up(new_level: int) -> void:
 		_show_active_ability_selection(new_level)
 	else:
 		# Regular passive ability selection
-		var choices = AbilityManager.get_random_abilities(3)
+		var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
+		var choices = AbilityManager.get_random_abilities(ability_count)
 		if choices.size() > 0:
 			ability_selection.show_choices(choices)
 
@@ -363,7 +364,8 @@ func _show_active_ability_selection(level: int) -> void:
 	"""Show the active ability selection UI for the given level."""
 	if not active_ability_selection_ui:
 		# Fallback to passive if UI not available
-		var choices = AbilityManager.get_random_abilities(3)
+		var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
+		var choices = AbilityManager.get_random_abilities(ability_count)
 		if choices.size() > 0:
 			ability_selection.show_choices(choices)
 		return
@@ -376,13 +378,14 @@ func _show_active_ability_selection(level: int) -> void:
 			is_melee = char_data.attack_type == CharacterData.AttackType.MELEE
 
 	# Get random active abilities for this level
-	var choices = ActiveAbilityManager.get_random_abilities_for_level(level, is_melee, 3)
+	var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
+	var choices = ActiveAbilityManager.get_random_abilities_for_level(level, is_melee, ability_count)
 
 	if choices.size() > 0:
 		active_ability_selection_ui.show_choices(choices, level)
 	else:
 		# No active abilities available, fall back to passive
-		var passive_choices = AbilityManager.get_random_abilities(3)
+		var passive_choices = AbilityManager.get_random_abilities(ability_count)
 		if passive_choices.size() > 0:
 			ability_selection.show_choices(passive_choices)
 
@@ -391,10 +394,12 @@ func _show_ultimate_ability_selection() -> void:
 	print("DEBUG: _show_ultimate_ability_selection called")
 	print("DEBUG: ultimate_selection_ui = ", ultimate_selection_ui)
 
+	var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
+
 	if not ultimate_selection_ui:
 		print("DEBUG: No ultimate_selection_ui, falling back to passive")
 		# Fallback to passive if UI not available
-		var choices = AbilityManager.get_random_abilities(3)
+		var choices = AbilityManager.get_random_abilities(ability_count)
 		if choices.size() > 0:
 			ability_selection.show_choices(choices)
 		return
@@ -406,7 +411,7 @@ func _show_ultimate_ability_selection() -> void:
 	print("DEBUG: character_id = ", character_id)
 
 	# Get random ultimate abilities for this character
-	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, 3) if UltimateAbilityManager else []
+	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, ability_count) if UltimateAbilityManager else []
 	print("DEBUG: choices.size() = ", choices.size())
 
 	if choices.size() > 0:
@@ -415,7 +420,7 @@ func _show_ultimate_ability_selection() -> void:
 	else:
 		print("DEBUG: No ultimates available, falling back to passive")
 		# No ultimates available, fall back to passive
-		var passive_choices = AbilityManager.get_random_abilities(3)
+		var passive_choices = AbilityManager.get_random_abilities(ability_count)
 		if passive_choices.size() > 0:
 			ability_selection.show_choices(passive_choices)
 

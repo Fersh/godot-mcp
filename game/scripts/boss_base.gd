@@ -159,9 +159,14 @@ func spawn_gold_coin() -> void:
 	if gold_coin_scene == null:
 		return
 
-	# Bosses drop lots of coins
-	var coin_count = int(coin_multiplier * 2)
-	for i in range(coin_count):
+	# Apply Cursed Gold curse (reduced gold drops)
+	var drop_mult = 1.0
+	if CurseEffects:
+		drop_mult = CurseEffects.get_gold_drop_multiplier()
+
+	# Bosses drop lots of coins (scaled by curse)
+	var coin_count = int(coin_multiplier * 2 * drop_mult)
+	for i in range(max(3, coin_count)):  # At least 3 coins from bosses
 		var coin = gold_coin_scene.instantiate()
 		var offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
 		coin.global_position = global_position + offset

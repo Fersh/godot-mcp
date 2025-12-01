@@ -473,6 +473,12 @@ func spawn_gold_coin() -> void:
 	if gold_coin_scene == null:
 		return
 
+	# Apply Cursed Gold curse (reduced gold drops)
+	if CurseEffects:
+		var drop_chance = CurseEffects.get_gold_drop_multiplier()
+		if randf() > drop_chance:
+			return  # No coin dropped
+
 	var coin = gold_coin_scene.instantiate()
 	coin.global_position = global_position
 	get_parent().add_child(coin)

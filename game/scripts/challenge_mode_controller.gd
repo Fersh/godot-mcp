@@ -127,9 +127,34 @@ func _trigger_victory() -> void:
 
 	challenge_completed.emit()
 
-	# Show victory screen after a short delay
-	await get_tree().create_timer(1.0).timeout
+	# Try to unlock a princess and show celebration
+	var princess_unlocked_id = ""
+	if PrincessManager:
+		princess_unlocked_id = PrincessManager.unlock_random_princess(DifficultyManager.current_difficulty)
+
+	if princess_unlocked_id != "":
+		# Show princess celebration before victory screen
+		await get_tree().create_timer(0.5).timeout
+		await _show_princess_celebration(princess_unlocked_id)
+	else:
+		# No princess to unlock, just wait a moment
+		await get_tree().create_timer(1.0).timeout
+
 	_show_victory_screen()
+
+func _show_princess_celebration(princess_id: String) -> void:
+	"""Show the princess celebration sequence."""
+	var celebration_script = load("res://scripts/princess_celebration.gd")
+	if not celebration_script:
+		return
+
+	var celebration = Node2D.new()
+	celebration.set_script(celebration_script)
+	add_child(celebration)
+	celebration.setup(princess_id, player)
+
+	# Wait for celebration to complete
+	await celebration.completed
 
 func _show_boss_notification() -> void:
 	"""Show dramatic boss spawn notification."""

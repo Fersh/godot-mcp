@@ -110,7 +110,12 @@ func _process(delta: float) -> void:
 		return
 
 	# Check if it's time to spawn (only in endless mode)
-	if spawn_timer >= spawn_interval and not warning_active:
+	# Apply Chaos Spawn curse (more frequent elite spawns)
+	var effective_interval = spawn_interval
+	if CurseEffects:
+		effective_interval *= CurseEffects.get_elite_spawn_multiplier()
+
+	if spawn_timer >= effective_interval and not warning_active:
 		spawn_timer = 0.0
 		_start_warning()
 

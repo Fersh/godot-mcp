@@ -35,6 +35,8 @@ UltimateAbilityManager="*res://scripts/ultimate_abilities/ultimate_ability_manag
 KillStreakManager="*res://scripts/kill_streak_manager.gd"
 BloodSplatter="*res://scenes/effects/blood_screen_splatter.tscn"
 DifficultyManager="*res://scripts/difficulty_manager.gd"
+PrincessManager="*res://scripts/princess_manager.gd"
+CurseEffects="*res://scripts/curse_effects_handler.gd"
 
 [display]
 

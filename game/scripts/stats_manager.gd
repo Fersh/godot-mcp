@@ -65,6 +65,11 @@ func end_run() -> void:
 	var coin_bonus = 1.0
 	if PermanentUpgrades:
 		coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
+
+	# Apply curse multiplier (stacking bonus from princesses)
+	if CurseEffects:
+		coin_bonus *= CurseEffects.get_points_multiplier()
+
 	spendable_coins += int(run_coins * coin_bonus)
 
 	# Update best records

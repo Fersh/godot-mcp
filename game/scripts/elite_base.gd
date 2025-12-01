@@ -247,8 +247,14 @@ func spawn_gold_coin() -> void:
 	if gold_coin_scene == null:
 		return
 
-	# Spawn multiple coins based on multiplier
-	for i in range(int(coin_multiplier)):
+	# Apply Cursed Gold curse (reduced gold drops)
+	var drop_mult = 1.0
+	if CurseEffects:
+		drop_mult = CurseEffects.get_gold_drop_multiplier()
+
+	# Spawn multiple coins based on multiplier (scaled by curse)
+	var coin_count = int(coin_multiplier * drop_mult)
+	for i in range(max(1, coin_count)):  # At least 1 coin from elites
 		var coin = gold_coin_scene.instantiate()
 		coin.global_position = global_position + Vector2(randf_range(-30, 30), randf_range(-30, 30))
 		get_parent().add_child(coin)

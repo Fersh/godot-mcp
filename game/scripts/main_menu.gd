@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var play_button: Button = $ButtonContainer/PlayButton
 @onready var gear_button: Button = $ButtonContainer/GearButton
 @onready var shop_button: Button = $ButtonContainer/ShopButton
+@onready var princesses_button: Button = $ButtonContainer/PrincessesButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 
 func _ready() -> void:
@@ -10,11 +11,13 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	gear_button.pressed.connect(_on_gear_pressed)
 	shop_button.pressed.connect(_on_shop_pressed)
+	princesses_button.pressed.connect(_on_princesses_pressed)
 
 	# Style buttons with different colors
 	_style_golden_button(play_button)  # Gold for Play
 	_style_blue_button(gear_button)    # Blue for Gear
 	_style_purple_button(shop_button)  # Purple for Upgrade
+	_style_pink_button(princesses_button)  # Pink for Princesses
 
 	# Update displays
 	_update_coin_display()
@@ -183,3 +186,56 @@ func _on_shop_pressed() -> void:
 	if HapticManager:
 		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/shop.tscn")
+
+func _on_princesses_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+	get_tree().change_scene_to_file("res://scenes/princesses.tscn")
+
+func _style_pink_button(button: Button) -> void:
+	# Pink button for Princesses
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.75, 0.4, 0.6, 1)  # Pink
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 8
+	style_normal.border_color = Color(0.4, 0.2, 0.35, 1)  # Dark pink
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.85, 0.5, 0.7, 1)  # Brighter pink
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 8
+	style_hover.border_color = Color(0.45, 0.25, 0.4, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.6, 0.3, 0.5, 1)  # Darker pink
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_top = 6
+	style_pressed.border_width_bottom = 5
+	style_pressed.border_color = Color(0.35, 0.15, 0.3, 1)
+	style_pressed.corner_radius_top_left = 6
+	style_pressed.corner_radius_top_right = 6
+	style_pressed.corner_radius_bottom_left = 6
+	style_pressed.corner_radius_bottom_right = 6
+
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style_normal)
+	button.add_theme_color_override("font_color", Color(1, 0.95, 1, 1))
+	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	button.add_theme_color_override("font_pressed_color", Color(0.9, 0.85, 0.95, 1))

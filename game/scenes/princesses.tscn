@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfrh04en0ucjd"]
+
+[ext_resource type="Script" path="res://scripts/princesses_screen.gd" id="1_script"]
+
+[node name="PrincessesScreen" type="CanvasLayer"]
+script = ExtResource("1_script")

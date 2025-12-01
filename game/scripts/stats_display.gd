@@ -25,10 +25,18 @@ const POINTS_PER_ITEM = 200  # Points for picking up items
 const COUNT_SPEED_MULTIPLIER = 5.0  # Catch up at 5x the difference per second
 
 func _get_points_multiplier() -> float:
-	"""Get the difficulty-based points multiplier."""
+	"""Get the combined points multiplier from difficulty and curses."""
+	var multiplier = 1.0
+
+	# Difficulty multiplier
 	if DifficultyManager:
-		return DifficultyManager.get_points_multiplier()
-	return 1.0
+		multiplier *= DifficultyManager.get_points_multiplier()
+
+	# Curse multiplier (stacking bonus from princesses)
+	if CurseEffects:
+		multiplier *= CurseEffects.get_points_multiplier()
+
+	return multiplier
 
 func _ready() -> void:
 	add_to_group("stats_display")

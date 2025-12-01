@@ -61,6 +61,11 @@ func collect_coin() -> void:
 	if player and player.has_method("add_xp"):
 		player.add_xp(xp_value)
 
+	# Bloodprice curse: Take damage when collecting coins
+	if CurseEffects and CurseEffects.has_bloodprice():
+		if player and player.has_method("take_damage"):
+			player.take_damage(CurseEffects.get_bloodprice_damage())
+
 	# Trigger Blood Money heal if player has it
 	if AbilityManager:
 		AbilityManager.on_coin_pickup(player)

@@ -1891,6 +1891,10 @@ func get_luck_multiplier() -> float:
 	if PermanentUpgrades:
 		base += PermanentUpgrades.get_all_bonuses().get("luck", 0.0)
 
+	# Apply Jinxed curse (reduced luck)
+	if CurseEffects:
+		base *= CurseEffects.get_luck_multiplier()
+
 	return base
 
 # Get regen rate including permanent upgrades
@@ -1932,7 +1936,13 @@ func _get_equipment_stat(stat: String) -> float:
 
 	var character_id = CharacterManager.selected_character_id
 	var equipment_stats = EquipmentManager.get_equipment_stats(character_id)
-	return equipment_stats.get(stat, 0.0)
+	var base_value = equipment_stats.get(stat, 0.0)
+
+	# Apply Brittle Armor curse (reduced equipment effectiveness)
+	if CurseEffects:
+		base_value *= CurseEffects.get_equipment_bonus_multiplier()
+
+	return base_value
 
 # Apply equipment abilities at start of run
 func apply_equipment_abilities() -> void:
