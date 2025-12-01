@@ -40,6 +40,8 @@ var item_name_font: Font = null
 var current_sort: int = EquipmentManager.SortBy.RARITY
 var combine_mode: bool = false
 var combine_selection: Array[ItemData] = []
+var pending_sell_item: ItemData = null
+var confirm_dialog: ConfirmationDialog = null
 
 @onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
@@ -65,9 +67,29 @@ func _ready() -> void:
 	if CharacterManager:
 		selected_character = CharacterManager.selected_character_id
 
+	_setup_confirmation_dialog()
 	_setup_ui_style()
-	_setup_character_tabs()
+	_setup_character_row()
 	_refresh_display()
+
+func _setup_confirmation_dialog() -> void:
+	confirm_dialog = ConfirmationDialog.new()
+	confirm_dialog.title = "Confirm"
+	confirm_dialog.ok_button_text = "Yes"
+	confirm_dialog.cancel_button_text = "No"
+	add_child(confirm_dialog)
+
+	# Style the dialog
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.07, 0.1, 0.98)
+	style.border_color = Color(0.4, 0.35, 0.3, 1)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	confirm_dialog.add_theme_stylebox_override("panel", style)
+
+	if pixel_font:
+		confirm_dialog.add_theme_font_override("font", pixel_font)
+	confirm_dialog.add_theme_font_size_override("font_size", 14)
 
 func _setup_ui_style() -> void:
 	# Style header and back button
@@ -76,10 +98,10 @@ func _setup_ui_style() -> void:
 	_style_main_panel()
 	_style_panels()
 
-	# Limit inventory scroll height to force scrolling
+	# Limit inventory scroll height to force scrolling (increased by 10% more)
 	if inventory_scroll:
-		inventory_scroll.custom_minimum_size = Vector2(540, 375)  # Increased height by 25%
-		inventory_scroll.set_deferred("size", Vector2(540, 375))
+		inventory_scroll.custom_minimum_size = Vector2(540, 412)  # 375 * 1.1 = ~412
+		inventory_scroll.set_deferred("size", Vector2(540, 412))
 
 func _style_main_panel() -> void:
 	# Make the main panel transparent so background image shows through
@@ -186,85 +208,141 @@ func _style_button(button: Button, base_color: Color) -> void:
 	button.add_theme_stylebox_override("focus", style)
 	button.add_theme_color_override("font_color", COLOR_TEXT)
 
-func _setup_character_tabs() -> void:
-	# Clear existing tabs
+const CHARACTER_IDS = ["archer", "knight", "monk", "mage", "beast", "assassin", "barbarian"]
+const CHARACTER_NAMES = {
+	"archer": "RANGER",
+	"knight": "KNIGHT",
+	"monk": "MONK",
+	"mage": "WIZARD",
+	"beast": "BEAST",
+	"assassin": "ASSASSIN",
+	"barbarian": "BARBARIAN"
+}
+
+var character_dropdown: OptionButton = null
+var header_sort_button: OptionButton = null
+
+func _setup_character_row() -> void:
+	# Clear existing tabs container and repurpose it as a row
 	for child in character_tabs.get_children():
 		child.queue_free()
 
-	# Create tabs for all characters
-	var char_ids = ["archer", "knight", "monk", "mage", "beast"]
-	var char_names = {
-		"archer": "RANGER",
-		"knight": "KNIGHT",
-		"monk": "MONK",
-		"mage": "MAGE",
-		"beast": "BEAST"
-	}
+	# Set up the container as a full-width row
+	character_tabs.alignment = BoxContainer.ALIGNMENT_BEGIN
+	character_tabs.add_theme_constant_override("separation", 20)
 
-	for char_id in char_ids:
-		var tab = Button.new()
-		tab.text = char_names.get(char_id, char_id.to_upper())
-		tab.custom_minimum_size = Vector2(110, 36)
-		tab.toggle_mode = true
-		tab.button_pressed = (char_id == selected_character)
-		tab.pressed.connect(_on_character_tab_pressed.bind(char_id))
-		character_tabs.add_child(tab)
+	# Left side: Character label + dropdown
+	var left_container = HBoxContainer.new()
+	left_container.add_theme_constant_override("separation", 10)
 
-		_style_character_tab(tab, char_id == selected_character)
+	var char_label = Label.new()
+	char_label.text = "Character:"
+	if pixel_font:
+		char_label.add_theme_font_override("font", pixel_font)
+	char_label.add_theme_font_size_override("font_size", 14)
+	char_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	left_container.add_child(char_label)
 
-		if pixel_font:
-			tab.add_theme_font_override("font", pixel_font)
-		tab.add_theme_font_size_override("font_size", 18)
+	character_dropdown = OptionButton.new()
+	for i in range(CHARACTER_IDS.size()):
+		var char_id = CHARACTER_IDS[i]
+		character_dropdown.add_item(CHARACTER_NAMES[char_id], i)
+	character_dropdown.custom_minimum_size = Vector2(140, 36)
+	if pixel_font:
+		character_dropdown.add_theme_font_override("font", pixel_font)
+	character_dropdown.add_theme_font_size_override("font_size", 14)
+	_style_dropdown(character_dropdown)
 
-func _style_character_tab(button: Button, is_selected: bool) -> void:
+	# Set current selection
+	for i in range(CHARACTER_IDS.size()):
+		if CHARACTER_IDS[i] == selected_character:
+			character_dropdown.select(i)
+			break
+
+	character_dropdown.item_selected.connect(_on_character_selected)
+	left_container.add_child(character_dropdown)
+
+	character_tabs.add_child(left_container)
+
+	# Spacer to push sort to the right
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	character_tabs.add_child(spacer)
+
+	# Right side: Sort label + dropdown
+	var right_container = HBoxContainer.new()
+	right_container.add_theme_constant_override("separation", 10)
+
+	var sort_label = Label.new()
+	sort_label.text = "Sort:"
+	if pixel_font:
+		sort_label.add_theme_font_override("font", pixel_font)
+	sort_label.add_theme_font_size_override("font_size", 14)
+	sort_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	right_container.add_child(sort_label)
+
+	header_sort_button = OptionButton.new()
+	header_sort_button.add_item("Rarity", EquipmentManager.SortBy.RARITY)
+	header_sort_button.add_item("Category", EquipmentManager.SortBy.CATEGORY)
+	header_sort_button.add_item("Equipped", EquipmentManager.SortBy.EQUIPPED)
+	header_sort_button.add_item("Name", EquipmentManager.SortBy.NAME)
+	header_sort_button.add_item("Level", EquipmentManager.SortBy.ITEM_LEVEL)
+	header_sort_button.custom_minimum_size = Vector2(120, 36)
+	if pixel_font:
+		header_sort_button.add_theme_font_override("font", pixel_font)
+	header_sort_button.add_theme_font_size_override("font_size", 14)
+	_style_dropdown(header_sort_button)
+
+	# Set current sort selection
+	for i in range(header_sort_button.item_count):
+		if header_sort_button.get_item_id(i) == current_sort:
+			header_sort_button.select(i)
+			break
+
+	header_sort_button.item_selected.connect(_on_header_sort_changed)
+	right_container.add_child(header_sort_button)
+
+	character_tabs.add_child(right_container)
+
+func _style_dropdown(dropdown: OptionButton) -> void:
 	var style = StyleBoxFlat.new()
-	if is_selected:
-		style.bg_color = Color(0.35, 0.28, 0.15, 1.0)
-		style.border_color = Color(1.0, 0.85, 0.4, 1.0)
-		style.border_width_bottom = 4
-		style.border_width_left = 3
-		style.border_width_right = 3
-		style.border_width_top = 3
-	else:
-		style.bg_color = Color(0.12, 0.10, 0.15, 1.0)
-		style.border_color = Color(0.3, 0.25, 0.2, 1.0)
-		style.border_width_bottom = 2
-		style.border_width_left = 2
-		style.border_width_right = 2
-		style.border_width_top = 2
+	style.bg_color = Color(0.15, 0.13, 0.18, 1)
+	style.border_color = Color(0.4, 0.35, 0.3, 1)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
 
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 0
-	style.corner_radius_bottom_right = 0
-	style.content_margin_left = 16
-	style.content_margin_right = 16
+	var style_hover = style.duplicate()
+	style_hover.border_color = Color(0.6, 0.5, 0.4, 1)
 
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5, 1.0) if is_selected else COLOR_TEXT_DIM)
+	dropdown.add_theme_stylebox_override("normal", style)
+	dropdown.add_theme_stylebox_override("hover", style_hover)
+	dropdown.add_theme_stylebox_override("pressed", style)
+	dropdown.add_theme_stylebox_override("focus", style)
+	dropdown.add_theme_color_override("font_color", COLOR_TEXT)
 
-func _on_character_tab_pressed(char_id: String) -> void:
+func _on_character_selected(index: int) -> void:
 	if SoundManager:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
-	selected_character = char_id
+
+	selected_character = CHARACTER_IDS[index]
 	selected_item = null
 	_hide_popups()
-
-	# Update tab visuals
-	var char_ids = ["archer", "knight", "monk", "mage", "beast"]
-	var idx = 0
-	for child in character_tabs.get_children():
-		if child is Button:
-			var is_selected = (idx < char_ids.size() and char_ids[idx] == char_id)
-			child.button_pressed = is_selected
-			_style_character_tab(child, is_selected)
-			idx += 1
-
+	_hide_comparison()
+	if combine_mode:
+		_exit_combine_mode()
 	_refresh_display()
+
+func _on_header_sort_changed(index: int) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	current_sort = header_sort_button.get_item_id(index)
+	_refresh_inventory()
 
 func _refresh_display() -> void:
 	_refresh_equipment_slots()
@@ -588,7 +666,11 @@ func _create_inventory_card(item: ItemData) -> Button:
 	# Equipped indicator in corner (top-left)
 	if is_equipped:
 		var indicator = Label.new()
-		indicator.text = item.equipped_by.substr(0, 1).to_upper()
+		# Use W for Wizard (mage) instead of M
+		var char_initial = item.equipped_by.substr(0, 1).to_upper()
+		if item.equipped_by == "mage":
+			char_initial = "W"  # Wizard
+		indicator.text = char_initial
 		if pixel_font:
 			indicator.add_theme_font_override("font", pixel_font)
 		indicator.add_theme_font_size_override("font_size", 16)
@@ -689,6 +771,29 @@ func _perform_combine() -> void:
 	if combine_selection.size() < 3:
 		return
 
+	# Get info for confirmation
+	var first_item = combine_selection[0]
+	var current_rarity = first_item.get_rarity_name()
+	var next_rarity_idx = first_item.rarity + 1
+	var next_rarity = ItemData.RARITY_NAMES.get(next_rarity_idx, "Unknown")
+	var slot_name = first_item.get_slot_name()
+
+	# Show confirmation dialog
+	confirm_dialog.dialog_text = "Combine 3 %s %ss into 1 %s %s?\n\nThis cannot be undone." % [current_rarity, slot_name, next_rarity, slot_name]
+
+	# Disconnect any previous connections and connect fresh
+	if confirm_dialog.confirmed.is_connected(_on_sell_confirmed):
+		confirm_dialog.confirmed.disconnect(_on_sell_confirmed)
+	if confirm_dialog.confirmed.is_connected(_on_combine_confirmed):
+		confirm_dialog.confirmed.disconnect(_on_combine_confirmed)
+
+	confirm_dialog.confirmed.connect(_on_combine_confirmed)
+	confirm_dialog.popup_centered()
+
+func _on_combine_confirmed() -> void:
+	if combine_selection.size() < 3:
+		return
+
 	var item_ids: Array = []
 	for item in combine_selection:
 		item_ids.append(item.id)
@@ -697,6 +802,8 @@ func _perform_combine() -> void:
 	if result:
 		if SoundManager:
 			SoundManager.play_buff()
+		if HapticManager:
+			HapticManager.medium()
 		# Show the result
 		_exit_combine_mode()
 		_update_coins_display()
@@ -729,7 +836,8 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 	# Equipped by (shown first, above item name)
 	var equipped_label = Label.new()
-	equipped_label.text = "Equipped by: %s" % item.equipped_by.capitalize()
+	var equipped_name = CHARACTER_NAMES.get(item.equipped_by, item.equipped_by.capitalize())
+	equipped_label.text = "Equipped by: %s" % equipped_name
 	if pixel_font:
 		equipped_label.add_theme_font_override("font", pixel_font)
 	equipped_label.add_theme_font_size_override("font_size", 14)
@@ -1196,17 +1304,37 @@ func _on_sell_pressed(item: ItemData) -> void:
 	if SoundManager:
 		SoundManager.play_click()
 	if HapticManager:
-		HapticManager.medium()
+		HapticManager.light()
 
 	if item and EquipmentManager:
-		var coins = EquipmentManager.sell_item(item.id)
+		var sell_price = EquipmentManager.get_sell_price(item)
+		pending_sell_item = item
+
+		# Show confirmation dialog
+		confirm_dialog.dialog_text = "Sell %s for %d coins?\n\nThis cannot be undone." % [item.get_full_name(), sell_price]
+
+		# Disconnect any previous connections and connect fresh
+		if confirm_dialog.confirmed.is_connected(_on_sell_confirmed):
+			confirm_dialog.confirmed.disconnect(_on_sell_confirmed)
+		if confirm_dialog.confirmed.is_connected(_on_combine_confirmed):
+			confirm_dialog.confirmed.disconnect(_on_combine_confirmed)
+
+		confirm_dialog.confirmed.connect(_on_sell_confirmed)
+		confirm_dialog.popup_centered()
+
+func _on_sell_confirmed() -> void:
+	if pending_sell_item and EquipmentManager:
+		var coins = EquipmentManager.sell_item(pending_sell_item.id)
 		if coins > 0:
 			if SoundManager:
 				SoundManager.play_xp()
+			if HapticManager:
+				HapticManager.medium()
 			_hide_comparison()
 			selected_item = null
 			_update_coins_display()
 			_refresh_display()
+	pending_sell_item = null
 
 func _hide_popups() -> void:
 	popup_panel.visible = false
@@ -1286,43 +1414,12 @@ func _update_inventory_header() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_header.add_child(spacer)
 
-	# Sort label
-	var sort_label = Label.new()
-	sort_label.text = "Sort:"
-	if pixel_font:
-		sort_label.add_theme_font_override("font", pixel_font)
-	sort_label.add_theme_font_size_override("font_size", 12)
-	sort_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	inventory_header.add_child(sort_label)
-
-	# Sort dropdown
-	sort_button = OptionButton.new()
-	sort_button.add_item("Rarity", EquipmentManager.SortBy.RARITY)
-	sort_button.add_item("Category", EquipmentManager.SortBy.CATEGORY)
-	sort_button.add_item("Equipped", EquipmentManager.SortBy.EQUIPPED)
-	sort_button.add_item("Name", EquipmentManager.SortBy.NAME)
-	sort_button.add_item("Level", EquipmentManager.SortBy.ITEM_LEVEL)
-	sort_button.custom_minimum_size = Vector2(100, 30)
-	if pixel_font:
-		sort_button.add_theme_font_override("font", pixel_font)
-	sort_button.add_theme_font_size_override("font_size", 11)
-	_style_option_button(sort_button)
-
-	# Set current selection
-	for i in range(sort_button.item_count):
-		if sort_button.get_item_id(i) == current_sort:
-			sort_button.select(i)
-			break
-
-	sort_button.item_selected.connect(_on_sort_changed)
-	inventory_header.add_child(sort_button)
-
 	# Combine button
 	combine_button = Button.new()
-	combine_button.custom_minimum_size = Vector2(90, 30)
+	combine_button.custom_minimum_size = Vector2(100, 30)
 	if pixel_font:
 		combine_button.add_theme_font_override("font", pixel_font)
-	combine_button.add_theme_font_size_override("font_size", 11)
+	combine_button.add_theme_font_size_override("font_size", 12)
 
 	_update_combine_button()
 	combine_button.pressed.connect(_on_combine_button_pressed)
@@ -1372,12 +1469,6 @@ func _update_combine_button() -> void:
 		combine_button.text = "COMBINE"
 		_style_button(combine_button, Color(0.25, 0.25, 0.3))
 		combine_button.disabled = true
-
-func _on_sort_changed(index: int) -> void:
-	if SoundManager:
-		SoundManager.play_click()
-	current_sort = sort_button.get_item_id(index)
-	_refresh_inventory()
 
 func _on_combine_button_pressed() -> void:
 	if SoundManager:
