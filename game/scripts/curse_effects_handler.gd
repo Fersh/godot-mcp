@@ -16,6 +16,13 @@ var _game_time: float = 0.0
 var _marked_stacks: int = 0
 var _marked_timer: float = 0.0
 
+# Hazard Zones (Unstable Ground) state
+var _hazard_timer: float = 0.0
+var _hazard_zones: Array = []
+const HAZARD_ZONE_DURATION: float = 5.0
+const HAZARD_ZONE_RADIUS: float = 80.0
+const HAZARD_ZONE_DAMAGE_INTERVAL: float = 0.5
+
 func _ready() -> void:
 	# Connect to scene changes to reset cache
 	get_tree().node_added.connect(_on_node_added)
@@ -40,6 +47,17 @@ func _process(delta: float) -> void:
 			_marked_timer = 0.0
 			_marked_stacks += 1
 
+	# Update Hazard Zones (Unstable Ground curse)
+	if _cached_effects.get("hazard_zones", false):
+		var interval = _cached_effects.get("hazard_interval", 10.0)
+		_hazard_timer += delta
+		if _hazard_timer >= interval:
+			_hazard_timer = 0.0
+			_spawn_hazard_zone()
+
+		# Update existing hazard zones
+		_update_hazard_zones(delta)
+
 func _on_node_added(node: Node) -> void:
 	# Reset when entering main game scene
 	if node.name == "Main" or node.name == "Player":
@@ -56,7 +74,14 @@ func refresh_cache() -> void:
 	_game_time = 0.0
 	_marked_stacks = 0
 	_marked_timer = 0.0
+	_hazard_timer = 0.0
 	Engine.time_scale = 1.0
+
+	# Clean up existing hazard zones
+	for zone in _hazard_zones:
+		if is_instance_valid(zone):
+			zone.queue_free()
+	_hazard_zones.clear()
 
 	if PrincessManager:
 		_cached_effects = PrincessManager.get_active_curse_effects()
@@ -281,3 +306,128 @@ func modify_boss_stats(boss: Node) -> void:
 			boss.max_health = boss.max_health * hp_mult
 		if "current_health" in boss:
 			boss.current_health = boss.current_health * hp_mult
+
+# ============================================
+# HAZARD ZONE SYSTEM (Unstable Ground curse)
+# ============================================
+
+func _spawn_hazard_zone() -> void:
+	"""Spawn a damaging hazard zone near the player."""
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+
+	# Spawn at random position near player
+	var offset = Vector2(randf_range(-200, 200), randf_range(-200, 200))
+	var spawn_pos = player.global_position + offset
+
+	# Create hazard zone node
+	var zone = Node2D.new()
+	zone.name = "HazardZone"
+	zone.global_position = spawn_pos
+	zone.set_meta("lifetime", 0.0)
+	zone.set_meta("damage_timer", 0.0)
+	zone.set_meta("damage", _cached_effects.get("hazard_damage", 5))
+
+	# Visual: pulsing red circle
+	var visual = _create_hazard_visual()
+	zone.add_child(visual)
+
+	# Add to game world
+	var game_world = get_tree().get_first_node_in_group("game_world")
+	if game_world:
+		game_world.add_child(zone)
+	else:
+		player.get_parent().add_child(zone)
+
+	_hazard_zones.append(zone)
+
+	# Warning effect
+	if JuiceManager:
+		JuiceManager.shake_small()
+
+func _create_hazard_visual() -> Node2D:
+	"""Create the visual representation of a hazard zone."""
+	var visual = Node2D.new()
+
+	# Outer glow circle
+	var outer = Polygon2D.new()
+	var outer_points: PackedVector2Array = []
+	for i in 32:
+		var angle = i * TAU / 32
+		outer_points.append(Vector2(cos(angle), sin(angle)) * HAZARD_ZONE_RADIUS)
+	outer.polygon = outer_points
+	outer.color = Color(0.8, 0.2, 0.1, 0.3)
+	visual.add_child(outer)
+
+	# Inner circle
+	var inner = Polygon2D.new()
+	var inner_points: PackedVector2Array = []
+	for i in 24:
+		var angle = i * TAU / 24
+		inner_points.append(Vector2(cos(angle), sin(angle)) * (HAZARD_ZONE_RADIUS * 0.6))
+	inner.polygon = inner_points
+	inner.color = Color(1.0, 0.3, 0.1, 0.5)
+	visual.add_child(inner)
+
+	# Center hotspot
+	var center = Polygon2D.new()
+	var center_points: PackedVector2Array = []
+	for i in 16:
+		var angle = i * TAU / 16
+		center_points.append(Vector2(cos(angle), sin(angle)) * (HAZARD_ZONE_RADIUS * 0.25))
+	center.polygon = center_points
+	center.color = Color(1.0, 0.5, 0.2, 0.7)
+	visual.add_child(center)
+
+	return visual
+
+func _update_hazard_zones(delta: float) -> void:
+	"""Update all active hazard zones."""
+	var zones_to_remove: Array = []
+
+	for zone in _hazard_zones:
+		if not is_instance_valid(zone):
+			zones_to_remove.append(zone)
+			continue
+
+		# Update lifetime
+		var lifetime = zone.get_meta("lifetime", 0.0) + delta
+		zone.set_meta("lifetime", lifetime)
+
+		# Check if expired
+		if lifetime >= HAZARD_ZONE_DURATION:
+			zones_to_remove.append(zone)
+			# Fade out effect
+			var tween = zone.create_tween()
+			tween.tween_property(zone, "modulate:a", 0.0, 0.3)
+			tween.tween_callback(zone.queue_free)
+			continue
+
+		# Pulsing visual effect
+		var pulse = 1.0 + sin(lifetime * 6.0) * 0.15
+		zone.scale = Vector2(pulse, pulse)
+
+		# Damage player if in range
+		var damage_timer = zone.get_meta("damage_timer", 0.0) + delta
+		zone.set_meta("damage_timer", damage_timer)
+
+		if damage_timer >= HAZARD_ZONE_DAMAGE_INTERVAL:
+			zone.set_meta("damage_timer", 0.0)
+			_check_hazard_damage(zone)
+
+	# Remove expired zones from tracking
+	for zone in zones_to_remove:
+		_hazard_zones.erase(zone)
+
+func _check_hazard_damage(zone: Node2D) -> void:
+	"""Check if player is in hazard zone and deal damage."""
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+
+	var distance = zone.global_position.distance_to(player.global_position)
+	if distance <= HAZARD_ZONE_RADIUS:
+		var damage = zone.get_meta("damage", 5)
+		if player.has_method("take_damage"):
+			player.take_damage(float(damage))

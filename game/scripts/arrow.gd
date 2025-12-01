@@ -404,6 +404,10 @@ func calculate_damage(enemy: Node2D) -> float:
 		var distance_factor = clamp(distance / max_range, 0.0, 1.0)
 		final_damage *= (1.0 + sniper_bonus * distance_factor)
 
+	# Apply Glass Cannon damage bonus from curses
+	if CurseEffects:
+		final_damage = CurseEffects.modify_damage_dealt(final_damage)
+
 	return final_damage
 
 # ============================================

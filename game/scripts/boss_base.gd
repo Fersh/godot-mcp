@@ -82,8 +82,12 @@ func _physics_process(delta: float) -> void:
 		_process_taunt(delta)
 		return
 
-	# Check for enrage (use difficulty modifier threshold if available)
-	var actual_enrage_threshold = DifficultyManager.get_enrage_threshold() if DifficultyManager else enrage_threshold
+	# Check for enrage (use highest threshold from difficulty or curses)
+	var actual_enrage_threshold = enrage_threshold
+	if DifficultyManager:
+		actual_enrage_threshold = max(actual_enrage_threshold, DifficultyManager.get_enrage_threshold())
+	if CurseEffects:
+		actual_enrage_threshold = max(actual_enrage_threshold, CurseEffects.get_boss_enrage_threshold())
 	if not is_enraged and current_health <= max_health * actual_enrage_threshold:
 		_trigger_enrage()
 

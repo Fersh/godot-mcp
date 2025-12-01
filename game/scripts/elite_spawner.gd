@@ -432,6 +432,10 @@ func _do_spawn_boss_from_portal(spawn_pos: Vector2) -> void:
 		if "attack_damage" in boss:
 			boss.attack_damage *= pending_scale_multiplier
 
+	# Apply curse effects to boss (Blood Moon: +HP)
+	if CurseEffects:
+		CurseEffects.modify_boss_stats(boss)
+
 	active_boss = boss
 	pending_boss_scene = null
 

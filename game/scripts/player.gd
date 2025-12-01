@@ -520,6 +520,14 @@ func _apply_curse_effects() -> void:
 	if CurseEffects:
 		CurseEffects.apply_to_player_stats(self)
 
+		# Shrouded curse: Reduce visibility by zooming in camera
+		var visibility_mult = CurseEffects.get_visibility_multiplier()
+		if visibility_mult < 1.0 and camera:
+			# Lower visibility = higher zoom (closer view)
+			# 0.7 visibility = 1.0 / 0.7 = ~1.43 zoom
+			var zoom_factor = 1.0 / visibility_mult
+			camera.zoom = Vector2(zoom_factor, zoom_factor)
+
 func take_damage(amount: float) -> void:
 	# If dead, still show damage effects (funny to keep getting beat up)
 	# but don't actually reduce HP further
