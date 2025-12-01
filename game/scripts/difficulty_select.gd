@@ -231,14 +231,21 @@ func _update_mode_buttons() -> void:
 	_style_button(challenge_btn, challenge_color)
 
 func _update_difficulty_visibility() -> void:
-	"""Show/hide difficulty selection based on mode."""
+	"""Show/hide difficulty selection based on mode (keep layout stable)."""
 	var show_difficulty = (selected_mode == DifficultyManager.GameMode.CHALLENGE)
-	difficulty_container.visible = show_difficulty
+
+	# Use modulate instead of visible to keep layout stable
+	var target_alpha = 1.0 if show_difficulty else 0.3
+	difficulty_container.modulate.a = target_alpha
+
+	# Disable/enable buttons based on mode
+	for btn in difficulty_buttons:
+		btn.disabled = not show_difficulty
 
 	# Also update the title
 	var diff_title = get_node_or_null("DifficultyTitle")
 	if diff_title:
-		diff_title.visible = show_difficulty
+		diff_title.modulate.a = target_alpha
 
 func _update_selection_display() -> void:
 	"""Update all UI elements based on current selection."""
@@ -267,10 +274,13 @@ func _update_selection_display() -> void:
 	# Update description
 	if selected_mode == DifficultyManager.GameMode.ENDLESS:
 		description_label.text = "Survive as long as you can. Enemies get stronger over time."
+		description_label.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))  # Juvenile green
 	elif DifficultyManager:
 		description_label.text = DifficultyManager.get_difficulty_description(selected_difficulty)
+		description_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))  # Default grey
 	else:
 		description_label.text = ""
+		description_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 
 func _on_endless_selected() -> void:
 	if SoundManager:
