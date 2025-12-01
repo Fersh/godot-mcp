@@ -4,8 +4,14 @@ extends Node
 # Add to autoload as "PrincessManager"
 
 const SAVE_PATH = "user://princess_data.save"
-const SPRITE_SHEET_PATH = "res://assets/sprites/Medieval Townsfolk 3 Sprite Sheet.png"
 const FRAME_SIZE = Vector2(32, 32)
+
+# Multiple sprite sheets
+const SPRITE_SHEETS = {
+	"sheet3": "res://assets/sprites/Medieval Townsfolk 3 Sprite Sheet.png",
+	"sheet1": "res://assets/sprites/Medieval Townsfolk Sprite Sheet.png",
+	"sheet2": "res://assets/sprites/Medieval Townsfolk 2 Sprite Sheet.png",
+}
 
 # Signals
 signal princess_unlocked(princess_id: String)
@@ -17,7 +23,7 @@ class PrincessData:
 	var name: String
 	var curse_name: String
 	var curse_description: String
-	var sprite_character: int      # 0 = green dress, 1 = red dress
+	var sprite_character: int      # Character index (0-5)
 	var tier: int                  # 1 or 2
 	var difficulty_pool: int       # DifficultyTier enum value
 	var bonus_multiplier: float    # e.g., 1.15 = +15% points/coins
@@ -36,24 +42,27 @@ class PrincessData:
 		bonus_multiplier = p_multiplier
 		curse_effect = p_effect
 
-# Animation data for sprite sheet
-# Princess 1 (green dress): Rows 0-4, frame counts: 4, 4, 4, 8, 4
-# Princess 2 (red dress): Rows 5-9, frame counts: 4, 8, 8, 8, 4
-const ANIMATION_DATA = {
-	0: {  # Princess 1 (green dress)
-		"idle": {"row": 0, "frames": 4},
-		"walk": {"row": 1, "frames": 4},
-		"run_away": {"row": 2, "frames": 4},
-		"give_gold": {"row": 3, "frames": 8},
-		"distressed": {"row": 4, "frames": 4},
-	},
-	1: {  # Princess 2 (red dress)
-		"idle": {"row": 5, "frames": 4},
-		"walk": {"row": 6, "frames": 8},
-		"run_away": {"row": 7, "frames": 8},
-		"give_gold": {"row": 8, "frames": 8},
-		"distressed": {"row": 9, "frames": 4},
-	},
+# Character data: maps character index to sprite sheet and animation info
+# Each character has 5 rows of animations: idle, walk, run_away, give_gold, distressed
+const CHARACTER_DATA = {
+	# Sheet 3 characters (existing)
+	0: {"sheet": "sheet3", "base_row": 0, "frames": [4, 4, 4, 8, 4]},  # Rows 0-4
+	1: {"sheet": "sheet3", "base_row": 5, "frames": [4, 8, 8, 8, 4]},  # Rows 5-9
+	# Sheet 1 character (rows 6-10)
+	2: {"sheet": "sheet1", "base_row": 6, "frames": [4, 4, 4, 7, 4]},  # Rows 6-10
+	# Sheet 2 characters (rows 0-14)
+	3: {"sheet": "sheet2", "base_row": 0, "frames": [4, 4, 8, 7, 4]},  # Rows 0-4
+	4: {"sheet": "sheet2", "base_row": 5, "frames": [4, 4, 8, 7, 1]},  # Rows 5-9
+	5: {"sheet": "sheet2", "base_row": 10, "frames": [4, 4, 4, 4, 4]}, # Rows 10-14
+}
+
+# Animation name to row offset mapping
+const ANIM_OFFSETS = {
+	"idle": 0,
+	"walk": 1,
+	"run_away": 2,
+	"give_gold": 3,
+	"distressed": 4,
 }
 
 # All princess definitions
@@ -68,6 +77,9 @@ var enabled_curses: Array[String] = []
 func _ready() -> void:
 	_init_princess_definitions()
 	load_progress()
+
+	# TESTING: Unlock all princesses (but keep them disabled by default)
+	debug_unlock_all()
 
 func _init_princess_definitions() -> void:
 	# ============================================
@@ -89,23 +101,23 @@ func _init_princess_definitions() -> void:
 	# Very Easy pool (3 princesses)
 	_add_princess("famine", "Princess Hollow", "Famine",
 		"All healing reduced by 50%",
-		0, 1, 1, 1.15,
+		2, 1, 1, 1.15,
 		{"type": "healing_mult", "value": 0.5})
 
 	_add_princess("chaos_spawn", "Princess Chaos", "Chaos Spawn",
 		"Elite enemies spawn 50% more often",
-		1, 1, 1, 1.18,
+		3, 1, 1, 1.18,
 		{"type": "elite_spawn_mult", "value": 0.5})
 
 	_add_princess("temporal_pressure", "Princess Haste", "Temporal Pressure",
 		"Game speed increases 5% per minute (max +25%)",
-		0, 1, 1, 1.20,
+		4, 1, 1, 1.20,
 		{"type": "time_scale_increase", "per_minute": 0.05, "max": 0.25})
 
 	# Easy pool (3 princesses)
 	_add_princess("glass_cannon", "Princess Fury", "Glass Cannon",
 		"+40% damage dealt, -25% max HP",
-		1, 1, 2, 1.12,
+		5, 1, 2, 1.12,
 		{"type": "glass_cannon", "damage_bonus": 0.4, "hp_reduction": 0.25})
 
 	_add_princess("horde_mode", "Princess Swarm", "Horde Mode",
@@ -126,22 +138,22 @@ func _init_princess_definitions() -> void:
 	# Normal pool (6 princesses)
 	_add_princess("cursed_gold", "Princess Greed", "Cursed Gold",
 		"Enemies drop 40% less gold",
-		0, 2, 3, 1.10,
+		2, 2, 3, 1.10,
 		{"type": "gold_drop_mult", "value": 0.6})
 
 	_add_princess("brittle_armor", "Princess Rust", "Brittle Armor",
 		"Equipment bonuses reduced by 25%",
-		1, 2, 3, 1.12,
+		3, 2, 3, 1.12,
 		{"type": "equipment_mult", "value": 0.75})
 
 	_add_princess("champions_gauntlet", "Princess Crown", "Champion's Gauntlet",
 		"20% of enemies spawn as champions",
-		0, 2, 3, 1.20,
+		4, 2, 3, 1.20,
 		{"type": "champion_chance", "value": 0.2})
 
 	_add_princess("weakened", "Princess Frail", "Weakened",
 		"Start each run at 70% HP",
-		1, 2, 3, 1.10,
+		5, 2, 3, 1.10,
 		{"type": "starting_hp", "value": 0.7})
 
 	_add_princess("shrouded", "Princess Shadow", "Shrouded",
@@ -157,22 +169,22 @@ func _init_princess_definitions() -> void:
 	# Nightmare pool (6 princesses)
 	_add_princess("exhaustion", "Princess Weary", "Exhaustion",
 		"Base move speed reduced by 15%",
-		0, 2, 4, 1.12,
+		2, 2, 4, 1.12,
 		{"type": "player_speed_mult", "value": 0.85})
 
 	_add_princess("corrupted_xp", "Princess Void", "Corrupted XP",
 		"Level ups require 25% more XP",
-		1, 2, 4, 1.15,
+		3, 2, 4, 1.15,
 		{"type": "xp_requirement_mult", "value": 1.25})
 
 	_add_princess("unstable_ground", "Princess Quake", "Unstable Ground",
 		"Damaging hazard zones appear randomly",
-		0, 2, 4, 1.15,
+		4, 2, 4, 1.15,
 		{"type": "hazard_zones", "interval": 10.0, "damage": 5})
 
 	_add_princess("blood_moon", "Princess Eclipse", "Blood Moon",
 		"Bosses have +30% HP and enrage at 40%",
-		1, 2, 4, 1.18,
+		5, 2, 4, 1.18,
 		{"type": "boss_buff", "hp_mult": 1.3, "enrage_threshold": 0.4})
 
 	_add_princess("jinxed", "Princess Hex", "Jinxed",
@@ -309,16 +321,16 @@ func get_enabled_curse_count() -> int:
 # ============================================
 
 func get_total_multiplier() -> float:
-	"""Get the stacking multiplier from all enabled curses."""
-	var total: float = 1.0
-	for id in enabled_curses:
-		var princess = get_princess(id)
-		if princess:
-			total *= princess.bonus_multiplier
-	return total
+	"""Get the stacking multiplier from all enabled curses.
+	Each curse adds +1x, so 1 curse = 2x, 5 curses = 6x, 20 curses = 21x."""
+	return 1.0 + float(enabled_curses.size())
+
+func get_total_bonus_multiplier() -> int:
+	"""Get the total bonus as a multiplier (e.g., 5 for 5x with 4 curses enabled)."""
+	return 1 + enabled_curses.size()
 
 func get_total_bonus_percent() -> int:
-	"""Get the total bonus as a percentage (e.g., 45 for +45%)."""
+	"""Get the total bonus as a percentage (e.g., 45 for +45%). Legacy support."""
 	return int((get_total_multiplier() - 1.0) * 100)
 
 func get_active_curse_effects() -> Dictionary:
@@ -459,13 +471,27 @@ func has_marked_for_death() -> bool:
 # ============================================
 
 func get_sprite_sheet() -> Texture2D:
-	return load(SPRITE_SHEET_PATH)
+	"""Get the default sprite sheet (for backwards compatibility)."""
+	return load(SPRITE_SHEETS["sheet3"])
+
+func get_sprite_sheet_for_character(sprite_char: int) -> Texture2D:
+	"""Get the sprite sheet for a specific character."""
+	if sprite_char in CHARACTER_DATA:
+		var sheet_key = CHARACTER_DATA[sprite_char]["sheet"]
+		return load(SPRITE_SHEETS[sheet_key])
+	return load(SPRITE_SHEETS["sheet3"])
 
 func get_animation_info(sprite_char: int, anim_name: String) -> Dictionary:
 	"""Get animation row and frame count for a princess sprite."""
-	if sprite_char in ANIMATION_DATA and anim_name in ANIMATION_DATA[sprite_char]:
-		return ANIMATION_DATA[sprite_char][anim_name]
-	return {"row": 0, "frames": 4}
+	if sprite_char not in CHARACTER_DATA:
+		return {"row": 0, "frames": 4}
+
+	var char_data = CHARACTER_DATA[sprite_char]
+	var anim_offset = ANIM_OFFSETS.get(anim_name, 0)
+	var row = char_data["base_row"] + anim_offset
+	var frames = char_data["frames"][anim_offset] if anim_offset < char_data["frames"].size() else 4
+
+	return {"row": row, "frames": frames}
 
 func get_sprite_region(sprite_char: int, anim_name: String, frame: int) -> Rect2:
 	"""Get the region rect for a specific frame of a princess animation."""
@@ -524,6 +550,16 @@ func debug_unlock_all() -> void:
 		if id not in unlocked_princesses:
 			unlocked_princesses.append(id)
 	save_progress()
+
+func debug_unlock_and_enable_all() -> void:
+	"""Debug function to unlock and enable all curses for testing."""
+	for id in princess_definitions:
+		if id not in unlocked_princesses:
+			unlocked_princesses.append(id)
+		if id not in enabled_curses:
+			enabled_curses.append(id)
+	save_progress()
+	curses_changed.emit()
 
 func debug_reset_progress() -> void:
 	"""Debug function to reset all progress."""

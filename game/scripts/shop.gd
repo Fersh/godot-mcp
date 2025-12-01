@@ -55,6 +55,10 @@ func _ready() -> void:
 	# Populate grid with ALL upgrades
 	_populate_all_upgrades()
 
+	# Keep menu music playing
+	if SoundManager:
+		SoundManager.play_menu_music()
+
 	# Update coin display
 	_update_coin_display()
 

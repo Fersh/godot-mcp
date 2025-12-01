@@ -47,6 +47,10 @@ func _ready() -> void:
 	_create_selector_buttons()
 	_select_current_character()
 
+	# Keep menu music playing
+	if SoundManager:
+		SoundManager.play_menu_music()
+
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.055, 0.09, 0.0)

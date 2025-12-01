@@ -24,7 +24,7 @@ var completed_difficulties: Array[DifficultyTier] = []
 # Difficulty configuration data
 const DIFFICULTY_DATA = {
 	DifficultyTier.JUVENILE: {
-		"name": "Juvenile",
+		"name": "Pitiful",
 		"description": "For those who fear the dark.",
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
@@ -35,7 +35,7 @@ const DIFFICULTY_DATA = {
 		"modifiers": [],
 	},
 	DifficultyTier.VERY_EASY: {
-		"name": "Very Easy",
+		"name": "Easy",
 		"description": "Enemies apply Slow on hit. 4x Points.",
 		"health_mult": 3.2,
 		"damage_mult": 2.7,
@@ -46,7 +46,7 @@ const DIFFICULTY_DATA = {
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
-		"name": "Easy",
+		"name": "Normal",
 		"description": "+ Elites gain random affixes. 6x Points.",
 		"health_mult": 4.8,
 		"damage_mult": 3.3,
@@ -57,7 +57,7 @@ const DIFFICULTY_DATA = {
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
-		"name": "Normal",
+		"name": "Nightmare",
 		"description": "+ Start at 75% HP. Boss enrages faster. 8x Points.",
 		"health_mult": 7.6,
 		"damage_mult": 4.2,
@@ -68,7 +68,7 @@ const DIFFICULTY_DATA = {
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
-		"name": "Nightmare",
+		"name": "Hell",
 		"description": "+ Healing reduced 50%. Champion enemies. 10x Points.",
 		"health_mult": 11.0,
 		"damage_mult": 5.5,

@@ -47,6 +47,10 @@ func _ready() -> void:
 	_create_selector_buttons()
 	_update_multiplier_display()
 
+	# Keep menu music playing
+	if SoundManager:
+		SoundManager.play_menu_music()
+
 	# Select first unlocked princess if any
 	if PrincessManager and PrincessManager.get_unlocked_count() > 0:
 		for i in princess_list.size():
@@ -82,8 +86,8 @@ func _build_ui() -> void:
 	# Background
 	var background = TextureRect.new()
 	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if ResourceLoader.exists("res://assets/menu12.png"):
-		background.texture = load("res://assets/menu12.png")
+	if ResourceLoader.exists("res://assets/menu_princess1.png"):
+		background.texture = load("res://assets/menu_princess1.png")
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.modulate = Color(1, 1, 1, 0.8)
@@ -165,73 +169,86 @@ func _build_ui() -> void:
 	_style_back_button(back_button)
 	add_child(back_button)
 
-	# Main container (positioned below header)
+	# Multiplier display (above the main content)
+	multiplier_label = Label.new()
+	multiplier_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	multiplier_label.offset_top = 105
+	multiplier_label.offset_bottom = 130
+	multiplier_label.offset_left = 20
+	multiplier_label.offset_right = -20
+	multiplier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	multiplier_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		multiplier_label.add_theme_font_override("font", pixel_font)
+	multiplier_label.add_theme_font_size_override("font_size", 14)
+	multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	multiplier_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	multiplier_label.add_theme_constant_override("shadow_offset_x", 2)
+	multiplier_label.add_theme_constant_override("shadow_offset_y", 2)
+	add_child(multiplier_label)
+
+	# Main container (positioned below header and multiplier)
 	var main_container = HBoxContainer.new()
 	main_container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_container.offset_top = 105
+	main_container.offset_top = 140
 	main_container.offset_left = 20
 	main_container.offset_right = -20
 	main_container.offset_bottom = -80
 	main_container.add_theme_constant_override("separation", 20)
+	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	add_child(main_container)
 
-	# Left side - Preview panel
+	# Left side - Preview panel (shrink to fit content)
 	var left_side = VBoxContainer.new()
-	left_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left_side.size_flags_stretch_ratio = 0.4
+	left_side.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	left_side.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	main_container.add_child(left_side)
 
 	preview_panel = PanelContainer.new()
-	preview_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	preview_panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	preview_panel.custom_minimum_size = Vector2(300, 380)
+	preview_panel.set_deferred("size", Vector2(300, 380))
 	_style_preview_panel()
 	left_side.add_child(preview_panel)
 	_setup_preview_content()
 
-	# Right side - Selector grid
+	# Right side - Selector grid + toggle button
 	var right_side = VBoxContainer.new()
-	right_side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right_side.size_flags_stretch_ratio = 0.6
-	right_side.add_theme_constant_override("separation", 10)
+	right_side.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	right_side.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	right_side.add_theme_constant_override("separation", 15)
 	main_container.add_child(right_side)
 
-	# Selector scroll
-	var scroll = ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	right_side.add_child(scroll)
-
+	# Selector grid (no scroll needed for 20 princesses in 5 columns = 4 rows)
 	selector_container = GridContainer.new()
 	selector_container.columns = 5
 	selector_container.add_theme_constant_override("h_separation", 10)
 	selector_container.add_theme_constant_override("v_separation", 10)
-	scroll.add_child(selector_container)
+	right_side.add_child(selector_container)
 
-	# Bottom bar with multiplier and clear button
+	# Toggle button (below princess grid)
+	toggle_button = Button.new()
+	toggle_button.custom_minimum_size = Vector2(370, 50)
+	toggle_button.pressed.connect(_on_toggle_pressed)
+	right_side.add_child(toggle_button)
+
+	# Bottom bar with clear button only
 	var bottom_bar = HBoxContainer.new()
 	bottom_bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	bottom_bar.offset_top = -70
 	bottom_bar.offset_left = 20
 	bottom_bar.offset_right = -20
 	bottom_bar.add_theme_constant_override("separation", 20)
+	bottom_bar.alignment = BoxContainer.ALIGNMENT_END
 	add_child(bottom_bar)
 
-	# Multiplier display
-	multiplier_label = Label.new()
-	multiplier_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	multiplier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	multiplier_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if pixel_font:
-		multiplier_label.add_theme_font_override("font", pixel_font)
-	multiplier_label.add_theme_font_size_override("font_size", 14)
-	multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
-	bottom_bar.add_child(multiplier_label)
-
-	# Clear all button
+	# Clear all button (hidden for now)
 	clear_button = Button.new()
 	clear_button.text = "CLEAR ALL"
 	clear_button.custom_minimum_size = Vector2(120, 40)
 	clear_button.pressed.connect(_on_clear_all_pressed)
 	_style_gray_button(clear_button)
+	clear_button.visible = false
 	bottom_bar.add_child(clear_button)
 
 func _style_header() -> void:
@@ -252,6 +269,11 @@ func _style_preview_panel() -> void:
 	style.border_width_bottom = 4
 	style.border_color = Color(0.4, 0.25, 0.45, 1)
 	style.set_corner_radius_all(12)
+	# Add extra padding to make the panel ~20% taller
+	style.content_margin_top = 30
+	style.content_margin_bottom = 30
+	style.content_margin_left = 15
+	style.content_margin_right = 15
 	preview_panel.add_theme_stylebox_override("panel", style)
 
 func _setup_preview_content() -> void:
@@ -319,11 +341,10 @@ func _setup_preview_content() -> void:
 	preview_status_label.add_theme_font_size_override("font_size", 10)
 	vbox.add_child(preview_status_label)
 
-	# Toggle button
-	toggle_button = Button.new()
-	toggle_button.custom_minimum_size = Vector2(150, 40)
-	toggle_button.pressed.connect(_on_toggle_pressed)
-	vbox.add_child(toggle_button)
+	# Add 20px margin below status label
+	var status_spacer = Control.new()
+	status_spacer.custom_minimum_size = Vector2(0, 20)
+	vbox.add_child(status_spacer)
 
 func _load_princess_data() -> void:
 	if not PrincessManager:
@@ -368,7 +389,7 @@ func _create_selector_buttons() -> void:
 		if is_unlocked:
 			# Show sprite
 			var sprite = Sprite2D.new()
-			sprite.texture = PrincessManager.get_sprite_sheet()
+			sprite.texture = PrincessManager.get_sprite_sheet_for_character(princess.sprite_character)
 			sprite.region_enabled = true
 			var region = PrincessManager.get_sprite_region(princess.sprite_character, "idle", 0)
 			sprite.region_rect = region
@@ -422,7 +443,7 @@ func _select_princess(index: int) -> void:
 
 	# Update preview
 	if preview_sprite and PrincessManager:
-		preview_sprite.texture = PrincessManager.get_sprite_sheet()
+		preview_sprite.texture = PrincessManager.get_sprite_sheet_for_character(princess.sprite_character)
 		preview_sprite.region_enabled = true
 		var region = PrincessManager.get_sprite_region(princess.sprite_character, "idle", 0)
 		preview_sprite.region_rect = region
@@ -431,8 +452,7 @@ func _select_princess(index: int) -> void:
 	preview_curse_name_label.text = "Curse: %s" % princess.curse_name
 	preview_curse_desc_label.text = princess.curse_description
 
-	var bonus_percent = int((princess.bonus_multiplier - 1.0) * 100)
-	preview_bonus_label.text = "+%d%% Points & Coins" % bonus_percent
+	preview_bonus_label.text = "+1x Points & Coins"
 
 	_update_toggle_button()
 	_update_selector_visuals()
@@ -450,12 +470,12 @@ func _update_toggle_button() -> void:
 	var is_enabled = PrincessManager.is_curse_enabled(princess.id) if PrincessManager else false
 
 	if is_enabled:
-		toggle_button.text = "DISABLE"
+		toggle_button.text = "DISABLE %s" % princess.curse_name.to_upper()
 		_style_red_button(toggle_button)
 		preview_status_label.text = "ACTIVE"
 		preview_status_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.6))
 	else:
-		toggle_button.text = "ENABLE"
+		toggle_button.text = "ENABLE %s" % princess.curse_name.to_upper()
 		_style_pink_button(toggle_button)
 		preview_status_label.text = "INACTIVE"
 		preview_status_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
@@ -490,11 +510,12 @@ func _update_selector_visuals() -> void:
 			style.border_color = Color(0.4, 0.35, 0.45)
 
 		if is_selected:
+			# Use bright yellow border
 			style.border_width_left = 3
 			style.border_width_right = 3
 			style.border_width_top = 3
 			style.border_width_bottom = 3
-			style.border_color = style.border_color.lightened(0.3)
+			style.border_color = Color(1.0, 0.95, 0.2)  # Bright yellow
 
 		panel.add_theme_stylebox_override("panel", style)
 
@@ -506,10 +527,10 @@ func _update_multiplier_display() -> void:
 	var count = PrincessManager.get_enabled_curse_count()
 	if count == 0:
 		multiplier_label.text = "No curses active"
-		multiplier_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55))
+		multiplier_label.add_theme_color_override("font_color", Color.WHITE)
 	else:
-		var bonus = PrincessManager.get_total_bonus_percent()
-		multiplier_label.text = "%d curse%s active: +%d%% Points & Coins" % [count, "s" if count > 1 else "", bonus]
+		var total_mult = PrincessManager.get_total_bonus_multiplier()
+		multiplier_label.text = "%d curse%s active: %dx Points & Coins" % [count, "s" if count > 1 else "", total_mult]
 		multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 
 func _on_princess_selected(index: int) -> void:

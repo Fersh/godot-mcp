@@ -30,35 +30,70 @@ func _ready() -> void:
 	_update_difficulty_visibility()
 	_update_selection_display()
 
+	# Keep menu music playing
+	if SoundManager:
+		SoundManager.play_menu_music()
+
 func _build_ui() -> void:
 	"""Build the entire UI programmatically."""
-	# Background
+	# Dark background overlay
 	var bg = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0.08, 0.08, 0.1, 1.0)
 	add_child(bg)
 
-	# Main container
+	# Header panel (like shop/princesses)
+	var header = PanelContainer.new()
+	header.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	header.custom_minimum_size = Vector2(0, 95)
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = Color(0.06, 0.055, 0.09, 0.0)
+	header_style.border_width_bottom = 2
+	header_style.border_color = Color(0.15, 0.14, 0.2, 0.0)
+	header_style.content_margin_left = 60
+	header_style.content_margin_right = 60
+	header.add_theme_stylebox_override("panel", header_style)
+	add_child(header)
+
+	# Title in header
+	var title = Label.new()
+	title.text = "SELECT MODE"
+	title.set_anchors_preset(Control.PRESET_CENTER)
+	title.offset_left = -120
+	title.offset_right = 120
+	title.offset_top = 5
+	title.offset_bottom = 35
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
+	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	title.add_theme_constant_override("shadow_offset_x", 2)
+	title.add_theme_constant_override("shadow_offset_y", 2)
+	header.add_child(title)
+
+	# Back button (top left, like shop)
+	back_button = Button.new()
+	back_button.text = "< BACK"
+	back_button.offset_left = 100
+	back_button.offset_top = 25
+	back_button.offset_right = 190
+	back_button.offset_bottom = 70
+	back_button.pressed.connect(_on_back_pressed)
+	_style_back_button(back_button)
+	add_child(back_button)
+
+	# Main container (below header)
 	var main_container = VBoxContainer.new()
 	main_container.set_anchors_preset(Control.PRESET_CENTER)
+	main_container.offset_top = 50
 	main_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	main_container.grow_vertical = Control.GROW_DIRECTION_BOTH
 	main_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_container.add_theme_constant_override("separation", 25)
 	add_child(main_container)
-
-	# Title
-	var title = Label.new()
-	title.text = "SELECT MODE"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 32)
-	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
-	title.add_theme_color_override("font_shadow_color", Color(0.4, 0.3, 0.0, 0.8))
-	title.add_theme_constant_override("shadow_offset_x", 3)
-	title.add_theme_constant_override("shadow_offset_y", 3)
-	main_container.add_child(title)
 
 	# Mode selection (Endless / Challenge)
 	mode_container = HBoxContainer.new()
@@ -105,24 +140,13 @@ func _build_ui() -> void:
 	description_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	main_container.add_child(description_label)
 
-	# Button container
-	var btn_container = HBoxContainer.new()
-	btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	btn_container.add_theme_constant_override("separation", 20)
+	# Start button (same width as difficulty buttons)
+	var btn_container = CenterContainer.new()
 	main_container.add_child(btn_container)
 
-	# Back button
-	back_button = Button.new()
-	back_button.text = "BACK"
-	back_button.custom_minimum_size = Vector2(120, 50)
-	back_button.pressed.connect(_on_back_pressed)
-	_style_button(back_button, Color(0.4, 0.4, 0.45))
-	btn_container.add_child(back_button)
-
-	# Start button
 	start_button = Button.new()
 	start_button.text = "START"
-	start_button.custom_minimum_size = Vector2(150, 55)
+	start_button.custom_minimum_size = Vector2(300, 55)
 	start_button.pressed.connect(_on_start_pressed)
 	_style_button(start_button, Color(0.2, 0.75, 0.3))
 	btn_container.add_child(start_button)
@@ -223,6 +247,50 @@ func _style_button(btn: Button, color: Color) -> void:
 	if pixel_font:
 		btn.add_theme_font_override("font", pixel_font)
 	btn.add_theme_font_size_override("font_size", 14)
+
+func _style_back_button(btn: Button) -> void:
+	"""Style the back button like shop/princesses screens."""
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 4
+	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+	style_normal.content_margin_left = 16
+	style_normal.content_margin_right = 16
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 4
+	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+	style_hover.content_margin_left = 16
+	style_hover.content_margin_right = 16
+
+	btn.add_theme_stylebox_override("normal", style_normal)
+	btn.add_theme_stylebox_override("hover", style_hover)
+	btn.add_theme_stylebox_override("pressed", style_normal)
+	btn.add_theme_stylebox_override("focus", style_normal)
+
+	btn.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1))
+	btn.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	btn.add_theme_constant_override("shadow_offset_x", 2)
+	btn.add_theme_constant_override("shadow_offset_y", 2)
+
+	if pixel_font:
+		btn.add_theme_font_override("font", pixel_font)
+	btn.add_theme_font_size_override("font_size", 12)
 
 func _update_mode_buttons() -> void:
 	"""Update mode button styles based on selection."""

@@ -264,8 +264,13 @@ func play_click() -> void:
 # ============================================
 
 func play_menu_music() -> void:
-	"""Play main menu music (1. Stolen Future) - loops until game starts."""
+	"""Play main menu music (1. Stolen Future) - loops until game starts.
+	If menu music is already playing, this does nothing (prevents restart on scene change)."""
 	if GameSettings and not GameSettings.music_enabled:
+		return
+
+	# Don't restart if menu music is already playing
+	if current_music_state == MusicState.MENU and music_player.playing:
 		return
 
 	_stop_all_music()
