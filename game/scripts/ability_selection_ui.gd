@@ -10,11 +10,11 @@ var all_abilities_pool: Array[AbilityData] = []  # For slot machine effect
 var is_rolling: bool = false
 var roll_timer: float = 0.0
 var roll_duration: float = 1.0  # Total roll time
-var slots_settled: Array[bool] = [false, false, false]
-var slot_roll_timers: Array[float] = [0.0, 0.0, 0.0]
-var slot_settle_times: Array[float] = [0.6, 0.8, 1.0]  # When each slot settles (left to right)
+var slots_settled: Array[bool] = []
+var slot_roll_timers: Array[float] = []
+var slot_settle_times: Array[float] = []  # When each slot settles (left to right) - dynamically set
 var current_roll_speed: float = 0.05  # Time between ability changes during roll
-var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
+var roll_tick_timers: Array[float] = []
 
 # Particle effect containers for each card
 var particle_containers: Array[Control] = []
@@ -101,11 +101,17 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 	ability_buttons.clear()
 	particle_containers.clear()
 
-	# Reset slot machine state
+	# Reset slot machine state - dynamically sized based on ability count
 	is_rolling = true
 	roll_timer = 0.0
-	slots_settled = [false, false, false]
-	roll_tick_timers = [0.0, 0.0, 0.0]
+	slots_settled = []
+	roll_tick_timers = []
+	slot_settle_times = []
+	for i in abilities.size():
+		slots_settled.append(false)
+		roll_tick_timers.append(0.0)
+		# Stagger settle times: first card settles at 0.6s, subsequent cards 0.2s apart
+		slot_settle_times.append(0.6 + i * 0.2)
 
 	# Create buttons for each ability (start with random display)
 	for i in abilities.size():

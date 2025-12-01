@@ -16,10 +16,10 @@ var current_level: int = 1
 var is_rolling: bool = false
 var roll_timer: float = 0.0
 var roll_duration: float = 1.0
-var slots_settled: Array[bool] = [false, false, false]
-var slot_settle_times: Array[float] = [0.6, 0.8, 1.0]
+var slots_settled: Array[bool] = []
+var slot_settle_times: Array[float] = []  # Dynamically set based on ability count
 var current_roll_speed: float = 0.05
-var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
+var roll_tick_timers: Array[float] = []
 
 @onready var panel: PanelContainer
 @onready var title_label: Label
@@ -240,11 +240,17 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 		button.queue_free()
 	ability_buttons.clear()
 
-	# Reset slot machine state
+	# Reset slot machine state - dynamically sized based on ability count
 	is_rolling = true
 	roll_timer = 0.0
-	slots_settled = [false, false, false]
-	roll_tick_timers = [0.0, 0.0, 0.0]
+	slots_settled = []
+	roll_tick_timers = []
+	slot_settle_times = []
+	for i in abilities.size():
+		slots_settled.append(false)
+		roll_tick_timers.append(0.0)
+		# Stagger settle times: first card settles at 0.6s, subsequent cards 0.2s apart
+		slot_settle_times.append(0.6 + i * 0.2)
 
 	# Create cards
 	for i in abilities.size():
@@ -525,8 +531,14 @@ func _on_reroll_pressed() -> void:
 	# Restart the slot machine animation with new choices
 	is_rolling = true
 	roll_timer = 0.0
-	slots_settled = [false, false, false]
-	roll_tick_timers = [0.0, 0.0, 0.0]
+	# Reset arrays based on current choices count
+	slots_settled = []
+	roll_tick_timers = []
+	slot_settle_times = []
+	for i in current_choices.size():
+		slots_settled.append(false)
+		roll_tick_timers.append(0.0)
+		slot_settle_times.append(0.6 + i * 0.2)
 
 	# Disable ability buttons during rolling
 	for button in ability_buttons:

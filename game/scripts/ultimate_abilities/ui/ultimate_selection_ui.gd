@@ -21,10 +21,10 @@ var fire_update_timer: float = 0.0
 var is_rolling: bool = false
 var roll_timer: float = 0.0
 var roll_duration: float = 1.2  # Slightly longer for more drama
-var slots_settled: Array[bool] = [false, false, false]
-var slot_settle_times: Array[float] = [0.7, 0.9, 1.2]
+var slots_settled: Array[bool] = []
+var slot_settle_times: Array[float] = []  # Dynamically set based on ability count
 var current_roll_speed: float = 0.04
-var roll_tick_timers: Array[float] = [0.0, 0.0, 0.0]
+var roll_tick_timers: Array[float] = []
 
 @onready var panel: PanelContainer
 @onready var title_label: Label
@@ -171,11 +171,17 @@ func show_choices(ultimates: Array, character_class_id: String) -> void:
 		button.queue_free()
 	ability_buttons.clear()
 
-	# Reset slot machine state
+	# Reset slot machine state - dynamically sized based on ability count
 	is_rolling = true
 	roll_timer = 0.0
-	slots_settled = [false, false, false]
-	roll_tick_timers = [0.0, 0.0, 0.0]
+	slots_settled = []
+	roll_tick_timers = []
+	slot_settle_times = []
+	for i in ultimates.size():
+		slots_settled.append(false)
+		roll_tick_timers.append(0.0)
+		# Stagger settle times: first card settles at 0.7s, subsequent cards 0.25s apart
+		slot_settle_times.append(0.7 + i * 0.25)
 
 	# Create cards
 	for i in ultimates.size():
