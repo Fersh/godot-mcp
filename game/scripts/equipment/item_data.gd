@@ -163,9 +163,12 @@ func get_stat_description() -> String:
 func can_be_equipped_by(character_id: String) -> bool:
 	# Check weapon type restrictions
 	if slot == Slot.WEAPON:
+		# Beast cannot use any weapons - fights with claws
+		if character_id == "beast":
+			return false
 		if weapon_type == WeaponType.MELEE:
-			# Swords for knight & barbarian, spears for monk & beast
-			return character_id in ["knight", "beast", "monk", "barbarian"]
+			# Swords for knight & barbarian, spears for monk
+			return character_id in ["knight", "monk", "barbarian"]
 		elif weapon_type == WeaponType.RANGED:
 			return character_id == "archer"
 		elif weapon_type == WeaponType.MAGIC:

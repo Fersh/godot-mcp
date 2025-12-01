@@ -319,6 +319,9 @@ var conductor_bonus: int = 0  # Extra lightning chain targets
 var has_blood_trail: bool = false
 var blood_trail_duration: float = 0.0  # How long blood pools last
 
+var has_toxic_traits: bool = false
+var toxic_traits_damage: float = 0.0  # Damage per tick from poison pools
+
 # ============================================
 # NEW SUMMON TYPES
 # ============================================
@@ -634,6 +637,8 @@ func reset() -> void:
 	conductor_bonus = 0
 	has_blood_trail = false
 	blood_trail_duration = 0.0
+	has_toxic_traits = false
+	toxic_traits_damage = 0.0
 
 	# Reset new summon types
 	has_chicken_summon = false
@@ -1478,6 +1483,9 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.BLOOD_TRAIL:
 				has_blood_trail = true
 				blood_trail_duration = value
+			AbilityData.EffectType.TOXIC_TRAITS:
+				has_toxic_traits = true
+				toxic_traits_damage = value
 
 			# Summon Types
 			AbilityData.EffectType.CHICKEN_SUMMON:
@@ -1623,6 +1631,23 @@ func spawn_blood_pool(position: Vector2) -> void:
 		pool.global_position = position
 		pool.lifetime = blood_trail_duration
 		pool.damage_per_tick = 5.0 * get_summon_damage_multiplier()
+		player.get_parent().add_child(pool)
+
+func spawn_toxic_pool(position: Vector2) -> void:
+	"""Spawn a poison pool at the given position that damages enemies."""
+	if not has_toxic_traits:
+		return
+
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var poison_pool_scene = load("res://scenes/abilities/poison_pool.tscn")
+	if poison_pool_scene:
+		var pool = poison_pool_scene.instantiate()
+		pool.global_position = position
+		pool.lifetime = 3.0  # Fixed 3 second duration
+		pool.damage_per_tick = toxic_traits_damage * get_summon_damage_multiplier()
 		player.get_parent().add_child(pool)
 
 func get_summon_damage_multiplier() -> float:

@@ -277,7 +277,7 @@ static func create_beast() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Bloodlust"
-	data.passive_description = "Heal 10% of damage dealt on critical hits"
+	data.passive_description = "Heal 5% of crit damage"
 
 	return data
 

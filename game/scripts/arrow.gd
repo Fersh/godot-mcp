@@ -256,6 +256,12 @@ func _on_body_entered(body: Node2D) -> void:
 			if JuiceManager:
 				JuiceManager.shake_crit()
 
+		# Check if player has ability-boosted attacks (e.g. Monster Energy)
+		var player = get_tree().get_first_node_in_group("player")
+		if player and player.has_method("has_ability_boosted_attacks"):
+			if player.has_ability_boosted_attacks() and body.has_method("mark_ability_kill"):
+				body.mark_ability_kill()
+
 		# Deal damage
 		body.take_damage(final_damage, is_crit)
 
@@ -266,7 +272,6 @@ func _on_body_entered(body: Node2D) -> void:
 		_apply_elemental_effects(body)
 
 		# Notify player of hit (for Heartseeker passive and other on-hit effects)
-		var player = get_tree().get_first_node_in_group("player")
 		if player:
 			if player.has_method("on_arrow_hit_enemy"):
 				player.on_arrow_hit_enemy(body, is_crit)

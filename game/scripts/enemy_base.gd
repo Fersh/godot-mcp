@@ -416,9 +416,19 @@ func spawn_death_particles() -> void:
 		particles.set_crit_kill(died_from_crit)
 
 	# Flying head effect for ability kills
-	if died_from_ability and particles.has_method("set_ability_kill") and sprite:
-		var frame_width = sprite.texture.get_width() / COLS_PER_ROW
-		var frame_height = sprite.texture.get_height() / 8  # Assume 8 rows
+	if died_from_ability and particles.has_method("set_ability_kill") and sprite and sprite.texture:
+		# Calculate frame size based on sprite properties
+		var frame_width: float
+		var frame_height: float
+		if sprite.hframes > 1 or sprite.vframes > 1:
+			# Sprite has hframes/vframes set
+			frame_width = sprite.texture.get_width() / float(sprite.hframes)
+			frame_height = sprite.texture.get_height() / float(sprite.vframes)
+		else:
+			# Fallback to COLS_PER_ROW and row count
+			frame_width = sprite.texture.get_width() / float(COLS_PER_ROW)
+			var num_rows = FRAME_COUNTS.size()
+			frame_height = sprite.texture.get_height() / float(num_rows)
 		particles.set_ability_kill(sprite.texture, sprite.frame, Vector2(frame_width, frame_height))
 
 	get_parent().add_child(particles)

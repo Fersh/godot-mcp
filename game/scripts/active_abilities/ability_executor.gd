@@ -976,6 +976,10 @@ func _execute_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
 	else:
 		_start_periodic_damage(player, ability)
 
+	# Start rapid left-right attack animation for the duration
+	if player.has_method("start_bladestorm_animation"):
+		player.start_bladestorm_animation(ability.duration)
+
 	_play_sound("bladestorm")
 	_screen_shake("large")
 	_impact_pause_large()  # Legendary juice
@@ -2078,21 +2082,26 @@ func _create_fire_sprite() -> Node2D:
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	var frames = SpriteFrames.new()
-	frames.set_animation_speed("default", 10.0)
+	frames.set_animation_speed("default", 15.0)
 	frames.set_animation_loop("default", true)
 
-	# Try to load fire effect
-	var fire_path = "res://assets/sprites/effects/nyk/Fireball_spritesheet.png"
-	if ResourceLoader.exists(fire_path):
-		var texture = load(fire_path) as Texture2D
-		if texture:
-			var img = texture.get_image()
-			var frame_width = img.get_width() / 6
-			var frame_height = img.get_height()
-			for i in range(6):
-				var frame_img = Image.create(frame_width, frame_height, false, img.get_format())
-				frame_img.blit_rect(img, Rect2i(i * frame_width, 0, frame_width, frame_height), Vector2i.ZERO)
-				frames.add_frame("default", ImageTexture.create_from_image(frame_img))
+	# Load individual fire frames from firefx001
+	var base_path = "res://assets/sprites/effects/35/firefx/firefx001/"
+	var loaded_frames = 0
+	for i in range(10, 24):  # fire_fx_00110 to fire_fx_00123
+		var frame_path = base_path + "fire_fx_001%d.png" % i
+		if ResourceLoader.exists(frame_path):
+			var texture = load(frame_path)
+			if texture:
+				frames.add_frame("default", texture)
+				loaded_frames += 1
+
+	# Fallback: draw procedural fire if no frames loaded
+	if loaded_frames == 0:
+		var placeholder = PlaceholderTexture2D.new()
+		placeholder.size = Vector2(32, 48)
+		frames.add_frame("default", placeholder)
+		sprite.modulate = Color(1.0, 0.5, 0.1, 0.8)  # Orange tint
 
 	sprite.sprite_frames = frames
 	sprite.play("default")

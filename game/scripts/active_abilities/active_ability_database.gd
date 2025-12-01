@@ -197,7 +197,7 @@ static func _create_cleave() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		8.0  # 8 second cooldown
-	).with_damage(18.0, 1.3).with_aoe(160.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon5.png")  # Buffed
+	).with_damage(36.0, 1.3).with_aoe(160.0).with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon5.png")  # Buffed 2x
 
 static func _create_shield_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -208,7 +208,7 @@ static func _create_shield_bash() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.DIRECTION,
 		10.0
-	).with_damage(10.0, 1.0).with_stun(1.0).with_range(60.0).with_knockback(150.0).with_icon("res://assets/icons/abilities/shield_bash.png")
+	).with_damage(20.0, 1.0).with_stun(1.0).with_range(60.0).with_knockback(150.0).with_icon("res://assets/icons/abilities/shield_bash.png")  # Buffed 2x
 
 static func _create_ground_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -219,7 +219,7 @@ static func _create_ground_slam() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		12.0
-	).with_damage(12.0, 1.0).with_aoe(100.0).with_slow(0.5, 2.0).with_icon("res://assets/icons/abilities/ground_slam.png")
+	).with_damage(24.0, 1.0).with_aoe(100.0).with_slow(0.5, 2.0).with_icon("res://assets/icons/abilities/ground_slam.png")  # Buffed 2x
 
 static func _create_spinning_attack() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -230,7 +230,7 @@ static func _create_spinning_attack() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		6.0
-	).with_damage(12.0, 1.0).with_aoe(100.0).with_icon("res://assets/icons/abilities/spinning_attack.png")  # Buffed
+	).with_damage(24.0, 1.0).with_aoe(100.0).with_icon("res://assets/icons/abilities/spinning_attack.png")  # Buffed 2x
 
 static func _create_dash_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -241,7 +241,7 @@ static func _create_dash_strike() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.DIRECTION,
 		8.0
-	).with_damage(12.0, 1.0).with_range(200.0).with_knockback(100.0).with_movement().with_icon("res://assets/sprites/icons/swordsmanskills/PNG/Icon40.png")
+	).with_damage(24.0, 1.0).with_range(200.0).with_knockback(100.0).with_movement().with_icon("res://assets/sprites/icons/swordsmanskills/PNG/Icon40.png")  # Buffed 2x
 
 # ============================================
 # MELEE ABILITY CREATORS - RARE
@@ -295,7 +295,7 @@ static func _create_battle_cry() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"battle_cry",
 		"Battle Cry",
-		"Release a warcry boosting damage +30% for 5s. Frightens weak enemies.",
+		"Release a warcry boosting damage +30% for 5s.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
@@ -374,7 +374,7 @@ static func _create_power_shot() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		8.0
-	).with_damage(25.0, 1.5).with_projectiles(1, 600.0).with_range(500.0).with_icon("res://assets/icons/abilities/power_shot.png")
+	).with_damage(50.0, 1.5).with_projectiles(1, 600.0).with_range(500.0).with_icon("res://assets/icons/abilities/power_shot.png")  # Buffed 2x
 
 static func _create_explosive_arrow() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -385,7 +385,7 @@ static func _create_explosive_arrow() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		10.0
-	).with_damage(20.0, 1.2).with_aoe(60.0).with_projectiles(1, 450.0).with_icon("res://assets/icons/abilities/explosive_arrow.png")
+	).with_damage(40.0, 1.2).with_aoe(60.0).with_projectiles(1, 450.0).with_icon("res://assets/icons/abilities/explosive_arrow.png")  # Buffed 2x
 
 static func _create_multi_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -396,7 +396,7 @@ static func _create_multi_shot() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.DIRECTION,
 		9.0
-	).with_damage(8.0, 0.7).with_projectiles(5, 480.0).with_range(400.0).with_icon("res://assets/icons/abilities/multi_shot.png")
+	).with_damage(16.0, 0.7).with_projectiles(5, 480.0).with_range(400.0).with_icon("res://assets/icons/abilities/multi_shot.png")  # Buffed 2x
 
 static func _create_quick_roll() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -551,7 +551,7 @@ static func _create_fireball() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		8.0
-	).with_damage(18.0, 1.2).with_aoe(50.0).with_projectiles(1, 400.0).with_icon("res://assets/icons/abilities/fireball.png")
+	).with_damage(36.0, 1.2).with_aoe(50.0).with_projectiles(1, 400.0).with_icon("res://assets/icons/abilities/fireball.png")  # Buffed 2x
 
 static func _create_frost_nova() -> ActiveAbilityData:
 	# Upgraded to Rare - merged with Throw Net for definitive AOE CC
@@ -585,7 +585,7 @@ static func _create_throwing_bomb() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
 		10.0
-	).with_damage(15.0, 1.0).with_aoe(70.0).with_projectiles(1, 350.0).with_icon("res://assets/icons/abilities/throwing_bomb.png")
+	).with_damage(30.0, 1.0).with_aoe(70.0).with_projectiles(1, 350.0).with_icon("res://assets/icons/abilities/throwing_bomb.png")  # Buffed 2x
 
 static func _create_blinding_flash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -692,7 +692,7 @@ static func _create_thunderstorm() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		32.0
-	).with_damage(15.0, 1.5).with_aoe(500.0).with_duration(3.0).with_stun(0.3).with_icon("res://assets/icons/abilities/thunderstorm.png")
+	).with_damage(100.0, 2.0).with_aoe(500.0).with_duration(4.0).with_stun(0.5).with_icon("res://assets/icons/abilities/thunderstorm.png")
 
 static func _create_summon_golem() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -746,7 +746,7 @@ static func _create_floor_is_lava() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"floor_is_lava",
 		"The Floor is Lava",
-		"Convert the ground to magma for 5 seconds. Enemies take continuous burn damage.",
+		"Convert the ground to magma for 5 seconds.",
 		ActiveAbilityData.Rarity.LEGENDARY,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -766,13 +766,13 @@ static func _create_bear_trap() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		8.0
-	).with_damage(20.0, 1.0).with_stun(2.0).with_icon("res://assets/icons/abilities/bear_trap.png")
+	).with_damage(40.0, 1.0).with_stun(2.0).with_icon("res://assets/icons/abilities/bear_trap.png")  # Buffed 2x
 
 static func _create_glue_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"glue_bomb",
 		"Glue Bomb",
-		"Throw a sticky bomb creating a tar zone. Enemies move at 20% speed for 4 seconds.",
+		"Throw a sticky bomb creating a tar zone for 4 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
@@ -798,7 +798,7 @@ static func _create_smoke_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"smoke_bomb",
 		"Smoke Bomb",
-		"Become invisible for 2 seconds. Enemies lose aggro. Next attack deals 2x damage.",
+		"Become invisible for 2 seconds with 2x damage on next attack.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
@@ -895,7 +895,7 @@ static func _create_summon_party() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"summon_party",
 		"Summon Party",
-		"All your summons gain +100% damage and attack speed for 5 seconds. Party time!",
+		"All your summons gain +100% damage and attack speed for 5 seconds.",
 		ActiveAbilityData.Rarity.LEGENDARY,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
@@ -906,7 +906,7 @@ static func _create_panic_button() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"panic_button",
 		"Panic Button",
-		"Push all enemies away and gain 3 seconds of invulnerability. Long cooldown because you panicked.",
+		"Push all enemies away and gain 3 seconds of invulnerability.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -928,7 +928,7 @@ static func _create_safe_space() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"safe_space",
 		"Safe Space",
-		"Create a shield bubble. You can't attack out, but nothing can attack in for 3 seconds.",
+		"Create a shield bubble for 3 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
@@ -976,7 +976,7 @@ static func _create_monster_energy() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"monster_energy",
 		"Monster Energy",
-		"+100% attack speed for 5 seconds. Crash afterward: -30% attack speed for 3 seconds.",
+		"+100% attack speed for 5 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
@@ -1013,7 +1013,7 @@ static func _create_repulsive() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"repulsive",
 		"Repulsive",
-		"Constantly push enemies away from you for 4 seconds. Very repulsive indeed.",
+		"Constantly push enemies away from you for 4 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -1024,7 +1024,7 @@ static func _create_dj_drop() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dj_drop",
 		"DJ Drop",
-		"Drop a sick beat. Enemies are forced to dance (stunned) for 1.5 seconds. They look ridiculous.",
+		"Drop a sick beat stunning enemies for 1.5 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,

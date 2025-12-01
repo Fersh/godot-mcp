@@ -14,7 +14,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"blazing_trail",
 			"Blazing Trail",
-			"Leave a trail of fire behind you as you move. Trail lasts 2s and burns enemies.",
+			"Leave a trail of fire behind you as you move.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BLAZING_TRAIL, value = 5.0}]  # damage per tick
@@ -24,7 +24,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"toxic_traits",
 			"Toxic Traits",
-			"Leave pools of poison where you walk. Enemies take damage over time standing in them.",
+			"Leave pools of poison where you walk.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.TOXIC_TRAITS, value = 3.0}]  # damage per tick
@@ -58,7 +58,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"wallflower",
 			"Wallflower",
-			"Standing still for 2 seconds makes you invisible. First attack from invis crits.",
+			"Standing still for 2 seconds makes you invisible.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.WALLFLOWER, value = 2.0}]  # seconds to activate
@@ -72,7 +72,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"friendly_fire",
 			"Friendly Fire",
-			"10% of damage enemies deal hurts other enemies too. Chaos reigns.",
+			"10% of damage enemies deal hurts other enemies too.",
 			AbilityData.Rarity.MYTHIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.FRIENDLY_FIRE, value = 0.10}]  # 10% damage transfer
@@ -82,7 +82,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"built_different",
 			"Built Different",
-			"Gain a random stat boost every 30 seconds. Lose the previous one. You're just built different.",
+			"Gain a random stat boost every 30 seconds.",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.BUILT_DIFFERENT, value = 30.0}]  # seconds between changes
@@ -126,7 +126,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"lucky_number_7",
 			"Lucky Number 7",
-			"Every 7th hit is automatically a critical hit. Count carefully.",
+			"Every 7th hit is automatically a critical hit.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.LUCKY_NUMBER_7, value = 7.0}]  # every 7th hit
@@ -136,7 +136,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"risk_reward",
 			"Risk/Reward",
-			"+5% permanent damage (this run) each time you drop below 10% HP. High risk, high reward.",
+			"+5% permanent damage (this run) each time you drop below 10% HP.",
 			AbilityData.Rarity.MYTHIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.RISK_REWARD, value = 0.05}]  # 5% per trigger
@@ -150,7 +150,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"emotional_support",
 			"Emotional Support Animal",
-			"A small creature follows you, picking up XP gems automatically. Good boy.",
+			"A small creature follows you, picking up XP gems automatically.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.EMOTIONAL_SUPPORT, value = 1.0}]
@@ -160,7 +160,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"haunted",
 			"Haunted",
-			"Every 10th kill spawns a ghost that fights for you for 5 seconds. Spooky.",
+			"Every 10th kill spawns a ghost that fights for you for 5 seconds.",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 10.0}]  # every 10 kills
@@ -170,7 +170,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"survivors_guilt",
 			"Survivor's Guilt",
-			"When a summon dies, gain +25% damage for 10 seconds. Avenge them.",
+			"When a summon dies, gain +25% damage for 10 seconds.",
 			AbilityData.Rarity.MYTHIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.SURVIVORS_GUILT, value = 0.25}]  # 25% damage boost
@@ -184,7 +184,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"getting_warmed_up",
 			"Getting Warmed Up",
-			"Gain +5% attack speed every 30 seconds, stacking infinitely. Patience pays off.",
+			"Gain +5% attack speed every 30 seconds, stacking infinitely.",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.GETTING_WARMED_UP, value = 0.05}]  # 5% per stack
@@ -194,7 +194,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"intimidating_presence",
 			"Intimidating Presence",
-			"Enemies within close range have 10% chance to flee when they first see you. Terrifying.",
+			"Enemies within close range have 10% chance to flee when they first see you.",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.INTIMIDATING_PRESENCE, value = 0.10}]  # 10% flee chance

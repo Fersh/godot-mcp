@@ -15,7 +15,7 @@ func _setup_sprite() -> void:
 	sprite.scale = Vector2(effect_scale, effect_scale)
 	# Offset sprite upward so the lightning strike point (bottom of sprite) lands on the target
 	# Sprite is 64x128, scaled by effect_scale, so offset by ~half the scaled height
-	sprite.offset = Vector2(0, -24)  # Move sprite up so bottom aligns with position (adjusted 40px lower)
+	sprite.offset = Vector2(0, -44)  # Move sprite up so bottom aligns with position (20px higher)
 	add_child(sprite)
 
 	var frames = SpriteFrames.new()

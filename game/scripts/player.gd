@@ -37,6 +37,10 @@ var temp_speed_timer: float = 0.0
 var temp_attack_speed_boost: float = 0.0
 var temp_attack_speed_timer: float = 0.0
 
+# Toxic Traits trail spawning
+var toxic_trail_timer: float = 0.0
+const TOXIC_TRAIL_INTERVAL: float = 0.4  # Spawn pool every 0.4 seconds while moving
+
 # Active buffs tracking for UI {buff_id: {timer: float, duration: float, name: String, description: String, color: Color}}
 var active_buffs: Dictionary = {}
 signal buff_changed(buffs: Dictionary)
@@ -159,6 +163,12 @@ var facing_right: bool = true
 # Melee attack hitbox
 var melee_hitbox_active: bool = false
 var melee_hit_enemies: Array = []  # Track enemies hit this attack
+
+# Bladestorm animation state
+var is_bladestorming: bool = false
+var bladestorm_timer: float = 0.0
+var bladestorm_flip_timer: float = 0.0
+const BLADESTORM_FLIP_SPEED: float = 0.15  # Flip direction every 0.15 seconds
 
 # Death state
 var is_dead: bool = false
@@ -739,6 +749,19 @@ func _physics_process(delta: float) -> void:
 		elif active_buffs.has("attack_speed_boost"):
 			active_buffs["attack_speed_boost"].timer = temp_attack_speed_timer
 
+	# Bladestorm animation - rapid left/right attacking
+	if is_bladestorming:
+		bladestorm_timer -= delta
+		bladestorm_flip_timer += delta
+		# Flip direction rapidly for frantic attack animation
+		if bladestorm_flip_timer >= BLADESTORM_FLIP_SPEED:
+			bladestorm_flip_timer = 0.0
+			sprite.flip_h = not sprite.flip_h
+			facing_right = not facing_right
+		# End bladestorm when timer expires
+		if bladestorm_timer <= 0:
+			stop_bladestorm_animation()
+
 	# Track conditional ability buffs
 	if AbilityManager:
 		var is_standing_still = velocity.length() < 5.0
@@ -943,6 +966,16 @@ func _physics_process(delta: float) -> void:
 	# Update Mage Arcane Focus stacks
 	if has_arcane_focus:
 		_update_arcane_focus(delta, direction.length() < 0.1)
+
+	# Toxic Traits - spawn poison pools while moving
+	if AbilityManager and AbilityManager.has_toxic_traits:
+		if direction.length() > 0.1:  # Only spawn when actually moving
+			toxic_trail_timer += delta
+			if toxic_trail_timer >= TOXIC_TRAIL_INTERVAL:
+				toxic_trail_timer = 0.0
+				AbilityManager.spawn_toxic_pool(global_position)
+		else:
+			toxic_trail_timer = 0.0  # Reset timer when standing still
 
 	# Keep player within dynamic arena bounds
 	position.x = clamp(position.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
@@ -1354,6 +1387,9 @@ func perform_melee_attack() -> void:
 
 					# Apply damage
 					if enemy.has_method("take_damage"):
+						# Mark as ability kill if attack speed boost is active (e.g. Monster Energy)
+						if has_ability_boosted_attacks() and enemy.has_method("mark_ability_kill"):
+							enemy.mark_ability_kill()
 						enemy.take_damage(final_damage, is_crit)
 
 					# Apply Retribution stun (longer stun on first hit after taking damage)
@@ -1444,6 +1480,9 @@ func _perform_extra_swing() -> void:
 							is_crit = true
 							final_damage *= AbilityManager.get_crit_damage_multiplier()
 					if enemy.has_method("take_damage"):
+						# Mark as ability kill if attack speed boost is active (e.g. Monster Energy)
+						if has_ability_boosted_attacks() and enemy.has_method("mark_ability_kill"):
+							enemy.mark_ability_kill()
 						enemy.take_damage(final_damage, is_crit)
 
 # Barbarian Spin Attack - 360 degree AOE attack
@@ -1493,6 +1532,9 @@ func perform_spin_attack() -> void:
 
 				# Apply damage
 				if enemy.has_method("take_damage"):
+					# Mark as ability kill if attack speed boost is active (e.g. Monster Energy)
+					if has_ability_boosted_attacks() and enemy.has_method("mark_ability_kill"):
+						enemy.mark_ability_kill()
 					enemy.take_damage(final_damage, is_crit)
 
 				# Apply stagger
@@ -1572,6 +1614,9 @@ func perform_assassin_melee_attack() -> void:
 
 					# Apply damage
 					if enemy.has_method("take_damage"):
+						# Mark as ability kill if attack speed boost is active (e.g. Monster Energy)
+						if has_ability_boosted_attacks() and enemy.has_method("mark_ability_kill"):
+							enemy.mark_ability_kill()
 						enemy.take_damage(final_damage, is_crit)
 
 					# Stagger on hit
@@ -1782,6 +1827,9 @@ func _shadow_dance_strike(target_enemy: Node2D) -> void:
 
 	# Apply damage
 	if target_enemy.has_method("take_damage"):
+		# Mark as ability kill if attack speed boost is active (e.g. Monster Energy)
+		if has_ability_boosted_attacks() and target_enemy.has_method("mark_ability_kill"):
+			target_enemy.mark_ability_kill()
 		target_enemy.take_damage(final_damage, is_crit)
 
 	# Stagger
@@ -1915,6 +1963,11 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 		# Check if disappear animation finished
 		if animation_frame >= frame_counts.get(row_disappear, 8) - 1:
 			is_playing_disappear = false
+	elif is_bladestorming:
+		# Bladestorm rapid attack animation - use attack row and flip rapidly
+		target_row = row_attack
+		is_attacking = true  # Keep attacking state
+		# Don't end attack animation during bladestorm - let it loop
 	elif is_attacking:
 		# Barbarian spin attack
 		if is_spin_attacking and row_spin_attack >= 0:
@@ -2384,6 +2437,19 @@ func apply_damage_boost(multiplier: float, duration: float) -> void:
 func get_damage_boost() -> float:
 	"""Get the current damage boost multiplier."""
 	return damage_boost_multiplier if damage_boost_timer > 0 else 1.0
+
+func start_bladestorm_animation(duration: float) -> void:
+	"""Start the bladestorm rapid attack animation."""
+	is_bladestorming = true
+	bladestorm_timer = duration
+	bladestorm_flip_timer = 0.0
+	is_attacking = true  # Keep in attack state
+
+func stop_bladestorm_animation() -> void:
+	"""Stop the bladestorm animation."""
+	is_bladestorming = false
+	bladestorm_timer = 0.0
+	is_attacking = false
 
 func get_elemental_tint() -> Color:
 	"""Get tint color based on active elemental effects."""
@@ -2864,6 +2930,10 @@ func apply_speed_boost(multiplier: float, duration: float) -> void:
 func apply_attack_speed_boost(multiplier: float, duration: float) -> void:
 	"""Apply an attack speed boost (wrapper for ultimate abilities)."""
 	apply_temporary_attack_speed_boost(multiplier - 1.0, duration)
+
+func has_ability_boosted_attacks() -> bool:
+	"""Check if an ability is actively boosting auto-attacks (e.g. Monster Energy)."""
+	return temp_attack_speed_timer > 0
 
 func apply_damage_reduction(percent: float, duration: float) -> void:
 	"""Apply temporary damage reduction."""

@@ -9,6 +9,8 @@ var is_ability_kill: bool = false  # From active abilities
 var flying_head: Node2D = null  # The flying head sprite
 var head_velocity: Vector2 = Vector2.ZERO
 var head_rotation_speed: float = 0.0
+var head_on_ground: bool = false  # Head has landed
+var head_ground_y: float = 0.0  # Y position where head lands
 var enemy_sprite_texture: Texture2D = null  # Store the enemy's texture for head clipping
 var enemy_sprite_frame: int = 0
 var enemy_frame_size: Vector2 = Vector2(96, 96)  # Default frame size
@@ -41,11 +43,13 @@ func set_ability_kill(enemy_texture: Texture2D, frame: int, frame_size: Vector2)
 	enemy_sprite_texture = enemy_texture
 	enemy_sprite_frame = frame
 	enemy_frame_size = frame_size
-
 	# 35% chance for flying head on ability kills
 	if randf() < 0.35 and enemy_sprite_texture != null:
 		spawn_flying_head()
 		spawn_ability_kill_blood()
+		# Blood splatter on screen/camera
+		if BloodSplatter:
+			BloodSplatter.spawn_splatter(randi_range(3, 6))
 		# Trigger slowmo for dramatic effect
 		if JuiceManager:
 			JuiceManager.hitstop_medium()
@@ -59,13 +63,15 @@ func set_ability_kill(enemy_texture: Texture2D, frame: int, frame_size: Vector2)
 func spawn_flying_head() -> void:
 	"""Spawn a clipped head region that flies off with rotation."""
 	if enemy_sprite_texture == null:
+		print("ERROR: No texture for flying head!")
 		return
 
 	flying_head = Node2D.new()
 	flying_head.name = "FlyingHead"
+	flying_head.z_index = 100  # Render above everything
 	add_child(flying_head)
 
-	# Create sprite for the head (top 30% of the frame)
+	# Create sprite for the head (top portion of the frame)
 	var head_sprite = Sprite2D.new()
 	head_sprite.texture = enemy_sprite_texture
 	head_sprite.centered = true
@@ -75,20 +81,44 @@ func spawn_flying_head() -> void:
 	var frame_x = (enemy_sprite_frame % cols) * int(enemy_frame_size.x)
 	var frame_y = (enemy_sprite_frame / cols) * int(enemy_frame_size.y)
 
-	# Clip to top 35% of frame (the head area)
-	var head_height = enemy_frame_size.y * 0.35
+	# Use top 55% of frame for head (to avoid clipping)
+	var head_height = enemy_frame_size.y * 0.55
 	head_sprite.region_enabled = true
 	head_sprite.region_rect = Rect2(frame_x, frame_y, enemy_frame_size.x, head_height)
 	head_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# Keep original size (no scaling)
 
 	flying_head.add_child(head_sprite)
 
 	# Position slightly above death position
-	flying_head.position = Vector2(0, -enemy_frame_size.y * 0.3)
+	flying_head.position = Vector2(0, -enemy_frame_size.y * 0.5)
 
-	# Random trajectory - mostly upward and sideways
-	head_velocity = Vector2(randf_range(-300, 300), randf_range(-450, -250))
-	head_rotation_speed = randf_range(-15, 15)  # Radians per second
+	# Reset head state
+	head_on_ground = false
+	head_ground_y = randf_range(20, 60)  # Where the head will land
+
+	# Get viewport size to calculate distance
+	var viewport_size = Vector2(1152, 648)  # Default, will try to get actual
+	if get_viewport():
+		viewport_size = get_viewport().get_visible_rect().size
+
+	# Calculate target distance (25% to 75% of screen width)
+	var min_distance = viewport_size.x * 0.25
+	var max_distance = viewport_size.x * 0.75
+	var target_distance = randf_range(min_distance, max_distance)
+
+	# Pick random direction (left or right)
+	var direction = 1.0 if randf() > 0.5 else -1.0
+
+	# Calculate velocity needed to travel that distance with gravity
+	# Using projectile motion: distance = v0x * t, and we want it to arc nicely
+	# With higher gravity, we need more initial velocity
+	var flight_time = randf_range(0.8, 1.5)  # Time to reach ground
+	var horizontal_speed = target_distance / flight_time
+	var vertical_speed = -400 - randf_range(0, 200)  # Strong upward launch
+
+	head_velocity = Vector2(horizontal_speed * direction, vertical_speed)
+	head_rotation_speed = randf_range(-15, 15) * direction  # Fast spin in direction of travel
 
 	# Add blood trail particles attached to head
 	spawn_head_blood_trail()
@@ -239,38 +269,60 @@ func _process(delta: float) -> void:
 
 	# Update flying head physics
 	if flying_head != null and is_instance_valid(flying_head):
-		# Apply gravity
-		head_velocity.y += 600 * delta
-		# Apply friction
-		head_velocity.x *= 0.98
-		# Move
-		flying_head.position += head_velocity * delta
-		# Rotate
-		flying_head.rotation += head_rotation_speed * delta
+		if not head_on_ground:
+			# Strong gravity for realistic arc
+			head_velocity.y += 800 * delta
+			# Slight air friction
+			head_velocity.x *= 0.995
+			# Move
+			flying_head.position += head_velocity * delta
+			# Rotate while flying
+			flying_head.rotation += head_rotation_speed * delta
 
-		# Spawn blood trail while flying upward
-		if head_velocity.y < 100 and randf() < 0.4:
-			var p = BloodParticle.new()
-			p.pos = flying_head.position
-			p.vel = Vector2(randf_range(-80, 80), randf_range(-50, 100))
-			p.size = float(randi_range(2, 5))
-			p.color = Color(0.85, 0.08, 0.08, 1.0)
-			p.max_lifetime = randf_range(5.0, 10.0)
-			p.lifetime = p.max_lifetime
-			p.ground_y = flying_head.position.y + randf_range(40, 100)
-			particles.append(p)
+			# Spawn blood trail while moving fast
+			if head_velocity.length() > 50 and randf() < 0.4:
+				var p = BloodParticle.new()
+				p.pos = flying_head.position
+				p.vel = Vector2(randf_range(-80, 80), randf_range(-50, 30))
+				p.size = float(randi_range(2, 6))
+				p.color = Color(0.85, 0.08, 0.08, 1.0)
+				p.max_lifetime = randf_range(8.0, 15.0)
+				p.lifetime = p.max_lifetime
+				p.ground_y = flying_head.position.y + randf_range(20, 60)
+				particles.append(p)
 
-		# Remove head when it falls below screen
-		if flying_head.position.y > 200:
-			flying_head.queue_free()
-			flying_head = null
+			# Check if head hit the ground
+			if flying_head.position.y >= head_ground_y:
+				flying_head.position.y = head_ground_y
+				head_on_ground = true
+				head_velocity = Vector2.ZERO
+				# Slow down rotation when landed
+				head_rotation_speed *= 0.1
+
+				# Create blood pool under the head
+				var pool = BloodPool.new()
+				pool.pos = flying_head.position
+				pool.size = float(randi_range(12, 20))
+				pool.color = Color(0.6, 0.03, 0.03, 0.95)
+				pool.lifetime = randf_range(18.0, 28.0)
+				blood_pools.append(pool)
+		else:
+			# Head is on ground - just slowly stop rotating
+			head_rotation_speed *= 0.95
+			flying_head.rotation += head_rotation_speed * delta
+			# Head stays visible - no fading, no removal based on time
+			# It will be cleaned up when the whole death_particles node is freed
 
 	queue_redraw()
 
-	# Remove when all particles faded AND all pools gone AND head is gone
+	# Remove when all particles faded AND all pools gone
+	# Head is cleaned up with pools (stays as long as blood exists)
 	var all_particles_done = particles.is_empty() or particles.all(func(p): return p.lifetime <= 0)
-	var head_done = flying_head == null or not is_instance_valid(flying_head)
-	if all_particles_done and blood_pools.is_empty() and head_done:
+	if all_particles_done and blood_pools.is_empty():
+		# Clean up head when blood is gone
+		if flying_head != null and is_instance_valid(flying_head):
+			flying_head.queue_free()
+			flying_head = null
 		queue_free()
 
 func _draw() -> void:

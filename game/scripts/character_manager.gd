@@ -154,9 +154,9 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["retribution_duration"] = 2.0
 			bonuses["retribution_stun_duration"] = 0.5
 		"beast":
-			# Bloodlust: +25% attack speed, +10% lifesteal on crit
+			# Bloodlust: +25% attack speed, +5% lifesteal on crit
 			bonuses["attack_speed"] = 0.25
-			bonuses["lifesteal_on_crit"] = 0.10
+			bonuses["lifesteal_on_crit"] = 0.05
 		"mage":
 			# Arcane Focus: Standing still builds stacks (+10% dmg dealt & taken per stack, max 5)
 			bonuses["has_arcane_focus"] = 1.0

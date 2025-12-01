@@ -81,7 +81,7 @@ func _create_ui() -> void:
 	var subtitle_prefix = Label.new()
 	subtitle_prefix.name = "SubtitlePrefix"
 	subtitle_prefix.text = "Choose your first "
-	subtitle_prefix.add_theme_font_size_override("font_size", 14)
+	subtitle_prefix.add_theme_font_size_override("font_size", 18)
 	subtitle_prefix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		subtitle_prefix.add_theme_font_override("font", pixel_font)
@@ -90,7 +90,7 @@ func _create_ui() -> void:
 
 	var subtitle_active = Label.new()
 	subtitle_active.text = "ACTIVE"
-	subtitle_active.add_theme_font_size_override("font_size", 14)
+	subtitle_active.add_theme_font_size_override("font_size", 18)
 	subtitle_active.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))  # Orange highlight
 	if pixel_font:
 		subtitle_active.add_theme_font_override("font", pixel_font)
@@ -98,7 +98,7 @@ func _create_ui() -> void:
 
 	var subtitle_suffix = Label.new()
 	subtitle_suffix.text = " ability"
-	subtitle_suffix.add_theme_font_size_override("font_size", 14)
+	subtitle_suffix.add_theme_font_size_override("font_size", 18)
 	subtitle_suffix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		subtitle_suffix.add_theme_font_override("font", pixel_font)
