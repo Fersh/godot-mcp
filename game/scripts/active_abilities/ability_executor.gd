@@ -59,8 +59,7 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_multi_shot(ability, player)
 		"quick_roll":
 			_execute_quick_roll(ability, player)
-		"throw_net":
-			_execute_throw_net(ability, player)
+		# throw_net merged into frost_nova
 
 		# Ranged Rare
 		"rain_of_arrows":
@@ -89,8 +88,6 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 		# Global Common
 		"fireball":
 			_execute_fireball(ability, player)
-		"frost_nova":
-			_execute_frost_nova(ability, player)
 		"healing_light":
 			_execute_healing_light(ability, player)
 		"throwing_bomb":
@@ -99,6 +96,8 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 			_execute_blinding_flash(ability, player)
 
 		# Global Rare
+		"frost_nova":
+			_execute_frost_nova(ability, player)
 		"chain_lightning":
 			_execute_chain_lightning(ability, player)
 		"meteor_strike":
@@ -1581,17 +1580,26 @@ func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
 	_screen_shake("small")
 
 func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
+	# Upgraded to Rare - now freezes then slows
 	var damage = _get_damage(ability)
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_stun_to_enemy(enemy, ability.stun_duration)
+		# Apply slow after stun ends
+		if ability.slow_amount > 0 and ability.slow_duration > 0:
+			var tree = player.get_tree() if is_instance_valid(player) else null
+			if tree:
+				tree.create_timer(ability.stun_duration).timeout.connect(func():
+					if is_instance_valid(enemy) and enemy.has_method("apply_slow"):
+						enemy.apply_slow(ability.slow_amount, ability.slow_duration)
+				)
 
 	_spawn_effect("frost_nova", player.global_position)
 	_play_sound("frost")
-	_screen_shake("small")
-	_impact_pause()
+	_screen_shake("medium")
+	_impact_pause_large()
 
 func _execute_healing_light(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Heal over time

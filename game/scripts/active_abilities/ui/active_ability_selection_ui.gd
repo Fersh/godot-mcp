@@ -7,6 +7,11 @@ var current_choices: Array[ActiveAbilityData] = []
 var ability_buttons: Array[Button] = []
 var all_abilities_pool: Array[ActiveAbilityData] = []
 
+# Reroll state
+var reroll_button: Button = null
+var reroll_used: bool = false
+var current_level: int = 1
+
 # Slot machine state
 var is_rolling: bool = false
 var roll_timer: float = 0.0
@@ -117,6 +122,47 @@ func _create_ui() -> void:
 	choices_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(choices_container)
 
+	# Spacer before reroll button
+	var reroll_spacer = Control.new()
+	reroll_spacer.custom_minimum_size = Vector2(0, 20)
+	vbox.add_child(reroll_spacer)
+
+	# Reroll button - red with white font like Refund All
+	reroll_button = Button.new()
+	reroll_button.name = "RerollButton"
+	reroll_button.text = "Reroll"
+	reroll_button.custom_minimum_size = Vector2(150, 36)
+	if pixel_font:
+		reroll_button.add_theme_font_override("font", pixel_font)
+	reroll_button.add_theme_font_size_override("font_size", 11)
+
+	# Style the reroll button - red background, white text
+	var reroll_style = StyleBoxFlat.new()
+	reroll_style.bg_color = Color(0.7, 0.15, 0.15, 0.95)
+	reroll_style.border_color = Color(0.9, 0.3, 0.3)
+	reroll_style.set_border_width_all(2)
+	reroll_style.set_corner_radius_all(6)
+	reroll_button.add_theme_stylebox_override("normal", reroll_style)
+
+	var reroll_hover = reroll_style.duplicate()
+	reroll_hover.bg_color = Color(0.85, 0.2, 0.2, 0.95)
+	reroll_button.add_theme_stylebox_override("hover", reroll_hover)
+
+	var reroll_pressed = reroll_style.duplicate()
+	reroll_pressed.bg_color = Color(0.5, 0.1, 0.1, 0.95)
+	reroll_button.add_theme_stylebox_override("pressed", reroll_pressed)
+
+	var reroll_disabled = reroll_style.duplicate()
+	reroll_disabled.bg_color = Color(0.3, 0.3, 0.3, 0.7)
+	reroll_disabled.border_color = Color(0.4, 0.4, 0.4)
+	reroll_button.add_theme_stylebox_override("disabled", reroll_disabled)
+
+	reroll_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	reroll_button.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6))
+
+	reroll_button.pressed.connect(_on_reroll_pressed)
+	vbox.add_child(reroll_button)
+
 func _process(delta: float) -> void:
 	if not is_rolling:
 		return
@@ -149,9 +195,19 @@ func _process(delta: float) -> void:
 		is_rolling = false
 		for button in ability_buttons:
 			button.disabled = false
+		# Enable reroll button if not used yet
+		if reroll_button and not reroll_used:
+			reroll_button.disabled = false
 
 func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	current_choices = abilities
+	current_level = level
+
+	# Reset reroll state for this selection
+	reroll_used = false
+	if reroll_button:
+		reroll_button.disabled = true  # Disabled during rolling
+		reroll_button.text = "REROLL (1x)"
 
 	# Get pool for slot machine effect
 	var is_melee = CharacterManager.get_selected_character().attack_type == CharacterData.AttackType.MELEE if CharacterManager else false
@@ -437,6 +493,44 @@ func _input(event: InputEvent) -> void:
 			KEY_3, KEY_L, KEY_E:
 				if current_choices.size() > 2:
 					_on_ability_selected(2)
+			KEY_R:
+				# Keyboard shortcut for reroll
+				if not reroll_used:
+					_on_reroll_pressed()
+
+func _on_reroll_pressed() -> void:
+	"""Reroll all 3 ability choices. Can only be used once per selection."""
+	if reroll_used or is_rolling:
+		return
+
+	# Mark as used
+	reroll_used = true
+	if reroll_button:
+		reroll_button.disabled = true
+		reroll_button.text = "REROLL (USED)"
+
+	# Play sound
+	if SoundManager and SoundManager.has_method("play_click"):
+		SoundManager.play_click()
+
+	# Get new random abilities
+	var is_melee = CharacterManager.get_selected_character().attack_type == CharacterData.AttackType.MELEE if CharacterManager else false
+	var new_choices = ActiveAbilityManager.get_random_abilities_for_level(current_level, is_melee, 3)
+
+	if new_choices.is_empty():
+		return
+
+	current_choices = new_choices
+
+	# Restart the slot machine animation with new choices
+	is_rolling = true
+	roll_timer = 0.0
+	slots_settled = [false, false, false]
+	roll_tick_timers = [0.0, 0.0, 0.0]
+
+	# Disable ability buttons during rolling
+	for button in ability_buttons:
+		button.disabled = true
 
 func _animate_entrance() -> void:
 	if panel:

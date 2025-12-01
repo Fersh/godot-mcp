@@ -80,7 +80,7 @@ static func _register_all_abilities() -> void:
 	_register(_create_explosive_arrow())
 	_register(_create_multi_shot())
 	_register(_create_quick_roll())
-	_register(_create_throw_net())
+	# Throw Net merged into Frost Nova
 
 	# ============================================
 	# RANGED - RARE
@@ -104,7 +104,6 @@ static func _register_all_abilities() -> void:
 	# GLOBAL - COMMON
 	# ============================================
 	_register(_create_fireball())
-	_register(_create_frost_nova())
 	_register(_create_healing_light())
 	_register(_create_throwing_bomb())
 	# Blinding Flash merged into Pocket Sand
@@ -112,6 +111,7 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# GLOBAL - RARE
 	# ============================================
+	_register(_create_frost_nova())  # Upgraded - merged with Throw Net
 	_register(_create_chain_lightning())
 	_register(_create_meteor_strike())
 	_register(_create_totem_of_frost())
@@ -554,15 +554,16 @@ static func _create_fireball() -> ActiveAbilityData:
 	).with_damage(18.0, 1.2).with_aoe(50.0).with_projectiles(1, 400.0).with_icon("res://assets/icons/abilities/fireball.png")
 
 static func _create_frost_nova() -> ActiveAbilityData:
+	# Upgraded to Rare - merged with Throw Net for definitive AOE CC
 	return ActiveAbilityData.new(
 		"frost_nova",
 		"Frost Nova",
-		"Emit a burst of frost, freezing nearby enemies for 1.5 seconds.",
-		ActiveAbilityData.Rarity.COMMON,
+		"Emit a powerful burst of frost, freezing enemies for 2 seconds then slowing them.",
+		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
-		12.0
-	).with_damage(5.0, 0.5).with_aoe(100.0).with_stun(1.5).with_icon("res://assets/icons/abilities/frost_nova.png")
+		14.0
+	).with_damage(12.0, 0.8).with_aoe(280.0).with_stun(2.0).with_slow(0.5, 1.5).with_icon("res://assets/icons/abilities/frost_nova.png")
 
 static func _create_healing_light() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

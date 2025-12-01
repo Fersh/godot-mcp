@@ -2731,10 +2731,15 @@ func should_echo_ability() -> bool:
 	return randf() < ability_echo_chance
 
 func on_dodge_used() -> void:
-	"""Called when dodge is used - triggers Swift Dodge speed boost."""
+	"""Called when dodge is used - triggers Swift Dodge speed boost and Combo Master."""
 	if has_swift_dodge:
 		swift_dodge_active = true
 		swift_dodge_timer = 2.0  # 2 second duration
+
+	# Dodge counts as an active ability for Combo Master
+	if has_combo_master:
+		combo_master_active = true
+		combo_master_timer = 3.0  # 3 second duration
 
 func get_swift_dodge_speed_multiplier() -> float:
 	"""Get move speed multiplier from Swift Dodge."""

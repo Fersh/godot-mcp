@@ -886,6 +886,25 @@ func _physics_process(delta: float) -> void:
 				active_buffs.erase("horde_breaker")
 				buffs_changed = true
 
+		# Combo Master - damage boost after using active ability or dodge
+		if AbilityManager.has_combo_master:
+			if AbilityManager.combo_master_active and AbilityManager.combo_master_timer > 0:
+				var bonus_percent = int(AbilityManager.combo_master_bonus * 100)
+				if not active_buffs.has("combo_master"):
+					active_buffs["combo_master"] = {
+						"timer": AbilityManager.combo_master_timer,
+						"duration": 3.0,
+						"name": "Combo",
+						"description": "+" + str(bonus_percent) + "% Damage",
+						"color": Color(1.0, 0.5, 0.2)  # Orange
+					}
+					buffs_changed = true
+				else:
+					active_buffs["combo_master"].timer = AbilityManager.combo_master_timer
+			elif active_buffs.has("combo_master"):
+				active_buffs.erase("combo_master")
+				buffs_changed = true
+
 	if buffs_changed:
 		emit_signal("buff_changed", active_buffs)
 
@@ -1741,8 +1760,8 @@ func _shadow_dance_strike(target_enemy: Node2D) -> void:
 	if SoundManager:
 		SoundManager.play_swing()
 
-	# Spawn swipe effect
-	spawn_swipe_effect()
+	# Spawn slash effect on enemy (S0181)
+	_spawn_shadow_slash_effect(target_enemy)
 
 	# Calculate damage with stealth bonus already applied
 	var melee_damage = 10.0 * base_damage
@@ -1786,6 +1805,47 @@ func _exit_stealth() -> void:
 	if active_buffs.has("shadow_dance"):
 		active_buffs.erase("shadow_dance")
 		emit_signal("buff_changed", active_buffs)
+
+func _spawn_shadow_slash_effect(target_enemy: Node2D) -> void:
+	"""Spawn the S0181 slash effect on the enemy."""
+	if not is_instance_valid(target_enemy):
+		return
+
+	# Create animated sprite for the slash effect
+	var slash = AnimatedSprite2D.new()
+	slash.name = "ShadowSlash"
+
+	# Create sprite frames from individual images
+	var frames = SpriteFrames.new()
+	frames.add_animation("slash")
+	frames.set_animation_speed("slash", 20.0)  # Fast animation
+	frames.set_animation_loop("slash", false)
+
+	# Load frames S0181.png through S0190.png
+	var base_path = "res://assets/sprites/effects/40/Slash and Swing/S0181/"
+	for i in range(10):
+		var frame_num = 181 + i
+		var frame_path = base_path + "S0" + str(frame_num) + ".png"
+		var texture = load(frame_path)
+		if texture:
+			frames.add_frame("slash", texture)
+
+	slash.sprite_frames = frames
+	slash.animation = "slash"
+	slash.centered = true
+	slash.z_index = 10  # Above enemy
+
+	# Position on enemy
+	slash.global_position = target_enemy.global_position
+
+	# Add to world
+	get_parent().add_child(slash)
+
+	# Play animation
+	slash.play("slash")
+
+	# Queue free when done
+	slash.animation_finished.connect(slash.queue_free)
 
 func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 	"""Apply elemental on-hit effects to an enemy."""
