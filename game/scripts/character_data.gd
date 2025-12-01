@@ -488,7 +488,7 @@ static func create_assassin() -> CharacterData:
 	data.frame_size = Vector2(64, 32)
 	data.hframes = 8
 	data.vframes = 8
-	data.sprite_scale = Vector2(2.5, 2.5)  # Scale up the smaller sprite
+	data.sprite_scale = Vector2(1.5, 1.5)  # Reduced to 60% of original (was 2.5)
 
 	# Animation rows
 	# Row 0: Idle (8)

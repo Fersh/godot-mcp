@@ -1604,10 +1604,12 @@ func spawn_assassin_dagger() -> void:
 
 	# Apply ability modifiers to projectile
 	if AbilityManager:
-		dagger.pierce_count = AbilityManager.pierce_count
-		dagger.can_bounce = AbilityManager.has_bouncing
-		dagger.has_sniper = AbilityManager.has_sniper
+		dagger.pierce_count = AbilityManager.stat_modifiers["projectile_pierce"]
+		dagger.can_bounce = AbilityManager.has_rubber_walls
+		dagger.has_sniper = AbilityManager.has_sniper_damage
+		dagger.sniper_bonus = AbilityManager.sniper_bonus
 		dagger.has_ricochet = AbilityManager.has_ricochet
+		dagger.max_ricochets = AbilityManager.ricochet_bounces
 		dagger.crit_chance = AbilityManager.get_crit_chance()
 		dagger.crit_multiplier = AbilityManager.get_crit_damage_multiplier()
 		dagger.has_knockback = AbilityManager.has_knockback
