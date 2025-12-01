@@ -38,6 +38,7 @@ coverage/
 *.apk
 *.aab
 *.pck
+*.idsig
 *.dSYM/
 *.app/
 MoltenVK.xcframework/
