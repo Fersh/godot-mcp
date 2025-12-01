@@ -7,6 +7,26 @@ signal item_acquired(item: ItemData)
 signal item_equipped(item: ItemData, character_id: String)
 signal item_unequipped(item: ItemData, character_id: String)
 signal inventory_changed()
+signal item_sold(item: ItemData, coins: int)
+signal items_combined(items: Array, result: ItemData)
+
+# Sorting options
+enum SortBy {
+	CATEGORY,
+	RARITY,
+	EQUIPPED,
+	NAME,
+	ITEM_LEVEL
+}
+
+# Sell prices by rarity
+const SELL_PRICES: Dictionary = {
+	ItemData.Rarity.COMMON: 5,
+	ItemData.Rarity.MAGIC: 15,
+	ItemData.Rarity.RARE: 50,
+	ItemData.Rarity.UNIQUE: 150,
+	ItemData.Rarity.LEGENDARY: 500
+}
 
 const SAVE_PATH = "user://equipment.save"
 
@@ -511,3 +531,203 @@ func load_data() -> void:
 			for item_data in inv_data:
 				var item = ItemData.from_save_dict(item_data)
 				inventory.append(item)
+
+# Get sorted inventory
+func get_sorted_inventory(sort_by: SortBy, ascending: bool = true) -> Array[ItemData]:
+	var sorted_items: Array[ItemData] = inventory.duplicate()
+
+	match sort_by:
+		SortBy.CATEGORY:
+			sorted_items.sort_custom(func(a, b):
+				if ascending:
+					return a.slot < b.slot
+				return a.slot > b.slot
+			)
+		SortBy.RARITY:
+			sorted_items.sort_custom(func(a, b):
+				if ascending:
+					return a.rarity > b.rarity  # Higher rarity first by default
+				return a.rarity < b.rarity
+			)
+		SortBy.EQUIPPED:
+			sorted_items.sort_custom(func(a, b):
+				var a_equipped = a.equipped_by != ""
+				var b_equipped = b.equipped_by != ""
+				if ascending:
+					return a_equipped and not b_equipped  # Equipped first
+				return not a_equipped and b_equipped
+			)
+		SortBy.NAME:
+			sorted_items.sort_custom(func(a, b):
+				if ascending:
+					return a.get_full_name().to_lower() < b.get_full_name().to_lower()
+				return a.get_full_name().to_lower() > b.get_full_name().to_lower()
+			)
+		SortBy.ITEM_LEVEL:
+			sorted_items.sort_custom(func(a, b):
+				if ascending:
+					return a.item_level > b.item_level  # Higher level first by default
+				return a.item_level < b.item_level
+			)
+
+	return sorted_items
+
+# Get sell price for an item
+func get_sell_price(item: ItemData) -> int:
+	var base_price = SELL_PRICES.get(item.rarity, 5)
+	# Scale by item level (10% per level)
+	var level_bonus = 1.0 + (item.item_level - 1) * 0.1
+	return int(base_price * level_bonus)
+
+# Sell an item for coins
+func sell_item(item_id: String) -> int:
+	var item = get_item(item_id)
+	if item == null:
+		return 0
+
+	# Cannot sell equipped items
+	if item.equipped_by != "":
+		return 0
+
+	var sell_price = get_sell_price(item)
+
+	# Remove from inventory
+	inventory.erase(item)
+
+	# Add coins to spendable currency
+	if StatsManager:
+		StatsManager.spendable_coins += sell_price
+		StatsManager.save_stats()
+
+	emit_signal("item_sold", item, sell_price)
+	emit_signal("inventory_changed")
+	save_data()
+
+	return sell_price
+
+# Find items that can be combined (same slot + same rarity)
+func get_combinable_groups() -> Dictionary:
+	# Returns: { "slot_rarity_key": [item1, item2, item3, ...], ... }
+	var groups: Dictionary = {}
+
+	for item in inventory:
+		# Skip equipped items
+		if item.equipped_by != "":
+			continue
+		# Skip legendary items (can't upgrade further)
+		if item.rarity == ItemData.Rarity.LEGENDARY:
+			continue
+
+		var key = "%d_%d" % [item.slot, item.rarity]
+		if not groups.has(key):
+			groups[key] = []
+		groups[key].append(item)
+
+	# Filter to only groups with 3+ items
+	var combinable: Dictionary = {}
+	for key in groups:
+		if groups[key].size() >= 3:
+			combinable[key] = groups[key]
+
+	return combinable
+
+# Check if an item can be part of a combine
+func can_combine_item(item: ItemData) -> bool:
+	if item.equipped_by != "":
+		return false
+	if item.rarity == ItemData.Rarity.LEGENDARY:
+		return false
+
+	var key = "%d_%d" % [item.slot, item.rarity]
+	var groups = get_combinable_groups()
+	return groups.has(key)
+
+# Get count of combinable items matching this item's slot/rarity
+func get_combinable_count(item: ItemData) -> int:
+	if item.equipped_by != "":
+		return 0
+	if item.rarity == ItemData.Rarity.LEGENDARY:
+		return 0
+
+	var count = 0
+	for inv_item in inventory:
+		if inv_item.equipped_by != "":
+			continue
+		if inv_item.slot == item.slot and inv_item.rarity == item.rarity:
+			count += 1
+	return count
+
+# Combine 3 items into 1 higher rarity
+func combine_items(item_ids: Array) -> ItemData:
+	if item_ids.size() != 3:
+		return null
+
+	var items: Array[ItemData] = []
+	var slot = -1
+	var rarity = -1
+
+	# Validate all items
+	for item_id in item_ids:
+		var item = get_item(item_id)
+		if item == null:
+			return null
+		if item.equipped_by != "":
+			return null
+		if item.rarity == ItemData.Rarity.LEGENDARY:
+			return null
+
+		# Check all items have same slot and rarity
+		if slot == -1:
+			slot = item.slot
+			rarity = item.rarity
+		elif item.slot != slot or item.rarity != rarity:
+			return null
+
+		items.append(item)
+
+	# Remove the 3 items from inventory
+	for item in items:
+		inventory.erase(item)
+
+	# Calculate average item level for the new item
+	var avg_level = 0
+	for item in items:
+		avg_level += item.item_level
+	avg_level = max(1, avg_level / 3)
+
+	# Generate new item with higher rarity
+	var new_rarity = rarity + 1  # Next rarity tier
+	var new_item = ItemData.new()
+	new_item.id = "item_%d" % next_item_id
+	next_item_id += 1
+	new_item.slot = slot as ItemData.Slot
+	new_item.rarity = new_rarity as ItemData.Rarity
+	new_item.item_level = avg_level
+
+	# Get character for weapon filtering
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	# Generate item based on new rarity
+	match new_rarity:
+		ItemData.Rarity.MAGIC:
+			_generate_magic_item(new_item, new_item.slot, character_id)
+		ItemData.Rarity.RARE:
+			_generate_rare_item(new_item, new_item.slot, character_id)
+		ItemData.Rarity.UNIQUE:
+			_generate_unique_item(new_item, new_item.slot, character_id)
+		ItemData.Rarity.LEGENDARY:
+			_generate_legendary_item(new_item, new_item.slot, character_id)
+
+	# Scale stats with item level
+	_scale_item_stats(new_item)
+
+	# Add to inventory
+	inventory.append(new_item)
+
+	emit_signal("items_combined", items, new_item)
+	emit_signal("inventory_changed")
+	save_data()
+
+	return new_item

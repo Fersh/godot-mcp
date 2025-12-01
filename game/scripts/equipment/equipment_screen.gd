@@ -37,6 +37,9 @@ var selected_item: ItemData = null
 var popup_item: ItemData = null
 var pixel_font: Font = null
 var item_name_font: Font = null
+var current_sort: int = EquipmentManager.SortBy.RARITY
+var combine_mode: bool = false
+var combine_selection: Array[ItemData] = []
 
 @onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
@@ -459,8 +462,8 @@ func _refresh_inventory() -> void:
 	if not EquipmentManager:
 		return
 
-	# Get all inventory items
-	var items = EquipmentManager.inventory
+	# Get sorted inventory items
+	var items = EquipmentManager.get_sorted_inventory(current_sort as EquipmentManager.SortBy)
 
 	# Create 96 slots (8 columns x 12 rows) - scrollable
 	var total_slots = 96
@@ -474,6 +477,9 @@ func _refresh_inventory() -> void:
 			# Create empty slot
 			var empty_slot = _create_empty_slot()
 			inventory_grid.add_child(empty_slot)
+
+	# Update inventory header with sort and actions
+	_update_inventory_header()
 
 func _create_empty_slot() -> Button:
 	var button = Button.new()
@@ -509,13 +515,34 @@ func _create_inventory_card(item: ItemData) -> Button:
 	# Check if item is equipped
 	var is_equipped = item.equipped_by != ""
 
-	if is_equipped:
+	# Check combine mode states
+	var is_selected_for_combine = combine_mode and item in combine_selection
+	var is_combinable = combine_mode and EquipmentManager.can_combine_item(item)
+	var is_same_group = false
+	if combine_mode and combine_selection.size() > 0:
+		var first = combine_selection[0]
+		is_same_group = item.slot == first.slot and item.rarity == first.rarity and not is_equipped
+
+	if is_selected_for_combine:
+		# Purple highlight for selected combine items
+		style.bg_color = Color(0.4, 0.2, 0.5, 0.8)
+		style.border_color = Color(0.8, 0.5, 1.0)
+	elif combine_mode and is_same_group:
+		# Subtle highlight for items that can be added to selection
+		style.bg_color = Color(0.2, 0.15, 0.25, 0.6)
+		style.border_color = item.get_rarity_color()
+	elif combine_mode and not is_combinable:
+		# Dim non-combinable items
+		style.bg_color = Color(0.05, 0.05, 0.07, 0.7)
+		style.border_color = item.get_rarity_color().darkened(0.5)
+	elif is_equipped:
 		# Yellow highlight for equipped items
 		style.bg_color = COLOR_EQUIPPED_HIGHLIGHT
+		style.border_color = item.get_rarity_color()
 	else:
 		style.bg_color = Color(0.08, 0.07, 0.1, 1.0)
+		style.border_color = item.get_rarity_color()
 
-	style.border_color = item.get_rarity_color()
 	style.border_width_left = 2
 	style.border_width_right = 2
 	style.border_width_top = 2
@@ -526,12 +553,17 @@ func _create_inventory_card(item: ItemData) -> Button:
 	style.corner_radius_bottom_right = 2
 
 	var style_hover = style.duplicate()
-	style_hover.border_color = COLOR_SELECTED
+	if not (combine_mode and not is_combinable and not is_same_group):
+		style_hover.border_color = COLOR_SELECTED
 
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("hover", style_hover)
 	button.add_theme_stylebox_override("pressed", style)
 	button.add_theme_stylebox_override("focus", style)
+
+	# Dim button in combine mode if not combinable
+	if combine_mode and not is_combinable and not is_same_group and not is_selected_for_combine:
+		button.modulate = Color(0.5, 0.5, 0.5, 0.8)
 
 	# Icon
 	var center = CenterContainer.new()
@@ -553,7 +585,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 
 	button.add_child(center)
 
-	# Equipped indicator in corner
+	# Equipped indicator in corner (top-left)
 	if is_equipped:
 		var indicator = Label.new()
 		indicator.text = item.equipped_by.substr(0, 1).to_upper()
@@ -564,6 +596,30 @@ func _create_inventory_card(item: ItemData) -> Button:
 		indicator.position = Vector2(2, 1)
 		button.add_child(indicator)
 
+	# Combine selection indicator (checkmark in bottom-right)
+	if is_selected_for_combine:
+		var check = Label.new()
+		check.text = "✓"
+		if pixel_font:
+			check.add_theme_font_override("font", pixel_font)
+		check.add_theme_font_size_override("font_size", 18)
+		check.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
+		check.position = Vector2(40, 38)
+		button.add_child(check)
+
+	# Combinable count indicator (shows how many of same type)
+	if combine_mode and is_combinable and not is_selected_for_combine:
+		var count = EquipmentManager.get_combinable_count(item)
+		if count >= 3:
+			var count_label = Label.new()
+			count_label.text = "%d" % count
+			if pixel_font:
+				count_label.add_theme_font_override("font", pixel_font)
+			count_label.add_theme_font_size_override("font_size", 12)
+			count_label.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
+			count_label.position = Vector2(44, 2)
+			button.add_child(count_label)
+
 	return button
 
 func _on_inventory_item_pressed(item: ItemData) -> void:
@@ -571,6 +627,12 @@ func _on_inventory_item_pressed(item: ItemData) -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
+
+	# Handle combine mode
+	if combine_mode:
+		_handle_combine_selection(item)
+		return
+
 	_hide_popups()
 
 	if item.equipped_by != "":
@@ -581,6 +643,69 @@ func _on_inventory_item_pressed(item: ItemData) -> void:
 		# Show comparison with currently equipped
 		selected_item = item
 		_show_comparison(item)
+
+func _handle_combine_selection(item: ItemData) -> void:
+	# Can't combine equipped items
+	if item.equipped_by != "":
+		return
+
+	# Can't combine legendary items
+	if item.rarity == ItemData.Rarity.LEGENDARY:
+		return
+
+	# If already selected, deselect
+	if item in combine_selection:
+		combine_selection.erase(item)
+		_refresh_inventory()
+		return
+
+	# If this is the first selection, just add it
+	if combine_selection.size() == 0:
+		if EquipmentManager.can_combine_item(item):
+			combine_selection.append(item)
+			_refresh_inventory()
+		return
+
+	# Check if item matches the current selection (same slot + rarity)
+	var first = combine_selection[0]
+	if item.slot != first.slot or item.rarity != first.rarity:
+		# Different group - start new selection
+		if EquipmentManager.can_combine_item(item):
+			combine_selection.clear()
+			combine_selection.append(item)
+			_refresh_inventory()
+		return
+
+	# Add to selection
+	combine_selection.append(item)
+
+	# If we have 3, perform the combine!
+	if combine_selection.size() >= 3:
+		_perform_combine()
+	else:
+		_refresh_inventory()
+
+func _perform_combine() -> void:
+	if combine_selection.size() < 3:
+		return
+
+	var item_ids: Array = []
+	for item in combine_selection:
+		item_ids.append(item.id)
+
+	var result = EquipmentManager.combine_items(item_ids)
+	if result:
+		if SoundManager:
+			SoundManager.play_buff()
+		# Show the result
+		_exit_combine_mode()
+		_update_coins_display()
+		selected_item = result
+		_show_comparison(result)
+	else:
+		# Failed - just refresh
+		combine_selection.clear()
+		_refresh_inventory()
 
 func _show_equipped_popup(item: ItemData) -> void:
 	popup_item = item
@@ -837,22 +962,35 @@ func _show_comparison(item: ItemData) -> void:
 
 	var cancel_btn = Button.new()
 	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(140, 45)
+	cancel_btn.custom_minimum_size = Vector2(110, 45)
 	_style_button(cancel_btn, Color(0.4, 0.3, 0.25))
 	if pixel_font:
 		cancel_btn.add_theme_font_override("font", pixel_font)
-	cancel_btn.add_theme_font_size_override("font_size", 16)
+	cancel_btn.add_theme_font_size_override("font_size", 14)
 	cancel_btn.pressed.connect(_hide_comparison)
 	button_row.add_child(cancel_btn)
 
+	# Sell button - only for unequipped items
+	if item.equipped_by == "":
+		var sell_price = EquipmentManager.get_sell_price(item) if EquipmentManager else 0
+		var sell_btn = Button.new()
+		sell_btn.text = "SELL ●%d" % sell_price
+		sell_btn.custom_minimum_size = Vector2(110, 45)
+		_style_button(sell_btn, Color(0.6, 0.4, 0.2))
+		if pixel_font:
+			sell_btn.add_theme_font_override("font", pixel_font)
+		sell_btn.add_theme_font_size_override("font_size", 14)
+		sell_btn.pressed.connect(_on_sell_pressed.bind(item))
+		button_row.add_child(sell_btn)
+
 	var equip_btn = Button.new()
 	equip_btn.text = "EQUIP" if can_equip else "WRONG CLASS"
-	equip_btn.custom_minimum_size = Vector2(140, 45)
+	equip_btn.custom_minimum_size = Vector2(110, 45)
 	equip_btn.disabled = not can_equip
 	_style_button(equip_btn, Color(0.2, 0.5, 0.3) if can_equip else Color(0.3, 0.3, 0.3))
 	if pixel_font:
 		equip_btn.add_theme_font_override("font", pixel_font)
-	equip_btn.add_theme_font_size_override("font_size", 16)
+	equip_btn.add_theme_font_size_override("font_size", 14)
 	equip_btn.pressed.connect(_on_equip_comparison_pressed)
 	button_row.add_child(equip_btn)
 
@@ -1054,6 +1192,22 @@ func _on_equip_comparison_pressed() -> void:
 		selected_item = null
 		_refresh_display()
 
+func _on_sell_pressed(item: ItemData) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.medium()
+
+	if item and EquipmentManager:
+		var coins = EquipmentManager.sell_item(item.id)
+		if coins > 0:
+			if SoundManager:
+				SoundManager.play_xp()
+			_hide_comparison()
+			selected_item = null
+			_update_coins_display()
+			_refresh_display()
+
 func _hide_popups() -> void:
 	popup_panel.visible = false
 	popup_item = null
@@ -1073,8 +1227,183 @@ func _on_back_pressed() -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_ESCAPE:
-			if popup_panel.visible or comparison_panel.visible:
+			if combine_mode:
+				_exit_combine_mode()
+			elif popup_panel.visible or comparison_panel.visible:
 				_hide_popups()
 				_hide_comparison()
 			else:
 				_on_back_pressed()
+
+# ============= INVENTORY HEADER WITH SORT & ACTIONS =============
+
+var inventory_header: HBoxContainer = null
+var sort_button: OptionButton = null
+var combine_button: Button = null
+var coins_label: Label = null
+
+func _update_inventory_header() -> void:
+	# Find or create the header container
+	var inventory_section = inventory_panel.get_node_or_null("InventorySection")
+	if not inventory_section:
+		return
+
+	# Remove old header if exists
+	if inventory_header and is_instance_valid(inventory_header):
+		inventory_header.queue_free()
+		await get_tree().process_frame
+
+	# Create header row
+	inventory_header = HBoxContainer.new()
+	inventory_header.name = "InventoryHeader"
+	inventory_header.alignment = BoxContainer.ALIGNMENT_CENTER
+	inventory_header.add_theme_constant_override("separation", 12)
+
+	# Coins display
+	var coins_container = HBoxContainer.new()
+	coins_container.add_theme_constant_override("separation", 4)
+
+	var coin_icon = Label.new()
+	coin_icon.text = "●"
+	if pixel_font:
+		coin_icon.add_theme_font_override("font", pixel_font)
+	coin_icon.add_theme_font_size_override("font_size", 14)
+	coin_icon.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	coins_container.add_child(coin_icon)
+
+	coins_label = Label.new()
+	coins_label.text = "%d" % (StatsManager.spendable_coins if StatsManager else 0)
+	if pixel_font:
+		coins_label.add_theme_font_override("font", pixel_font)
+	coins_label.add_theme_font_size_override("font_size", 14)
+	coins_label.add_theme_color_override("font_color", COLOR_TEXT)
+	coins_container.add_child(coins_label)
+
+	inventory_header.add_child(coins_container)
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inventory_header.add_child(spacer)
+
+	# Sort label
+	var sort_label = Label.new()
+	sort_label.text = "Sort:"
+	if pixel_font:
+		sort_label.add_theme_font_override("font", pixel_font)
+	sort_label.add_theme_font_size_override("font_size", 12)
+	sort_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	inventory_header.add_child(sort_label)
+
+	# Sort dropdown
+	sort_button = OptionButton.new()
+	sort_button.add_item("Rarity", EquipmentManager.SortBy.RARITY)
+	sort_button.add_item("Category", EquipmentManager.SortBy.CATEGORY)
+	sort_button.add_item("Equipped", EquipmentManager.SortBy.EQUIPPED)
+	sort_button.add_item("Name", EquipmentManager.SortBy.NAME)
+	sort_button.add_item("Level", EquipmentManager.SortBy.ITEM_LEVEL)
+	sort_button.custom_minimum_size = Vector2(100, 30)
+	if pixel_font:
+		sort_button.add_theme_font_override("font", pixel_font)
+	sort_button.add_theme_font_size_override("font_size", 11)
+	_style_option_button(sort_button)
+
+	# Set current selection
+	for i in range(sort_button.item_count):
+		if sort_button.get_item_id(i) == current_sort:
+			sort_button.select(i)
+			break
+
+	sort_button.item_selected.connect(_on_sort_changed)
+	inventory_header.add_child(sort_button)
+
+	# Combine button
+	combine_button = Button.new()
+	combine_button.custom_minimum_size = Vector2(90, 30)
+	if pixel_font:
+		combine_button.add_theme_font_override("font", pixel_font)
+	combine_button.add_theme_font_size_override("font_size", 11)
+
+	_update_combine_button()
+	combine_button.pressed.connect(_on_combine_button_pressed)
+	inventory_header.add_child(combine_button)
+
+	# Insert header after the inventory label
+	var inv_label = inventory_section.get_node_or_null("InventoryLabel")
+	if inv_label:
+		var label_idx = inv_label.get_index()
+		inventory_section.add_child(inventory_header)
+		inventory_section.move_child(inventory_header, label_idx + 1)
+	else:
+		inventory_section.add_child(inventory_header)
+		inventory_section.move_child(inventory_header, 0)
+
+func _style_option_button(button: OptionButton) -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.13, 0.18, 1)
+	style.border_color = Color(0.3, 0.28, 0.35, 1)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("pressed", style)
+	button.add_theme_stylebox_override("focus", style)
+	button.add_theme_color_override("font_color", COLOR_TEXT)
+
+func _update_combine_button() -> void:
+	if not combine_button:
+		return
+
+	var combinable_groups = EquipmentManager.get_combinable_groups() if EquipmentManager else {}
+	var has_combinable = combinable_groups.size() > 0
+
+	combine_button.disabled = false  # Reset first
+
+	if combine_mode:
+		combine_button.text = "CANCEL"
+		_style_button(combine_button, Color(0.5, 0.3, 0.2))
+	elif has_combinable:
+		combine_button.text = "COMBINE"
+		_style_button(combine_button, Color(0.4, 0.3, 0.6))
+	else:
+		combine_button.text = "COMBINE"
+		_style_button(combine_button, Color(0.25, 0.25, 0.3))
+		combine_button.disabled = true
+
+func _on_sort_changed(index: int) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	current_sort = sort_button.get_item_id(index)
+	_refresh_inventory()
+
+func _on_combine_button_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	if combine_mode:
+		_exit_combine_mode()
+	else:
+		_enter_combine_mode()
+
+func _enter_combine_mode() -> void:
+	combine_mode = true
+	combine_selection.clear()
+	_hide_popups()
+	_hide_comparison()
+	_update_combine_button()
+	_refresh_inventory()
+
+func _exit_combine_mode() -> void:
+	combine_mode = false
+	combine_selection.clear()
+	_update_combine_button()
+	_refresh_inventory()
+
+func _update_coins_display() -> void:
+	if coins_label and StatsManager:
+		coins_label.text = "%d" % StatsManager.spendable_coins
