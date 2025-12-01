@@ -1655,6 +1655,9 @@ func get_summon_damage_multiplier() -> float:
 	var mult = 1.0
 	if has_summon_damage:
 		mult += summon_damage_bonus
+	# Add permanent upgrade bonus
+	if PermanentUpgrades:
+		mult += PermanentUpgrades.get_all_bonuses().get("summon_damage", 0.0)
 	if has_empathic_bond:
 		mult *= empathic_bond_multiplier
 	return mult
