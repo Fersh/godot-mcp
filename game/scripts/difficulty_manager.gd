@@ -30,46 +30,51 @@ const DIFFICULTY_DATA = {
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
 		"spawn_rate_mult": 1.0,
+		"points_mult": 1.0,
 		"color": Color(0.5, 0.8, 0.5),  # Soft green
 		"modifiers": [],
 	},
 	DifficultyTier.VERY_EASY: {
 		"name": "Very Easy",
-		"description": "Enemies apply Slow on hit.",
+		"description": "Enemies apply Slow on hit. 2x Points.",
 		"health_mult": 3.2,
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
 		"spawn_rate_mult": 2.4,
+		"points_mult": 2.0,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Easy",
-		"description": "+ Elites gain random affixes.",
+		"description": "+ Elites gain random affixes. 3x Points.",
 		"health_mult": 4.8,
 		"damage_mult": 3.3,
 		"speed_mult": 1.44,
 		"spawn_rate_mult": 2.8,
+		"points_mult": 3.0,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Normal",
-		"description": "+ Start at 75% HP. Boss enrages faster.",
+		"description": "+ Start at 75% HP. Boss enrages faster. 4x Points.",
 		"health_mult": 7.6,
 		"damage_mult": 4.2,
 		"speed_mult": 1.64,
 		"spawn_rate_mult": 3.2,
+		"points_mult": 4.0,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Nightmare",
-		"description": "+ Healing reduced 50%. Champion enemies.",
+		"description": "+ Healing reduced 50%. Champion enemies. 5x Points.",
 		"health_mult": 11.0,
 		"damage_mult": 5.5,
 		"speed_mult": 1.9,
 		"spawn_rate_mult": 3.7,
+		"points_mult": 5.0,
 		"color": Color(0.9, 0.2, 0.2),  # Red
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
 	},
@@ -180,6 +185,11 @@ func get_spawn_rate_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
 		return 1.0
 	return DIFFICULTY_DATA[current_difficulty]["spawn_rate_mult"]
+
+func get_points_multiplier() -> float:
+	if current_mode == GameMode.ENDLESS:
+		return 1.0
+	return DIFFICULTY_DATA[current_difficulty]["points_mult"]
 
 # ============================================
 # MODIFIER CHECKS

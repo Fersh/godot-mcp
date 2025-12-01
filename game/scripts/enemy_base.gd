@@ -98,24 +98,27 @@ var animation_frame: float = 0.0
 @onready var health_bar: Node2D = $HealthBar
 
 func _ready() -> void:
-	# Apply difficulty multipliers before setting up health
-	_apply_difficulty_scaling()
-
-	current_health = max_health
-	base_speed = speed  # Store base speed for slow calculations
 	player = get_tree().get_first_node_in_group("player")
 	add_to_group("enemies")
 
 	collision_layer = 4
 	collision_mask = 9  # Layer 1 (player) + Layer 8 (obstacles)
 
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-
 	if sprite and sprite.material:
 		sprite.material = sprite.material.duplicate()
 
+	# Let subclasses set their base stats first
 	_on_ready()
+
+	# THEN apply difficulty multipliers to those base stats
+	_apply_difficulty_scaling()
+
+	# Now set current health and speed from the scaled values
+	current_health = max_health
+	base_speed = speed  # Store base speed for slow calculations
+
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
 
 func _apply_difficulty_scaling() -> void:
 	"""Apply difficulty multipliers to enemy stats."""
@@ -585,9 +588,9 @@ func _create_champion_indicator() -> void:
 func _create_champion_fire_aura() -> void:
 	"""Create animated fire aura effect below the champion's feet."""
 	champion_fire_aura = AnimatedSprite2D.new()
-	champion_fire_aura.position = Vector2(0, 10)  # Below the enemy's feet
+	champion_fire_aura.position = Vector2(0, 20)  # At bottom of feet (same as target indicator)
 	champion_fire_aura.z_index = -1  # Render behind the enemy
-	champion_fire_aura.scale = Vector2(0.5, 0.5)  # Smaller to fit under enemy
+	champion_fire_aura.scale = Vector2(0.4, 0.4)  # Smaller to fit under enemy
 
 	# Create sprite frames from the fire aura images
 	var frames = SpriteFrames.new()

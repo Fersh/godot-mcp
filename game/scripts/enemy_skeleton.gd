@@ -37,11 +37,6 @@ func _on_ready() -> void:
 		4: 10,  # DEATH
 	}
 
-	current_health = max_health
-	base_speed = speed
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-
 	# Scale sprite appropriately
 	if sprite:
 		sprite.scale = Vector2(2.0, 2.0)

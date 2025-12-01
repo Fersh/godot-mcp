@@ -35,8 +35,3 @@ func _on_ready() -> void:
 		3: 4,   # DAMAGE
 		4: 5,   # DEATH
 	}
-
-	# Reset health to new max
-	current_health = max_health
-	if health_bar:
-		health_bar.set_health(current_health, max_health)

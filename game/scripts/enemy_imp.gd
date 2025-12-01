@@ -43,10 +43,6 @@ func _on_ready() -> void:
 		14: 6,  # DEATH
 	}
 
-	current_health = max_health
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-
 # Override behavior for ranged combat - maintain distance
 func _process_behavior(delta: float) -> void:
 	if player and is_instance_valid(player):

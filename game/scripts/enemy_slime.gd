@@ -34,10 +34,6 @@ func _on_ready() -> void:
 		3: 4,  # DEATH - splat
 	}
 
-	current_health = max_health
-	if health_bar:
-		health_bar.set_health(current_health, max_health)
-
 	# Double the size of slimes
 	if sprite:
 		sprite.scale = Vector2(2.0, 2.0)

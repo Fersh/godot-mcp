@@ -24,6 +24,12 @@ const POINTS_PER_ITEM = 200  # Points for picking up items
 # Smooth counting speed (points per second to catch up)
 const COUNT_SPEED_MULTIPLIER = 5.0  # Catch up at 5x the difference per second
 
+func _get_points_multiplier() -> float:
+	"""Get the difficulty-based points multiplier."""
+	if DifficultyManager:
+		return DifficultyManager.get_points_multiplier()
+	return 1.0
+
 func _ready() -> void:
 	add_to_group("stats_display")
 
@@ -43,11 +49,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	time_survived += delta
 
-	# Award points per second survived
+	# Award points per second survived (with difficulty multiplier)
 	var current_second = int(time_survived)
 	if current_second > last_time_points_second:
 		var seconds_to_award = current_second - last_time_points_second
-		points += seconds_to_award * POINTS_PER_SECOND
+		points += int(seconds_to_award * POINTS_PER_SECOND * _get_points_multiplier())
 		last_time_points_second = current_second
 		if StatsManager:
 			StatsManager.set_points(points)
@@ -73,7 +79,7 @@ func _process(delta: float) -> void:
 
 func add_kill_points() -> void:
 	kills += 1
-	points += POINTS_PER_KILL
+	points += int(POINTS_PER_KILL * _get_points_multiplier())
 	update_display()
 	# Update StatsManager
 	if StatsManager:
@@ -85,7 +91,7 @@ func get_kill_count() -> int:
 
 func add_coin() -> void:
 	coins += 1
-	points += POINTS_PER_COIN
+	points += int(POINTS_PER_COIN * _get_points_multiplier())
 	update_display()
 	# Update StatsManager
 	if StatsManager:
@@ -93,12 +99,12 @@ func add_coin() -> void:
 		StatsManager.set_points(points)
 
 func add_xp_points(amount: float) -> void:
-	points += int(amount * POINTS_PER_XP)
+	points += int(amount * POINTS_PER_XP * _get_points_multiplier())
 	update_display()
 
 func add_item_points() -> void:
 	items_collected += 1
-	points += POINTS_PER_ITEM
+	points += int(POINTS_PER_ITEM * _get_points_multiplier())
 	update_display()
 	if StatsManager:
 		StatsManager.set_points(points)
@@ -108,8 +114,8 @@ func _on_xp_gained(_current_xp: float, _xp_needed: float, _level: int) -> void:
 	pass
 
 func _on_level_up(new_level: int) -> void:
-	# Award bonus points for leveling up
-	points += POINTS_PER_LEVEL_UP
+	# Award bonus points for leveling up (with difficulty multiplier)
+	points += int(POINTS_PER_LEVEL_UP * _get_points_multiplier())
 	update_display()
 	if StatsManager:
 		StatsManager.set_level(new_level)
