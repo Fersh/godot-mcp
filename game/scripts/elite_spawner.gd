@@ -76,6 +76,13 @@ enum BossType { MINOTAUR }
 var elite_pool: Array[EliteType] = [EliteType.CYCLOPS, EliteType.GOBLIN_KING]
 var boss_pool: Array[BossType] = [BossType.MINOTAUR]
 
+# Portal spawn system
+var portal_script = preload("res://scripts/effects/elite_portal.gd")
+var pending_elite_scene: PackedScene = null
+var pending_boss_scene: PackedScene = null
+var pending_scale_multiplier: float = 1.0
+var pending_is_boss: bool = false
+
 func _ready() -> void:
 	_load_pixel_font()
 	_setup_notification_ui()
@@ -391,23 +398,37 @@ func _spawn_boss() -> void:
 		push_warning("EliteSpawner: No scene configured for boss type")
 		return
 
-	var boss = scene.instantiate()
-	boss.global_position = _get_spawn_position()
+	# Store pending spawn info
+	pending_boss_scene = scene
+	pending_scale_multiplier = 1.0 + (total_bosses_killed * BOSS_SCALING_PER_SPAWN)
+	pending_is_boss = true
+
+	# Create portal at center
+	var spawn_pos = _get_spawn_position()
+	_spawn_portal(spawn_pos, true)
+
+func _do_spawn_boss_from_portal(spawn_pos: Vector2) -> void:
+	"""Actually spawn the boss after portal animation."""
+	if pending_boss_scene == null:
+		return
+
+	var boss = pending_boss_scene.instantiate()
+	boss.global_position = spawn_pos
 	get_parent().add_child(boss)
 
 	# Apply scaling based on previous bosses killed (15% per boss)
-	var scale_multiplier = 1.0 + (total_bosses_killed * BOSS_SCALING_PER_SPAWN)
 	if boss.has_method("apply_scaling"):
-		boss.apply_scaling(scale_multiplier)
+		boss.apply_scaling(pending_scale_multiplier)
 	else:
 		# Manual scaling fallback
 		if "max_health" in boss:
-			boss.max_health *= scale_multiplier
+			boss.max_health *= pending_scale_multiplier
 			boss.current_health = boss.max_health
 		if "attack_damage" in boss:
-			boss.attack_damage *= scale_multiplier
+			boss.attack_damage *= pending_scale_multiplier
 
 	active_boss = boss
+	pending_boss_scene = null
 
 	# Connect to boss signals for health bar
 	if boss.has_signal("boss_health_changed"):
@@ -435,24 +456,38 @@ func _spawn_elite() -> void:
 		push_warning("EliteSpawner: No scene configured for elite type")
 		return
 
-	var elite = scene.instantiate()
-	elite.global_position = _get_spawn_position()
+	# Store pending spawn info
+	pending_elite_scene = scene
+	pending_scale_multiplier = 1.0 + (total_elites_killed * ELITE_SCALING_PER_SPAWN)
+	pending_is_boss = false
+
+	# Create portal at center
+	var spawn_pos = _get_spawn_position()
+	_spawn_portal(spawn_pos, false)
+
+func _do_spawn_elite_from_portal(spawn_pos: Vector2) -> void:
+	"""Actually spawn the elite after portal animation."""
+	if pending_elite_scene == null:
+		return
+
+	var elite = pending_elite_scene.instantiate()
+	elite.global_position = spawn_pos
 	get_parent().add_child(elite)
 
 	# Apply scaling based on previous elites killed (15% per elite)
-	var scale_multiplier = 1.0 + (total_elites_killed * ELITE_SCALING_PER_SPAWN)
 	if elite.has_method("apply_scaling"):
-		elite.apply_scaling(scale_multiplier)
+		elite.apply_scaling(pending_scale_multiplier)
 	else:
 		# Manual scaling fallback
 		if "max_health" in elite:
-			elite.max_health *= scale_multiplier
+			elite.max_health *= pending_scale_multiplier
 			elite.current_health = elite.max_health
 		if "attack_damage" in elite:
-			elite.attack_damage *= scale_multiplier
+			elite.attack_damage *= pending_scale_multiplier
 
 	active_elites.append(elite)
 	current_tracked_elite = elite
+	pending_elite_scene = null
 
 	# Connect to elite signals for health bar
 	if elite.has_signal("elite_health_changed"):
@@ -471,6 +506,35 @@ func _spawn_elite() -> void:
 	# Screen shake on spawn
 	if JuiceManager:
 		JuiceManager.shake_large()
+
+# ============================================
+# PORTAL SPAWN SYSTEM
+# ============================================
+
+func _spawn_portal(spawn_pos: Vector2, is_boss: bool) -> void:
+	"""Create a portal at the spawn position."""
+	var portal = Node2D.new()
+	portal.set_script(portal_script)
+	portal.global_position = spawn_pos
+	portal.name = "ElitePortal"
+
+	# Longer idle for boss
+	if is_boss:
+		portal.set_idle_duration(0.8)
+	else:
+		portal.set_idle_duration(0.5)
+
+	# Connect signals
+	portal.spawn_ready.connect(_on_portal_spawn_ready.bind(spawn_pos, is_boss))
+
+	get_parent().add_child(portal)
+
+func _on_portal_spawn_ready(spawn_pos: Vector2, is_boss: bool) -> void:
+	"""Called when the portal is ready for the entity to emerge."""
+	if is_boss:
+		_do_spawn_boss_from_portal(spawn_pos)
+	else:
+		_do_spawn_elite_from_portal(spawn_pos)
 
 func _select_elite_type() -> EliteType:
 	# Elite spawn pattern:
@@ -553,36 +617,10 @@ func _on_elite_died(_elite: Node) -> void:
 		elite_killed_challenge.emit()
 
 func _get_spawn_position() -> Vector2:
-	# Spawn from all 4 edges of the arena
-	var roll = randf()
-	var pos: Vector2
-
-	if roll < 0.25:
-		# Left (spawn outside left boundary)
-		pos = Vector2(
-			ARENA_LEFT - SPAWN_MARGIN,
-			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
-		)
-	elif roll < 0.5:
-		# Right (spawn outside right boundary)
-		pos = Vector2(
-			ARENA_RIGHT + SPAWN_MARGIN,
-			randf_range(ARENA_TOP + SPAWN_MARGIN, ARENA_BOTTOM - SPAWN_MARGIN)
-		)
-	elif roll < 0.75:
-		# Top
-		pos = Vector2(
-			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
-			ARENA_TOP - SPAWN_MARGIN
-		)
-	else:
-		# Bottom
-		pos = Vector2(
-			randf_range(ARENA_LEFT + SPAWN_MARGIN, ARENA_RIGHT - SPAWN_MARGIN),
-			ARENA_BOTTOM + SPAWN_MARGIN
-		)
-
-	return pos
+	# Spawn at center of the arena
+	var center_x = (ARENA_LEFT + ARENA_RIGHT) / 2.0
+	var center_y = (ARENA_TOP + ARENA_BOTTOM) / 2.0
+	return Vector2(center_x, center_y)
 
 func set_arena_bounds(bounds: Rect2) -> void:
 	"""Set the arena boundaries for elite/boss spawning."""

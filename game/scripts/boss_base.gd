@@ -82,8 +82,9 @@ func _physics_process(delta: float) -> void:
 		_process_taunt(delta)
 		return
 
-	# Check for enrage
-	if not is_enraged and current_health <= max_health * enrage_threshold:
+	# Check for enrage (use difficulty modifier threshold if available)
+	var actual_enrage_threshold = DifficultyManager.get_enrage_threshold() if DifficultyManager else enrage_threshold
+	if not is_enraged and current_health <= max_health * actual_enrage_threshold:
 		_trigger_enrage()
 
 	super._physics_process(delta)

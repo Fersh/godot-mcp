@@ -68,6 +68,10 @@ var knockback_decay: float = 10.0
 var flash_timer: float = 0.0
 var flash_duration: float = 0.1
 
+# Champion system (Nightmare+ difficulty)
+var is_champion: bool = false
+var champion_indicator: Label = null
+
 # Animation - override these in subclasses for different spritesheet layouts
 var ROW_IDLE: int = 0
 var ROW_MOVE: int = 2
@@ -180,6 +184,10 @@ func _on_attack_complete() -> void:
 		var dist_to_player = global_position.distance_to(player.global_position)
 		if dist_to_player <= attack_range * 1.0:  # Exact range check
 			player.take_damage(attack_damage)
+			# Difficulty modifier: Chilling Touch - enemies slow player on hit
+			if DifficultyManager and DifficultyManager.has_enemy_slow_on_hit():
+				if player.has_method("apply_difficulty_slow"):
+					player.apply_difficulty_slow(0.15, 1.5)  # 15% slow for 1.5s
 			if AbilityManager and AbilityManager.has_thorns:
 				take_damage(AbilityManager.thorns_damage * AbilityManager.get_passive_damage_multiplier(), false)
 	can_attack = false
@@ -527,3 +535,41 @@ func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 		animation_frame = 0.0
 
 	sprite.frame = current_row * COLS_PER_ROW + int(animation_frame)
+
+# ============================================
+# CHAMPION SYSTEM (Nightmare+ Difficulty)
+# ============================================
+
+func make_champion() -> void:
+	"""Transform this enemy into a champion with 2x HP, damage boost, and visual indicator."""
+	is_champion = true
+
+	# Apply champion buffs
+	max_health *= 2.0
+	current_health = max_health
+	attack_damage *= 1.25
+	speed *= 1.15
+
+	# Visual changes - slightly larger
+	scale *= 1.2
+
+	# Update health bar
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+
+	# Create champion indicator
+	_create_champion_indicator()
+
+	# Apply golden/orange tint to indicate champion status
+	if sprite:
+		sprite.modulate = Color(1.0, 0.85, 0.5)  # Golden tint
+
+func _create_champion_indicator() -> void:
+	"""Create a visual indicator showing CHAMPION above the enemy."""
+	champion_indicator = Label.new()
+	champion_indicator.text = "CHAMPION"
+	champion_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	champion_indicator.position = Vector2(-35, -70)
+	champion_indicator.add_theme_font_size_override("font_size", 10)
+	champion_indicator.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))  # Gold
+	add_child(champion_indicator)

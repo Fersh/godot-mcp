@@ -14,6 +14,28 @@ signal elite_died(elite: Node)
 @export var coin_multiplier: float = 5.0
 @export var guaranteed_drop: bool = true
 
+# ============================================
+# ELITE AFFIX SYSTEM (Easy+ Difficulty)
+# ============================================
+enum EliteAffix { NONE, VAMPIRIC, SHIELDED, BERSERKER }
+
+var active_affix: EliteAffix = EliteAffix.NONE
+var affix_indicator: Label = null
+
+# Vampiric: Heals 15% of damage dealt
+const VAMPIRIC_HEAL_PERCENT: float = 0.15
+
+# Shielded: Gains a shield that absorbs damage, regenerates periodically
+var shield_amount: float = 0.0
+var shield_max: float = 0.0
+const SHIELD_PERCENT: float = 0.25  # 25% of max HP as shield
+const SHIELD_REGEN_INTERVAL: float = 8.0  # Regenerate shield every 8 seconds
+var shield_regen_timer: float = 0.0
+
+# Berserker: Gains attack speed as HP decreases (up to +50%)
+const BERSERKER_MAX_BONUS: float = 0.5
+var base_attack_cooldown_elite: float = 0.0
+
 # Attack system - elites can have multiple attack types
 enum AttackType { MELEE, RANGED, SPECIAL }
 
@@ -38,6 +60,9 @@ func _on_ready() -> void:
 	_setup_elite()
 	_init_attack_cooldowns()
 
+	# Roll for elite affix (Easy+ difficulty)
+	_roll_elite_affix()
+
 	# Start elite music (unless this is a boss subclass)
 	if enemy_rarity == "elite" and SoundManager:
 		SoundManager.play_elite_music(self)
@@ -61,6 +86,9 @@ func _physics_process(delta: float) -> void:
 		special_timer -= delta
 		if special_timer <= 0:
 			_on_special_complete()
+
+	# Update affix effects
+	_update_affix_effects(delta)
 
 	super._physics_process(delta)
 
@@ -245,8 +273,128 @@ func _drop_guaranteed_item() -> void:
 	dropped.setup(item)
 	get_parent().add_child(dropped)
 
-# Override take_damage to emit health changed signal
+# Override take_damage to emit health changed signal and handle shield
 func take_damage(amount: float, is_critical: bool = false) -> void:
+	# Handle Shielded affix - absorb damage with shield first
+	if active_affix == EliteAffix.SHIELDED and shield_amount > 0:
+		var absorbed = min(shield_amount, amount)
+		shield_amount -= absorbed
+		amount -= absorbed
+		if absorbed > 0:
+			_show_shield_absorb_effect()
+		if amount <= 0:
+			return  # All damage absorbed by shield
+
 	super.take_damage(amount, is_critical)
 	# Emit health changed signal for UI
 	elite_health_changed.emit(current_health, max_health)
+
+# ============================================
+# ELITE AFFIX METHODS
+# ============================================
+
+func _roll_elite_affix() -> void:
+	"""Roll for a random affix if elite_affixes modifier is active."""
+	if not DifficultyManager or not DifficultyManager.has_elite_affixes():
+		active_affix = EliteAffix.NONE
+		return
+
+	# Randomly select an affix
+	var roll = randi() % 3
+	match roll:
+		0:
+			active_affix = EliteAffix.VAMPIRIC
+		1:
+			active_affix = EliteAffix.SHIELDED
+			# Initialize shield
+			shield_max = max_health * SHIELD_PERCENT
+			shield_amount = shield_max
+			shield_regen_timer = SHIELD_REGEN_INTERVAL
+		2:
+			active_affix = EliteAffix.BERSERKER
+			# Store base attack cooldown for berserker scaling
+			base_attack_cooldown_elite = attack_cooldown
+
+	# Create visual indicator
+	_create_affix_indicator()
+
+func _create_affix_indicator() -> void:
+	"""Create a label showing the elite's affix."""
+	if active_affix == EliteAffix.NONE:
+		return
+
+	affix_indicator = Label.new()
+	affix_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	affix_indicator.position = Vector2(-40, -90)
+
+	var affix_text = ""
+	var affix_color = Color.WHITE
+
+	match active_affix:
+		EliteAffix.VAMPIRIC:
+			affix_text = "VAMPIRIC"
+			affix_color = Color(0.8, 0.2, 0.2)  # Red
+		EliteAffix.SHIELDED:
+			affix_text = "SHIELDED"
+			affix_color = Color(0.3, 0.6, 0.9)  # Blue
+		EliteAffix.BERSERKER:
+			affix_text = "BERSERKER"
+			affix_color = Color(0.9, 0.5, 0.1)  # Orange
+
+	affix_indicator.text = affix_text
+	affix_indicator.add_theme_font_size_override("font_size", 12)
+	affix_indicator.add_theme_color_override("font_color", affix_color)
+	add_child(affix_indicator)
+
+func _update_affix_effects(delta: float) -> void:
+	"""Update affix-specific effects each frame."""
+	match active_affix:
+		EliteAffix.SHIELDED:
+			# Regenerate shield periodically
+			shield_regen_timer -= delta
+			if shield_regen_timer <= 0 and shield_amount < shield_max:
+				shield_amount = shield_max
+				shield_regen_timer = SHIELD_REGEN_INTERVAL
+				_show_shield_regen_effect()
+
+		EliteAffix.BERSERKER:
+			# Scale attack speed based on missing HP
+			var hp_percent = current_health / max_health
+			var missing_hp_percent = 1.0 - hp_percent
+			var speed_bonus = missing_hp_percent * BERSERKER_MAX_BONUS
+			attack_cooldown = base_attack_cooldown_elite / (1.0 + speed_bonus)
+
+func _on_elite_attack_hit(damage_dealt: float) -> void:
+	"""Called when elite lands an attack. Handles Vampiric healing."""
+	if active_affix == EliteAffix.VAMPIRIC:
+		var heal_amount = damage_dealt * VAMPIRIC_HEAL_PERCENT
+		current_health = min(current_health + heal_amount, max_health)
+		_show_vampiric_heal_effect()
+		elite_health_changed.emit(current_health, max_health)
+
+func _show_vampiric_heal_effect() -> void:
+	"""Visual feedback for vampiric healing."""
+	if sprite:
+		# Brief green flash
+		var original_mod = sprite.modulate
+		sprite.modulate = Color(0.5, 1.0, 0.5)
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", original_mod, 0.2)
+
+func _show_shield_absorb_effect() -> void:
+	"""Visual feedback for shield absorbing damage."""
+	if sprite:
+		# Brief blue flash
+		var original_mod = sprite.modulate
+		sprite.modulate = Color(0.5, 0.7, 1.0)
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", original_mod, 0.15)
+
+func _show_shield_regen_effect() -> void:
+	"""Visual feedback for shield regenerating."""
+	if sprite:
+		# Blue pulse effect
+		var original_mod = sprite.modulate
+		sprite.modulate = Color(0.3, 0.6, 1.0)
+		var tween = create_tween()
+		tween.tween_property(sprite, "modulate", original_mod, 0.4)

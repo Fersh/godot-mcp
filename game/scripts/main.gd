@@ -40,6 +40,9 @@ var kill_streak_ui = null
 var challenge_controller = null
 var challenge_controller_script = preload("res://scripts/challenge_mode_controller.gd")
 
+# Challenge mode background texture
+var challenge_bg_texture = preload("res://assets/enviro/diff_1.png")
+
 func _ready() -> void:
 	add_to_group("main")
 
@@ -437,6 +440,11 @@ func _setup_challenge_mode() -> void:
 	"""Initialize challenge mode controller if in challenge mode."""
 	if not DifficultyManager or not DifficultyManager.is_challenge_mode():
 		return
+
+	# Swap background texture for challenge mode
+	var background = get_node_or_null("Background")
+	if background and background is Sprite2D and challenge_bg_texture:
+		background.texture = challenge_bg_texture
 
 	# Find the spawners
 	var enemy_spawner = get_node_or_null("EnemySpawner")

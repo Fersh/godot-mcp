@@ -37,6 +37,10 @@ var temp_speed_timer: float = 0.0
 var temp_attack_speed_boost: float = 0.0
 var temp_attack_speed_timer: float = 0.0
 
+# Difficulty modifier: slow from enemy hits
+var difficulty_slow_amount: float = 0.0
+var difficulty_slow_timer: float = 0.0
+
 # Toxic Traits trail spawning
 var toxic_trail_timer: float = 0.0
 const TOXIC_TRAIL_INTERVAL: float = 0.4  # Spawn pool every 0.4 seconds while moving
@@ -207,6 +211,13 @@ func _ready() -> void:
 	_apply_character_passive()
 
 	current_health = max_health
+
+	# Apply reduced starting HP modifier (Normal+ difficulty)
+	if DifficultyManager:
+		var starting_hp_percent = DifficultyManager.get_starting_hp_percent()
+		if starting_hp_percent < 1.0:
+			current_health = max_health * starting_hp_percent
+
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 
@@ -749,6 +760,17 @@ func _physics_process(delta: float) -> void:
 		elif active_buffs.has("attack_speed_boost"):
 			active_buffs["attack_speed_boost"].timer = temp_attack_speed_timer
 
+	# Update difficulty slow debuff timer (Chilling Touch modifier)
+	if difficulty_slow_timer > 0:
+		difficulty_slow_timer -= delta
+		if difficulty_slow_timer <= 0:
+			difficulty_slow_amount = 0.0
+			if active_buffs.has("chilling_touch"):
+				active_buffs.erase("chilling_touch")
+				buffs_changed = true
+		elif active_buffs.has("chilling_touch"):
+			active_buffs["chilling_touch"].timer = difficulty_slow_timer
+
 	# Bladestorm animation - rapid left/right attacking
 	if is_bladestorming:
 		bladestorm_timer -= delta
@@ -957,6 +979,9 @@ func _physics_process(delta: float) -> void:
 
 	# Apply speed with ability modifiers and temp boosts
 	var effective_speed = speed * (1.0 + temp_speed_boost)
+	# Apply difficulty slow debuff (Chilling Touch modifier)
+	if difficulty_slow_timer > 0:
+		effective_speed *= (1.0 - difficulty_slow_amount)
 	# Apply Swift Dodge speed bonus
 	if AbilityManager:
 		effective_speed *= AbilityManager.get_swift_dodge_speed_multiplier()
@@ -2145,7 +2170,11 @@ func give_kill_xp(enemy_max_hp: float = 100.0) -> void:
 
 # Ability system helper functions
 func heal(amount: float, _play_sound: bool = true, show_particles: bool = false, show_text: bool = false) -> void:
-	var actual_heal = min(amount, max_health - current_health)
+	# Apply reduced healing modifier (Nightmare+ difficulty)
+	var healing_mult = DifficultyManager.get_healing_multiplier() if DifficultyManager else 1.0
+	var modified_amount = amount * healing_mult
+
+	var actual_heal = min(modified_amount, max_health - current_health)
 	if actual_heal <= 0:
 		return  # Already at full health
 
@@ -2327,6 +2356,19 @@ func apply_temporary_attack_speed_boost(boost: float, duration: float) -> void:
 		"name": "Bloodthirst",
 		"description": "+" + str(int(boost * 100)) + "% Attack Speed",
 		"color": Color(0.8, 0.2, 0.2)  # Red
+	}
+	emit_signal("buff_changed", active_buffs)
+
+func apply_difficulty_slow(slow_percent: float, duration: float) -> void:
+	"""Apply slow debuff from difficulty modifier (Chilling Touch)."""
+	difficulty_slow_amount = slow_percent
+	difficulty_slow_timer = duration
+	active_buffs["chilling_touch"] = {
+		"timer": duration,
+		"duration": duration,
+		"name": "Chilled",
+		"description": "-" + str(int(slow_percent * 100)) + "% Move Speed",
+		"color": Color(0.4, 0.6, 0.9)  # Light blue (cold)
 	}
 	emit_signal("buff_changed", active_buffs)
 

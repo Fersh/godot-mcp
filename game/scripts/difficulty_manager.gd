@@ -28,42 +28,91 @@ const DIFFICULTY_DATA = {
 		"speed_mult": 1.0,
 		"spawn_rate_mult": 1.0,
 		"color": Color(0.5, 0.8, 0.5),  # Soft green
+		"modifiers": [],
 	},
 	DifficultyTier.VERY_EASY: {
 		"name": "Very Easy",
-		"description": "Training wheels are off.",
-		"health_mult": 1.5,
-		"damage_mult": 1.25,
-		"speed_mult": 1.1,
-		"spawn_rate_mult": 1.15,
+		"description": "Enemies apply Slow on hit.",
+		"health_mult": 1.6,
+		"damage_mult": 1.35,
+		"speed_mult": 1.12,
+		"spawn_rate_mult": 1.2,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
+		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Easy",
-		"description": "A fair challenge awaits.",
-		"health_mult": 2.25,
-		"damage_mult": 1.5,
-		"speed_mult": 1.2,
-		"spawn_rate_mult": 1.3,
+		"description": "+ Elites gain random affixes.",
+		"health_mult": 2.4,
+		"damage_mult": 1.65,
+		"speed_mult": 1.22,
+		"spawn_rate_mult": 1.4,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Normal",
-		"description": "This is how it was meant to be played.",
-		"health_mult": 3.5,
-		"damage_mult": 2.0,
-		"speed_mult": 1.3,
-		"spawn_rate_mult": 1.5,
+		"description": "+ Start at 75% HP. Boss enrages faster.",
+		"health_mult": 3.8,
+		"damage_mult": 2.1,
+		"speed_mult": 1.32,
+		"spawn_rate_mult": 1.6,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Nightmare",
-		"description": "Only the worthy survive.",
-		"health_mult": 5.0,
-		"damage_mult": 2.5,
-		"speed_mult": 1.4,
-		"spawn_rate_mult": 1.75,
+		"description": "+ Healing reduced 50%. Champion enemies.",
+		"health_mult": 5.5,
+		"damage_mult": 2.75,
+		"speed_mult": 1.45,
+		"spawn_rate_mult": 1.85,
 		"color": Color(0.9, 0.2, 0.2),  # Red
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
+	},
+}
+
+# ============================================
+# MODIFIER DEFINITIONS
+# ============================================
+# Modifiers are cumulative - higher difficulties include all lower modifiers
+
+const MODIFIER_DATA = {
+	# Very Easy+: Enemies apply slow on hit
+	"enemy_slow_on_hit": {
+		"name": "Chilling Touch",
+		"description": "Enemy attacks slow you by 15% for 1.5s",
+		"icon": "slow",
+	},
+	# Easy+: Elites get random affixes
+	"elite_affixes": {
+		"name": "Elite Affixes",
+		"description": "Elites spawn with random powers: Vampiric, Shielded, or Berserker",
+		"icon": "skull",
+	},
+	# Normal+: Start with reduced HP
+	"reduced_starting_hp": {
+		"name": "Battle Worn",
+		"description": "Start each run at 75% HP",
+		"icon": "heart_broken",
+	},
+	# Normal+: Bosses enrage faster
+	"faster_enrage": {
+		"name": "Bloodlust",
+		"description": "Bosses enrage at 35% HP instead of 20%",
+		"icon": "rage",
+	},
+	# Nightmare+: Reduced healing effectiveness
+	"reduced_healing": {
+		"name": "Cursed Blood",
+		"description": "All healing reduced by 50%",
+		"icon": "poison",
+	},
+	# Nightmare+: Champion (buffed) normal enemies can spawn
+	"champion_enemies": {
+		"name": "Champions Rise",
+		"description": "Rare champion enemies spawn with 2x HP and random effects",
+		"icon": "crown",
 	},
 }
 
@@ -127,6 +176,65 @@ func get_spawn_rate_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
 		return 1.0
 	return DIFFICULTY_DATA[current_difficulty]["spawn_rate_mult"]
+
+# ============================================
+# MODIFIER CHECKS
+# ============================================
+
+func get_active_modifiers() -> Array:
+	"""Get list of active modifier IDs for current difficulty."""
+	if current_mode == GameMode.ENDLESS:
+		return []
+	return DIFFICULTY_DATA[current_difficulty]["modifiers"]
+
+func has_modifier(modifier_id: String) -> bool:
+	"""Check if a specific modifier is active."""
+	if current_mode == GameMode.ENDLESS:
+		return false
+	return modifier_id in DIFFICULTY_DATA[current_difficulty]["modifiers"]
+
+func get_modifier_info(modifier_id: String) -> Dictionary:
+	"""Get info about a specific modifier."""
+	if modifier_id in MODIFIER_DATA:
+		return MODIFIER_DATA[modifier_id]
+	return {}
+
+# Convenience functions for specific modifiers
+func has_enemy_slow_on_hit() -> bool:
+	return has_modifier("enemy_slow_on_hit")
+
+func has_elite_affixes() -> bool:
+	return has_modifier("elite_affixes")
+
+func has_reduced_starting_hp() -> bool:
+	return has_modifier("reduced_starting_hp")
+
+func get_starting_hp_percent() -> float:
+	"""Get starting HP percentage (1.0 = full, 0.75 = 75%)."""
+	if has_reduced_starting_hp():
+		return 0.75
+	return 1.0
+
+func has_faster_enrage() -> bool:
+	return has_modifier("faster_enrage")
+
+func get_enrage_threshold() -> float:
+	"""Get boss enrage HP threshold (0.2 = 20%, 0.35 = 35%)."""
+	if has_faster_enrage():
+		return 0.35
+	return 0.20
+
+func has_reduced_healing() -> bool:
+	return has_modifier("reduced_healing")
+
+func get_healing_multiplier() -> float:
+	"""Get healing effectiveness multiplier (1.0 = full, 0.5 = 50%)."""
+	if has_reduced_healing():
+		return 0.5
+	return 1.0
+
+func has_champion_enemies() -> bool:
+	return has_modifier("champion_enemies")
 
 # ============================================
 # MODE & DIFFICULTY SETTERS

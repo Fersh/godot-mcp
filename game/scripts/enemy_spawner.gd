@@ -86,6 +86,11 @@ func spawn_enemy() -> void:
 	for i in range(spawn_count):
 		var enemy = scene.instantiate()
 		enemy.global_position = get_spawn_position()
+
+		# Check for champion spawn (Nightmare+ difficulty)
+		if _should_spawn_champion():
+			_make_champion(enemy)
+
 		get_parent().add_child(enemy)
 
 		# Vary enemy type for additional spawns
@@ -283,3 +288,33 @@ func start_spawning() -> void:
 func get_game_time() -> float:
 	"""Get the current game time in seconds."""
 	return game_time
+
+# ============================================
+# CHAMPION ENEMIES (Nightmare+ Difficulty)
+# ============================================
+
+const CHAMPION_SPAWN_CHANCE: float = 0.08  # 8% chance per enemy
+
+func _should_spawn_champion() -> bool:
+	"""Check if this enemy should be a champion."""
+	if not DifficultyManager or not DifficultyManager.has_champion_enemies():
+		return false
+	return randf() < CHAMPION_SPAWN_CHANCE
+
+func _make_champion(enemy: Node) -> void:
+	"""Transform a normal enemy into a champion with buffs."""
+	if not enemy.has_method("make_champion"):
+		# Fallback: apply buffs directly if method doesn't exist
+		if "max_health" in enemy:
+			enemy.max_health *= 2.0
+			if "current_health" in enemy:
+				enemy.current_health = enemy.max_health
+		if "attack_damage" in enemy:
+			enemy.attack_damage *= 1.25
+		if "speed" in enemy:
+			enemy.speed *= 1.15
+		# Visual indicator
+		if "scale" in enemy:
+			enemy.scale *= 1.2
+	else:
+		enemy.make_champion()
