@@ -6,7 +6,14 @@ extends CanvasLayer
 @onready var princesses_button: Button = $ButtonContainer/PrincessesButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 
+var curse_label: Label = null
+var pixel_font: Font = null
+
 func _ready() -> void:
+	# Load pixel font
+	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
 	# Connect button signals
 	play_button.pressed.connect(_on_play_pressed)
 	gear_button.pressed.connect(_on_gear_pressed)
@@ -21,10 +28,44 @@ func _ready() -> void:
 
 	# Update displays
 	_update_coin_display()
+	_update_curse_display()
 
 	# Play main menu music (1. Stolen Future)
 	if SoundManager:
 		SoundManager.play_menu_music()
+
+func _update_curse_display() -> void:
+	"""Show active curse count below play button (if any)."""
+	if not PrincessManager:
+		return
+
+	var curse_count = PrincessManager.get_enabled_curse_count()
+	if curse_count == 0:
+		if curse_label:
+			curse_label.visible = false
+		return
+
+	# Create label if not exists
+	if curse_label == null:
+		curse_label = Label.new()
+		curse_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		curse_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+		curse_label.anchor_top = 0.92
+		curse_label.anchor_bottom = 0.97
+		curse_label.offset_left = 50
+		curse_label.offset_right = -50
+		if pixel_font:
+			curse_label.add_theme_font_override("font", pixel_font)
+		curse_label.add_theme_font_size_override("font_size", 12)
+		curse_label.add_theme_color_override("font_color", Color.WHITE)
+		curse_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+		curse_label.add_theme_constant_override("shadow_offset_x", 2)
+		curse_label.add_theme_constant_override("shadow_offset_y", 2)
+		add_child(curse_label)
+
+	var multiplier = PrincessManager.get_total_bonus_multiplier()
+	curse_label.text = "%d Curse%s Active (%dx Bonus)" % [curse_count, "s" if curse_count > 1 else "", multiplier]
+	curse_label.visible = true
 
 func _style_golden_button(button: Button) -> void:
 	# Golden/yellow button with wooden bottom border (matching reference image)

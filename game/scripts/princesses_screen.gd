@@ -117,7 +117,7 @@ func _build_ui() -> void:
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
 	title_label.add_theme_font_size_override("font_size", 20)
-	title_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.85))
+	title_label.add_theme_color_override("font_color", Color.WHITE)
 	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	title_label.add_theme_constant_override("shadow_offset_x", 2)
 	title_label.add_theme_constant_override("shadow_offset_y", 2)
@@ -169,11 +169,30 @@ func _build_ui() -> void:
 	_style_back_button(back_button)
 	add_child(back_button)
 
+	# Curse explanation (funny copy)
+	var explanation_label = Label.new()
+	explanation_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	explanation_label.offset_top = 100
+	explanation_label.offset_bottom = 118
+	explanation_label.offset_left = 20
+	explanation_label.offset_right = -20
+	explanation_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	explanation_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		explanation_label.add_theme_font_override("font", pixel_font)
+	explanation_label.add_theme_font_size_override("font_size", 14)
+	explanation_label.add_theme_color_override("font_color", Color(0.9, 0.88, 0.95))
+	explanation_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	explanation_label.add_theme_constant_override("shadow_offset_x", 1)
+	explanation_label.add_theme_constant_override("shadow_offset_y", 1)
+	explanation_label.text = "Enable princesses to make your life harder (but earn more stuff)"
+	add_child(explanation_label)
+
 	# Multiplier display (above the main content)
 	multiplier_label = Label.new()
 	multiplier_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	multiplier_label.offset_top = 105
-	multiplier_label.offset_bottom = 130
+	multiplier_label.offset_top = 118
+	multiplier_label.offset_bottom = 140
 	multiplier_label.offset_left = 20
 	multiplier_label.offset_right = -20
 	multiplier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -190,7 +209,7 @@ func _build_ui() -> void:
 	# Main container (positioned below header and multiplier)
 	var main_container = HBoxContainer.new()
 	main_container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	main_container.offset_top = 140
+	main_container.offset_top = 145
 	main_container.offset_left = 20
 	main_container.offset_right = -20
 	main_container.offset_bottom = -80
