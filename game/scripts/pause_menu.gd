@@ -19,6 +19,8 @@ const COLOR_TEXT_DIM = Color(0.55, 0.50, 0.42, 1.0)
 @onready var resume_button: Button = $Panel/VBoxContainer/ButtonContainer/ResumeButton
 @onready var give_up_button: Button = $Panel/VBoxContainer/ButtonContainer/GiveUpButton
 
+var difficulty_label: Label = null
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -29,6 +31,7 @@ func _ready() -> void:
 	give_up_button.pressed.connect(_on_give_up_pressed)
 
 	_setup_style()
+	_setup_difficulty_label()
 
 func _setup_style() -> void:
 	# Style the main panel
@@ -63,6 +66,29 @@ func _setup_style() -> void:
 	_style_button(resume_button, Color(0.2, 0.5, 0.3))
 	_style_button(give_up_button, Color(0.5, 0.2, 0.2))
 
+func _setup_difficulty_label() -> void:
+	# Create difficulty label at top middle of screen
+	difficulty_label = Label.new()
+	difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	difficulty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	# Position at top middle
+	difficulty_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	difficulty_label.offset_top = 60
+	difficulty_label.offset_bottom = 100
+	difficulty_label.offset_left = -200
+	difficulty_label.offset_right = 200
+
+	# Style
+	if pixel_font:
+		difficulty_label.add_theme_font_override("font", pixel_font)
+	difficulty_label.add_theme_font_size_override("font_size", 16)
+	difficulty_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	difficulty_label.add_theme_constant_override("shadow_offset_x", 2)
+	difficulty_label.add_theme_constant_override("shadow_offset_y", 2)
+
+	add_child(difficulty_label)
+
 func _style_button(button: Button, base_color: Color) -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = base_color
@@ -96,8 +122,25 @@ func _style_button(button: Button, base_color: Color) -> void:
 
 func show_menu() -> void:
 	_populate_powerups()
+	_update_difficulty_label()
 	visible = true
 	get_tree().paused = true
+
+func _update_difficulty_label() -> void:
+	if not difficulty_label:
+		return
+
+	if DifficultyManager:
+		if DifficultyManager.is_challenge_mode():
+			var diff_name = DifficultyManager.get_difficulty_name()
+			var diff_color = DifficultyManager.get_difficulty_color()
+			difficulty_label.text = diff_name
+			difficulty_label.add_theme_color_override("font_color", diff_color)
+		else:
+			difficulty_label.text = "Endless"
+			difficulty_label.add_theme_color_override("font_color", Color(0.3, 0.6, 0.9))
+	else:
+		difficulty_label.text = ""
 
 func hide_menu() -> void:
 	visible = false

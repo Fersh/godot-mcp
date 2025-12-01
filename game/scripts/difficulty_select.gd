@@ -150,11 +150,13 @@ func _create_difficulty_buttons() -> void:
 	for tier in DifficultyManager.get_all_difficulties():
 		var btn = Button.new()
 		var data = DifficultyManager.DIFFICULTY_DATA[tier]
-		var is_unlocked = DifficultyManager.is_difficulty_unlocked(tier)
+		var is_completed = DifficultyManager.is_difficulty_completed(tier)
 
-		btn.text = data["name"] if is_unlocked else data["name"] + " [LOCKED]"
+		# Add checkmark if completed
+		btn.text = data["name"] + "  ✓" if is_completed else data["name"]
 		btn.custom_minimum_size = Vector2(300, 45)
-		btn.disabled = not is_unlocked
+		# All difficulties are now selectable (temporary bypass)
+		btn.disabled = false
 
 		if pixel_font:
 			btn.add_theme_font_override("font", pixel_font)
@@ -164,7 +166,7 @@ func _create_difficulty_buttons() -> void:
 		btn.set_meta("tier", tier)
 		btn.pressed.connect(_on_difficulty_selected.bind(tier))
 
-		_style_difficulty_button(btn, data["color"], is_unlocked)
+		_style_difficulty_button(btn, data["color"], true)  # Always style as unlocked
 		difficulty_container.add_child(btn)
 		difficulty_buttons.append(btn)
 
@@ -255,10 +257,13 @@ func _update_selection_display() -> void:
 	for btn in difficulty_buttons:
 		var tier = btn.get_meta("tier") as DifficultyManager.DifficultyTier
 		var is_selected = (tier == selected_difficulty)
-		var is_unlocked = DifficultyManager.is_difficulty_unlocked(tier) if DifficultyManager else false
 		var data = DifficultyManager.DIFFICULTY_DATA[tier] if DifficultyManager else {}
+		var is_completed = DifficultyManager.is_difficulty_completed(tier) if DifficultyManager else false
 
-		if is_selected and is_unlocked:
+		# Update button text with checkmark if completed
+		btn.text = data["name"] + "  ✓" if is_completed else data["name"]
+
+		if is_selected:
 			# Highlight selected
 			var style = btn.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
 			style.bg_color = data["color"].darkened(0.2)
@@ -269,7 +274,7 @@ func _update_selection_display() -> void:
 			style.border_color = Color.WHITE
 			btn.add_theme_stylebox_override("normal", style)
 		else:
-			_style_difficulty_button(btn, data.get("color", Color.GRAY), is_unlocked)
+			_style_difficulty_button(btn, data.get("color", Color.GRAY), true)
 
 	# Update description
 	if selected_mode == DifficultyManager.GameMode.ENDLESS:
@@ -305,9 +310,9 @@ func _on_difficulty_selected(tier: DifficultyManager.DifficultyTier) -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
-	if DifficultyManager and DifficultyManager.is_difficulty_unlocked(tier):
-		selected_difficulty = tier
-		_update_selection_display()
+	# All difficulties are now selectable (temporary bypass)
+	selected_difficulty = tier
+	_update_selection_display()
 
 func _on_start_pressed() -> void:
 	if SoundManager:

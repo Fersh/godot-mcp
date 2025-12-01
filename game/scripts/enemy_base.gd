@@ -71,6 +71,7 @@ var flash_duration: float = 0.1
 # Champion system (Nightmare+ difficulty)
 var is_champion: bool = false
 var champion_indicator: Label = null
+var champion_fire_aura: AnimatedSprite2D = null
 
 # Animation - override these in subclasses for different spritesheet layouts
 var ROW_IDLE: int = 0
@@ -565,11 +566,43 @@ func make_champion() -> void:
 		sprite.modulate = Color(1.0, 0.85, 0.5)  # Golden tint
 
 func _create_champion_indicator() -> void:
-	"""Create a visual indicator showing CHAMPION above the enemy."""
+	"""Create a visual indicator showing CHAMPION above the health bar and fire aura below feet."""
+	# Small CHAMPION label just above health bar
 	champion_indicator = Label.new()
 	champion_indicator.text = "CHAMPION"
 	champion_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	champion_indicator.position = Vector2(-35, -70)
-	champion_indicator.add_theme_font_size_override("font_size", 10)
+	champion_indicator.position = Vector2(-28, -38)  # Just above health bar (health bar is at -24)
+	champion_indicator.add_theme_font_size_override("font_size", 6)
 	champion_indicator.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))  # Gold
+	champion_indicator.add_theme_color_override("font_shadow_color", Color(0.3, 0.1, 0.0, 0.8))
+	champion_indicator.add_theme_constant_override("shadow_offset_x", 1)
+	champion_indicator.add_theme_constant_override("shadow_offset_y", 1)
 	add_child(champion_indicator)
+
+	# Fire aura effect below feet
+	_create_champion_fire_aura()
+
+func _create_champion_fire_aura() -> void:
+	"""Create animated fire aura effect below the champion's feet."""
+	champion_fire_aura = AnimatedSprite2D.new()
+	champion_fire_aura.position = Vector2(0, 10)  # Below the enemy's feet
+	champion_fire_aura.z_index = -1  # Render behind the enemy
+	champion_fire_aura.scale = Vector2(0.5, 0.5)  # Smaller to fit under enemy
+
+	# Create sprite frames from the fire aura images
+	var frames = SpriteFrames.new()
+	frames.add_animation("fire")
+	frames.set_animation_loop("fire", true)
+	frames.set_animation_speed("fire", 24.0)  # 24 FPS for smooth fire
+
+	# Load all 68 frames (1_0.png to 1_67.png)
+	for i in range(68):
+		var path = "res://assets/sprites/effects/Fire Aura/6/1_%d.png" % i
+		if ResourceLoader.exists(path):
+			var texture = load(path)
+			if texture:
+				frames.add_frame("fire", texture)
+
+	champion_fire_aura.sprite_frames = frames
+	champion_fire_aura.play("fire")
+	add_child(champion_fire_aura)

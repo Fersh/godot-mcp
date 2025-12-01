@@ -30,10 +30,10 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"soul_reaper",
 			"Soul Reaper",
-			"Kills heal 5% HP and grant stacking damage",
+			"Kills heal 1% HP and grant stacking damage",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.ON_KILL,
-			[{effect_type = AbilityData.EffectType.SOUL_REAPER, value = 0.05}]
+			[{effect_type = AbilityData.EffectType.SOUL_REAPER, value = 0.01}]
 		),
 
 		# Summoner's Aid

@@ -15,7 +15,7 @@
 		<key>CFBundleShortVersionString</key>
 		<string>1.0.0</string>
 		<key>CFBundleVersion</key>
-		<string>6</string>
+		<string>7</string>
 		<key>SigningIdentity</key>
 		<string>Apple Development: Mark Fershteyn (KWGXMXY685)</string>
 		<key>Team</key>
@@ -24,7 +24,7 @@
 	<key>ArchiveVersion</key>
 	<integer>2</integer>
 	<key>CreationDate</key>
-	<date>2025-12-01T01:18:52Z</date>
+	<date>2025-12-01T15:45:03Z</date>
 	<key>Name</key>
 	<string>Rogue Arena</string>
 	<key>SchemeName</key>

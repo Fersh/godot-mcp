@@ -117,8 +117,9 @@ func _trigger_victory() -> void:
 	"""Handle challenge completion."""
 	challenge_complete = true
 
-	# Unlock next difficulty
+	# Mark difficulty as completed and unlock next
 	if DifficultyManager:
+		DifficultyManager.mark_difficulty_completed(DifficultyManager.current_difficulty)
 		var unlocked = DifficultyManager.unlock_next_difficulty()
 		if unlocked:
 			var next = DifficultyManager.get_next_difficulty(DifficultyManager.current_difficulty)

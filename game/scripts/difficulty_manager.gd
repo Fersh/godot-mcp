@@ -18,6 +18,9 @@ var current_difficulty: DifficultyTier = DifficultyTier.JUVENILE
 # Unlocked difficulties (persisted)
 var unlocked_difficulties: Array[DifficultyTier] = [DifficultyTier.JUVENILE]
 
+# Completed difficulties (persisted) - tracks which difficulties have been beaten
+var completed_difficulties: Array[DifficultyTier] = []
+
 # Difficulty configuration data
 const DIFFICULTY_DATA = {
 	DifficultyTier.JUVENILE: {
@@ -33,40 +36,40 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.VERY_EASY: {
 		"name": "Very Easy",
 		"description": "Enemies apply Slow on hit.",
-		"health_mult": 1.6,
-		"damage_mult": 1.35,
-		"speed_mult": 1.12,
-		"spawn_rate_mult": 1.2,
+		"health_mult": 3.2,
+		"damage_mult": 2.7,
+		"speed_mult": 1.24,
+		"spawn_rate_mult": 2.4,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Easy",
 		"description": "+ Elites gain random affixes.",
-		"health_mult": 2.4,
-		"damage_mult": 1.65,
-		"speed_mult": 1.22,
-		"spawn_rate_mult": 1.4,
+		"health_mult": 4.8,
+		"damage_mult": 3.3,
+		"speed_mult": 1.44,
+		"spawn_rate_mult": 2.8,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Normal",
 		"description": "+ Start at 75% HP. Boss enrages faster.",
-		"health_mult": 3.8,
-		"damage_mult": 2.1,
-		"speed_mult": 1.32,
-		"spawn_rate_mult": 1.6,
+		"health_mult": 7.6,
+		"damage_mult": 4.2,
+		"speed_mult": 1.64,
+		"spawn_rate_mult": 3.2,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Nightmare",
 		"description": "+ Healing reduced 50%. Champion enemies.",
-		"health_mult": 5.5,
-		"damage_mult": 2.75,
-		"speed_mult": 1.45,
-		"spawn_rate_mult": 1.85,
+		"health_mult": 11.0,
+		"damage_mult": 5.5,
+		"speed_mult": 1.9,
+		"spawn_rate_mult": 3.7,
 		"color": Color(0.9, 0.2, 0.2),  # Red
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
 	},
@@ -120,6 +123,7 @@ const MODIFIER_DATA = {
 signal difficulty_changed(tier: DifficultyTier)
 signal mode_changed(mode: GameMode)
 signal difficulty_unlocked(tier: DifficultyTier)
+signal difficulty_completed(tier: DifficultyTier)
 
 func _ready() -> void:
 	load_progress()
@@ -245,9 +249,9 @@ func set_mode(mode: GameMode) -> void:
 	mode_changed.emit(mode)
 
 func set_difficulty(tier: DifficultyTier) -> void:
-	if is_difficulty_unlocked(tier):
-		current_difficulty = tier
-		difficulty_changed.emit(tier)
+	# Temporarily allow all difficulties to be set (bypass unlock check)
+	current_difficulty = tier
+	difficulty_changed.emit(tier)
 
 # ============================================
 # UNLOCK SYSTEM
@@ -255,6 +259,15 @@ func set_difficulty(tier: DifficultyTier) -> void:
 
 func is_difficulty_unlocked(tier: DifficultyTier) -> bool:
 	return tier in unlocked_difficulties
+
+func is_difficulty_completed(tier: DifficultyTier) -> bool:
+	return tier in completed_difficulties
+
+func mark_difficulty_completed(tier: DifficultyTier) -> void:
+	if tier not in completed_difficulties:
+		completed_difficulties.append(tier)
+		difficulty_completed.emit(tier)
+		save_progress()
 
 func get_unlock_requirement(tier: DifficultyTier) -> DifficultyTier:
 	# Returns which difficulty must be completed to unlock this one
@@ -318,10 +331,14 @@ func get_all_difficulties() -> Array[DifficultyTier]:
 func save_progress() -> void:
 	var save_data = {
 		"unlocked_difficulties": [],
+		"completed_difficulties": [],
 	}
 
 	for tier in unlocked_difficulties:
 		save_data["unlocked_difficulties"].append(tier)
+
+	for tier in completed_difficulties:
+		save_data["completed_difficulties"].append(tier)
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -346,6 +363,13 @@ func load_progress() -> void:
 			for tier_val in saved_unlocks:
 				if tier_val is int and tier_val in DifficultyTier.values():
 					unlocked_difficulties.append(tier_val as DifficultyTier)
+
+			# Load completed difficulties
+			completed_difficulties.clear()
+			var saved_completed = data.get("completed_difficulties", [])
+			for tier_val in saved_completed:
+				if tier_val is int and tier_val in DifficultyTier.values():
+					completed_difficulties.append(tier_val as DifficultyTier)
 
 			# Ensure Juvenile is always unlocked
 			if DifficultyTier.JUVENILE not in unlocked_difficulties:
