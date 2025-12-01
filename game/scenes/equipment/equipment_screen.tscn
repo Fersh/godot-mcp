@@ -79,7 +79,8 @@ layout_mode = 2
 
 [node name="CharacterTabs" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
-alignment = 1
+size_flags_horizontal = 3
+alignment = 0
 theme_override_constants/separation = 6
 
 [node name="TabSpacer" type="Control" parent="Panel/VBoxContainer"]

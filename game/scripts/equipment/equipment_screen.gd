@@ -69,6 +69,7 @@ func _ready() -> void:
 
 	_setup_confirmation_dialog()
 	_setup_ui_style()
+	_setup_top_coins_display()
 	_setup_character_row()
 	_refresh_display()
 
@@ -221,6 +222,7 @@ const CHARACTER_NAMES = {
 
 var character_dropdown: OptionButton = null
 var header_sort_button: OptionButton = null
+var top_coins_label: Label = null
 
 func _setup_character_row() -> void:
 	# Clear existing tabs container and repurpose it as a row
@@ -229,25 +231,18 @@ func _setup_character_row() -> void:
 
 	# Set up the container as a full-width row
 	character_tabs.alignment = BoxContainer.ALIGNMENT_BEGIN
-	character_tabs.add_theme_constant_override("separation", 20)
+	character_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	character_tabs.add_theme_constant_override("separation", 10)
 
-	# Left side: Character label + dropdown
+	# Left side: Character dropdown + Combine button (no label)
 	var left_container = HBoxContainer.new()
 	left_container.add_theme_constant_override("separation", 10)
-
-	var char_label = Label.new()
-	char_label.text = "Character:"
-	if pixel_font:
-		char_label.add_theme_font_override("font", pixel_font)
-	char_label.add_theme_font_size_override("font_size", 14)
-	char_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	left_container.add_child(char_label)
 
 	character_dropdown = OptionButton.new()
 	for i in range(CHARACTER_IDS.size()):
 		var char_id = CHARACTER_IDS[i]
 		character_dropdown.add_item(CHARACTER_NAMES[char_id], i)
-	character_dropdown.custom_minimum_size = Vector2(140, 36)
+	character_dropdown.custom_minimum_size = Vector2(150, 36)
 	if pixel_font:
 		character_dropdown.add_theme_font_override("font", pixel_font)
 	character_dropdown.add_theme_font_size_override("font_size", 14)
@@ -262,6 +257,16 @@ func _setup_character_row() -> void:
 	character_dropdown.item_selected.connect(_on_character_selected)
 	left_container.add_child(character_dropdown)
 
+	# Combine button next to character select
+	combine_button = Button.new()
+	combine_button.custom_minimum_size = Vector2(100, 36)
+	if pixel_font:
+		combine_button.add_theme_font_override("font", pixel_font)
+	combine_button.add_theme_font_size_override("font_size", 12)
+	_update_combine_button()
+	combine_button.pressed.connect(_on_combine_button_pressed)
+	left_container.add_child(combine_button)
+
 	character_tabs.add_child(left_container)
 
 	# Spacer to push sort to the right
@@ -269,25 +274,14 @@ func _setup_character_row() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	character_tabs.add_child(spacer)
 
-	# Right side: Sort label + dropdown
-	var right_container = HBoxContainer.new()
-	right_container.add_theme_constant_override("separation", 10)
-
-	var sort_label = Label.new()
-	sort_label.text = "Sort:"
-	if pixel_font:
-		sort_label.add_theme_font_override("font", pixel_font)
-	sort_label.add_theme_font_size_override("font_size", 14)
-	sort_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	right_container.add_child(sort_label)
-
+	# Right side: Sort dropdown with "Sort by " prefix in items
 	header_sort_button = OptionButton.new()
-	header_sort_button.add_item("Rarity", EquipmentManager.SortBy.RARITY)
-	header_sort_button.add_item("Category", EquipmentManager.SortBy.CATEGORY)
-	header_sort_button.add_item("Equipped", EquipmentManager.SortBy.EQUIPPED)
-	header_sort_button.add_item("Name", EquipmentManager.SortBy.NAME)
-	header_sort_button.add_item("Level", EquipmentManager.SortBy.ITEM_LEVEL)
-	header_sort_button.custom_minimum_size = Vector2(120, 36)
+	header_sort_button.add_item("Sort by Rarity", EquipmentManager.SortBy.RARITY)
+	header_sort_button.add_item("Sort by Category", EquipmentManager.SortBy.CATEGORY)
+	header_sort_button.add_item("Sort by Equipped", EquipmentManager.SortBy.EQUIPPED)
+	header_sort_button.add_item("Sort by Name", EquipmentManager.SortBy.NAME)
+	header_sort_button.add_item("Sort by Level", EquipmentManager.SortBy.ITEM_LEVEL)
+	header_sort_button.custom_minimum_size = Vector2(170, 36)
 	if pixel_font:
 		header_sort_button.add_theme_font_override("font", pixel_font)
 	header_sort_button.add_theme_font_size_override("font_size", 14)
@@ -300,9 +294,80 @@ func _setup_character_row() -> void:
 			break
 
 	header_sort_button.item_selected.connect(_on_header_sort_changed)
-	right_container.add_child(header_sort_button)
+	character_tabs.add_child(header_sort_button)
 
-	character_tabs.add_child(right_container)
+	# Align with panels after layout
+	_align_character_row.call_deferred()
+
+func _align_character_row() -> void:
+	# Wait for layout to complete
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	# Get the positions of equipment panel and inventory panel
+	var equip_rect = equipment_panel.get_global_rect()
+	var inv_rect = inventory_panel.get_global_rect()
+	var tabs_rect = character_tabs.get_global_rect()
+
+	# Calculate margins to align character dropdown with equipment panel left edge
+	# and sort dropdown with inventory panel right edge
+	var left_margin = equip_rect.position.x - tabs_rect.position.x
+	var right_margin = tabs_rect.end.x - inv_rect.end.x
+
+	# Create margin container wrapper if needed
+	if left_margin > 0 or right_margin > 0:
+		# Add padding to the character tabs
+		var left_spacer = Control.new()
+		left_spacer.custom_minimum_size.x = max(0, left_margin)
+		character_tabs.add_child(left_spacer)
+		character_tabs.move_child(left_spacer, 0)
+
+		# Adjust the right side by adding margin to the sort button container
+		if right_margin > 0:
+			var right_spacer = Control.new()
+			right_spacer.custom_minimum_size.x = max(0, right_margin)
+			character_tabs.add_child(right_spacer)
+
+func _setup_top_coins_display() -> void:
+	# Create coins display in top right (matching main menu style)
+	var coins_container = HBoxContainer.new()
+	coins_container.name = "TopCoinsDisplay"
+	coins_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	coins_container.anchor_left = 1.0
+	coins_container.anchor_right = 1.0
+	coins_container.offset_left = -130
+	coins_container.offset_top = 30
+	coins_container.offset_right = -30
+	coins_container.offset_bottom = 65
+	coins_container.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	coins_container.alignment = BoxContainer.ALIGNMENT_END
+	coins_container.add_theme_constant_override("separation", 6)
+
+	var coin_icon = Label.new()
+	coin_icon.text = "●"
+	if pixel_font:
+		coin_icon.add_theme_font_override("font", pixel_font)
+	coin_icon.add_theme_font_size_override("font_size", 20)
+	coin_icon.add_theme_color_override("font_color", Color(1, 0.84, 0))
+	coin_icon.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	coin_icon.add_theme_constant_override("shadow_offset_x", 2)
+	coin_icon.add_theme_constant_override("shadow_offset_y", 2)
+	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coins_container.add_child(coin_icon)
+
+	top_coins_label = Label.new()
+	top_coins_label.text = "%d" % (StatsManager.spendable_coins if StatsManager else 0)
+	if pixel_font:
+		top_coins_label.add_theme_font_override("font", pixel_font)
+	top_coins_label.add_theme_font_size_override("font_size", 16)
+	top_coins_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	top_coins_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	top_coins_label.add_theme_constant_override("shadow_offset_x", 2)
+	top_coins_label.add_theme_constant_override("shadow_offset_y", 2)
+	top_coins_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coins_container.add_child(top_coins_label)
+
+	add_child(coins_container)
 
 func _style_dropdown(dropdown: OptionButton) -> void:
 	var style = StyleBoxFlat.new()
@@ -435,8 +500,13 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 		name_label.text = display_name
 		name_label.add_theme_color_override("font_color", equipped.get_rarity_color())
 	else:
-		name_label.text = "Empty"
-		name_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+		# Show "Banned" for Beast's weapon slot (Beast fights unarmed)
+		if slot == ItemData.Slot.WEAPON and selected_character == "beast":
+			name_label.text = "Banned"
+			name_label.add_theme_color_override("font_color", Color(0.6, 0.3, 0.3))
+		else:
+			name_label.text = "Empty"
+			name_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 
 	if item_name_font:
 		name_label.add_theme_font_override("font", item_name_font)
@@ -556,8 +626,6 @@ func _refresh_inventory() -> void:
 			var empty_slot = _create_empty_slot()
 			inventory_grid.add_child(empty_slot)
 
-	# Update inventory header with sort and actions
-	_update_inventory_header()
 
 func _create_empty_slot() -> Button:
 	var button = Button.new()
@@ -1365,75 +1433,7 @@ func _input(event: InputEvent) -> void:
 
 # ============= INVENTORY HEADER WITH SORT & ACTIONS =============
 
-var inventory_header: HBoxContainer = null
-var sort_button: OptionButton = null
 var combine_button: Button = null
-var coins_label: Label = null
-
-func _update_inventory_header() -> void:
-	# Find or create the header container
-	var inventory_section = inventory_panel.get_node_or_null("InventorySection")
-	if not inventory_section:
-		return
-
-	# Remove old header if exists
-	if inventory_header and is_instance_valid(inventory_header):
-		inventory_header.queue_free()
-		await get_tree().process_frame
-
-	# Create header row
-	inventory_header = HBoxContainer.new()
-	inventory_header.name = "InventoryHeader"
-	inventory_header.alignment = BoxContainer.ALIGNMENT_CENTER
-	inventory_header.add_theme_constant_override("separation", 12)
-
-	# Coins display
-	var coins_container = HBoxContainer.new()
-	coins_container.add_theme_constant_override("separation", 4)
-
-	var coin_icon = Label.new()
-	coin_icon.text = "●"
-	if pixel_font:
-		coin_icon.add_theme_font_override("font", pixel_font)
-	coin_icon.add_theme_font_size_override("font_size", 14)
-	coin_icon.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
-	coins_container.add_child(coin_icon)
-
-	coins_label = Label.new()
-	coins_label.text = "%d" % (StatsManager.spendable_coins if StatsManager else 0)
-	if pixel_font:
-		coins_label.add_theme_font_override("font", pixel_font)
-	coins_label.add_theme_font_size_override("font_size", 14)
-	coins_label.add_theme_color_override("font_color", COLOR_TEXT)
-	coins_container.add_child(coins_label)
-
-	inventory_header.add_child(coins_container)
-
-	# Spacer
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	inventory_header.add_child(spacer)
-
-	# Combine button
-	combine_button = Button.new()
-	combine_button.custom_minimum_size = Vector2(100, 30)
-	if pixel_font:
-		combine_button.add_theme_font_override("font", pixel_font)
-	combine_button.add_theme_font_size_override("font_size", 12)
-
-	_update_combine_button()
-	combine_button.pressed.connect(_on_combine_button_pressed)
-	inventory_header.add_child(combine_button)
-
-	# Insert header after the inventory label
-	var inv_label = inventory_section.get_node_or_null("InventoryLabel")
-	if inv_label:
-		var label_idx = inv_label.get_index()
-		inventory_section.add_child(inventory_header)
-		inventory_section.move_child(inventory_header, label_idx + 1)
-	else:
-		inventory_section.add_child(inventory_header)
-		inventory_section.move_child(inventory_header, 0)
 
 func _style_option_button(button: OptionButton) -> void:
 	var style = StyleBoxFlat.new()
@@ -1496,5 +1496,5 @@ func _exit_combine_mode() -> void:
 	_refresh_inventory()
 
 func _update_coins_display() -> void:
-	if coins_label and StatsManager:
-		coins_label.text = "%d" % StatsManager.spendable_coins
+	if top_coins_label and StatsManager:
+		top_coins_label.text = "%d" % StatsManager.spendable_coins
