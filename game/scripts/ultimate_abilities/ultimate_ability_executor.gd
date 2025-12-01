@@ -679,7 +679,7 @@ func _execute_elemental_mastery(ultimate: UltimateAbilityData, player: Node2D) -
 		_deal_damage_to_enemy(enemy, damage_per_element)
 		# Apply burn (DoT)
 		if enemy.has_method("apply_burn"):
-			enemy.apply_burn(damage_per_element * 0.5, 3.0)
+			enemy.apply_burn(3.0, damage_per_element * 0.5)  # (duration, damage_per_tick)
 
 	_spawn_effect("fire_ring", player.global_position)
 

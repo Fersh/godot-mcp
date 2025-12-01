@@ -51,6 +51,7 @@ var base_speed: float = 0.0
 var is_burning: bool = false
 var burn_timer: float = 0.0
 var burn_tick_timer: float = 0.0
+var burn_custom_damage: float = -1.0  # -1 means use default 5% max HP
 const BURN_TICK_INTERVAL: float = 0.5
 
 # Poison system (damage over time)
@@ -299,10 +300,12 @@ func apply_slow(percent: float, duration: float) -> void:
 	slow_timer = max(slow_timer, duration)
 	_update_speed()
 
-func apply_burn(duration: float) -> void:
-	"""Apply burn effect - deals 5% max HP per tick."""
+func apply_burn(duration: float, custom_damage_per_tick: float = -1.0) -> void:
+	"""Apply burn effect - deals damage per tick (default: 5% max HP)."""
 	is_burning = true
 	burn_timer = max(burn_timer, duration)
+	if custom_damage_per_tick > 0:
+		burn_custom_damage = custom_damage_per_tick
 
 func apply_poison(total_damage: float, duration: float) -> void:
 	"""Apply poison effect - deals damage over time."""
@@ -338,10 +341,15 @@ func handle_status_effects(delta: float) -> void:
 		burn_tick_timer -= delta
 		if burn_tick_timer <= 0:
 			burn_tick_timer = BURN_TICK_INTERVAL
-			var burn_damage = max_health * 0.05  # 5% max HP per tick
-			_take_dot_damage(burn_damage, Color(1.0, 0.4, 0.2))
+			var burn_damage_value: float
+			if burn_custom_damage > 0:
+				burn_damage_value = burn_custom_damage
+			else:
+				burn_damage_value = max_health * 0.05  # Default: 5% max HP per tick
+			_take_dot_damage(burn_damage_value, Color(1.0, 0.4, 0.2))
 		if burn_timer <= 0:
 			is_burning = false
+			burn_custom_damage = -1.0  # Reset custom damage
 
 	# Handle poison damage
 	if is_poisoned:

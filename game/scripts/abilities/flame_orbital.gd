@@ -115,7 +115,7 @@ func _on_body_entered(body: Node2D) -> void:
 				var burn = burn_damage
 				if AbilityManager:
 					burn *= AbilityManager.get_summon_damage_multiplier()
-				body.apply_burn(burn, burn_duration)
+				body.apply_burn(burn_duration, burn)  # (duration, damage_per_tick)
 			elif body.has_method("apply_dot"):
 				var burn = burn_damage
 				if AbilityManager:

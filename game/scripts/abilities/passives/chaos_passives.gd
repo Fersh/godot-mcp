@@ -112,7 +112,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"glass_soul",
 			"Glass Soul",
-			"Deal bonus damage equal to your missing HP percentage. 90% missing = 90% more damage.",
+			"Deal bonus damage equal to your missing HP percentage.",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.GLASS_SOUL, value = 1.0}]  # 1:1 ratio

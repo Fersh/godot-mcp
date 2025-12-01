@@ -40,6 +40,14 @@ var progress_bar_bg: Panel = null
 var progress_bar_fill: Panel = null
 var level_label: Label = null
 
+# Curse icons
+var curse_container: HBoxContainer = null
+var curse_tooltip: PanelContainer = null
+var curse_tooltip_label: Label = null
+const CURSE_ICON_SIZE := 14
+# Total width = PORTRAIT_SIZE + SPACING + ICON_SIZE + ICON_MARGIN_RIGHT + HEALTH_BAR_WIDTH = 333
+const CURSE_ROW_TOTAL_WIDTH := 333
+
 # State
 var current_health: float = 100.0
 var max_health: float = 100.0
@@ -339,6 +347,20 @@ func _create_ui() -> void:
 		level_label.add_theme_font_override("font", pixel_font)
 	level_label.add_theme_font_size_override("font_size", 10)
 	container.add_child(level_label)
+
+	# Curse icons row (below XP bar, aligned with portrait left edge)
+	var curse_row_y = progress_row_y + PROGRESS_BAR_HEIGHT + 21
+	curse_container = HBoxContainer.new()
+	curse_container.name = "CurseContainer"
+	curse_container.position = Vector2(0, curse_row_y)  # Aligned with portrait left edge
+	curse_container.custom_minimum_size = Vector2(CURSE_ROW_TOTAL_WIDTH, CURSE_ICON_SIZE)
+	container.add_child(curse_container)
+
+	# Curse tooltip (hidden by default)
+	_create_curse_tooltip()
+
+	# Populate curse icons
+	_setup_curse_icons()
 
 func _setup_portrait() -> void:
 	# Get character portrait from dedicated portrait images
@@ -872,3 +894,168 @@ func _update_low_hp_heartbeat(delta: float) -> void:
 	# Apply subtle rotation wobble
 	var rotation_amount = final_pulse * 0.02  # Up to ~1 degree rotation
 	health_bar_bg.rotation = health_bar_original_rotation + rotation_amount
+
+# ============================================
+# CURSE ICONS
+# ============================================
+
+func _create_curse_tooltip() -> void:
+	"""Create the tooltip panel for curse descriptions."""
+	curse_tooltip = PanelContainer.new()
+	curse_tooltip.name = "CurseTooltip"
+	curse_tooltip.visible = false
+	curse_tooltip.z_index = 100
+
+	var tooltip_style = StyleBoxFlat.new()
+	tooltip_style.bg_color = Color(0.1, 0.08, 0.15, 0.95)
+	tooltip_style.border_color = Color(0.6, 0.3, 0.5, 1.0)
+	tooltip_style.set_border_width_all(2)
+	tooltip_style.set_corner_radius_all(4)
+	tooltip_style.content_margin_left = 8
+	tooltip_style.content_margin_right = 8
+	tooltip_style.content_margin_top = 6
+	tooltip_style.content_margin_bottom = 6
+	curse_tooltip.add_theme_stylebox_override("panel", tooltip_style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+	curse_tooltip.add_child(vbox)
+
+	curse_tooltip_label = Label.new()
+	curse_tooltip_label.name = "TooltipLabel"
+	curse_tooltip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	curse_tooltip_label.custom_minimum_size = Vector2(200, 0)
+	if pixel_font:
+		curse_tooltip_label.add_theme_font_override("font", pixel_font)
+	curse_tooltip_label.add_theme_font_size_override("font_size", 9)
+	curse_tooltip_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.95))
+	vbox.add_child(curse_tooltip_label)
+
+	add_child(curse_tooltip)
+
+func _setup_curse_icons() -> void:
+	"""Create curse icons for each active curse."""
+	if not curse_container or not PrincessManager:
+		return
+
+	# Clear existing icons
+	for child in curse_container.get_children():
+		child.queue_free()
+
+	# Get active curses
+	var enabled_curses = PrincessManager.enabled_curses
+	if enabled_curses.is_empty():
+		return
+
+	# Calculate spacing to evenly distribute icons across full width
+	var num_curses = enabled_curses.size()
+	var total_icon_width = num_curses * CURSE_ICON_SIZE
+	var remaining_space = CURSE_ROW_TOTAL_WIDTH - total_icon_width
+	var spacing = 0
+	if num_curses > 1:
+		spacing = int(remaining_space / (num_curses - 1))
+	curse_container.add_theme_constant_override("separation", spacing)
+
+	# Create an icon for each curse
+	for curse_id in enabled_curses:
+		var princess = PrincessManager.get_princess(curse_id)
+		if princess == null:
+			continue
+
+		var icon_button = Button.new()
+		icon_button.custom_minimum_size = Vector2(CURSE_ICON_SIZE, CURSE_ICON_SIZE)
+		icon_button.flat = true
+		icon_button.focus_mode = Control.FOCUS_NONE
+
+		# Add diamond background (rotated 45 degrees)
+		var diamond_size = CURSE_ICON_SIZE + 4
+		var diamond = ColorRect.new()
+		diamond.color = Color(0.05, 0.05, 0.08, 0.95)
+		diamond.size = Vector2(diamond_size * 0.75, diamond_size * 0.75)
+		diamond.rotation = PI / 4  # 45 degrees
+		diamond.pivot_offset = diamond.size / 2
+		diamond.position = Vector2(
+			(CURSE_ICON_SIZE - diamond.size.x) / 2,
+			(CURSE_ICON_SIZE - diamond.size.y) / 2
+		)
+		diamond.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		diamond.z_index = -1
+		icon_button.add_child(diamond)
+
+		# Style the icon as a small dark square with colored border
+		var icon_style = StyleBoxFlat.new()
+		icon_style.bg_color = Color(0.15, 0.1, 0.2, 0.9)
+		icon_style.border_color = Color(0.7, 0.3, 0.5, 1.0)  # Pink/purple curse color
+		icon_style.set_border_width_all(1)
+		icon_style.set_corner_radius_all(2)
+		icon_button.add_theme_stylebox_override("normal", icon_style)
+
+		var hover_style = icon_style.duplicate()
+		hover_style.bg_color = Color(0.25, 0.15, 0.3, 0.95)
+		hover_style.border_color = Color(0.9, 0.5, 0.7, 1.0)
+		icon_button.add_theme_stylebox_override("hover", hover_style)
+
+		var pressed_style = icon_style.duplicate()
+		pressed_style.bg_color = Color(0.1, 0.05, 0.15, 0.95)
+		icon_button.add_theme_stylebox_override("pressed", pressed_style)
+
+		# Add first letter of curse name
+		var letter = Label.new()
+		letter.text = princess.curse_name.substr(0, 1).to_upper()
+		letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		letter.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		letter.set_anchors_preset(Control.PRESET_FULL_RECT)
+		letter.add_theme_color_override("font_color", Color(0.9, 0.6, 0.8))
+		letter.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+		letter.add_theme_constant_override("shadow_offset_x", 1)
+		letter.add_theme_constant_override("shadow_offset_y", 1)
+		if pixel_font:
+			letter.add_theme_font_override("font", pixel_font)
+		letter.add_theme_font_size_override("font_size", 8)
+		letter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon_button.add_child(letter)
+
+		# Store curse data for tooltip
+		icon_button.set_meta("curse_id", curse_id)
+		icon_button.set_meta("curse_name", princess.curse_name)
+		icon_button.set_meta("curse_desc", princess.curse_description)
+		icon_button.set_meta("bonus", princess.bonus_multiplier)
+
+		# Connect signals for tooltip
+		icon_button.pressed.connect(_on_curse_icon_pressed.bind(icon_button))
+		icon_button.mouse_entered.connect(_on_curse_icon_hover.bind(icon_button))
+		icon_button.mouse_exited.connect(_on_curse_icon_exit)
+
+		curse_container.add_child(icon_button)
+
+func _on_curse_icon_pressed(icon: Button) -> void:
+	"""Show tooltip when curse icon is pressed (for touch)."""
+	_show_curse_tooltip(icon)
+
+func _on_curse_icon_hover(icon: Button) -> void:
+	"""Show tooltip when hovering over curse icon."""
+	_show_curse_tooltip(icon)
+
+func _on_curse_icon_exit() -> void:
+	"""Hide tooltip when leaving curse icon."""
+	if curse_tooltip:
+		curse_tooltip.visible = false
+
+func _show_curse_tooltip(icon: Button) -> void:
+	"""Display the curse tooltip for the given icon."""
+	if not curse_tooltip or not curse_tooltip_label:
+		return
+
+	var curse_name = icon.get_meta("curse_name", "Unknown")
+	var curse_desc = icon.get_meta("curse_desc", "")
+	var bonus = icon.get_meta("bonus", 1.0)
+
+	# Format tooltip text
+	var bonus_text = "+%d%% bonus" % [int((bonus - 1.0) * 100)]
+	curse_tooltip_label.text = "[%s]\n%s\n%s" % [curse_name, curse_desc, bonus_text]
+
+	# Position tooltip below the icon
+	var icon_global_pos = icon.global_position
+	curse_tooltip.position = Vector2(icon_global_pos.x, icon_global_pos.y + CURSE_ICON_SIZE + 8)
+
+	curse_tooltip.visible = true
