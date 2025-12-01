@@ -904,31 +904,41 @@ func _create_curse_tooltip() -> void:
 	curse_tooltip = PanelContainer.new()
 	curse_tooltip.name = "CurseTooltip"
 	curse_tooltip.visible = false
+	curse_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	curse_tooltip.z_index = 100
 
 	var tooltip_style = StyleBoxFlat.new()
-	tooltip_style.bg_color = Color(0.1, 0.08, 0.15, 0.95)
-	tooltip_style.border_color = Color(0.6, 0.3, 0.5, 1.0)
+	tooltip_style.bg_color = Color(0.1, 0.08, 0.12, 0.95)
+	tooltip_style.border_color = Color(0.7, 0.3, 0.5, 1.0)
 	tooltip_style.set_border_width_all(2)
-	tooltip_style.set_corner_radius_all(4)
-	tooltip_style.content_margin_left = 8
-	tooltip_style.content_margin_right = 8
-	tooltip_style.content_margin_top = 6
-	tooltip_style.content_margin_bottom = 6
+	tooltip_style.set_corner_radius_all(8)
+	tooltip_style.set_content_margin_all(10)
 	curse_tooltip.add_theme_stylebox_override("panel", tooltip_style)
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 4)
 	curse_tooltip.add_child(vbox)
 
+	# Curse name label
+	var name_label = Label.new()
+	name_label.name = "NameLabel"
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.7))
+	if pixel_font:
+		name_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(name_label)
+
+	# Curse description label
 	curse_tooltip_label = Label.new()
-	curse_tooltip_label.name = "TooltipLabel"
+	curse_tooltip_label.name = "DescLabel"
+	curse_tooltip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	curse_tooltip_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	curse_tooltip_label.custom_minimum_size = Vector2(200, 0)
+	curse_tooltip_label.custom_minimum_size = Vector2(180, 0)
 	if pixel_font:
 		curse_tooltip_label.add_theme_font_override("font", pixel_font)
 	curse_tooltip_label.add_theme_font_size_override("font_size", 9)
-	curse_tooltip_label.add_theme_color_override("font_color", Color(0.95, 0.9, 0.95))
+	curse_tooltip_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
 	vbox.add_child(curse_tooltip_label)
 
 	add_child(curse_tooltip)
@@ -1039,19 +1049,36 @@ func _on_curse_icon_exit() -> void:
 
 func _show_curse_tooltip(icon: Button) -> void:
 	"""Display the curse tooltip for the given icon."""
-	if not curse_tooltip or not curse_tooltip_label:
+	if not curse_tooltip:
 		return
 
 	var curse_name = icon.get_meta("curse_name", "Unknown")
 	var curse_desc = icon.get_meta("curse_desc", "")
-	var bonus = icon.get_meta("bonus", 1.0)
 
-	# Format tooltip text
-	var bonus_text = "+%d%% bonus" % [int((bonus - 1.0) * 100)]
-	curse_tooltip_label.text = "[%s]\n%s\n%s" % [curse_name, curse_desc, bonus_text]
+	# Update tooltip content
+	var vbox = curse_tooltip.get_child(0)
+	var name_label = vbox.get_node("NameLabel") as Label
+	var desc_label = vbox.get_node("DescLabel") as Label
 
-	# Position tooltip below the icon
+	if name_label:
+		name_label.text = curse_name
+	if desc_label:
+		desc_label.text = curse_desc
+
+	# Position tooltip below the icon, centered
+	curse_tooltip.reset_size()
 	var icon_global_pos = icon.global_position
-	curse_tooltip.position = Vector2(icon_global_pos.x, icon_global_pos.y + CURSE_ICON_SIZE + 8)
+	var tooltip_x = icon_global_pos.x - (curse_tooltip.size.x / 2) + (CURSE_ICON_SIZE / 2)
+	var tooltip_y = icon_global_pos.y + CURSE_ICON_SIZE + 8
 
+	# Clamp to screen edges
+	var viewport_size = get_viewport().get_visible_rect().size
+	tooltip_x = clamp(tooltip_x, 10, viewport_size.x - curse_tooltip.size.x - 10)
+
+	curse_tooltip.position = Vector2(tooltip_x, tooltip_y)
 	curse_tooltip.visible = true
+
+	# Fade in animation
+	curse_tooltip.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(curse_tooltip, "modulate:a", 1.0, 0.15)
