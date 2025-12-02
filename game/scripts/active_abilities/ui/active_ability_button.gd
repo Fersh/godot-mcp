@@ -5,7 +5,7 @@ signal pressed()
 
 # Visual configuration
 var button_size := Vector2(120, 120)  # Configurable size, set by parent
-const COOLDOWN_COLOR := Color(0.2, 0.2, 0.2, 0.8)
+const COOLDOWN_COLOR := Color(0.0, 0.0, 0.0, 0.85)  # Darker overlay for better visibility
 const READY_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 const PRESSED_SCALE := 0.9
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
@@ -56,14 +56,19 @@ func _create_ui() -> void:
 	icon_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon_texture)
 
-	# Cooldown text (centered)
+	# Cooldown text (centered) - bright white with bold outline
 	cooldown_label = Label.new()
 	cooldown_label.position = Vector2(0, button_size.y / 2 - 12)
 	cooldown_label.size = Vector2(button_size.x, 24)
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cooldown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", int(button_size.x * 0.15))
-	cooldown_label.add_theme_color_override("font_color", Color.WHITE)
+	cooldown_label.add_theme_font_size_override("font_size", int(button_size.x * 0.2))  # Larger font
+	cooldown_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))  # Bright white
+	cooldown_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))  # Black outline
+	cooldown_label.add_theme_constant_override("outline_size", 4)  # Bold outline
+	cooldown_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	cooldown_label.add_theme_constant_override("shadow_offset_x", 2)
+	cooldown_label.add_theme_constant_override("shadow_offset_y", 2)
 	if pixel_font:
 		cooldown_label.add_theme_font_override("font", pixel_font)
 	cooldown_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -84,7 +89,7 @@ func _create_ui() -> void:
 
 	# Store border color for drawing
 	border_color = Color(0.5, 0.5, 0.5, 1.0)
-	bg_color = Color(0.1, 0.1, 0.15, 0.95)
+	bg_color = Color(0.1, 0.1, 0.15, 1.0)
 
 	# Charge indicator label (top right corner, for dodge with Double Charge)
 	charge_label = Label.new()
@@ -107,7 +112,7 @@ func _create_ui() -> void:
 	_create_tooltip()
 
 var border_color: Color = Color(0.5, 0.5, 0.5, 1.0)
-var bg_color: Color = Color(0.1, 0.1, 0.15, 0.95)
+var bg_color: Color = Color(0.1, 0.1, 0.15, 1.0)
 
 func _draw() -> void:
 	var center = button_size / 2
@@ -136,13 +141,11 @@ func _draw() -> void:
 		var icon_color = icon_texture.modulate if icon_texture.modulate else Color.WHITE
 		_draw_texture_clipped_to_circle(tex, center, radius, icon_color)
 
-	# Draw cooldown overlay as arc if on cooldown
+	# Draw cooldown overlay from top down (fills from bottom up as it becomes ready)
 	if cooldown_percent > 0:
 		var overlay_color = COOLDOWN_COLOR
-		# Draw from top, clockwise based on cooldown percent
-		var start_angle = -PI / 2  # Start at top
-		var end_angle = start_angle + (TAU * cooldown_percent)
-		_draw_filled_arc(center, radius, start_angle, end_angle, overlay_color)
+		# Draw overlay covering top portion, shrinking as cooldown completes
+		_draw_bottom_up_cooldown(center, radius, cooldown_percent, overlay_color)
 
 func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: float, modulate: Color) -> void:
 	# Create circular UV mapping to draw texture clipped to circle
@@ -172,16 +175,60 @@ func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: fl
 	if points.size() >= 3:
 		draw_polygon(points, colors, uvs, tex)
 
-func _draw_filled_arc(center: Vector2, radius: float, start_angle: float, end_angle: float, color: Color) -> void:
+func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, color: Color) -> void:
+	# Draw cooldown overlay that covers from top down based on percent
+	# percent = 1 means full coverage, percent = 0 means no coverage
+	# This creates a "fill from bottom up" effect as cooldown completes
+
 	var points = PackedVector2Array()
-	points.append(center)
 
-	var segments = 32
-	var angle_step = (end_angle - start_angle) / segments
+	# Calculate the y-level where the cooldown line should be
+	# At percent=1, line is at bottom (full coverage)
+	# At percent=0, line is at top (no coverage)
+	var top_y = center.y - radius
+	var bottom_y = center.y + radius
+	var fill_height = (bottom_y - top_y) * percent
+	var cutoff_y = top_y + fill_height
 
-	for i in range(segments + 1):
-		var angle = start_angle + angle_step * i
-		points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	# We need to draw the portion of the circle above cutoff_y
+	# Find the angles where the circle intersects the cutoff line
+	var dy = cutoff_y - center.y
+
+	if dy <= -radius:
+		# Cutoff is above circle, no overlay needed
+		return
+	elif dy >= radius:
+		# Cutoff is below circle, draw full circle
+		var segments = 32
+		for i in range(segments):
+			var angle = (float(i) / segments) * TAU
+			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	else:
+		# Partial coverage - find intersection points
+		var dx = sqrt(radius * radius - dy * dy)
+		var left_x = center.x - dx
+		var right_x = center.x + dx
+
+		# Start from left intersection, go around top of circle to right intersection
+		var start_angle = atan2(dy, -dx)
+		var end_angle = atan2(dy, dx)
+
+		# Add left intersection point
+		points.append(Vector2(left_x, cutoff_y))
+
+		# Add arc points from left to right going over the top
+		var segments = 32
+		var angle_range = end_angle - start_angle
+		if angle_range > 0:
+			angle_range -= TAU
+
+		for i in range(segments + 1):
+			var t = float(i) / segments
+			var angle = start_angle + angle_range * t
+			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+
+		# Add right intersection point (closes the polygon)
+		points.append(Vector2(right_x, cutoff_y))
 
 	if points.size() > 2:
 		draw_colored_polygon(points, color)
@@ -396,7 +443,7 @@ func _create_tooltip() -> void:
 
 	# Style the tooltip panel
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.06, 0.10, 0.98)
+	style.bg_color = Color(0.08, 0.06, 0.10, 1.0)
 	style.border_color = Color(0.5, 0.5, 0.5)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)

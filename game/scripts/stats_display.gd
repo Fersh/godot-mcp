@@ -77,34 +77,34 @@ func _create_stats_ui() -> void:
 	if existing:
 		existing.queue_free()
 
-	# Create main container - positioned at top left, right of pause button (stacked vertically)
-	var container = VBoxContainer.new()
+	# Create main container - horizontal layout, right of pause button
+	var container = HBoxContainer.new()
 	container.name = "StatsContainer"
 	container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	container.offset_left = MARGIN + PAUSE_BUTTON_SIZE + 24  # Right of pause button with more spacing
-	container.offset_top = MARGIN  # Aligned with pause button top
-	container.add_theme_constant_override("separation", 4)  # Tighter vertical spacing
+	container.offset_left = MARGIN + PAUSE_BUTTON_SIZE + 60  # Right of pause button with more spacing
+	container.offset_top = MARGIN + 10 + (PAUSE_BUTTON_SIZE - ICON_SIZE) / 2  # Vertically centered with pause button, shifted down 10px
+	container.add_theme_constant_override("separation", 16)  # Horizontal spacing between stat groups
 	add_child(container)
 
-	# Create points row (icon + value)
-	var points_row = _create_stat_row(POINTS_ICON_PATH, Color(1, 1, 1, 1))
-	points_icon = points_row.get_node("Icon")
-	points_label = points_row.get_node("Label")
-	container.add_child(points_row)
-
-	# Create coins row (icon + value)
-	var coins_row = _create_stat_row(COINS_ICON_PATH, Color(1, 0.84, 0, 1))
-	coins_icon = coins_row.get_node("Icon")
-	coins_label = coins_row.get_node("Label")
-	container.add_child(coins_row)
-
-	# Create time row (icon + value)
-	var time_row = _create_stat_row(TIME_ICON_PATH, Color(0.7, 0.9, 1, 1))
+	# Create time (icon + value) - with extra width for consistency
+	var time_row = _create_stat_row(TIME_ICON_PATH, Color(0.7, 0.9, 1, 1), 120)
 	time_icon = time_row.get_node("Icon")
 	wave_label = time_row.get_node("Label")
 	container.add_child(time_row)
 
-func _create_stat_row(icon_path: String, label_color: Color) -> HBoxContainer:
+	# Create coins (icon + value) - with extra width for large numbers
+	var coins_row = _create_stat_row(COINS_ICON_PATH, Color(1, 0.84, 0, 1), 80)
+	coins_icon = coins_row.get_node("Icon")
+	coins_label = coins_row.get_node("Label")
+	container.add_child(coins_row)
+
+	# Create points (icon + value) - with extra width for large numbers
+	var points_row = _create_stat_row(POINTS_ICON_PATH, Color(1, 1, 1, 1), 100)
+	points_icon = points_row.get_node("Icon")
+	points_label = points_row.get_node("Label")
+	container.add_child(points_row)
+
+func _create_stat_row(icon_path: String, label_color: Color, min_label_width: float = 0) -> HBoxContainer:
 	var row = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
 
@@ -130,6 +130,8 @@ func _create_stat_row(icon_path: String, label_color: Color) -> HBoxContainer:
 		label.add_theme_font_override("font", pixel_font)
 	label.add_theme_font_size_override("font_size", 14)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if min_label_width > 0:
+		label.custom_minimum_size.x = min_label_width
 	row.add_child(label)
 
 	return row

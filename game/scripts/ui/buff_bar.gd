@@ -3,19 +3,19 @@ extends CanvasLayer
 # Buff bar - displays active temporary buffs below the XP bar
 # Shows icons with cooldown overlay and tooltip on hold
 
-const ICON_SIZE := Vector2(40, 40)
-const ICON_SPACING := 8
+const ICON_SIZE := Vector2(32, 32)  # Slightly smaller to fit on one line
+const ICON_SPACING := 6
 const ROW_SPACING := 4
 const MAX_PER_ROW := 8
-const MARGIN_TOP := 52  # Vertically aligned with top HUD elements (points/coins/waves) + 20px
+const MARGIN_TOP := 48  # Same line as pause button and stats
+const MARGIN_RIGHT := 48  # Same margin as left side
 const LONG_PRESS_TIME := 0.3
 const RUNE_BG_PATH := "res://assets/sprites/runes/Background/runes+bricks+effects/"
 const RUNE_BG_COUNT := 48
 
 var player: Node2D = null
 var rune_textures: Array[Texture2D] = []
-var buff_container: VBoxContainer = null  # Main container (vertical)
-var buff_rows: Array[HBoxContainer] = []  # Individual rows
+var buff_container: HBoxContainer = null  # Main container (horizontal, right-aligned)
 var buff_icons: Dictionary = {}  # buff_id -> Control
 var pixel_font: Font = null
 
@@ -30,7 +30,7 @@ var tooltip_tapped: bool = false  # Track if tooltip was shown via tap
 const TOOLTIP_DISPLAY_TIME := 5.0  # Show tooltip for 5 seconds on tap
 
 func _ready() -> void:
-	layer = 45  # Below ability bar but above game
+	layer = 65  # Above killstreak (60) so tooltip shows on top
 
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
@@ -62,48 +62,31 @@ func _get_random_rune_texture() -> Texture2D:
 	return null
 
 func _create_ui() -> void:
-	# Center container at top
-	var center_container = Control.new()
-	center_container.name = "CenterContainer"
-	center_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	center_container.offset_top = MARGIN_TOP
-	center_container.offset_bottom = MARGIN_TOP + (ICON_SIZE.y + ROW_SPACING) * 3  # Support up to 3 rows
-	add_child(center_container)
+	# Right-aligned container at top
+	var right_container = Control.new()
+	right_container.name = "RightContainer"
+	right_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	right_container.offset_top = MARGIN_TOP + 10  # Shifted down 10px
+	right_container.offset_right = -MARGIN_RIGHT
+	right_container.offset_left = -500  # Allow space for buffs to expand left
+	right_container.offset_bottom = MARGIN_TOP + 10 + ICON_SIZE.y
+	add_child(right_container)
 
-	# VBox for rows of buff icons (centered)
-	buff_container = VBoxContainer.new()
+	# HBox for buff icons (right-aligned, expands left)
+	buff_container = HBoxContainer.new()
 	buff_container.name = "BuffContainer"
-	buff_container.alignment = BoxContainer.ALIGNMENT_BEGIN
-	buff_container.add_theme_constant_override("separation", ROW_SPACING)
-	buff_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	buff_container.offset_top = 0
-	center_container.add_child(buff_container)
+	buff_container.alignment = BoxContainer.ALIGNMENT_END  # Right-aligned
+	buff_container.add_theme_constant_override("separation", ICON_SPACING)
+	buff_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	right_container.add_child(buff_container)
 
-func _get_or_create_row() -> HBoxContainer:
-	# Find a row with space, or create a new one
-	for row in buff_rows:
-		if row.get_child_count() < MAX_PER_ROW:
-			return row
-
-	# Create new row
-	var new_row = HBoxContainer.new()
-	new_row.name = "BuffRow%d" % buff_rows.size()
-	new_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	new_row.add_theme_constant_override("separation", ICON_SPACING)
-	buff_container.add_child(new_row)
-	buff_rows.append(new_row)
-	return new_row
+func _get_buff_container() -> HBoxContainer:
+	# Return the main buff container (single row now)
+	return buff_container
 
 func _cleanup_empty_rows() -> void:
-	# Remove empty rows (except keep at least one potential row structure)
-	var rows_to_remove: Array[HBoxContainer] = []
-	for row in buff_rows:
-		if row.get_child_count() == 0:
-			rows_to_remove.append(row)
-
-	for row in rows_to_remove:
-		buff_rows.erase(row)
-		row.queue_free()
+	# No longer needed with single row layout
+	pass
 
 func _create_tooltip() -> void:
 	tooltip_panel = PanelContainer.new()
@@ -113,7 +96,7 @@ func _create_tooltip() -> void:
 	tooltip_panel.z_index = 100
 
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.15, 0.95)
+	style.bg_color = Color(0.1, 0.1, 0.15, 1.0)
 	style.border_color = Color(0.5, 0.5, 0.5)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
@@ -236,7 +219,7 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	letter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon_container.add_child(letter)
 
-	# Stack counter (for buffs with stacks like "Flow x3") - positioned top-right
+	# Stack counter (for buffs with stacks like "Flow x3") - positioned below icon like timer
 	var stack_label = Label.new()
 	stack_label.name = "StackLabel"
 	stack_label.add_theme_font_size_override("font_size", 10)
@@ -246,10 +229,10 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	stack_label.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
 		stack_label.add_theme_font_override("font", pixel_font)
-	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	stack_label.position = Vector2(ICON_SIZE.x - 22, 2)  # Top-right corner
-	stack_label.size = Vector2(20, 14)
+	stack_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stack_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	stack_label.position = Vector2(0, ICON_SIZE.y - 14)  # Below icon, same as timer
+	stack_label.size = Vector2(ICON_SIZE.x, 14)
 	stack_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Extract stack count from name like "Flow x3"
 	if " x" in buff_name:
@@ -292,9 +275,8 @@ func _create_buff_icon(buff_id: String, buff_data: Dictionary) -> void:
 	# Connect input for touch/long press (mobile)
 	icon_container.gui_input.connect(_on_icon_input.bind(buff_id))
 
-	# Add to a row (max 8 per row)
-	var row = _get_or_create_row()
-	row.add_child(icon_container)
+	# Add to buff container (single row, right-aligned)
+	buff_container.add_child(icon_container)
 	buff_icons[buff_id] = icon_container
 
 	# Animate appearance
@@ -463,10 +445,5 @@ func reset_for_new_run() -> void:
 	for buff_id in buff_icons:
 		buff_icons[buff_id].queue_free()
 	buff_icons.clear()
-
-	# Clear all rows
-	for row in buff_rows:
-		row.queue_free()
-	buff_rows.clear()
 
 	_hide_tooltip()

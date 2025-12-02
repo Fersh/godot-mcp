@@ -83,11 +83,11 @@ func _create_ui() -> void:
 	btn2.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability3_y)
 	ability_buttons.append(btn2)
 
-	# Apply 60% transparency to all ability buttons (more see-through)
-	btn0.modulate.a = 0.4
-	btn1.modulate.a = 0.4
-	btn2.modulate.a = 0.4
-	dodge_button.modulate.a = 0.4
+	# Full opacity for all ability buttons
+	btn0.modulate.a = 1.0
+	btn1.modulate.a = 1.0
+	btn2.modulate.a = 1.0
+	dodge_button.modulate.a = 1.0
 
 	# Ultimate button - positioned centered above the grid
 	ultimate_button = _create_ultimate_button()
@@ -96,7 +96,7 @@ func _create_ui() -> void:
 	var ultimate_x = grid_center_x - ULTIMATE_SIZE.x / 2
 	var ultimate_y = -ULTIMATE_SIZE.y - ULTIMATE_OFFSET_Y
 	ultimate_button.position = Vector2(ultimate_x, ultimate_y)
-	ultimate_button.modulate.a = 0.5  # Slightly more visible than other buttons but still transparent
+	ultimate_button.modulate.a = 1.0  # Full opacity
 
 func _create_ability_button(slot: int, size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
@@ -161,7 +161,7 @@ func _animate_button_appear(button: ActiveAbilityButton) -> void:
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
 	tween.tween_property(button, "scale", Vector2.ONE, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(button, "modulate:a", 0.4, 0.2)  # Animate to 40% opacity
+	tween.tween_property(button, "modulate:a", 1.0, 0.2)  # Animate to full opacity
 
 func update_position() -> void:
 	"""Update position when viewport resizes."""

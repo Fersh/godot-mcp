@@ -1721,12 +1721,12 @@ func _execute_frost_nova(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_stun_to_enemy(enemy, ability.stun_duration)
 		# Apply slow after stun ends
-		if ability.slow_amount > 0 and ability.slow_duration > 0:
+		if ability.slow_percent > 0 and ability.slow_duration > 0:
 			var tree = player.get_tree() if is_instance_valid(player) else null
 			if tree:
 				tree.create_timer(ability.stun_duration).timeout.connect(func():
 					if is_instance_valid(enemy) and enemy.has_method("apply_slow"):
-						enemy.apply_slow(ability.slow_amount, ability.slow_duration)
+						enemy.apply_slow(ability.slow_percent, ability.slow_duration)
 				)
 
 	_spawn_effect("frost_nova", player.global_position)

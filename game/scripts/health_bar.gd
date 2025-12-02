@@ -74,14 +74,10 @@ func _ready() -> void:
 	shield_fill.z_index = 1
 	var shield_style = StyleBoxFlat.new()
 	shield_style.bg_color = Color(0.4, 0.6, 1.0, 0.9)  # Blue for shield
-	# Add border on left, top, bottom (not right) with darker blue
-	shield_style.border_width_left = 2
-	shield_style.border_width_top = 2
-	shield_style.border_width_bottom = 2
-	shield_style.border_width_right = 0
-	shield_style.border_color = Color(0.2, 0.35, 0.7, 1.0)  # Darker blue border
-	shield_style.corner_radius_top_left = 2
-	shield_style.corner_radius_bottom_left = 2
+	# No border - just the fill color
+	shield_style.set_border_width_all(0)
+	shield_style.corner_radius_top_left = 1
+	shield_style.corner_radius_bottom_left = 1
 	shield_fill.add_theme_stylebox_override("panel", shield_style)
 	shield_fill.visible = false
 	add_child(shield_fill)

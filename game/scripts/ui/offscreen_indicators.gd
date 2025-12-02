@@ -11,7 +11,7 @@ class IndicatorDrawer extends Control:
 		if parent_ref and parent_ref.has_method("draw_indicators"):
 			parent_ref.draw_indicators(self)
 
-const INDICATOR_MARGIN: float = 40.0  # Distance from screen edge
+const INDICATOR_MARGIN: float = 10.0  # Distance from screen edge
 const NORMAL_SIZE: float = 8.0
 const ELITE_SIZE: float = 14.0
 const BOSS_SIZE: float = 20.0

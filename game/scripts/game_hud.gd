@@ -55,19 +55,14 @@ func _create_ui() -> void:
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	# === PAUSE BUTTON (top left, centered with stats stack) ===
-	# Stats stack is 3 rows of 24px with 4px separation = 80px total
-	# Center pause button (32px) with the 80px stats
-	var stats_height = 80  # 3 x ICON_SIZE(24) + 2 x separation(4)
-	var pause_vertical_offset = MARGIN + (stats_height - PAUSE_BUTTON_SIZE) / 2
-
+	# === PAUSE BUTTON (top left, on same line as stats) ===
 	var pause_container = Control.new()
 	pause_container.name = "PauseContainer"
 	pause_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	pause_container.offset_left = MARGIN
-	pause_container.offset_top = pause_vertical_offset
+	pause_container.offset_top = MARGIN + 10  # Shifted down 10px
 	pause_container.offset_right = MARGIN + PAUSE_BUTTON_SIZE
-	pause_container.offset_bottom = pause_vertical_offset + PAUSE_BUTTON_SIZE
+	pause_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 10
 	add_child(pause_container)
 
 	# Pause button
@@ -124,8 +119,8 @@ func _create_ui() -> void:
 	var xp_container = Control.new()
 	xp_container.name = "XPContainer"
 	xp_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	xp_container.offset_top = MARGIN - 40  # Raised 40px
-	xp_container.offset_bottom = MARGIN - 40 + PROGRESS_BAR_HEIGHT
+	xp_container.offset_top = MARGIN - 30  # Raised 30px (was 40px)
+	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT
 	add_child(xp_container)
 
 	# Progress bar background
