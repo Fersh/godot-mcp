@@ -99,8 +99,8 @@ func _style_tab_button(button: Button) -> void:
 	style.border_color = COLOR_BORDER.darkened(0.3)
 	style.corner_radius_top_left = 4
 	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 0
-	style.corner_radius_bottom_right = 0
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
 
 	var style_hover = style.duplicate()
 	style_hover.bg_color = COLOR_TAB_INACTIVE.lightened(0.15)
@@ -198,20 +198,30 @@ func _update_tab_style(button: Button, is_active: bool) -> void:
 	var style = button.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
 	if is_active:
 		style.bg_color = COLOR_TAB_ACTIVE
-		style.border_width_bottom = 0
-		style.border_color = COLOR_BORDER
+		style.border_color = Color(1.0, 1.0, 1.0, 0.8)
 		button.add_theme_color_override("font_color", COLOR_TAB_ACTIVE_TEXT)
 	else:
 		style.bg_color = COLOR_TAB_INACTIVE
-		style.border_width_bottom = 2
 		style.border_color = COLOR_BORDER.darkened(0.3)
 		button.add_theme_color_override("font_color", COLOR_TAB_INACTIVE_TEXT)
+
+	var style_hover = style.duplicate()
+	style_hover.bg_color = style.bg_color.lightened(0.1)
+
+	var style_pressed = style.duplicate()
+	style_pressed.bg_color = style.bg_color.darkened(0.1)
+
 	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style)
 
 func show_menu() -> void:
-	current_tab = 0
 	_update_tab_visuals()
-	_populate_powerups()
+	if current_tab == 0:
+		_populate_powerups()
+	else:
+		_populate_stats()
 	_update_difficulty_label()
 	visible = true
 	get_tree().paused = true
