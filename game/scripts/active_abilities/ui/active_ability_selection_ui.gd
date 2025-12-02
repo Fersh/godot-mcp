@@ -388,7 +388,9 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	label.text = ActiveAbilityData.get_rarity_name(rarity)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
-	label.add_theme_color_override("font_color", Color.WHITE)
+	# Use black text for common (light background), white for others
+	var label_color = Color.BLACK if rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
+	label.add_theme_color_override("font_color", label_color)
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 	tag.add_child(label)
@@ -476,6 +478,9 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
 				rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
+				# Use black text for common (light background), white for others
+				var label_color = Color.BLACK if ability.rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
+				rarity_label.add_theme_color_override("font_color", label_color)
 
 	# Update particle container - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control

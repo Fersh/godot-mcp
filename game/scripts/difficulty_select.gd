@@ -172,49 +172,67 @@ func _create_difficulty_buttons() -> void:
 	difficulty_buttons.clear()
 
 	for tier in DifficultyManager.get_all_difficulties():
-		# Row container that holds everything
-		var row = Control.new()
-		row.custom_minimum_size = Vector2(600, 45)
-
-		# Center container for the button (keeps it centered)
-		var center = CenterContainer.new()
-		center.set_anchors_preset(Control.PRESET_FULL_RECT)
-		row.add_child(center)
-
-		var btn = Button.new()
 		var data = DifficultyManager.DIFFICULTY_DATA[tier]
 		var is_completed = DifficultyManager.is_difficulty_completed(tier)
 
-		# Add checkmark to left if completed
-		btn.text = "✓ " + data["name"] if is_completed else data["name"]
+		# Container for button content
+		var btn_container = VBoxContainer.new()
+		btn_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		btn_container.add_theme_constant_override("separation", 0)
+
+		var btn = Button.new()
 		btn.custom_minimum_size = Vector2(300, 45)
-		# All difficulties are now selectable (temporary bypass)
 		btn.disabled = false
+		btn.clip_contents = false
 
 		if pixel_font:
 			btn.add_theme_font_override("font", pixel_font)
 		btn.add_theme_font_size_override("font_size", 14)
 
+		# Create internal VBox for button content
+		var internal_vbox = VBoxContainer.new()
+		internal_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+		internal_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		internal_vbox.add_theme_constant_override("separation", 4)
+		internal_vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(internal_vbox)
+
+		# Main name label
+		var name_label = Label.new()
+		name_label.name = "NameLabel"
+		name_label.text = "✓ " + data["name"] if is_completed else data["name"]
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if pixel_font:
+			name_label.add_theme_font_override("font", pixel_font)
+		name_label.add_theme_font_size_override("font_size", 14)
+		name_label.add_theme_color_override("font_color", Color.WHITE)
+		internal_vbox.add_child(name_label)
+
+		# Completion summary label (hidden by default, shown when expanded)
+		var summary_label = Label.new()
+		summary_label.name = "SummaryLabel"
+		summary_label.text = DifficultyManager.get_completion_summary(tier)
+		summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		summary_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		summary_label.visible = false  # Hidden by default
+		if pixel_font:
+			summary_label.add_theme_font_override("font", pixel_font)
+		summary_label.add_theme_font_size_override("font_size", 9)
+		summary_label.add_theme_color_override("font_color", Color.WHITE)
+		internal_vbox.add_child(summary_label)
+
 		# Store tier as metadata
 		btn.set_meta("tier", tier)
 		btn.pressed.connect(_on_difficulty_selected.bind(tier))
 
-		_style_difficulty_button(btn, data["color"], true)  # Always style as unlocked
-		center.add_child(btn)
+		# Hide default button text since we're using our own labels
+		btn.text = ""
 
-		# Completion summary label - positioned to the right of center
-		var summary_label = Label.new()
-		summary_label.name = "CompletionSummary"
-		summary_label.text = DifficultyManager.get_completion_summary(tier)
-		# Position to the right of the centered button (center + half button width + gap)
-		summary_label.position = Vector2(300 + 150 + 35, 15)  # 300 is center offset, 150 is half button, 35 is gap
-		if pixel_font:
-			summary_label.add_theme_font_override("font", pixel_font)
-		summary_label.add_theme_font_size_override("font_size", 9)
-		summary_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.6))
-		row.add_child(summary_label)
+		_style_difficulty_button(btn, data["color"], true)
+		btn_container.add_child(btn)
 
-		difficulty_container.add_child(row)
+		difficulty_container.add_child(btn_container)
 		difficulty_buttons.append(btn)
 
 func _style_difficulty_button(btn: Button, color: Color, is_unlocked: bool) -> void:
@@ -344,17 +362,33 @@ func _update_selection_display() -> void:
 	"""Update all UI elements based on current selection."""
 	_update_mode_buttons()
 
-	# Update difficulty button highlights
+	# Update difficulty button highlights and expand/collapse
 	for btn in difficulty_buttons:
 		var tier = btn.get_meta("tier") as DifficultyManager.DifficultyTier
 		var is_selected = (tier == selected_difficulty)
 		var data = DifficultyManager.DIFFICULTY_DATA[tier] if DifficultyManager else {}
 		var is_completed = DifficultyManager.is_difficulty_completed(tier) if DifficultyManager else false
 
-		# Update button text with checkmark on left if completed
-		btn.text = "✓ " + data["name"] if is_completed else data["name"]
+		# Get internal labels
+		var internal_vbox = btn.get_child(0) as VBoxContainer
+		var name_label = internal_vbox.get_node_or_null("NameLabel") as Label if internal_vbox else null
+		var summary_label = internal_vbox.get_node_or_null("SummaryLabel") as Label if internal_vbox else null
+
+		# Update name label with checkmark
+		if name_label:
+			name_label.text = "✓ " + data["name"] if is_completed else data["name"]
 
 		if is_selected:
+			# Only expand and show summary if this difficulty has been completed
+			if is_completed:
+				btn.custom_minimum_size.y = 65  # Taller when selected and completed
+				if summary_label:
+					summary_label.visible = true
+			else:
+				btn.custom_minimum_size.y = 45  # Normal height if not completed
+				if summary_label:
+					summary_label.visible = false
+
 			# Highlight selected
 			var style = btn.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
 			style.bg_color = data["color"].darkened(0.2)
@@ -365,6 +399,11 @@ func _update_selection_display() -> void:
 			style.border_color = Color.WHITE
 			btn.add_theme_stylebox_override("normal", style)
 		else:
+			# Collapse button and hide summary
+			btn.custom_minimum_size.y = 45  # Normal height
+			if summary_label:
+				summary_label.visible = false
+
 			_style_difficulty_button(btn, data.get("color", Color.GRAY), true)
 
 	# Update description

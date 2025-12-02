@@ -176,58 +176,59 @@ func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: fl
 		draw_polygon(points, colors, uvs, tex)
 
 func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, color: Color) -> void:
-	# Draw cooldown overlay that covers from top down based on percent
-	# percent = 1 means full coverage, percent = 0 means no coverage
-	# This creates a "fill from bottom up" effect as cooldown completes
+	# Icon fills from BOTTOM UP as cooldown completes
+	# Black overlay covers the TOP portion (remaining cooldown), shrinks upward
+	# percent = 1 means full black (just used), percent = 0 means no black (ready)
 
 	var points = PackedVector2Array()
 
-	# Calculate the y-level where the cooldown line should be
-	# At percent=1, line is at bottom (full coverage)
-	# At percent=0, line is at top (no coverage)
 	var top_y = center.y - radius
 	var bottom_y = center.y + radius
-	var fill_height = (bottom_y - top_y) * percent
-	var cutoff_y = top_y + fill_height
+	var diameter = bottom_y - top_y
 
-	# We need to draw the portion of the circle above cutoff_y
-	# Find the angles where the circle intersects the cutoff line
+	# cutoff_y is where the "fill" has reached (growing from bottom)
+	# At percent=1: fill is at bottom (cutoff = bottom), entire circle is black
+	# At percent=0: fill is at top (cutoff = top), no black
+	var fill_progress = 1.0 - percent  # How much has filled (0 to 1)
+	var cutoff_y = bottom_y - (diameter * fill_progress)
+
+	# Draw the black overlay ABOVE cutoff_y (the unfilled/remaining portion)
 	var dy = cutoff_y - center.y
 
-	if dy <= -radius:
-		# Cutoff is above circle, no overlay needed
-		return
-	elif dy >= radius:
-		# Cutoff is below circle, draw full circle
+	if dy >= radius:
+		# Cutoff at or below bottom - draw entire circle black
 		var segments = 32
 		for i in range(segments):
 			var angle = (float(i) / segments) * TAU
 			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	elif dy <= -radius:
+		# Cutoff at or above top - no overlay needed (fully filled)
+		return
 	else:
-		# Partial coverage - find intersection points
+		# Partial - draw the TOP portion above cutoff_y
 		var dx = sqrt(radius * radius - dy * dy)
 		var left_x = center.x - dx
 		var right_x = center.x + dx
 
-		# Start from left intersection, go around top of circle to right intersection
-		var start_angle = atan2(dy, -dx)
-		var end_angle = atan2(dy, dx)
+		# Arc from left intersection, over TOP, to right intersection
+		var start_angle = atan2(dy, -dx)  # Left intersection
+		var end_angle = atan2(dy, dx)     # Right intersection
 
 		# Add left intersection point
 		points.append(Vector2(left_x, cutoff_y))
 
-		# Add arc points from left to right going over the top
+		# Add arc points going over the TOP (counterclockwise from left to right)
 		var segments = 32
 		var angle_range = end_angle - start_angle
 		if angle_range > 0:
-			angle_range -= TAU
+			angle_range -= TAU  # Go counterclockwise over the top
 
 		for i in range(segments + 1):
 			var t = float(i) / segments
 			var angle = start_angle + angle_range * t
 			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
 
-		# Add right intersection point (closes the polygon)
+		# Add right intersection point
 		points.append(Vector2(right_x, cutoff_y))
 
 	if points.size() > 2:
@@ -333,8 +334,8 @@ func update_cooldown(percent: float) -> void:
 			cooldown_label.visible = true
 			cooldown_label.add_theme_color_override("font_color", Color.WHITE)
 
-		# Dim icon
-		icon_texture.modulate = Color(0.5, 0.5, 0.5, 1.0)
+		# Keep icon at full brightness - the overlay handles the cooldown visual
+		icon_texture.modulate = READY_COLOR
 
 	queue_redraw()
 
@@ -558,7 +559,9 @@ func _update_tooltip_content() -> void:
 
 		if rarity_tag and rarity_label:
 			rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
-			rarity_label.add_theme_color_override("font_color", Color.WHITE)
+			# Use black text for common (light background), white for others
+			var label_color = Color.BLACK if ability.rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
+			rarity_label.add_theme_color_override("font_color", label_color)
 
 			# Style the rarity tag
 			var tag_style = StyleBoxFlat.new()

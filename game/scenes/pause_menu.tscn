@@ -68,7 +68,7 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_right = 30
 theme_override_constants/margin_bottom = 10
 
 [node name="PowerupsContent" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer"]
