@@ -5,7 +5,7 @@ signal pressed()
 
 # Visual configuration
 var button_size := Vector2(120, 120)  # Configurable size, set by parent
-const COOLDOWN_COLOR := Color(0.0, 0.0, 0.0, 0.85)  # Darker overlay for better visibility
+const COOLDOWN_COLOR := Color(0.0, 0.0, 0.0, 0.95)  # 95% black overlay
 const READY_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 const PRESSED_SCALE := 0.9
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
@@ -176,9 +176,22 @@ func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: fl
 		draw_polygon(points, colors, uvs, tex)
 
 func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, color: Color) -> void:
-	# Icon fills from BOTTOM UP as cooldown completes
-	# Black overlay covers the TOP portion (remaining cooldown), shrinks upward
+	# Black overlay on TOP portion, shrinking UPWARD as cooldown completes
+	# Icon is revealed from BOTTOM UP
 	# percent = 1 means full black (just used), percent = 0 means no black (ready)
+
+	if percent <= 0:
+		return  # No overlay when ready
+
+	if percent >= 1:
+		# Full overlay - draw entire circle
+		var segments = 32
+		var points = PackedVector2Array()
+		for i in range(segments):
+			var angle = (float(i) / segments) * TAU
+			points.append(Vector2(center.x + cos(angle) * radius, center.y + sin(angle) * radius))
+		draw_colored_polygon(points, color)
+		return
 
 	var points = PackedVector2Array()
 
@@ -186,50 +199,63 @@ func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, co
 	var bottom_y = center.y + radius
 	var diameter = bottom_y - top_y
 
-	# cutoff_y is where the "fill" has reached (growing from bottom)
-	# At percent=1: fill is at bottom (cutoff = bottom), entire circle is black
-	# At percent=0: fill is at top (cutoff = top), no black
-	var fill_progress = 1.0 - percent  # How much has filled (0 to 1)
-	var cutoff_y = bottom_y - (diameter * fill_progress)
+	# cutoff_y = bottom edge of black overlay
+	# At percent=1: cutoff at bottom_y (full black)
+	# At percent=0.5: cutoff at center (top half black)
+	# At percent=0: cutoff at top_y (no black)
+	var cutoff_y = top_y + (diameter * percent)
 
-	# Draw the black overlay ABOVE cutoff_y (the unfilled/remaining portion)
+	# If cutoff is at or above top, no overlay needed
+	if cutoff_y <= top_y:
+		return
+
 	var dy = cutoff_y - center.y
+	var dx_squared = radius * radius - dy * dy
 
-	if dy >= radius:
-		# Cutoff at or below bottom - draw entire circle black
+	# If cutoff is at or below bottom, draw full circle
+	if dx_squared <= 0 or cutoff_y >= bottom_y:
 		var segments = 32
 		for i in range(segments):
 			var angle = (float(i) / segments) * TAU
-			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
-	elif dy <= -radius:
-		# Cutoff at or above top - no overlay needed (fully filled)
+			points.append(Vector2(center.x + cos(angle) * radius, center.y + sin(angle) * radius))
+		draw_colored_polygon(points, color)
 		return
-	else:
-		# Partial - draw the TOP portion above cutoff_y
-		var dx = sqrt(radius * radius - dy * dy)
-		var left_x = center.x - dx
-		var right_x = center.x + dx
 
-		# Arc from left intersection, over TOP, to right intersection
-		var start_angle = atan2(dy, -dx)  # Left intersection
-		var end_angle = atan2(dy, dx)     # Right intersection
+	var dx = sqrt(dx_squared)
+	var left_x = center.x - dx
+	var right_x = center.x + dx
 
-		# Add left intersection point
-		points.append(Vector2(left_x, cutoff_y))
+	# Build polygon for TOP portion (above cutoff_y):
+	# Start at left intersection, go up and around the TOP to right intersection, close with line
 
-		# Add arc points going over the TOP (counterclockwise from left to right)
-		var segments = 32
-		var angle_range = end_angle - start_angle
-		if angle_range > 0:
-			angle_range -= TAU  # Go counterclockwise over the top
+	# Calculate angles (in Godot's Y-down coord system)
+	var left_angle = atan2(dy, -dx)   # left intersection
+	var right_angle = atan2(dy, dx)   # right intersection
 
-		for i in range(segments + 1):
-			var t = float(i) / segments
-			var angle = start_angle + angle_range * t
-			points.append(center + Vector2(cos(angle), sin(angle)) * radius)
+	# We want to go from left intersection, COUNTERCLOCKWISE through the TOP, to right intersection
+	# In Y-down coords, top of circle is at angle -PI/2
+	# We need to traverse from left_angle to right_angle going through -PI/2
 
-		# Add right intersection point
-		points.append(Vector2(right_x, cutoff_y))
+	points.append(Vector2(left_x, cutoff_y))
+
+	# Ensure we go counterclockwise (through the top, which is -PI/2)
+	# Normalize angles to be consistent
+	var start_angle = left_angle
+	var end_angle = right_angle
+
+	# Calculate the arc going through the TOP of the circle
+	# We need to go from left_angle to right_angle passing through -PI/2 (top in Y-down coords)
+	var angle_diff = end_angle - start_angle
+	if angle_diff < 0:
+		angle_diff = angle_diff + TAU  # Go clockwise (positive direction) through the top
+
+	var segments = 32
+	for i in range(segments + 1):
+		var t = float(i) / segments
+		var angle = start_angle + angle_diff * t
+		points.append(Vector2(center.x + cos(angle) * radius, center.y + sin(angle) * radius))
+
+	points.append(Vector2(right_x, cutoff_y))
 
 	if points.size() > 2:
 		draw_colored_polygon(points, color)

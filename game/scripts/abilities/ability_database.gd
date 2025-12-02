@@ -455,7 +455,7 @@ static func get_mythic_abilities() -> Array[AbilityData]:
 			"phoenix",
 			"Phoenix",
 			"Revive once per run with full HP and explosion",
-			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Rarity.MYTHIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.PHOENIX, value = 1.0}]  # revive with full HP
 		),
