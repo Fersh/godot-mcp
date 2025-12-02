@@ -80,9 +80,9 @@ func _create_version_label() -> void:
 	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	version_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	version_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	version_label.offset_left = 10
-	version_label.offset_bottom = -10
-	version_label.offset_top = -30
+	version_label.offset_left = 110
+	version_label.offset_bottom = -50
+	version_label.offset_top = -70
 	version_label.offset_right = 200
 	if pixel_font:
 		version_label.add_theme_font_override("font", pixel_font)
