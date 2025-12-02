@@ -14,7 +14,7 @@ const SLOT_ORDER = [
 
 const SLOT_NAMES = {
 	ItemData.Slot.WEAPON: "Weapon",
-	ItemData.Slot.HELMET: "Helmet",
+	ItemData.Slot.HELMET: "Helm",
 	ItemData.Slot.CHEST: "Chest",
 	ItemData.Slot.BELT: "Belt",
 	ItemData.Slot.LEGS: "Legs",
@@ -602,12 +602,24 @@ func _refresh_stats() -> void:
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_container.add_child(header)
 
-	# Get total equipment stats
-	var stats = {}
+	# Get equipment stats
+	var equipment_stats = {}
 	if EquipmentManager:
-		stats = EquipmentManager.get_equipment_stats(selected_character)
+		equipment_stats = EquipmentManager.get_equipment_stats(selected_character)
 
-	# Display stats
+	# Get permanent upgrade bonuses
+	var upgrade_bonuses = {}
+	if PermanentUpgrades:
+		upgrade_bonuses = PermanentUpgrades.get_all_bonuses()
+
+	# Check for curse effects on equipment
+	var equipment_mult = 1.0
+	var has_equipment_curse = false
+	if CurseEffects:
+		equipment_mult = CurseEffects.get_equipment_bonus_multiplier()
+		has_equipment_curse = equipment_mult < 1.0
+
+	# Combine stats: equipment (with curse multiplier) + permanent upgrades
 	var stat_names = {
 		"damage": "Damage",
 		"max_hp": "Health",
@@ -621,8 +633,14 @@ func _refresh_stats() -> void:
 	}
 
 	for stat_key in stat_names:
-		var value = stats.get(stat_key, 0.0)
-		if abs(value) < 0.001:
+		var equip_value = equipment_stats.get(stat_key, 0.0)
+		var upgrade_value = upgrade_bonuses.get(stat_key, 0.0)
+
+		# Apply curse multiplier to equipment stats only
+		var cursed_equip_value = equip_value * equipment_mult
+		var total_value = cursed_equip_value + upgrade_value
+
+		if abs(total_value) < 0.001:
 			continue
 
 		var row = HBoxContainer.new()
@@ -639,19 +657,26 @@ func _refresh_stats() -> void:
 		var value_label = Label.new()
 		var value_str = ""
 		if stat_key in ["crit_chance", "dodge_chance", "damage_reduction", "attack_speed", "move_speed", "damage", "max_hp", "xp_gain", "luck"]:
-			value_str = "%+d%%" % int(value * 100)
+			value_str = "%+d%%" % int(total_value * 100)
 		else:
-			value_str = "%+d" % int(value)
+			value_str = "%+d" % int(total_value)
 		value_label.text = value_str
 		if pixel_font:
 			value_label.add_theme_font_override("font", pixel_font)
 		value_label.add_theme_font_size_override("font_size", 14)
-		value_label.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
+
+		# Color: pink if cursed equipment stat, otherwise green/red based on value
+		var is_stat_cursed = has_equipment_curse and equip_value > 0.001
+		if is_stat_cursed:
+			value_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.7))  # Pink for cursed
+		else:
+			value_label.add_theme_color_override("font_color", COLOR_STAT_UP if total_value > 0 else COLOR_STAT_DOWN)
 		row.add_child(value_label)
 
 		stats_container.add_child(row)
 
-	if stats.size() == 0:
+	# Check if any stats were added (stats_container has header + stats)
+	if stats_container.get_child_count() <= 1:
 		var empty = Label.new()
 		empty.text = "No bonuses"
 		if pixel_font:
@@ -1003,6 +1028,13 @@ func _show_equipped_popup(item: ItemData) -> void:
 		"luck": "Luck"
 	}
 
+	# Check for curse effects on equipment
+	var item_equipment_mult = 1.0
+	var item_has_curse = false
+	if CurseEffects:
+		item_equipment_mult = CurseEffects.get_equipment_bonus_multiplier()
+		item_has_curse = item_equipment_mult < 1.0
+
 	# Combine base_stats and magic_stats
 	var all_stats = {}
 	for stat_key in item.base_stats:
@@ -1014,9 +1046,12 @@ func _show_equipped_popup(item: ItemData) -> void:
 			all_stats[stat_key] = item.magic_stats[stat_key]
 
 	for stat_key in all_stats:
-		var value = all_stats[stat_key]
-		if abs(value) < 0.001:
+		var raw_value = all_stats[stat_key]
+		if abs(raw_value) < 0.001:
 			continue
+
+		# Apply curse multiplier to show true value
+		var value = raw_value * item_equipment_mult
 
 		var stat_row = HBoxContainer.new()
 
@@ -1034,7 +1069,11 @@ func _show_equipped_popup(item: ItemData) -> void:
 		if pixel_font:
 			stat_value.add_theme_font_override("font", pixel_font)
 		stat_value.add_theme_font_size_override("font_size", 16)
-		stat_value.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
+		# Pink if cursed, otherwise normal color
+		if item_has_curse:
+			stat_value.add_theme_color_override("font_color", Color(1.0, 0.5, 0.7))  # Pink for cursed
+		else:
+			stat_value.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
 		stat_row.add_child(stat_value)
 
 		stats_vbox.add_child(stat_row)

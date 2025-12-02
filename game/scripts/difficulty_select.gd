@@ -185,8 +185,8 @@ func _create_difficulty_buttons() -> void:
 		var data = DifficultyManager.DIFFICULTY_DATA[tier]
 		var is_completed = DifficultyManager.is_difficulty_completed(tier)
 
-		# Add checkmark if completed
-		btn.text = data["name"] + "  ✓" if is_completed else data["name"]
+		# Add checkmark to left if completed (with spacing for alignment)
+		btn.text = "✓ " + data["name"] if is_completed else "  " + data["name"]
 		btn.custom_minimum_size = Vector2(300, 45)
 		# All difficulties are now selectable (temporary bypass)
 		btn.disabled = false
@@ -362,8 +362,8 @@ func _update_selection_display() -> void:
 		var data = DifficultyManager.DIFFICULTY_DATA[tier] if DifficultyManager else {}
 		var is_completed = DifficultyManager.is_difficulty_completed(tier) if DifficultyManager else false
 
-		# Update button text with checkmark if completed
-		btn.text = data["name"] + "  ✓" if is_completed else data["name"]
+		# Update button text with checkmark on left if completed
+		btn.text = "✓ " + data["name"] if is_completed else "  " + data["name"]
 
 		if is_selected:
 			# Highlight selected

@@ -45,7 +45,7 @@ const RARITY_NAMES: Dictionary = {
 
 const SLOT_NAMES: Dictionary = {
 	Slot.WEAPON: "Weapon",
-	Slot.HELMET: "Helmet",
+	Slot.HELMET: "Helm",
 	Slot.CHEST: "Chest",
 	Slot.BELT: "Belt",
 	Slot.LEGS: "Legs",
