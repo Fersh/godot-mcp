@@ -40,9 +40,9 @@ var elite_spawn_count: int = 0
 var last_elite_type: int = -1  # -1=none, 0=Cyclops, 1=GoblinKing
 var initial_elite_chosen: bool = false
 
-# Scaling per spawn - each elite/boss is 15% stronger than the last
-const ELITE_SCALING_PER_SPAWN: float = 0.15
-const BOSS_SCALING_PER_SPAWN: float = 0.15
+# Scaling per spawn - each elite/boss is 25% stronger than the last
+const ELITE_SCALING_PER_SPAWN: float = 0.25
+const BOSS_SCALING_PER_SPAWN: float = 0.25
 var total_elites_killed: int = 0  # Track for scaling
 var total_bosses_killed: int = 0
 

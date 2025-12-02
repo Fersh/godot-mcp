@@ -46,41 +46,159 @@ var game_time: float = 0.0
 # Spawning control (for challenge mode)
 var is_spawning_enabled: bool = true
 
-# Wave timing configuration (in seconds) - 20 minute progression
-# Phase 1: 0:00 - 1:00   - Primarily ratfolk (starter enemies)
-# Phase 2: 1:00 - 2:00   - Orcs phase in, ratfolk phase out
-# Phase 3: 2:30 - 3:30   - Ratfolk Mage appears (early caster)
-# Phase 4: 3:30 - 4:30   - Bats appear (fast glass cannons)
-# Phase 5: 5:00 - 6:00   - Imps start appearing
-# Phase 6: 6:00 - 7:00   - Akaname (poison) joins
-# Phase 7: 7:00 - 8:00   - Ghouls appear (tanky melee)
-# Phase 8: 8:00 - 9:00   - Slimes start appearing
-# Phase 9: 10:00 - 11:00 - Skeletons join
-# Phase 10: 11:00 - 12:00 - Eye Monsters (acid ranged)
-# Phase 11: 13:00 - 14:00 - Intellect Devourers (ability drain)
-# Phase 12: 14:00 - 15:00 - Bandit Necromancers (summoners)
-# Phase 13: 16:00 - 17:00 - Kobold priests (healers)
-# Phase 14: 18:00 - 19:00 - Golems (tanks)
-# Phase 15: 20:00+        - Shardsoul Slayers (elite melee)
+# =============================================================================
+# ENDLESS MODE - 20 minute progression (enemies ordered weakest to strongest)
+# =============================================================================
+# 1. Ratfolk      2. Orc           3. Ratfolk Mage   4. Bat
+# 5. Imp          6. Akaname       7. Ghoul          8. Slime
+# 9. Skeleton    10. Eye Monster  11. Golem         12. Intellect Devourer
+# 13. Necromancer 14. Kobold Priest 15. Shardsoul Slayer
 
-const PHASE_RATFOLK_START: float = 0.0
-const PHASE_ORC_START: float = 60.0            # 1:00
-const PHASE_RATFOLK_MAGE_START: float = 150.0  # 2:30
-const PHASE_BAT_START: float = 210.0           # 3:30
-const PHASE_IMP_START: float = 300.0           # 5:00
-const PHASE_AKANAME_START: float = 360.0       # 6:00
-const PHASE_GHOUL_START: float = 420.0         # 7:00
-const PHASE_SLIME_START: float = 480.0         # 8:00
-const PHASE_SKELETON_START: float = 600.0      # 10:00
-const PHASE_EYE_MONSTER_START: float = 660.0   # 11:00
-const PHASE_INTELLECT_START: float = 780.0     # 13:00
-const PHASE_NECROMANCER_START: float = 840.0   # 14:00
-const PHASE_KOBOLD_START: float = 960.0        # 16:00
-const PHASE_GOLEM_START: float = 1080.0        # 18:00
-const PHASE_SHARDSOUL_START: float = 1200.0    # 20:00
+const ENDLESS_RATFOLK_START: float = 0.0
+const ENDLESS_ORC_START: float = 60.0             # 1:00
+const ENDLESS_RATFOLK_MAGE_START: float = 150.0   # 2:30
+const ENDLESS_BAT_START: float = 210.0            # 3:30
+const ENDLESS_IMP_START: float = 300.0            # 5:00
+const ENDLESS_AKANAME_START: float = 360.0        # 6:00
+const ENDLESS_GHOUL_START: float = 420.0          # 7:00
+const ENDLESS_SLIME_START: float = 480.0          # 8:00
+const ENDLESS_SKELETON_START: float = 600.0       # 10:00
+const ENDLESS_EYE_MONSTER_START: float = 660.0    # 11:00
+const ENDLESS_GOLEM_START: float = 720.0          # 12:00 (moved up)
+const ENDLESS_INTELLECT_START: float = 840.0      # 14:00
+const ENDLESS_NECROMANCER_START: float = 900.0    # 15:00
+const ENDLESS_KOBOLD_START: float = 1020.0        # 17:00
+const ENDLESS_SHARDSOUL_START: float = 1200.0     # 20:00
 
-# Transition durations (how long it takes to fully phase in/out)
-const TRANSITION_DURATION: float = 90.0  # 1.5 minutes for smooth transitions
+# =============================================================================
+# CHALLENGE MODE - 10 minute compressed progression
+# =============================================================================
+const CHALLENGE_RATFOLK_START: float = 0.0
+const CHALLENGE_ORC_START: float = 30.0           # 0:30
+const CHALLENGE_RATFOLK_MAGE_START: float = 75.0  # 1:15
+const CHALLENGE_BAT_START: float = 105.0          # 1:45
+const CHALLENGE_IMP_START: float = 150.0          # 2:30
+const CHALLENGE_AKANAME_START: float = 180.0      # 3:00
+const CHALLENGE_GHOUL_START: float = 210.0        # 3:30
+const CHALLENGE_SLIME_START: float = 240.0        # 4:00
+const CHALLENGE_SKELETON_START: float = 300.0     # 5:00
+const CHALLENGE_EYE_MONSTER_START: float = 330.0  # 5:30
+const CHALLENGE_GOLEM_START: float = 360.0        # 6:00
+const CHALLENGE_INTELLECT_START: float = 420.0    # 7:00
+const CHALLENGE_NECROMANCER_START: float = 450.0  # 7:30
+const CHALLENGE_KOBOLD_START: float = 510.0       # 8:30
+const CHALLENGE_SHARDSOUL_START: float = 600.0    # 10:00
+
+# Active phase constants (set based on mode)
+var PHASE_RATFOLK_START: float = 0.0
+var PHASE_ORC_START: float = 60.0
+var PHASE_RATFOLK_MAGE_START: float = 150.0
+var PHASE_BAT_START: float = 210.0
+var PHASE_IMP_START: float = 300.0
+var PHASE_AKANAME_START: float = 360.0
+var PHASE_GHOUL_START: float = 420.0
+var PHASE_SLIME_START: float = 480.0
+var PHASE_SKELETON_START: float = 600.0
+var PHASE_EYE_MONSTER_START: float = 660.0
+var PHASE_GOLEM_START: float = 720.0
+var PHASE_INTELLECT_START: float = 840.0
+var PHASE_NECROMANCER_START: float = 900.0
+var PHASE_KOBOLD_START: float = 1020.0
+var PHASE_SHARDSOUL_START: float = 1200.0
+
+# Transition durations
+const ENDLESS_TRANSITION: float = 90.0   # 1.5 minutes for endless
+const CHALLENGE_TRANSITION: float = 45.0  # 45 seconds for challenge
+var TRANSITION_DURATION: float = 90.0
+
+# =============================================================================
+# DIFFICULTY-BASED ENEMY POOLS
+# =============================================================================
+# Each difficulty removes the weakest enemy and makes hardest enemies more common
+# Juvenile: All enemies, hardest very rare
+# Very Easy: No Ratfolk
+# Easy: No Ratfolk, Orc
+# Normal: No Ratfolk, Orc, Ratfolk Mage
+# Nightmare: No Ratfolk, Orc, Ratfolk Mage, Bat - hardest enemies very common
+
+# Enemy tiers (0=weakest, 14=strongest)
+const ENEMY_TIERS = {
+	"ratfolk": 0,
+	"orc": 1,
+	"ratfolk_mage": 2,
+	"bat": 3,
+	"imp": 4,
+	"akaname": 5,
+	"ghoul": 6,
+	"slime": 7,
+	"skeleton": 8,
+	"eye_monster": 9,
+	"golem": 10,
+	"intellect_devourer": 11,
+	"bandit_necromancer": 12,
+	"kobold_priest": 13,
+	"shardsoul_slayer": 14,
+}
+
+# Minimum enemy tier per difficulty (enemies below this tier are removed)
+const DIFFICULTY_MIN_TIER = {
+	0: 0,  # Juvenile: all enemies
+	1: 1,  # Very Easy: no ratfolk
+	2: 2,  # Easy: no ratfolk, orc
+	3: 3,  # Normal: no ratfolk, orc, ratfolk_mage
+	4: 4,  # Nightmare: no ratfolk, orc, ratfolk_mage, bat
+}
+
+# Hardest enemy availability multiplier per difficulty (higher = more common)
+const DIFFICULTY_HARD_ENEMY_MULT = {
+	0: 0.3,  # Juvenile: hardest enemies very rare
+	1: 0.5,  # Very Easy: hardest enemies rare
+	2: 0.7,  # Easy: hardest enemies uncommon
+	3: 1.0,  # Normal: hardest enemies normal
+	4: 1.5,  # Nightmare: hardest enemies very common
+}
+
+func _ready() -> void:
+	_setup_phase_timings()
+
+func _setup_phase_timings() -> void:
+	"""Set phase timings based on game mode."""
+	var is_challenge = DifficultyManager and DifficultyManager.is_challenge_mode()
+
+	if is_challenge:
+		PHASE_RATFOLK_START = CHALLENGE_RATFOLK_START
+		PHASE_ORC_START = CHALLENGE_ORC_START
+		PHASE_RATFOLK_MAGE_START = CHALLENGE_RATFOLK_MAGE_START
+		PHASE_BAT_START = CHALLENGE_BAT_START
+		PHASE_IMP_START = CHALLENGE_IMP_START
+		PHASE_AKANAME_START = CHALLENGE_AKANAME_START
+		PHASE_GHOUL_START = CHALLENGE_GHOUL_START
+		PHASE_SLIME_START = CHALLENGE_SLIME_START
+		PHASE_SKELETON_START = CHALLENGE_SKELETON_START
+		PHASE_EYE_MONSTER_START = CHALLENGE_EYE_MONSTER_START
+		PHASE_GOLEM_START = CHALLENGE_GOLEM_START
+		PHASE_INTELLECT_START = CHALLENGE_INTELLECT_START
+		PHASE_NECROMANCER_START = CHALLENGE_NECROMANCER_START
+		PHASE_KOBOLD_START = CHALLENGE_KOBOLD_START
+		PHASE_SHARDSOUL_START = CHALLENGE_SHARDSOUL_START
+		TRANSITION_DURATION = CHALLENGE_TRANSITION
+	else:
+		PHASE_RATFOLK_START = ENDLESS_RATFOLK_START
+		PHASE_ORC_START = ENDLESS_ORC_START
+		PHASE_RATFOLK_MAGE_START = ENDLESS_RATFOLK_MAGE_START
+		PHASE_BAT_START = ENDLESS_BAT_START
+		PHASE_IMP_START = ENDLESS_IMP_START
+		PHASE_AKANAME_START = ENDLESS_AKANAME_START
+		PHASE_GHOUL_START = ENDLESS_GHOUL_START
+		PHASE_SLIME_START = ENDLESS_SLIME_START
+		PHASE_SKELETON_START = ENDLESS_SKELETON_START
+		PHASE_EYE_MONSTER_START = ENDLESS_EYE_MONSTER_START
+		PHASE_GOLEM_START = ENDLESS_GOLEM_START
+		PHASE_INTELLECT_START = ENDLESS_INTELLECT_START
+		PHASE_NECROMANCER_START = ENDLESS_NECROMANCER_START
+		PHASE_KOBOLD_START = ENDLESS_KOBOLD_START
+		PHASE_SHARDSOUL_START = ENDLESS_SHARDSOUL_START
+		TRANSITION_DURATION = ENDLESS_TRANSITION
 
 func _process(delta: float) -> void:
 	game_time += delta
@@ -182,6 +300,15 @@ func select_enemy_type() -> String:
 	return "orc"  # Fallback
 
 func calculate_spawn_weights() -> Dictionary:
+	var weights = _calculate_base_weights()
+
+	# Apply difficulty-based filtering
+	weights = _apply_difficulty_filter(weights)
+
+	return weights
+
+func _calculate_base_weights() -> Dictionary:
+	"""Calculate base spawn weights based on game time."""
 	var weights = {
 		"ratfolk": 0.0,
 		"orc": 0.0,
@@ -193,18 +320,18 @@ func calculate_spawn_weights() -> Dictionary:
 		"slime": 0.0,
 		"skeleton": 0.0,
 		"eye_monster": 0.0,
+		"golem": 0.0,
 		"intellect_devourer": 0.0,
 		"bandit_necromancer": 0.0,
 		"kobold_priest": 0.0,
-		"golem": 0.0,
 		"shardsoul_slayer": 0.0,
 	}
 
 	# ===================
-	# EARLY GAME (0:00 - 2:30)
+	# EARLY GAME
 	# ===================
 
-	# Ratfolk: Starts at 100%, tapers off gradually
+	# Ratfolk: Starts at 100%, tapers off
 	if game_time < PHASE_ORC_START:
 		weights["ratfolk"] = 1.0
 	elif game_time < PHASE_IMP_START:
@@ -213,37 +340,37 @@ func calculate_spawn_weights() -> Dictionary:
 	else:
 		weights["ratfolk"] = lerp(0.15, 0.03, clamp((game_time - PHASE_IMP_START) / 300.0, 0.0, 1.0))
 
-	# Orc: Appears at 0:30, core enemy throughout
+	# Orc: Core enemy
 	if game_time >= PHASE_ORC_START:
 		if game_time < PHASE_IMP_START:
 			var progress = (game_time - PHASE_ORC_START) / TRANSITION_DURATION
 			weights["orc"] = lerp(0.2, 0.6, clamp(progress, 0.0, 1.0))
 		elif game_time < PHASE_GOLEM_START:
-			weights["orc"] = lerp(0.5, 0.2, clamp((game_time - PHASE_IMP_START) / 300.0, 0.0, 1.0))
+			weights["orc"] = lerp(0.5, 0.15, clamp((game_time - PHASE_IMP_START) / 300.0, 0.0, 1.0))
 		else:
-			weights["orc"] = 0.12
+			weights["orc"] = 0.08
 
-	# Ratfolk Mage: Early caster at 1:30, introduces ranged threats early
+	# Ratfolk Mage: Early caster
 	if game_time >= PHASE_RATFOLK_MAGE_START:
 		if game_time < PHASE_NECROMANCER_START:
 			var progress = (game_time - PHASE_RATFOLK_MAGE_START) / TRANSITION_DURATION
 			weights["ratfolk_mage"] = lerp(0.08, 0.18, clamp(progress, 0.0, 1.0))
 		else:
-			weights["ratfolk_mage"] = lerp(0.15, 0.08, clamp((game_time - PHASE_NECROMANCER_START) / 180.0, 0.0, 1.0))
+			weights["ratfolk_mage"] = lerp(0.15, 0.06, clamp((game_time - PHASE_NECROMANCER_START) / 180.0, 0.0, 1.0))
 
-	# Bat: Fast glass cannons at 2:00
+	# Bat: Fast glass cannon
 	if game_time >= PHASE_BAT_START:
 		if game_time < PHASE_SKELETON_START:
 			var progress = (game_time - PHASE_BAT_START) / TRANSITION_DURATION
 			weights["bat"] = lerp(0.1, 0.2, clamp(progress, 0.0, 1.0))
 		else:
-			weights["bat"] = lerp(0.18, 0.1, clamp((game_time - PHASE_SKELETON_START) / 180.0, 0.0, 1.0))
+			weights["bat"] = lerp(0.18, 0.08, clamp((game_time - PHASE_SKELETON_START) / 180.0, 0.0, 1.0))
 
 	# ===================
-	# MID GAME (2:30 - 5:00)
+	# MID GAME
 	# ===================
 
-	# Imp: Ranged at 2:30
+	# Imp: Ranged
 	if game_time >= PHASE_IMP_START:
 		if game_time < PHASE_EYE_MONSTER_START:
 			var progress = (game_time - PHASE_IMP_START) / TRANSITION_DURATION
@@ -251,7 +378,7 @@ func calculate_spawn_weights() -> Dictionary:
 		else:
 			weights["imp"] = lerp(0.2, 0.1, clamp((game_time - PHASE_EYE_MONSTER_START) / 180.0, 0.0, 1.0))
 
-	# Akaname: Poison at 3:00
+	# Akaname: Poison
 	if game_time >= PHASE_AKANAME_START:
 		if game_time < PHASE_INTELLECT_START:
 			var progress = (game_time - PHASE_AKANAME_START) / TRANSITION_DURATION
@@ -259,7 +386,7 @@ func calculate_spawn_weights() -> Dictionary:
 		else:
 			weights["akaname"] = 0.1
 
-	# Ghoul: Tanky melee at 3:30
+	# Ghoul: Tanky melee
 	if game_time >= PHASE_GHOUL_START:
 		if game_time < PHASE_GOLEM_START:
 			var progress = (game_time - PHASE_GHOUL_START) / TRANSITION_DURATION
@@ -267,7 +394,7 @@ func calculate_spawn_weights() -> Dictionary:
 		else:
 			weights["ghoul"] = lerp(0.18, 0.1, clamp((game_time - PHASE_GOLEM_START) / 120.0, 0.0, 1.0))
 
-	# Slime: Tank at 4:00
+	# Slime: Tank
 	if game_time >= PHASE_SLIME_START:
 		if game_time < PHASE_GOLEM_START:
 			var progress = (game_time - PHASE_SLIME_START) / TRANSITION_DURATION
@@ -275,7 +402,7 @@ func calculate_spawn_weights() -> Dictionary:
 		else:
 			weights["slime"] = 0.08
 
-	# Skeleton: Hard-hitters at 5:00
+	# Skeleton: Hard-hitter
 	if game_time >= PHASE_SKELETON_START:
 		if game_time < PHASE_SHARDSOUL_START:
 			var progress = (game_time - PHASE_SKELETON_START) / TRANSITION_DURATION
@@ -284,44 +411,89 @@ func calculate_spawn_weights() -> Dictionary:
 			weights["skeleton"] = lerp(0.18, 0.1, clamp((game_time - PHASE_SHARDSOUL_START) / 120.0, 0.0, 1.0))
 
 	# ===================
-	# LATE GAME (5:00 - 8:00)
+	# LATE GAME
 	# ===================
 
-	# Eye Monster: Acid ranged at 5:30
+	# Eye Monster: Acid ranged
 	if game_time >= PHASE_EYE_MONSTER_START:
 		var progress = (game_time - PHASE_EYE_MONSTER_START) / TRANSITION_DURATION
 		weights["eye_monster"] = lerp(0.06, 0.14, clamp(progress, 0.0, 1.0))
 
-	# Intellect Devourer: Ability drain at 6:30
+	# Golem: Massive tank (moved up after eye monster)
+	if game_time >= PHASE_GOLEM_START:
+		var progress = (game_time - PHASE_GOLEM_START) / TRANSITION_DURATION
+		weights["golem"] = lerp(0.03, 0.08, clamp(progress, 0.0, 1.0))
+
+	# Intellect Devourer: Ability drain
 	if game_time >= PHASE_INTELLECT_START:
 		var progress = (game_time - PHASE_INTELLECT_START) / TRANSITION_DURATION
 		weights["intellect_devourer"] = lerp(0.05, 0.12, clamp(progress, 0.0, 1.0))
 
-	# Bandit Necromancer: Summoners at 7:00 (rare but dangerous)
+	# Bandit Necromancer: Summoner
 	if game_time >= PHASE_NECROMANCER_START:
 		var progress = (game_time - PHASE_NECROMANCER_START) / TRANSITION_DURATION
-		weights["bandit_necromancer"] = lerp(0.03, 0.08, clamp(progress, 0.0, 1.0))
+		weights["bandit_necromancer"] = lerp(0.03, 0.1, clamp(progress, 0.0, 1.0))
 
-	# Kobold Priest: Healers at 8:00
+	# Kobold Priest: Healer
 	if game_time >= PHASE_KOBOLD_START:
 		var progress = (game_time - PHASE_KOBOLD_START) / TRANSITION_DURATION
-		weights["kobold_priest"] = lerp(0.04, 0.1, clamp(progress, 0.0, 1.0))
+		weights["kobold_priest"] = lerp(0.04, 0.12, clamp(progress, 0.0, 1.0))
 
 	# ===================
-	# ENDGAME (9:00+)
+	# ENDGAME
 	# ===================
 
-	# Golem: Massive tanks at 9:00 (rare)
-	if game_time >= PHASE_GOLEM_START:
-		var progress = (game_time - PHASE_GOLEM_START) / TRANSITION_DURATION
-		weights["golem"] = lerp(0.02, 0.06, clamp(progress, 0.0, 1.0))
-
-	# Shardsoul Slayer: Elite melee at 10:00 (rare but deadly)
+	# Shardsoul Slayer: Elite melee (strongest)
 	if game_time >= PHASE_SHARDSOUL_START:
 		var progress = (game_time - PHASE_SHARDSOUL_START) / TRANSITION_DURATION
-		weights["shardsoul_slayer"] = lerp(0.02, 0.08, clamp(progress, 0.0, 1.0))
+		weights["shardsoul_slayer"] = lerp(0.03, 0.1, clamp(progress, 0.0, 1.0))
 
 	return weights
+
+func _apply_difficulty_filter(weights: Dictionary) -> Dictionary:
+	"""Apply difficulty-based filtering to spawn weights."""
+	# Get current difficulty tier (0-4)
+	var difficulty_tier = 0
+	if DifficultyManager and DifficultyManager.is_challenge_mode():
+		difficulty_tier = DifficultyManager.current_difficulty
+
+	var min_tier = DIFFICULTY_MIN_TIER.get(difficulty_tier, 0)
+	var hard_mult = DIFFICULTY_HARD_ENEMY_MULT.get(difficulty_tier, 1.0)
+
+	# Define which enemies are "hard" (tier 10+)
+	const HARD_ENEMY_THRESHOLD = 10
+
+	var filtered = {}
+	var removed_weight = 0.0
+
+	for enemy_type in weights:
+		var tier = ENEMY_TIERS.get(enemy_type, 0)
+
+		if tier < min_tier:
+			# Remove this enemy from the pool
+			removed_weight += weights[enemy_type]
+			filtered[enemy_type] = 0.0
+		elif tier >= HARD_ENEMY_THRESHOLD:
+			# Apply hard enemy multiplier
+			filtered[enemy_type] = weights[enemy_type] * hard_mult
+		else:
+			filtered[enemy_type] = weights[enemy_type]
+
+	# Redistribute removed weight to remaining mid-tier enemies
+	if removed_weight > 0:
+		var redistribution_targets = []
+		for enemy_type in filtered:
+			var tier = ENEMY_TIERS.get(enemy_type, 0)
+			# Redistribute to enemies in the mid tiers (min_tier to HARD_ENEMY_THRESHOLD)
+			if tier >= min_tier and tier < HARD_ENEMY_THRESHOLD and filtered[enemy_type] > 0:
+				redistribution_targets.append(enemy_type)
+
+		if redistribution_targets.size() > 0:
+			var bonus_per_enemy = removed_weight / redistribution_targets.size()
+			for enemy_type in redistribution_targets:
+				filtered[enemy_type] += bonus_per_enemy
+
+	return filtered
 
 func get_scene_for_type(enemy_type: String) -> PackedScene:
 	match enemy_type:
