@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=40 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -29,6 +29,15 @@
 [ext_resource type="PackedScene" path="res://scenes/elite_slime.tscn" id="27_elite_slime"]
 [ext_resource type="PackedScene" path="res://scenes/elite_imp.tscn" id="28_elite_imp"]
 [ext_resource type="PackedScene" path="res://scenes/elite_kobold_priest.tscn" id="29_elite_kobold_priest"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_ratfolk_mage.tscn" id="30_ratfolk_mage"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_bat.tscn" id="31_bat"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_akaname.tscn" id="32_akaname"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_ghoul.tscn" id="33_ghoul"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_eye_monster.tscn" id="34_eye_monster"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_intellect_devourer.tscn" id="35_intellect_devourer"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_bandit_necromancer.tscn" id="36_bandit_necromancer"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_golem.tscn" id="37_golem"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_shardsoul_slayer.tscn" id="38_shardsoul_slayer"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -65,6 +74,15 @@ imp_scene = ExtResource("10_imp")
 slime_scene = ExtResource("11_slime")
 skeleton_scene = ExtResource("16_skeleton")
 kobold_priest_scene = ExtResource("17_kobold_priest")
+ratfolk_mage_scene = ExtResource("30_ratfolk_mage")
+bat_scene = ExtResource("31_bat")
+akaname_scene = ExtResource("32_akaname")
+ghoul_scene = ExtResource("33_ghoul")
+eye_monster_scene = ExtResource("34_eye_monster")
+intellect_devourer_scene = ExtResource("35_intellect_devourer")
+bandit_necromancer_scene = ExtResource("36_bandit_necromancer")
+golem_scene = ExtResource("37_golem")
+shardsoul_slayer_scene = ExtResource("38_shardsoul_slayer")
 
 [node name="EliteSpawner" type="Node2D" parent="."]
 script = ExtResource("14_elite_spawner")
