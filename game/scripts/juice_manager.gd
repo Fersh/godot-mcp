@@ -33,6 +33,10 @@ var chromatic_overlay: ColorRect = null
 var damage_flash_overlay: ColorRect = null
 var low_hp_overlay: ColorRect = null
 var original_camera_offset: Vector2 = Vector2.ZERO
+var original_camera_zoom: Vector2 = Vector2.ONE
+
+# Zoom punch
+var zoom_punch_tween: Tween = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -63,20 +67,20 @@ func _process(delta: float) -> void:
 			)
 			camera.offset = original_camera_offset + shake_offset
 			camera.rotation = randf_range(-shake_rotation, shake_rotation)
-
-		# Chromatic aberration during shake
-		if chromatic_overlay and chromatic_overlay.material:
-			chromatic_overlay.material.set_shader_parameter("intensity", shake_intensity * 0.003)
 	else:
 		if camera:
 			camera.offset = original_camera_offset
 			camera.rotation = 0.0
-		if chromatic_overlay and chromatic_overlay.material:
-			chromatic_overlay.material.set_shader_parameter("intensity", 0.0)
 
-	# Decay chromatic aberration
+	# Decay and apply chromatic aberration (from both shake and pulse)
 	if chromatic_intensity > 0:
 		chromatic_intensity = lerp(chromatic_intensity, 0.0, chromatic_decay * delta)
+
+	# Apply chromatic: use max of shake-based and pulse-based intensity
+	if chromatic_overlay and chromatic_overlay.material:
+		var shake_chromatic = shake_intensity * 0.003
+		var total_chromatic = max(shake_chromatic, chromatic_intensity * 0.01)
+		chromatic_overlay.material.set_shader_parameter("intensity", total_chromatic)
 
 	# Update damage flash
 	if damage_flash_intensity > 0:
@@ -124,6 +128,7 @@ func _process(delta: float) -> void:
 func register_camera(cam: Camera2D) -> void:
 	camera = cam
 	original_camera_offset = cam.offset
+	original_camera_zoom = cam.zoom
 
 func register_vignette(overlay: ColorRect) -> void:
 	vignette_overlay = overlay
@@ -183,6 +188,37 @@ func hitstop_medium() -> void:
 # Large hitstop for big events
 func hitstop_large() -> void:
 	hitstop(0.1)
+
+# Zoom punch - brief zoom in then back out for impact
+func zoom_punch(intensity: float = 0.02) -> void:
+	if not camera:
+		return
+
+	# Kill any existing zoom tween
+	if zoom_punch_tween and zoom_punch_tween.is_valid():
+		zoom_punch_tween.kill()
+
+	# Zoom in slightly (higher zoom value = more zoomed in)
+	var punch_zoom = original_camera_zoom * (1.0 + intensity)
+	camera.zoom = punch_zoom
+
+	# Ease back to original
+	zoom_punch_tween = create_tween()
+	zoom_punch_tween.tween_property(camera, "zoom", original_camera_zoom, 0.1) \
+		.set_trans(Tween.TRANS_QUAD) \
+		.set_ease(Tween.EASE_OUT)
+
+# Small zoom punch for regular hits
+func zoom_punch_small() -> void:
+	zoom_punch(0.015)
+
+# Medium zoom punch for crits
+func zoom_punch_medium() -> void:
+	zoom_punch(0.03)
+
+# Large zoom punch for kills
+func zoom_punch_large() -> void:
+	zoom_punch(0.05)
 
 # Trigger chromatic aberration
 func chromatic_pulse(intensity: float = 1.0) -> void:

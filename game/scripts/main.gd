@@ -145,23 +145,23 @@ func _on_continue_chosen(accepted: bool) -> void:
 	continue_used = true  # Mark continue as used regardless of choice
 
 	if accepted:
-		# Revive the player at 50% HP
+		# Revive the player at full HP
 		_revive_player()
 	else:
 		# Proceed to game over
 		show_game_over()
 
 func _revive_player() -> void:
-	"""Revive the player at 50% HP and show REVIVED effect."""
+	"""Revive the player at full HP and show REVIVED effect."""
 	# Unpause first
 	get_tree().paused = false
 
 	# Show REVIVED text effect (similar to phoenix)
 	_show_revived_effect()
 
-	# Revive player at 50% HP
+	# Revive player at full HP
 	if player and is_instance_valid(player) and player.has_method("revive_with_percent"):
-		player.revive_with_percent(0.5)  # 50% HP
+		player.revive_with_percent(1.0)  # Full HP
 
 	# Knock back nearby enemies for safety
 	var enemies = get_tree().get_nodes_in_group("enemies")

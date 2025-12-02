@@ -36,6 +36,7 @@ func _ready() -> void:
 	visible = false
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("ultimate_selection_ui")
 
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
@@ -401,10 +402,23 @@ func _on_ultimate_selected(index: int) -> void:
 
 func hide_selection() -> void:
 	visible = false
-	get_tree().paused = false
+	_safe_unpause()
 	# Clear fire particles
 	fire_containers.clear()
 	fire_particles.clear()
+
+func _safe_unpause() -> void:
+	# Check if other modals are visible before unpausing
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+	var item_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if item_ui and item_ui.visible:
+		return
+	var active_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ui and active_ui.visible:
+		return
+	get_tree().paused = false
 
 func _input(event: InputEvent) -> void:
 	if not visible or is_rolling:

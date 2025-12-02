@@ -7,7 +7,7 @@ class_name ActiveAbilityBar
 # Ultimate button: centered above the 2x2 grid
 
 const BUTTON_SIZE := Vector2(101, 101)  # Standard button size (10% smaller than 112)
-const ABILITY1_SIZE := Vector2(124, 124)  # Ability 1 is larger (reduced 10%)
+const ABILITY1_SIZE := Vector2(112, 112)  # Ability 1 is larger (reduced 10% more)
 const ULTIMATE_SIZE := Vector2(120, 120)  # Ultimate button size
 const GRID_SPACING := 8  # Space between buttons
 const MARGIN_RIGHT := 80  # 20px more left
@@ -75,7 +75,7 @@ func _create_ui() -> void:
 	# Ability 3 - positioned between dodge and ability 2, closer to ability 1
 	var btn2 = _create_ability_button(2, BUTTON_SIZE)
 	# Move right and down to be almost between dodge area and top-left corner
-	btn2.position = Vector2(60, 70)
+	btn2.position = Vector2(50, 58)
 	ability_buttons.append(btn2)
 
 	# Apply 30% transparency to all ability buttons

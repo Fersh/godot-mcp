@@ -35,6 +35,7 @@ func _ready() -> void:
 	visible = false
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("active_ability_selection_ui")
 
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
@@ -387,7 +388,7 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	label.text = ActiveAbilityData.get_rarity_name(rarity)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 10)
-	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+	label.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 	tag.add_child(label)
@@ -511,6 +512,19 @@ func _on_ability_selected(index: int) -> void:
 
 func hide_selection() -> void:
 	visible = false
+	_safe_unpause()
+
+func _safe_unpause() -> void:
+	# Check if other modals are visible before unpausing
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+	var item_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if item_ui and item_ui.visible:
+		return
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
 	get_tree().paused = false
 
 func _input(event: InputEvent) -> void:

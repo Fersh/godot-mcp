@@ -172,21 +172,21 @@ func _create_difficulty_buttons() -> void:
 	difficulty_buttons.clear()
 
 	for tier in DifficultyManager.get_all_difficulties():
-		# Create row container - button centered, label to the right
-		var row = HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Row container that holds everything
+		var row = Control.new()
+		row.custom_minimum_size = Vector2(600, 45)
 
-		# Left spacer to push button to center
-		var left_spacer = Control.new()
-		left_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(left_spacer)
+		# Center container for the button (keeps it centered)
+		var center = CenterContainer.new()
+		center.set_anchors_preset(Control.PRESET_FULL_RECT)
+		row.add_child(center)
 
 		var btn = Button.new()
 		var data = DifficultyManager.DIFFICULTY_DATA[tier]
 		var is_completed = DifficultyManager.is_difficulty_completed(tier)
 
-		# Add checkmark to left if completed (with spacing for alignment)
-		btn.text = "✓ " + data["name"] if is_completed else "  " + data["name"]
+		# Add checkmark to left if completed
+		btn.text = "✓ " + data["name"] if is_completed else data["name"]
 		btn.custom_minimum_size = Vector2(300, 45)
 		# All difficulties are now selectable (temporary bypass)
 		btn.disabled = false
@@ -200,30 +200,19 @@ func _create_difficulty_buttons() -> void:
 		btn.pressed.connect(_on_difficulty_selected.bind(tier))
 
 		_style_difficulty_button(btn, data["color"], true)  # Always style as unlocked
-		row.add_child(btn)
+		center.add_child(btn)
 
-		# Right side container with completion summary
-		var right_container = HBoxContainer.new()
-		right_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		right_container.add_theme_constant_override("separation", 15)
-
-		# Small spacer between button and label
-		var label_spacer = Control.new()
-		label_spacer.custom_minimum_size = Vector2(15, 0)
-		right_container.add_child(label_spacer)
-
-		# Completion summary label
+		# Completion summary label - positioned to the right of center
 		var summary_label = Label.new()
 		summary_label.name = "CompletionSummary"
 		summary_label.text = DifficultyManager.get_completion_summary(tier)
+		# Position to the right of the centered button (center + half button width + gap)
+		summary_label.position = Vector2(300 + 150 + 35, 15)  # 300 is center offset, 150 is half button, 35 is gap
 		if pixel_font:
 			summary_label.add_theme_font_override("font", pixel_font)
 		summary_label.add_theme_font_size_override("font_size", 9)
 		summary_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.6))
-		summary_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		right_container.add_child(summary_label)
-
-		row.add_child(right_container)
+		row.add_child(summary_label)
 
 		difficulty_container.add_child(row)
 		difficulty_buttons.append(btn)
@@ -363,7 +352,7 @@ func _update_selection_display() -> void:
 		var is_completed = DifficultyManager.is_difficulty_completed(tier) if DifficultyManager else false
 
 		# Update button text with checkmark on left if completed
-		btn.text = "✓ " + data["name"] if is_completed else "  " + data["name"]
+		btn.text = "✓ " + data["name"] if is_completed else data["name"]
 
 		if is_selected:
 			# Highlight selected
@@ -380,7 +369,7 @@ func _update_selection_display() -> void:
 
 	# Update description
 	if selected_mode == DifficultyManager.GameMode.ENDLESS:
-		description_label.text = "Survive as long as you can. Enemies get stronger over time."
+		description_label.text = "Survive as long as you can.\nEnemies get stronger over time."
 		description_label.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5))  # Juvenile green
 	elif DifficultyManager:
 		description_label.text = DifficultyManager.get_difficulty_description(selected_difficulty)

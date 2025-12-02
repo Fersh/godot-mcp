@@ -27,6 +27,7 @@ const COLOR_STAT_DOWN = Color(0.9, 0.3, 0.3)
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("item_pickup_ui")
 
 	# Load fonts
 	pixel_font = load("res://assets/fonts/Pixelify_Sans/static/PixelifySans-Bold.ttf")
@@ -143,9 +144,29 @@ func show_item(dropped_item: DroppedItem, show_comparison: bool = true) -> void:
 
 func hide_ui() -> void:
 	visible = false
-	get_tree().paused = false
 	current_dropped_item = null
 	current_item = null
+
+	# Only unpause if no other modal is open
+	_safe_unpause()
+
+func _safe_unpause() -> void:
+	# Check if ability selection UI is visible
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+
+	# Check if active ability selection UI is visible
+	var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ability_ui and active_ability_ui.visible:
+		return
+
+	# Check if ultimate selection UI is visible
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
+
+	get_tree().paused = false
 
 func _build_item_display(comparison: Dictionary, max_stats: int) -> void:
 	# Clear existing content

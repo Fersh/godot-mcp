@@ -14,6 +14,7 @@ extends CharacterBody2D
 @export var death_particles_scene: PackedScene
 @export var dropped_item_scene: PackedScene
 @export var health_potion_scene: PackedScene
+@export var hit_sparks_scene: PackedScene
 
 # Enemy type identifier
 @export var enemy_type: String = "base"
@@ -67,7 +68,13 @@ var knockback_decay: float = 10.0
 
 # Hit flash
 var flash_timer: float = 0.0
-var flash_duration: float = 0.1
+var flash_hold_duration: float = 0.033  # Hold full white for 2 frames at 60fps
+var flash_fade_duration: float = 0.05  # Then fade out quickly
+var flash_duration: float = 0.083  # Total duration (hold + fade)
+
+# Squash/stretch on hit
+var base_sprite_scale: Vector2 = Vector2.ONE
+var hit_squash_tween: Tween = null
 
 # Champion system (Nightmare+ difficulty)
 var is_champion: bool = false
@@ -108,6 +115,10 @@ func _ready() -> void:
 	if sprite and sprite.material:
 		sprite.material = sprite.material.duplicate()
 
+	# Store original sprite scale for squash/stretch effects
+	if sprite:
+		base_sprite_scale = sprite.scale
+
 	# Let subclasses set their base stats first
 	_on_ready()
 
@@ -136,11 +147,12 @@ func _physics_process(delta: float) -> void:
 	# Update z_index based on Y position for depth sorting with trees
 	z_index = int(global_position.y / 10)
 
+	# Always process hit flash, even when dying
+	handle_hit_flash(delta)
+
 	if is_dying:
 		update_death_animation(delta)
 		return
-
-	handle_hit_flash(delta)
 	handle_status_effects(delta)
 
 	if handle_knockback(delta):
@@ -200,11 +212,45 @@ func _on_attack_complete() -> void:
 func handle_hit_flash(delta: float) -> void:
 	if flash_timer > 0:
 		flash_timer -= delta
-		var flash_intensity = flash_timer / flash_duration
+		var intensity: float
+		if flash_timer > flash_fade_duration:
+			# Hold phase - full white
+			intensity = 1.0
+		elif flash_timer > 0:
+			# Fade phase - ease out for snappier feel
+			var fade_progress = flash_timer / flash_fade_duration
+			intensity = fade_progress * fade_progress  # Quadratic ease-out
+		else:
+			intensity = 0.0
 		if sprite.material:
-			sprite.material.set_shader_parameter("flash_intensity", flash_intensity)
+			sprite.material.set_shader_parameter("flash_intensity", intensity)
 		if flash_timer <= 0 and sprite.material:
 			sprite.material.set_shader_parameter("flash_intensity", 0.0)
+
+func _apply_hit_squash() -> void:
+	if not sprite:
+		return
+
+	# Kill any existing squash tween
+	if hit_squash_tween and hit_squash_tween.is_valid():
+		hit_squash_tween.kill()
+
+	# Instant squash: wider (1.15x) and shorter (0.85x)
+	sprite.scale = base_sprite_scale * Vector2(1.15, 0.85)
+
+	# Bounce back with elastic ease
+	hit_squash_tween = create_tween()
+	hit_squash_tween.tween_property(sprite, "scale", base_sprite_scale, 0.15) \
+		.set_trans(Tween.TRANS_ELASTIC) \
+		.set_ease(Tween.EASE_OUT)
+
+func _spawn_hit_sparks() -> void:
+	if hit_sparks_scene == null:
+		return
+
+	var sparks = hit_sparks_scene.instantiate()
+	sparks.global_position = global_position
+	get_parent().add_child(sparks)
 
 func handle_knockback(delta: float) -> bool:
 	if knockback_velocity.length() > 1.0:
@@ -257,6 +303,20 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	flash_timer = flash_duration
 	if sprite.material:
 		sprite.material.set_shader_parameter("flash_intensity", 1.0)
+
+	# Squash effect on hit
+	_apply_hit_squash()
+
+	# Hit spark particles
+	_spawn_hit_sparks()
+
+	# Chromatic aberration pulse on hit
+	if JuiceManager:
+		if is_critical:
+			JuiceManager.chromatic_pulse(0.3)
+			JuiceManager.zoom_punch_medium()  # Zoom punch on crits
+		else:
+			JuiceManager.chromatic_pulse(0.15)
 
 	if current_health > 0 and AbilityManager and AbilityManager.check_cull_weak(self):
 		current_health = 0
@@ -413,10 +473,12 @@ func die() -> void:
 	if SoundManager:
 		SoundManager.play_enemy_death()
 
-	flash_timer = 0.0
-	if sprite.material:
-		sprite.material.set_shader_parameter("flash_intensity", 0.0)
+	# Micro hitstop and zoom punch on crit kills for impact
+	if died_from_crit and JuiceManager:
+		JuiceManager.hitstop_micro()
+		JuiceManager.zoom_punch_large()
 
+	# Don't reset flash - let it fade naturally for satisfying hit feedback
 	spawn_death_particles()
 
 	if player and is_instance_valid(player) and player.has_method("give_kill_xp"):
@@ -559,17 +621,21 @@ func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 # ============================================
 
 func make_champion() -> void:
-	"""Transform this enemy into a champion with 2x HP, damage boost, and visual indicator."""
+	"""Transform this enemy into a champion with 3x HP, 2x damage, 1.25x speed, and visual indicator."""
 	is_champion = true
 
 	# Apply champion buffs
-	max_health *= 2.0
+	max_health *= 3.0
 	current_health = max_health
-	attack_damage *= 1.25
-	speed *= 1.15
+	attack_damage *= 2.0
+	speed *= 1.25
 
-	# Visual changes - slightly larger
-	scale *= 1.2
+	# Visual changes - 25% larger
+	scale *= 1.25
+
+	# Update base_sprite_scale for squash effect
+	if sprite:
+		base_sprite_scale = sprite.scale
 
 	# Update health bar
 	if health_bar:

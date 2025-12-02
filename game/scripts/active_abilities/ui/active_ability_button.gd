@@ -396,26 +396,19 @@ func _create_tooltip() -> void:
 
 	# Style the tooltip panel
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.15, 0.95)
+	style.bg_color = Color(0.08, 0.06, 0.10, 0.98)
 	style.border_color = Color(0.5, 0.5, 0.5)
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(8)
 	style.set_content_margin_all(12)
+	style.content_margin_top = 18  # Extra top margin for rarity tag
 	tooltip_panel.add_theme_stylebox_override("panel", style)
 
 	# Content VBox
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
+	vbox.name = "VBox"
+	vbox.add_theme_constant_override("separation", 4)
 	tooltip_panel.add_child(vbox)
-
-	# Rarity label
-	var rarity_label = Label.new()
-	rarity_label.name = "RarityLabel"
-	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 10)
-	if pixel_font:
-		rarity_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(rarity_label)
 
 	# Name label
 	var name_label = Label.new()
@@ -427,21 +420,29 @@ func _create_tooltip() -> void:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
-	# Separator
-	var separator = HSeparator.new()
-	vbox.add_child(separator)
+	# Margin spacer (replaces separator)
+	var spacer = Control.new()
+	spacer.name = "Spacer"
+	spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer)
 
 	# Description label
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.add_theme_font_size_override("font_size", 11)
-	desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	desc_label.add_theme_color_override("font_color", Color.WHITE)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 200
 	if pixel_font:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
+
+	# Cooldown spacer
+	var cd_spacer = Control.new()
+	cd_spacer.name = "CooldownSpacer"
+	cd_spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(cd_spacer)
 
 	# Cooldown label
 	var cd_label = Label.new()
@@ -453,33 +454,51 @@ func _create_tooltip() -> void:
 		cd_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(cd_label)
 
-	# Add to parent's parent (the bar's grid container) so it's not clipped
-	# We'll position it manually
+	# Add tooltip to button
 	add_child(tooltip_panel)
+
+	# Rarity tag (positioned on the border, added after tooltip_panel)
+	var rarity_tag = PanelContainer.new()
+	rarity_tag.name = "RarityTag"
+	rarity_tag.visible = false
+	rarity_tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rarity_tag.z_index = 101
+
+	var rarity_label = Label.new()
+	rarity_label.name = "RarityLabel"
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rarity_label.add_theme_font_size_override("font_size", 9)
+	if pixel_font:
+		rarity_label.add_theme_font_override("font", pixel_font)
+	rarity_tag.add_child(rarity_label)
+
+	add_child(rarity_tag)
 
 func _update_tooltip_content() -> void:
 	if not tooltip_panel:
 		return
 
-	var vbox = tooltip_panel.get_child(0) as VBoxContainer
+	var vbox = tooltip_panel.get_node("VBox") as VBoxContainer
+	var rarity_tag = get_node_or_null("RarityTag") as PanelContainer
 	if not vbox:
 		return
 
-	var rarity_label = vbox.get_node("RarityLabel") as Label
 	var name_label = vbox.get_node("NameLabel") as Label
 	var desc_label = vbox.get_node("DescLabel") as Label
 	var cd_label = vbox.get_node("CooldownLabel") as Label
+	var rarity_label = rarity_tag.get_node("RarityLabel") as Label if rarity_tag else null
 
 	if is_dodge:
 		# Dodge button tooltip
-		if rarity_label:
-			rarity_label.visible = false
+		if rarity_tag:
+			rarity_tag.visible = false
 		if name_label:
 			name_label.text = "Dodge"
+			name_label.add_theme_color_override("font_color", DODGE_COLOR.lightened(0.3))
 		if desc_label:
 			desc_label.text = "Quickly dash backward away from the nearest enemy. Brief invulnerability during the dodge."
 		if cd_label:
-			cd_label.text = "Cooldown: 5s"
+			cd_label.text = "5s Cooldown"
 
 		# Update border color
 		var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
@@ -488,27 +507,41 @@ func _update_tooltip_content() -> void:
 
 	elif ability:
 		# Ability tooltip
-		if rarity_label:
-			rarity_label.visible = true
+		var rarity_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+
+		if rarity_tag and rarity_label:
 			rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
-			rarity_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
+			rarity_label.add_theme_color_override("font_color", Color.WHITE)
+
+			# Style the rarity tag
+			var tag_style = StyleBoxFlat.new()
+			tag_style.bg_color = rarity_color
+			tag_style.set_corner_radius_all(4)
+			tag_style.content_margin_left = 8
+			tag_style.content_margin_right = 8
+			tag_style.content_margin_top = 2
+			tag_style.content_margin_bottom = 2
+			rarity_tag.add_theme_stylebox_override("panel", tag_style)
+
 		if name_label:
 			name_label.text = ability.name
+			name_label.add_theme_color_override("font_color", rarity_color.lightened(0.3))
 		if desc_label:
 			desc_label.text = ability.description
 		if cd_label:
-			cd_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
+			cd_label.text = str(int(ability.cooldown)) + "s Cooldown"
 
 		# Update border color
 		var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-		style.border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+		style.border_color = rarity_color
 		tooltip_panel.add_theme_stylebox_override("panel", style)
 	else:
 		# Empty slot
-		if rarity_label:
-			rarity_label.text = ""
+		if rarity_tag:
+			rarity_tag.visible = false
 		if name_label:
 			name_label.text = "Empty Slot"
+			name_label.add_theme_color_override("font_color", Color.WHITE)
 		if desc_label:
 			desc_label.text = "No ability equipped in this slot yet."
 		if cd_label:
@@ -552,6 +585,19 @@ func _show_tooltip() -> void:
 	tooltip_panel.visible = true
 	tooltip_visible = true
 
+	# Position rarity tag on the top border
+	var rarity_tag = get_node_or_null("RarityTag") as PanelContainer
+	if rarity_tag and ability:
+		rarity_tag.visible = true
+		rarity_tag.reset_size()
+		await get_tree().process_frame  # Wait for rarity tag size
+		rarity_tag.position = Vector2(
+			tooltip_pos.x + (tooltip_panel.size.x - rarity_tag.size.x) / 2,  # Center horizontally on tooltip
+			tooltip_pos.y - rarity_tag.size.y / 2  # Half above the top border
+		)
+	elif rarity_tag:
+		rarity_tag.visible = false
+
 	# Animate tooltip appearance
 	tooltip_panel.modulate.a = 0.0
 	tooltip_panel.scale = Vector2(0.9, 0.9)
@@ -567,6 +613,11 @@ func _hide_tooltip() -> void:
 		return
 
 	tooltip_visible = false
+
+	# Hide rarity tag
+	var rarity_tag = get_node_or_null("RarityTag") as PanelContainer
+	if rarity_tag:
+		rarity_tag.visible = false
 
 	# Animate tooltip disappearance
 	var tween = create_tween()

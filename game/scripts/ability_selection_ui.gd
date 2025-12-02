@@ -29,6 +29,7 @@ var rarity_particle_shader: Shader = null
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # Process even when paused
+	add_to_group("ability_selection_ui")
 	# Use the same font as points/coins display
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
@@ -510,6 +511,24 @@ func _on_ability_selected(index: int) -> void:
 
 func hide_selection() -> void:
 	visible = false
+	_safe_unpause()
+
+func _safe_unpause() -> void:
+	# Check if item pickup UI is visible
+	var item_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if item_ui and item_ui.visible:
+		return
+
+	# Check if active ability selection UI is visible
+	var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ability_ui and active_ability_ui.visible:
+		return
+
+	# Check if ultimate selection UI is visible
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
+
 	get_tree().paused = false
 
 func _input(event: InputEvent) -> void:

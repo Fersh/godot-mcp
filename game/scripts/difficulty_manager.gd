@@ -29,7 +29,7 @@ var completion_records: Dictionary = {}
 const DIFFICULTY_DATA = {
 	DifficultyTier.JUVENILE: {
 		"name": "Pitiful",
-		"description": "For those who fear the dark.",
+		"description": "For those who fear the dark.\n1x Points.",
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
@@ -40,45 +40,45 @@ const DIFFICULTY_DATA = {
 	},
 	DifficultyTier.VERY_EASY: {
 		"name": "Easy",
-		"description": "Enemies apply Slow on hit. 4x Points.",
+		"description": "Enemies apply Slow on hit.\n2x Points.",
 		"health_mult": 3.2,
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
 		"spawn_rate_mult": 2.4,
-		"points_mult": 4.0,
+		"points_mult": 2.0,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Normal",
-		"description": "+ Elites gain random affixes. 6x Points.",
+		"description": "+ Elites gain random affixes.\n3x Points.",
 		"health_mult": 4.8,
 		"damage_mult": 3.3,
 		"speed_mult": 1.44,
 		"spawn_rate_mult": 2.8,
-		"points_mult": 6.0,
+		"points_mult": 3.0,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Nightmare",
-		"description": "+ Start at 75% HP. Boss enrages faster. 8x Points.",
+		"description": "+ Start at 75% HP. Boss enrages faster.\n4x Points.",
 		"health_mult": 7.6,
 		"damage_mult": 4.2,
 		"speed_mult": 1.64,
 		"spawn_rate_mult": 3.2,
-		"points_mult": 8.0,
+		"points_mult": 4.0,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Hell",
-		"description": "+ Healing reduced 50%. Champion enemies. 10x Points.",
+		"description": "+ Healing reduced 50%. Champion enemies.\n5x Points.",
 		"health_mult": 11.0,
 		"damage_mult": 5.5,
 		"speed_mult": 1.9,
 		"spawn_rate_mult": 3.7,
-		"points_mult": 10.0,
+		"points_mult": 5.0,
 		"color": Color(0.9, 0.2, 0.2),  # Red
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
 	},
