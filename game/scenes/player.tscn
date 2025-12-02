@@ -38,4 +38,6 @@ limit_right = 1636
 limit_bottom = 1382
 
 [node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
+bar_width = 44.0
+bar_height = 8.0
 offset_y = -30.0

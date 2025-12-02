@@ -15,7 +15,9 @@ var shield_max: float = 0.0
 var highlight: ColorRect
 var shadow: ColorRect
 var shield_fill: Panel
-var border_bottom: ColorRect
+var border_width: int = 1  # Will be set based on bar size
+var displayed_health: float = 100.0  # For smooth animation
+var health_tween: Tween = null
 
 func _ready() -> void:
 	position.y = offset_y
@@ -24,47 +26,51 @@ func _ready() -> void:
 	fill.size = Vector2(bar_width, bar_height)
 	fill.position = Vector2(-bar_width / 2, -bar_height / 2)
 
-	# Create black border-bottom below the bar
-	border_bottom = ColorRect.new()
-	border_bottom.size = Vector2(bar_width, 2)
-	border_bottom.position = Vector2(-bar_width / 2, bar_height / 2)
-	border_bottom.color = Color(0, 0, 0, 0.8)
-	border_bottom.z_index = -1
-	add_child(border_bottom)
+	# Set background with black border around entire bar
+	# Use consistent border and corner radius for all bars
+	border_width = 1
+	var corner_radius = 2
+	var fill_corner_radius = 1
 
-	# Set background to black (missing health portion)
 	var bg_style = StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.1, 0.1, 0.1, 1.0)  # Dark/black background
-	bg_style.set_corner_radius_all(1)  # Match fill bar radius
+	bg_style.border_color = Color(0, 0, 0, 1.0)  # Black border
+	bg_style.set_border_width_all(border_width)
+	bg_style.set_corner_radius_all(corner_radius)
 	background.add_theme_stylebox_override("panel", bg_style)
 
-	# Set fill corner radius to match background
+	# Set fill corner radius to match background (slightly smaller to fit inside border)
 	var fill_style = fill.get_theme_stylebox("panel")
 	if fill_style == null:
 		fill_style = StyleBoxFlat.new()
 	else:
 		fill_style = fill_style.duplicate()
-	fill_style.set_corner_radius_all(1)  # Match background bar radius
+	fill_style.set_corner_radius_all(fill_corner_radius)
 	fill.add_theme_stylebox_override("panel", fill_style)
 
-	# Create highlight (top 1px)
+	# Adjust fill position and size to account for border
+	var border_offset = border_width
+	fill.size = Vector2(bar_width - border_offset * 2, bar_height - border_offset * 2)
+	fill.position = Vector2(-bar_width / 2 + border_offset, -bar_height / 2 + border_offset)
+
+	# Create highlight (top 1px) - adjusted for border
 	highlight = ColorRect.new()
-	highlight.size = Vector2(bar_width, 1)
+	highlight.size = Vector2(bar_width - border_width * 2, 1)
 	highlight.position = Vector2(0, 0)
 	highlight.color = Color(1, 1, 1, 0.3)
 	fill.add_child(highlight)
 
-	# Create shadow (bottom 1px)
+	# Create shadow (bottom 1px) - adjusted for border
 	shadow = ColorRect.new()
-	shadow.size = Vector2(bar_width, 1)
-	shadow.position = Vector2(0, bar_height - 1)
+	shadow.size = Vector2(bar_width - border_width * 2, 1)
+	shadow.position = Vector2(0, bar_height - border_width * 2 - 1)  # Adjusted for border
 	shadow.color = Color(0, 0, 0, 0.3)
 	fill.add_child(shadow)
 
-	# Create shield fill (drawn on top of health)
+	# Create shield fill (drawn on top of health) - adjusted for border
 	shield_fill = Panel.new()
-	shield_fill.size = Vector2(0, bar_height)
-	shield_fill.position = Vector2(-bar_width / 2, -bar_height / 2)
+	shield_fill.size = Vector2(0, bar_height - border_width * 2)
+	shield_fill.position = Vector2(-bar_width / 2 + border_width, -bar_height / 2 + border_width)
 	shield_fill.z_index = 1
 	var shield_style = StyleBoxFlat.new()
 	shield_style.bg_color = Color(0.4, 0.6, 1.0, 0.9)  # Blue for shield
@@ -82,9 +88,37 @@ func _ready() -> void:
 
 func set_health(current: float, maximum: float) -> void:
 	max_health = maximum
+	var old_health = current_health
 	current_health = current
-	var ratio = clamp(current / maximum, 0.0, 1.0)
-	var fill_width = bar_width * ratio
+
+	# Cancel existing tween if any
+	if health_tween and health_tween.is_valid():
+		health_tween.kill()
+
+	# If health increased or this is initial setup, snap immediately
+	if current >= displayed_health or displayed_health == 100.0 and old_health == 100.0:
+		displayed_health = current
+		_update_health_display()
+	else:
+		# Animate health bar going down rapidly
+		health_tween = create_tween()
+		health_tween.tween_method(_animate_health_decrease, displayed_health, current, 0.15)
+		health_tween.set_ease(Tween.EASE_OUT)
+		health_tween.set_trans(Tween.TRANS_QUAD)
+
+	# Update color immediately based on target health
+	_update_health_color()
+
+	# Update shield display
+	_update_shield_display()
+
+func _animate_health_decrease(value: float) -> void:
+	displayed_health = value
+	_update_health_display()
+
+func _update_health_display() -> void:
+	var ratio = clamp(displayed_health / max_health, 0.0, 1.0) if max_health > 0 else 0.0
+	var fill_width = (bar_width - border_width * 2) * ratio  # Account for border
 	fill.size.x = fill_width
 
 	# Update highlight/shadow widths
@@ -92,6 +126,9 @@ func set_health(current: float, maximum: float) -> void:
 		highlight.size.x = fill_width
 	if shadow:
 		shadow.size.x = fill_width
+
+func _update_health_color() -> void:
+	var ratio = clamp(current_health / max_health, 0.0, 1.0) if max_health > 0 else 0.0
 
 	# Change color based on health (or blue if shielded)
 	var style = fill.get_theme_stylebox("panel").duplicate()
@@ -104,9 +141,6 @@ func set_health(current: float, maximum: float) -> void:
 	else:
 		style.bg_color = Color(0.9, 0.2, 0.2, 1)  # Red
 	fill.add_theme_stylebox_override("panel", style)
-
-	# Update shield display
-	_update_shield_display()
 
 func set_shield(current_shield: float, max_shield: float) -> void:
 	shield_amount = current_shield
@@ -123,7 +157,7 @@ func _update_shield_display() -> void:
 	if shield_amount > 0 and shield_max > 0:
 		shield_fill.visible = true
 		var shield_ratio = clamp(shield_amount / shield_max, 0.0, 1.0)
-		shield_fill.size.x = bar_width * shield_ratio
+		shield_fill.size.x = (bar_width - border_width * 2) * shield_ratio  # Account for border
 	else:
 		shield_fill.visible = false
 

@@ -73,16 +73,16 @@ func _load_font() -> void:
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
 func _create_ui() -> void:
-	# Main container - positioned at top right, below stats
+	# Main container - positioned at top right with 20px margin
 	container = Control.new()
 	container.name = "StreakContainer"
 	container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	container.anchor_left = 0.6
+	container.anchor_left = 0.5
 	container.anchor_right = 1.0
-	container.anchor_top = 0.14  # Below points/coins/wave
-	container.anchor_bottom = 0.18
-	container.offset_top = 20  # Move down 20px
-	container.offset_right = -60  # 40px more inward from edge
+	container.anchor_top = 0.0
+	container.anchor_bottom = 0.1
+	container.offset_top = 68  # 48px margin + 20px extra = 68px from top
+	container.offset_right = -48  # Match the game's margin
 	container.modulate.a = 0.0
 	add_child(container)
 

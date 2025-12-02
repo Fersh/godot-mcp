@@ -1,10 +1,12 @@
 extends CanvasLayer
 class_name ActiveAbilityBar
 
-# 2x2 Grid layout for landscape mode
-# Bottom-left: Dodge, Bottom-right: Ability 1 (larger)
-# Top-left: Ability 3, Top-right: Ability 2
-# Ultimate button: centered above the 2x2 grid
+# Vertical stack layout for landscape mode
+# Abilities fill from bottom to top:
+# Bottom-right: Ability 1 (larger, primary)
+# Above Ability 1: Ability 2
+# Above Ability 2: Ability 3
+# Dodge on the left side, Ultimate above the stack
 
 const BUTTON_SIZE := Vector2(101, 101)  # Standard button size (10% smaller than 112)
 const ABILITY1_SIZE := Vector2(112, 112)  # Ability 1 is larger (reduced 10% more)
@@ -37,12 +39,11 @@ func _create_ui() -> void:
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	# Calculate grid dimensions
-	# Grid is 2x2, with ability 1 being larger
-	# Total width: BUTTON_SIZE.x + GRID_SPACING + 32 (extra spacing) + ABILITY1_SIZE.x
-	# Total height: BUTTON_SIZE.y + GRID_SPACING + 32 (extra spacing) + ABILITY1_SIZE.y
+	# Calculate grid dimensions for vertical stack layout
+	# Width: Dodge button + spacing + Ability stack
+	# Height: Ability 3 + Ability 2 + Ability 1 (stacked vertically)
 	var grid_width = BUTTON_SIZE.x + GRID_SPACING + 32 + ABILITY1_SIZE.x
-	var grid_height = BUTTON_SIZE.y + GRID_SPACING + 32 + ABILITY1_SIZE.y
+	var grid_height = BUTTON_SIZE.y * 2 + 12 * 2 + ABILITY1_SIZE.y  # 3 abilities stacked
 
 	# Position container so grid is at bottom-right corner
 	grid_container.position = Vector2(
@@ -52,37 +53,41 @@ func _create_ui() -> void:
 
 	add_child(grid_container)
 
-	# Create buttons in 2x2 grid layout
+	# Create buttons in vertical stack layout (bottom to top)
 	# All buttons are circles
 
-	# Bottom-right: Ability 1 (larger, primary ability)
+	# Calculate vertical spacing for stacked abilities
+	var stack_spacing = 12  # Space between stacked buttons
+	var stack_x = BUTTON_SIZE.x + GRID_SPACING + 32  # X position for ability stack
+
+	# Bottom: Ability 1 (larger, primary ability)
 	var btn0 = _create_ability_button(0, ABILITY1_SIZE)
-	var ability1_x = BUTTON_SIZE.x + GRID_SPACING + 32  # Extra 32px left spacing (20px more)
-	var ability1_y = BUTTON_SIZE.y + GRID_SPACING + 32  # Extra 32px top spacing (20px more)
-	btn0.position = Vector2(ability1_x, ability1_y)
+	var ability1_y = BUTTON_SIZE.y * 2 + stack_spacing * 2  # Leave room for Ability 2 and 3 above
+	btn0.position = Vector2(stack_x, ability1_y)
 	ability_buttons.append(btn0)
 
-	# Bottom-left: Dodge (vertically centered with Ability 1)
+	# Dodge: Left side, vertically centered with Ability 1
 	dodge_button = _create_dodge_button(BUTTON_SIZE)
 	var dodge_y = ability1_y + (ABILITY1_SIZE.y - BUTTON_SIZE.y) / 2
 	dodge_button.position = Vector2(0, dodge_y)
 
-	# Top-right: Ability 2 (centered above Ability 1)
+	# Above Ability 1: Ability 2 (centered above Ability 1)
 	var btn1 = _create_ability_button(1, BUTTON_SIZE)
-	btn1.position = Vector2(ability1_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, 0)
+	var ability2_y = ability1_y - stack_spacing - BUTTON_SIZE.y
+	btn1.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability2_y)
 	ability_buttons.append(btn1)
 
-	# Ability 3 - positioned between dodge and ability 2, closer to ability 1
+	# Above Ability 2: Ability 3 (centered above Ability 2)
 	var btn2 = _create_ability_button(2, BUTTON_SIZE)
-	# Move right and down to be almost between dodge area and top-left corner
-	btn2.position = Vector2(50, 58)
+	var ability3_y = ability2_y - stack_spacing - BUTTON_SIZE.y
+	btn2.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability3_y)
 	ability_buttons.append(btn2)
 
-	# Apply 30% transparency to all ability buttons
-	btn0.modulate.a = 0.7
-	btn1.modulate.a = 0.7
-	btn2.modulate.a = 0.7
-	dodge_button.modulate.a = 0.7
+	# Apply 60% transparency to all ability buttons (more see-through)
+	btn0.modulate.a = 0.4
+	btn1.modulate.a = 0.4
+	btn2.modulate.a = 0.4
+	dodge_button.modulate.a = 0.4
 
 	# Ultimate button - positioned centered above the grid
 	ultimate_button = _create_ultimate_button()
@@ -91,7 +96,7 @@ func _create_ui() -> void:
 	var ultimate_x = grid_center_x - ULTIMATE_SIZE.x / 2
 	var ultimate_y = -ULTIMATE_SIZE.y - ULTIMATE_OFFSET_Y
 	ultimate_button.position = Vector2(ultimate_x, ultimate_y)
-	ultimate_button.modulate.a = 0.8  # Slightly more visible than other buttons
+	ultimate_button.modulate.a = 0.5  # Slightly more visible than other buttons but still transparent
 
 func _create_ability_button(slot: int, size: Vector2) -> ActiveAbilityButton:
 	var btn_script = load("res://scripts/active_abilities/ui/active_ability_button.gd")
@@ -156,7 +161,7 @@ func _animate_button_appear(button: ActiveAbilityButton) -> void:
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
 	tween.tween_property(button, "scale", Vector2.ONE, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(button, "modulate:a", 0.7, 0.2)  # Animate to 70% opacity
+	tween.tween_property(button, "modulate:a", 0.4, 0.2)  # Animate to 40% opacity
 
 func update_position() -> void:
 	"""Update position when viewport resizes."""
@@ -165,7 +170,7 @@ func update_position() -> void:
 
 	var viewport_size = get_viewport().get_visible_rect().size
 	var grid_width = BUTTON_SIZE.x + GRID_SPACING + 32 + ABILITY1_SIZE.x
-	var grid_height = BUTTON_SIZE.y + GRID_SPACING + 32 + ABILITY1_SIZE.y
+	var grid_height = BUTTON_SIZE.y * 2 + 12 * 2 + ABILITY1_SIZE.y  # 3 abilities stacked
 
 	grid_container.position = Vector2(
 		viewport_size.x - MARGIN_RIGHT - grid_width,

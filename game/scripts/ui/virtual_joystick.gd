@@ -6,7 +6,8 @@ signal direction_changed(direction: Vector2)
 const JOYSTICK_RADIUS := 80.0
 const KNOB_RADIUS := 35.0
 const DEADZONE := 0.15
-const TRANSPARENCY := 0.5
+const TRANSPARENCY_IDLE := 0.25  # More transparent when not being used
+const TRANSPARENCY_ACTIVE := 0.6  # More visible when pressed
 const SMOOTHING_ACCEL := 8.0  # Smooth ease into movement
 const SMOOTHING_DECEL := 50.0  # Quick response when stopping or changing direction
 
@@ -18,7 +19,7 @@ var knob_offset: Vector2 = Vector2.ZERO
 var target_knob_offset: Vector2 = Vector2.ZERO  # Raw knob position
 
 func _ready() -> void:
-	modulate.a = TRANSPARENCY
+	modulate.a = TRANSPARENCY_IDLE
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_process(true)
 
@@ -85,6 +86,7 @@ func _input(event: InputEvent) -> void:
 			if event.pressed and not is_active:
 				is_active = true
 				touch_index = event.index
+				modulate.a = TRANSPARENCY_ACTIVE  # Make more visible when touched
 				_update_knob(event.position)
 			elif not event.pressed and event.index == touch_index:
 				_reset()
@@ -118,6 +120,9 @@ func _reset() -> void:
 	touch_index = -1
 	target_direction = Vector2.ZERO
 	target_knob_offset = Vector2.ZERO
+	# Fade back to idle transparency
+	var tween = create_tween()
+	tween.tween_property(self, "modulate:a", TRANSPARENCY_IDLE, 0.2)
 	# Don't instantly reset - let smoothing bring it back to center
 
 func get_direction() -> Vector2:

@@ -359,9 +359,9 @@ func _populate_stats() -> void:
 	for stat in stats:
 		_add_stat_row(stat.name, stat.value, stat.format, stat.color)
 
-	# Add princess problems count at the bottom if any curses active
+	# Add princess problems section at the bottom if any curses active
 	if curse_count > 0:
-		_add_stat_row("Princess Problems", "%d" % curse_count, "%d", COLOR_STAT_CURSED)
+		_add_princess_problems_section(curse_count)
 
 func _add_no_stats_label() -> void:
 	var label = Label.new()
@@ -398,6 +398,86 @@ func _add_stat_row(stat_name: String, value: String, format: String, color: Colo
 	row.add_child(value_label)
 
 	stats_container.add_child(row)
+
+func _add_princess_problems_section(curse_count: int) -> void:
+	"""Add the Princess Problems section with separator line and curse list."""
+	# Add spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 12)
+	stats_container.add_child(spacer)
+
+	# Add separator line
+	var separator = HSeparator.new()
+	separator.add_theme_stylebox_override("separator", StyleBoxLine.new())
+	var sep_style = separator.get_theme_stylebox("separator") as StyleBoxLine
+	if sep_style:
+		sep_style.color = Color(0.7, 0.3, 0.5, 0.5)
+		sep_style.thickness = 1
+	stats_container.add_child(separator)
+
+	# Add another spacer
+	var spacer2 = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 8)
+	stats_container.add_child(spacer2)
+
+	# Add "Princess Problems" header (left-aligned)
+	var header = Label.new()
+	header.text = "Princess Problems"
+	if pixel_font:
+		header.add_theme_font_override("font", pixel_font)
+	header.add_theme_font_size_override("font_size", 12)
+	header.add_theme_color_override("font_color", COLOR_STAT_CURSED)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	stats_container.add_child(header)
+
+	# Add spacer before curse list
+	var spacer3 = Control.new()
+	spacer3.custom_minimum_size = Vector2(0, 6)
+	stats_container.add_child(spacer3)
+
+	# Add curse list container (vertical layout)
+	var curse_container = VBoxContainer.new()
+	curse_container.add_theme_constant_override("separation", 10)
+	stats_container.add_child(curse_container)
+
+	# Get active curses and create entries
+	if PrincessManager:
+		var enabled_curses = PrincessManager.enabled_curses
+		for curse_id in enabled_curses:
+			var princess = PrincessManager.get_princess(curse_id)
+			if princess == null:
+				continue
+
+			# Create curse entry (vertical: name then description)
+			var curse_entry = VBoxContainer.new()
+			curse_entry.add_theme_constant_override("separation", 2)
+
+			# Curse name (bold/highlighted)
+			var name_label = Label.new()
+			name_label.text = princess.curse_name
+			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			if pixel_font:
+				name_label.add_theme_font_override("font", pixel_font)
+			name_label.add_theme_font_size_override("font_size", 10)
+			name_label.add_theme_color_override("font_color", Color(0.9, 0.6, 0.8))
+			name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+			name_label.add_theme_constant_override("shadow_offset_x", 1)
+			name_label.add_theme_constant_override("shadow_offset_y", 1)
+			curse_entry.add_child(name_label)
+
+			# Curse description (smaller, dimmer)
+			var desc_label = Label.new()
+			desc_label.text = princess.curse_description if princess.curse_description else "No description"
+			desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			desc_label.custom_minimum_size = Vector2(200, 0)  # Allow wrapping
+			if pixel_font:
+				desc_label.add_theme_font_override("font", pixel_font)
+			desc_label.add_theme_font_size_override("font_size", 8)
+			desc_label.add_theme_color_override("font_color", Color(0.6, 0.5, 0.55))
+			curse_entry.add_child(desc_label)
+
+			curse_container.add_child(curse_entry)
 
 func _gather_player_stats(player: Node) -> Array:
 	var stats: Array = []
