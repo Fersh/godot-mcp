@@ -44,7 +44,7 @@ var level_label: Label = null
 var curse_container: HBoxContainer = null
 var curse_tooltip: PanelContainer = null
 var curse_tooltip_label: Label = null
-const CURSE_ICON_SIZE := 14
+const CURSE_ICON_SIZE := 18
 # Total width = PORTRAIT_SIZE + SPACING + ICON_SIZE + ICON_MARGIN_RIGHT + HEALTH_BAR_WIDTH = 333
 const CURSE_ROW_TOTAL_WIDTH := 333
 
@@ -957,9 +957,8 @@ func _setup_curse_icons() -> void:
 	if enabled_curses.is_empty():
 		return
 
-	# Fixed spacing so 20 curses fill the full width (333px)
-	# 20 icons * 14px = 280px, leaving 53px for 19 gaps = ~3px each
-	var spacing = 3
+	# Fixed spacing between curse icons
+	var spacing = 6
 	curse_container.add_theme_constant_override("separation", spacing)
 
 	# Create an icon for each curse

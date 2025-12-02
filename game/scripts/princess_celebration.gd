@@ -329,7 +329,7 @@ func _show_unlock_modal() -> void:
 	curse_vbox.add_theme_constant_override("separation", 8)
 
 	var curse_name = Label.new()
-	curse_name.text = "Curse: %s" % princess_data.curse_name
+	curse_name.text = "Problem: %s" % princess_data.curse_name
 	curse_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		curse_name.add_theme_font_override("font", pixel_font)
@@ -344,13 +344,12 @@ func _show_unlock_modal() -> void:
 	curse_desc.custom_minimum_size = Vector2(300, 0)
 	if pixel_font:
 		curse_desc.add_theme_font_override("font", pixel_font)
-	curse_desc.add_theme_font_size_override("font_size", 10)
+	curse_desc.add_theme_font_size_override("font_size", 12)
 	curse_desc.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	curse_vbox.add_child(curse_desc)
 
 	var bonus_label = Label.new()
-	var bonus_percent = int((princess_data.bonus_multiplier - 1.0) * 100)
-	bonus_label.text = "+%d%% Points & Coins" % bonus_percent
+	bonus_label.text = "+.5x More Points & Coins"
 	bonus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		bonus_label.add_theme_font_override("font", pixel_font)

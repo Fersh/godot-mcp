@@ -357,6 +357,20 @@ var is_ranged_character: bool = true
 func _ready() -> void:
 	all_abilities = AbilityDatabase.get_all_abilities()
 
+	# Connect equipment signals for real-time stat updates (deferred to ensure autoloads ready)
+	call_deferred("_connect_equipment_signals")
+
+func _connect_equipment_signals() -> void:
+	if EquipmentManager:
+		if not EquipmentManager.item_equipped.is_connected(_on_equipment_changed):
+			EquipmentManager.item_equipped.connect(_on_equipment_changed)
+		if not EquipmentManager.item_unequipped.is_connected(_on_equipment_changed):
+			EquipmentManager.item_unequipped.connect(_on_equipment_changed)
+
+func _on_equipment_changed(_item, _character_id: String) -> void:
+	# Re-apply stats to player when equipment changes
+	call_deferred("apply_stats_to_player")
+
 func reset() -> void:
 	# Reset all acquired abilities
 	acquired_abilities.clear()
@@ -1504,9 +1518,19 @@ func apply_stats_to_player() -> void:
 	if player == null:
 		return
 
-	# Update player stats based on modifiers
+	# Combine ability stat modifiers with equipment stats
+	var combined_modifiers = stat_modifiers.duplicate()
+
+	# Add equipment stats
+	combined_modifiers["max_hp"] = stat_modifiers.get("max_hp", 0.0) + _get_equipment_stat("max_hp")
+	combined_modifiers["move_speed"] = stat_modifiers.get("move_speed", 0.0) + _get_equipment_stat("move_speed")
+	combined_modifiers["attack_speed"] = stat_modifiers.get("attack_speed", 0.0) + _get_equipment_stat("attack_speed")
+	combined_modifiers["pickup_range"] = stat_modifiers.get("pickup_range", 0.0) + _get_equipment_stat("pickup_range")
+	combined_modifiers["size"] = stat_modifiers.get("size", 0.0) + _get_equipment_stat("size")
+
+	# Update player stats based on combined modifiers
 	if player.has_method("update_ability_stats"):
-		player.update_ability_stats(stat_modifiers)
+		player.update_ability_stats(combined_modifiers)
 
 func spawn_orbital() -> void:
 	var player = get_tree().get_first_node_in_group("player")

@@ -117,9 +117,17 @@ func _trigger_victory() -> void:
 	"""Handle challenge completion."""
 	challenge_complete = true
 
+	# Get character and curse info for completion record
+	var class_id = ""
+	var curse_count = 0
+	if CharacterManager:
+		class_id = CharacterManager.selected_character_id
+	if PrincessManager:
+		curse_count = PrincessManager.get_enabled_curse_count()
+
 	# Mark difficulty as completed and unlock next
 	if DifficultyManager:
-		DifficultyManager.mark_difficulty_completed(DifficultyManager.current_difficulty)
+		DifficultyManager.mark_difficulty_completed(DifficultyManager.current_difficulty, class_id, curse_count)
 		var unlocked = DifficultyManager.unlock_next_difficulty()
 		if unlocked:
 			var next = DifficultyManager.get_next_difficulty(DifficultyManager.current_difficulty)

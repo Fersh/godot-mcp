@@ -19,7 +19,11 @@ var current_difficulty: DifficultyTier = DifficultyTier.JUVENILE
 var unlocked_difficulties: Array[DifficultyTier] = [DifficultyTier.JUVENILE]
 
 # Completed difficulties (persisted) - tracks which difficulties have been beaten
+# Legacy array format for backwards compatibility
 var completed_difficulties: Array[DifficultyTier] = []
+
+# Detailed completion records - maps tier -> Array of {class_id, class_name, curse_count}
+var completion_records: Dictionary = {}
 
 # Difficulty configuration data
 const DIFFICULTY_DATA = {
@@ -270,14 +274,73 @@ func set_difficulty(tier: DifficultyTier) -> void:
 func is_difficulty_unlocked(tier: DifficultyTier) -> bool:
 	return tier in unlocked_difficulties
 
+# Character ID to display name mapping
+const CLASS_DISPLAY_NAMES = {
+	"archer": "Ranger",
+	"knight": "Knight",
+	"mage": "Mage",
+	"monk": "Monk",
+	"barbarian": "Barbarian",
+	"assassin": "Assassin",
+	"beast": "Beast",
+}
+
 func is_difficulty_completed(tier: DifficultyTier) -> bool:
 	return tier in completed_difficulties
 
-func mark_difficulty_completed(tier: DifficultyTier) -> void:
+func get_completion_records(tier: DifficultyTier) -> Array:
+	"""Get all completion records for a difficulty tier."""
+	return completion_records.get(tier, [])
+
+func get_completion_summary(tier: DifficultyTier) -> String:
+	"""Get a formatted string like 'Beat with Ranger (+0), Monk (+2)'"""
+	var records = get_completion_records(tier)
+	if records.is_empty():
+		return ""
+
+	var parts = []
+	for record in records:
+		var char_class = record.get("class_name", "Unknown")
+		var curses = record.get("curse_count", 0)
+		parts.append("%s (+%d)" % [char_class, curses])
+
+	return "Beat with " + ", ".join(parts)
+
+func mark_difficulty_completed(tier: DifficultyTier, class_id: String = "", curse_count: int = 0) -> void:
+	# Add to legacy array if not already there
 	if tier not in completed_difficulties:
 		completed_difficulties.append(tier)
 		difficulty_completed.emit(tier)
-		save_progress()
+
+	# Get class display name
+	var display_name = CLASS_DISPLAY_NAMES.get(class_id, class_id.capitalize())
+
+	# Initialize records array for this tier if needed
+	if not completion_records.has(tier):
+		completion_records[tier] = []
+
+	# Check if we already have a record for this class
+	var existing_index = -1
+	for i in completion_records[tier].size():
+		if completion_records[tier][i].get("class_id") == class_id:
+			existing_index = i
+			break
+
+	var new_record = {
+		"class_id": class_id,
+		"class_name": display_name,
+		"curse_count": curse_count
+	}
+
+	if existing_index >= 0:
+		# Update if new curse count is higher (harder challenge)
+		if curse_count > completion_records[tier][existing_index].get("curse_count", 0):
+			completion_records[tier][existing_index] = new_record
+	else:
+		# Add new record for this class
+		completion_records[tier].append(new_record)
+
+	save_progress()
 
 func get_unlock_requirement(tier: DifficultyTier) -> DifficultyTier:
 	# Returns which difficulty must be completed to unlock this one
@@ -342,6 +405,7 @@ func save_progress() -> void:
 	var save_data = {
 		"unlocked_difficulties": [],
 		"completed_difficulties": [],
+		"completion_records": {},
 	}
 
 	for tier in unlocked_difficulties:
@@ -349,6 +413,10 @@ func save_progress() -> void:
 
 	for tier in completed_difficulties:
 		save_data["completed_difficulties"].append(tier)
+
+	# Save completion records (convert tier keys to int for JSON compatibility)
+	for tier in completion_records:
+		save_data["completion_records"][tier] = completion_records[tier]
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -380,6 +448,14 @@ func load_progress() -> void:
 			for tier_val in saved_completed:
 				if tier_val is int and tier_val in DifficultyTier.values():
 					completed_difficulties.append(tier_val as DifficultyTier)
+
+			# Load completion records
+			completion_records.clear()
+			var saved_records = data.get("completion_records", {})
+			for tier_key in saved_records:
+				var tier_val = int(tier_key) if tier_key is String else tier_key
+				if tier_val in DifficultyTier.values():
+					completion_records[tier_val] = saved_records[tier_key]
 
 			# Ensure Juvenile is always unlocked
 			if DifficultyTier.JUVENILE not in unlocked_difficulties:

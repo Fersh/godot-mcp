@@ -1007,7 +1007,7 @@ static func _create_vortex() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
 		16.0
-	).with_aoe(150.0).with_duration(3.0).with_damage(10.0, 1.0).with_icon("res://assets/icons/abilities/vortex.png")
+	).with_aoe(150.0).with_duration(3.0).with_damage(25.0, 1.0).with_icon("res://assets/icons/abilities/vortex.png")
 
 static func _create_repulsive() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

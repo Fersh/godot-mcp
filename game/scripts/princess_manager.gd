@@ -322,17 +322,13 @@ func get_enabled_curse_count() -> int:
 
 func get_total_multiplier() -> float:
 	"""Get the stacking multiplier from all enabled curses.
-	Each curse adds 0.5x bonus, so 1 curse = 1.5x, 2 curses = 2x, 4 curses = 3x.
+	Base is 1.0x, each curse adds +0.5x on top, so 1 curse = 1.5x, 4 curses = 3x.
 	Returns 1.0 if no curses (base game)."""
-	if enabled_curses.size() == 0:
-		return 1.0
 	return 1.0 + float(enabled_curses.size()) * 0.5
 
 func get_total_bonus_multiplier() -> float:
-	"""Get the total bonus as a multiplier (e.g., 3.0 for 3x with 4 curses enabled)."""
-	if enabled_curses.size() == 0:
-		return 1.0
-	return 1.0 + float(enabled_curses.size()) * 0.5
+	"""Get just the bonus portion from curses (e.g., 2.0 for +2x with 4 curses)."""
+	return float(enabled_curses.size()) * 0.5
 
 func get_total_bonus_percent() -> int:
 	"""Get the total bonus as a percentage (e.g., 45 for +45%). Legacy support."""

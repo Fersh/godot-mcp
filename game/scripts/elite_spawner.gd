@@ -61,11 +61,9 @@ var boss_health_bar_container: CanvasLayer = null
 var boss_health_bar: ProgressBar = null
 var boss_name_label: Label = null
 
-# Elite health bar UI
+# Elite health bar UI - supports multiple elites
 var elite_health_bar_container: CanvasLayer = null
-var elite_health_bar: ProgressBar = null
-var elite_name_label: Label = null
-var current_tracked_elite: Node = null
+var elite_health_bars: Array[Dictionary] = []  # Array of {elite, bar_container, health_bar, name_label}
 
 # Pixel font
 var pixel_font: Font = null
@@ -241,31 +239,34 @@ func _setup_elite_health_bar() -> void:
 	elite_health_bar_container.layer = 49  # Just below boss bar
 	add_child(elite_health_bar_container)
 
+func _create_elite_health_bar_for(elite: Node, index: int) -> Dictionary:
+	"""Create a health bar for a specific elite at the given index position."""
 	# Container for positioning at bottom (above boss bar position)
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	elite_health_bar_container.add_child(container)
 
-	# Health bar container positioned at bottom (slightly higher than boss)
+	# Health bar container - stack vertically based on index
+	# First elite at 0.89-0.93, second at 0.84-0.88, etc.
 	var bar_container = Control.new()
 	bar_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
-	bar_container.anchor_top = 0.89
-	bar_container.anchor_bottom = 0.93
+	bar_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar_container.anchor_top = 0.89 - (index * 0.05)
+	bar_container.anchor_bottom = 0.93 - (index * 0.05)
 	bar_container.offset_left = 250
 	bar_container.offset_right = -250
 	container.add_child(bar_container)
 
-	# Health bar - taller with name inside
-	elite_health_bar = ProgressBar.new()
-	elite_health_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	elite_health_bar.max_value = 100
-	elite_health_bar.value = 100
-	elite_health_bar.show_percentage = false
-	elite_health_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
+	# Health bar
+	var health_bar = ProgressBar.new()
+	health_bar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	health_bar.max_value = 100
+	health_bar.value = 100
+	health_bar.show_percentage = false
+	health_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Style the health bar - orange theme for elites, reduced border width (4px)
+	# Style the health bar - orange theme for elites
 	var bg_style = StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.1, 0.1, 0.1, 0.9)
 	bg_style.border_width_left = 4
@@ -273,8 +274,8 @@ func _setup_elite_health_bar() -> void:
 	bg_style.border_width_top = 4
 	bg_style.border_width_bottom = 4
 	bg_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
-	bg_style.set_corner_radius_all(2)  # Match HUD health bar
-	elite_health_bar.add_theme_stylebox_override("background", bg_style)
+	bg_style.set_corner_radius_all(2)
+	health_bar.add_theme_stylebox_override("background", bg_style)
 
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = Color(0.9, 0.5, 0.1, 1.0)  # Orange for elites
@@ -283,37 +284,42 @@ func _setup_elite_health_bar() -> void:
 	fill_style.border_width_bottom = 4
 	fill_style.border_width_right = 4
 	fill_style.border_color = Color(0.5, 0.3, 0.1, 1.0)
-	fill_style.set_corner_radius_all(1)  # Match HUD health bar fill
-	elite_health_bar.add_theme_stylebox_override("fill", fill_style)
+	fill_style.set_corner_radius_all(1)
+	health_bar.add_theme_stylebox_override("fill", fill_style)
 
-	bar_container.add_child(elite_health_bar)
+	bar_container.add_child(health_bar)
 
 	# Elite name label - centered inside the health bar
-	elite_name_label = Label.new()
-	elite_name_label.text = "ELITE"
-	elite_name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Don't block input
-	elite_name_label.set_anchors_preset(Control.PRESET_CENTER)
-	elite_name_label.anchor_left = 0.5
-	elite_name_label.anchor_right = 0.5
-	elite_name_label.anchor_top = 0.5
-	elite_name_label.anchor_bottom = 0.5
-	elite_name_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	elite_name_label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	elite_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	elite_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var name_label = Label.new()
+	name_label.text = "ELITE"
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.set_anchors_preset(Control.PRESET_CENTER)
+	name_label.anchor_left = 0.5
+	name_label.anchor_right = 0.5
+	name_label.anchor_top = 0.5
+	name_label.anchor_bottom = 0.5
+	name_label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	name_label.grow_vertical = Control.GROW_DIRECTION_BOTH
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
-		elite_name_label.add_theme_font_override("font", pixel_font)
-	elite_name_label.add_theme_font_size_override("font_size", 12)
-	elite_name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	elite_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	elite_name_label.add_theme_constant_override("shadow_offset_x", 2)
-	elite_name_label.add_theme_constant_override("shadow_offset_y", 2)
-	elite_name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
-	elite_name_label.add_theme_constant_override("outline_size", 3)
-	bar_container.add_child(elite_name_label)
+		name_label.add_theme_font_override("font", pixel_font)
+	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	name_label.add_theme_constant_override("shadow_offset_x", 2)
+	name_label.add_theme_constant_override("shadow_offset_y", 2)
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+	name_label.add_theme_constant_override("outline_size", 3)
+	bar_container.add_child(name_label)
 
-	# Hide initially
-	elite_health_bar_container.visible = false
+	return {
+		"elite": elite,
+		"container": container,
+		"bar_container": bar_container,
+		"health_bar": health_bar,
+		"name_label": name_label
+	}
 
 func _start_warning() -> void:
 	warning_active = true
@@ -495,22 +501,26 @@ func _do_spawn_elite_from_portal(spawn_pos: Vector2) -> void:
 			elite.attack_damage *= pending_scale_multiplier
 
 	active_elites.append(elite)
-	current_tracked_elite = elite
 	pending_elite_scene = null
 
-	# Connect to elite signals for health bar
-	if elite.has_signal("elite_health_changed"):
-		elite.elite_health_changed.connect(_on_elite_health_changed)
-	if elite.has_signal("elite_died"):
-		elite.elite_died.connect(_on_elite_died)
+	# Create health bar for this elite
+	var bar_index = elite_health_bars.size()
+	var bar_data = _create_elite_health_bar_for(elite, bar_index)
 
 	# Update elite name on health bar
 	if elite.get("elite_name"):
-		elite_name_label.text = elite.elite_name
+		bar_data.name_label.text = elite.elite_name
 
-	# Show elite health bar
+	elite_health_bars.append(bar_data)
+
+	# Connect to elite signals for health bar (pass the elite reference)
+	if elite.has_signal("elite_health_changed"):
+		elite.elite_health_changed.connect(_on_elite_health_changed.bind(elite))
+	if elite.has_signal("elite_died"):
+		elite.elite_died.connect(_on_elite_died)
+
+	# Show elite health bar container
 	elite_health_bar_container.visible = true
-	elite_health_bar.value = 100
 
 	# Screen shake on spawn
 	if JuiceManager:
@@ -612,18 +622,46 @@ func _on_boss_died(_boss: Node) -> void:
 	if is_challenge_mode:
 		boss_killed_challenge.emit()
 
-func _on_elite_health_changed(current: float, max_hp: float) -> void:
-	if max_hp > 0:
-		elite_health_bar.value = (current / max_hp) * 100.0
+func _on_elite_health_changed(current: float, max_hp: float, elite: Node) -> void:
+	# Find the health bar for this specific elite
+	for bar_data in elite_health_bars:
+		if bar_data.elite == elite:
+			if max_hp > 0:
+				bar_data.health_bar.value = (current / max_hp) * 100.0
+			break
 
-func _on_elite_died(_elite: Node) -> void:
-	current_tracked_elite = null
+func _on_elite_died(elite: Node) -> void:
 	total_elites_killed += 1  # Track for scaling next elite
-	# Hide health bar
-	elite_health_bar_container.visible = false
+
+	# Find and remove the health bar for this elite
+	var removed_index = -1
+	for i in range(elite_health_bars.size()):
+		if elite_health_bars[i].elite == elite:
+			# Remove the UI elements
+			elite_health_bars[i].container.queue_free()
+			removed_index = i
+			break
+
+	if removed_index >= 0:
+		elite_health_bars.remove_at(removed_index)
+
+	# Reposition remaining health bars
+	_reposition_elite_health_bars()
+
+	# Hide container if no elites left
+	if elite_health_bars.is_empty():
+		elite_health_bar_container.visible = false
+
 	# Emit signal for challenge mode controller
 	if is_challenge_mode:
 		elite_killed_challenge.emit()
+
+func _reposition_elite_health_bars() -> void:
+	"""Reposition all elite health bars after one is removed."""
+	for i in range(elite_health_bars.size()):
+		var bar_data = elite_health_bars[i]
+		bar_data.bar_container.anchor_top = 0.89 - (i * 0.05)
+		bar_data.bar_container.anchor_bottom = 0.93 - (i * 0.05)
 
 func _get_spawn_position() -> Vector2:
 	# Spawn at center of the arena

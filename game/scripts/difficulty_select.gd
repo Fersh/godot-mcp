@@ -172,6 +172,15 @@ func _create_difficulty_buttons() -> void:
 	difficulty_buttons.clear()
 
 	for tier in DifficultyManager.get_all_difficulties():
+		# Create row container - button centered, label to the right
+		var row = HBoxContainer.new()
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		# Left spacer to push button to center
+		var left_spacer = Control.new()
+		left_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(left_spacer)
+
 		var btn = Button.new()
 		var data = DifficultyManager.DIFFICULTY_DATA[tier]
 		var is_completed = DifficultyManager.is_difficulty_completed(tier)
@@ -191,7 +200,32 @@ func _create_difficulty_buttons() -> void:
 		btn.pressed.connect(_on_difficulty_selected.bind(tier))
 
 		_style_difficulty_button(btn, data["color"], true)  # Always style as unlocked
-		difficulty_container.add_child(btn)
+		row.add_child(btn)
+
+		# Right side container with completion summary
+		var right_container = HBoxContainer.new()
+		right_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		right_container.add_theme_constant_override("separation", 15)
+
+		# Small spacer between button and label
+		var label_spacer = Control.new()
+		label_spacer.custom_minimum_size = Vector2(15, 0)
+		right_container.add_child(label_spacer)
+
+		# Completion summary label
+		var summary_label = Label.new()
+		summary_label.name = "CompletionSummary"
+		summary_label.text = DifficultyManager.get_completion_summary(tier)
+		if pixel_font:
+			summary_label.add_theme_font_override("font", pixel_font)
+		summary_label.add_theme_font_size_override("font_size", 9)
+		summary_label.add_theme_color_override("font_color", Color(0.6, 0.8, 0.6))
+		summary_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		right_container.add_child(summary_label)
+
+		row.add_child(right_container)
+
+		difficulty_container.add_child(row)
 		difficulty_buttons.append(btn)
 
 func _style_difficulty_button(btn: Button, color: Color, is_unlocked: bool) -> void:

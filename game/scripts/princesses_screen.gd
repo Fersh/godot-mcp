@@ -93,6 +93,12 @@ func _build_ui() -> void:
 	background.modulate = Color(1, 1, 1, 0.8)
 	add_child(background)
 
+	# Dark overlay (10% opacity black)
+	var overlay = ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0.1)
+	add_child(overlay)
+
 	# Main VBox container (like shop)
 	var main_vbox = VBoxContainer.new()
 	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -185,14 +191,14 @@ func _build_ui() -> void:
 	explanation_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
 	explanation_label.add_theme_constant_override("shadow_offset_x", 1)
 	explanation_label.add_theme_constant_override("shadow_offset_y", 1)
-	explanation_label.text = "Enable princesses to make your life harder (but earn more stuff)"
+	explanation_label.text = "Enable them to make your life harder\n(but earn more stuff)"
 	add_child(explanation_label)
 
 	# Multiplier display (above the main content)
 	multiplier_label = Label.new()
 	multiplier_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	multiplier_label.offset_top = 118
-	multiplier_label.offset_bottom = 140
+	multiplier_label.offset_top = 138
+	multiplier_label.offset_bottom = 160
 	multiplier_label.offset_left = 20
 	multiplier_label.offset_right = -20
 	multiplier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -339,9 +345,16 @@ func _setup_preview_content() -> void:
 	preview_curse_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_curse_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	preview_curse_desc_label.custom_minimum_size = Vector2(200, 40)
-	preview_curse_desc_label.add_theme_font_size_override("font_size", 11)
+	if pixel_font:
+		preview_curse_desc_label.add_theme_font_override("font", pixel_font)
+	preview_curse_desc_label.add_theme_font_size_override("font_size", 13)
 	preview_curse_desc_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
 	vbox.add_child(preview_curse_desc_label)
+
+	# Spacer below description
+	var desc_spacer = Control.new()
+	desc_spacer.custom_minimum_size = Vector2(0, 40)
+	vbox.add_child(desc_spacer)
 
 	# Bonus label
 	preview_bonus_label = Label.new()
@@ -416,6 +429,11 @@ func _create_selector_buttons() -> void:
 			sprite.centered = true
 			sprite.position = Vector2(32, 32)
 
+			# Make inactive princesses more transparent
+			var is_curse_active = PrincessManager.is_curse_enabled(princess.id) if PrincessManager else false
+			if not is_curse_active:
+				sprite.modulate = Color(1, 1, 1, 0.35)
+
 			var sprite_holder = Control.new()
 			sprite_holder.custom_minimum_size = Vector2(64, 64)
 			sprite_holder.add_child(sprite)
@@ -468,10 +486,10 @@ func _select_princess(index: int) -> void:
 		preview_sprite.region_rect = region
 
 	preview_name_label.text = princess.name
-	preview_curse_name_label.text = "Curse: %s" % princess.curse_name
+	preview_curse_name_label.text = "Problem: %s" % princess.curse_name
 	preview_curse_desc_label.text = princess.curse_description
 
-	preview_bonus_label.text = "+1x Points & Coins"
+	preview_bonus_label.text = "+.5x More Points & Coins"
 
 	_update_toggle_button()
 	_update_selector_visuals()
@@ -538,6 +556,14 @@ func _update_selector_visuals() -> void:
 
 		panel.add_theme_stylebox_override("panel", style)
 
+		# Update sprite transparency - active princesses are fully visible, inactive are faded
+		if i < selector_sprites.size() and selector_sprites[i] != null:
+			var sprite: Sprite2D = selector_sprites[i]
+			if is_enabled:
+				sprite.modulate = Color(1, 1, 1, 1.0)  # Fully visible
+			else:
+				sprite.modulate = Color(1, 1, 1, 0.35)  # Faded
+
 func _update_multiplier_display() -> void:
 	if not PrincessManager:
 		multiplier_label.text = "No curses active"
@@ -549,8 +575,8 @@ func _update_multiplier_display() -> void:
 		multiplier_label.add_theme_color_override("font_color", Color.WHITE)
 	else:
 		var total_mult = PrincessManager.get_total_bonus_multiplier()
-		var mult_str = "%.1fx" % total_mult if fmod(total_mult, 1.0) != 0 else "%dx" % int(total_mult)
-		multiplier_label.text = "%d curse%s active: %s Points & Coins" % [count, "s" if count > 1 else "", mult_str]
+		var mult_str = "+%.1fx" % total_mult if fmod(total_mult, 1.0) != 0 else "+%dx" % int(total_mult)
+		multiplier_label.text = "%d curse%s active: %s More Points & Coins" % [count, "s" if count > 1 else "", mult_str]
 		multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 
 func _on_princess_selected(index: int) -> void:

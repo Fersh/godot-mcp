@@ -77,6 +77,10 @@ func _load_font() -> void:
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
 func _process(delta: float) -> void:
+	# Don't decay streak while game is paused
+	if get_tree().paused:
+		return
+
 	if current_streak > 0:
 		streak_timer -= delta
 		if streak_timer <= 0:

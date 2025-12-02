@@ -12,39 +12,22 @@ var attack_timer: float = 0.0
 var lifetime: float = 5.0  # 5 second duration
 var current_target: Node2D = null
 
+var sprite: Sprite2D = null
+var animation_timer: float = 0.0
+var animation_frame: int = 0
+
 func _ready() -> void:
-	# Create visual (simple skeleton representation)
-	var body = Polygon2D.new()
-	body.polygon = PackedVector2Array([
-		Vector2(-10, -15),
-		Vector2(10, -15),
-		Vector2(10, 15),
-		Vector2(-10, 15)
-	])
-	body.color = Color(0.9, 0.9, 0.8, 1.0)  # Bone white
-	add_child(body)
-
-	# Head
-	var head = Polygon2D.new()
-	var head_points: PackedVector2Array = []
-	for i in 8:
-		var angle = i * TAU / 8
-		head_points.append(Vector2(cos(angle), sin(angle)) * 8.0 + Vector2(0, -20))
-	head.polygon = head_points
-	head.color = Color(0.9, 0.9, 0.8, 1.0)
-	add_child(head)
-
-	# Eyes
-	var left_eye = Polygon2D.new()
-	left_eye.polygon = PackedVector2Array([
-		Vector2(-4, -22), Vector2(-2, -22), Vector2(-2, -18), Vector2(-4, -18)
-	])
-	left_eye.color = Color(0.2, 0.8, 0.2, 1.0)  # Green glow
-	add_child(left_eye)
-
-	var right_eye = left_eye.duplicate()
-	right_eye.position.x = 6
-	add_child(right_eye)
+	# Use the skeleton enemy sprite
+	sprite = Sprite2D.new()
+	if ResourceLoader.exists("res://assets/sprites/SkeletalWarrior_Sprites.png"):
+		sprite.texture = load("res://assets/sprites/SkeletalWarrior_Sprites.png")
+		sprite.hframes = 10
+		sprite.vframes = 10
+		sprite.frame = 0
+		sprite.scale = Vector2(2.0, 2.0)
+		# Add a green tint to distinguish from enemy skeletons
+		sprite.modulate = Color(0.7, 1.0, 0.7, 1.0)
+	add_child(sprite)
 
 func _process(delta: float) -> void:
 	lifetime -= delta
@@ -112,7 +95,8 @@ func take_damage(amount: float) -> void:
 	modulate = Color(1, 0.5, 0.5, 1)
 
 	var tween = create_tween()
-	tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+	# Reset to green tint (friendly skeleton)
+	tween.tween_property(self, "modulate", Color(0.7, 1.0, 0.7, 1.0), 0.1)
 
 	if health <= 0:
 		die()

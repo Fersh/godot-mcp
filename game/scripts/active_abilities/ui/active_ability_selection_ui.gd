@@ -28,6 +28,8 @@ var roll_tick_timers: Array[float] = []
 @onready var choices_container: HBoxContainer
 
 var pixel_font: Font = null
+var rarity_particle_shader: Shader = null
+var particle_containers: Array[Control] = []
 
 func _ready() -> void:
 	visible = false
@@ -36,6 +38,10 @@ func _ready() -> void:
 
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load rarity particle shader
+	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
+		rarity_particle_shader = load("res://shaders/rarity_particles.gdshader")
 
 	_create_ui()
 
@@ -177,7 +183,7 @@ func _process(delta: float) -> void:
 
 		if roll_timer >= slot_settle_times[i]:
 			slots_settled[i] = true
-			_update_card_content(ability_buttons[i], current_choices[i])
+			_update_card_content(ability_buttons[i], current_choices[i], true)  # true = final reveal
 			if SoundManager and SoundManager.has_method("play_ding"):
 				SoundManager.play_ding()
 		else:
@@ -235,10 +241,11 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 			if subtitle_prefix_label:
 				subtitle_prefix_label.text = "Choose your "
 
-	# Clear previous buttons
+	# Clear previous buttons and particle containers
 	for button in ability_buttons:
 		button.queue_free()
 	ability_buttons.clear()
+	particle_containers.clear()
 
 	# Reset slot machine state - dynamically sized based on ability count
 	is_rolling = true
@@ -338,6 +345,13 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	rarity_tag.name = "RarityTag"
 	button.add_child(rarity_tag)
 
+	# Add particle effect container (starts hidden, shown after card settles)
+	var particle_container = _create_particle_container(ability.rarity)
+	particle_container.name = "ParticleContainer"
+	particle_container.visible = false  # Hide until card is revealed
+	button.add_child(particle_container)
+	particle_containers.append(particle_container)
+
 	_style_button(button, ability.rarity)
 
 	button.pressed.connect(_on_ability_selected.bind(index))
@@ -426,7 +440,7 @@ func _create_separator_style(rarity: ActiveAbilityData.Rarity) -> StyleBoxLine:
 	style.thickness = 1
 	return style
 
-func _update_card_content(button: Button, ability: ActiveAbilityData) -> void:
+func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_reveal: bool = false) -> void:
 	var margin = button.get_child(0) as MarginContainer
 	if not margin:
 		return
@@ -461,6 +475,14 @@ func _update_card_content(button: Button, ability: ActiveAbilityData) -> void:
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
 				rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
+
+	# Update particle container - only show on final reveal
+	var particle_container = button.get_node_or_null("ParticleContainer") as Control
+	if particle_container:
+		if is_final_reveal:
+			_update_particle_container(particle_container, ability.rarity)
+		else:
+			particle_container.visible = false
 
 	_style_button(button, ability.rarity)
 
@@ -582,3 +604,156 @@ func _animate_entrance() -> void:
 		card_tween.set_parallel(true)
 		card_tween.tween_property(button, "position:y", original_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 		card_tween.tween_property(button, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+
+# ============================================
+# PARTICLE EFFECTS
+# ============================================
+
+func _create_particle_container(rarity: ActiveAbilityData.Rarity) -> Control:
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.z_index = -1  # Render behind card content
+	container.clip_contents = false
+
+	# Only add particles for non-common rarities
+	if rarity == ActiveAbilityData.Rarity.COMMON:
+		container.visible = false
+		return container
+
+	# Get rarity color and settings based on rarity
+	var rarity_color = ActiveAbilityData.get_rarity_color(rarity)
+	var intensity = _get_particle_intensity(rarity)
+	var density = _get_particle_density(rarity)
+
+	# Create main top particle strip (behind card, rising above)
+	var top_particles = ColorRect.new()
+	top_particles.custom_minimum_size = Vector2(200, 130)
+	top_particles.anchor_left = 0.5
+	top_particles.anchor_right = 0.5
+	top_particles.anchor_top = 0.0
+	top_particles.anchor_bottom = 0.0
+	top_particles.offset_left = -100
+	top_particles.offset_right = 100
+	top_particles.offset_top = -100
+	top_particles.offset_bottom = 30
+	top_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var top_mat = ShaderMaterial.new()
+		top_mat.shader = rarity_particle_shader
+		top_mat.set_shader_parameter("rarity_color", rarity_color)
+		top_mat.set_shader_parameter("intensity", intensity)
+		top_mat.set_shader_parameter("speed", 1.2)
+		top_mat.set_shader_parameter("particle_density", density)
+		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_particles.material = top_mat
+	else:
+		top_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(top_particles)
+
+	# Create top-left corner particle effect
+	var top_left_particles = ColorRect.new()
+	top_left_particles.custom_minimum_size = Vector2(80, 130)
+	top_left_particles.anchor_left = 0.0
+	top_left_particles.anchor_right = 0.0
+	top_left_particles.anchor_top = 0.0
+	top_left_particles.anchor_bottom = 0.0
+	top_left_particles.offset_left = -30
+	top_left_particles.offset_right = 50
+	top_left_particles.offset_top = -80
+	top_left_particles.offset_bottom = 50
+	top_left_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tl_mat = ShaderMaterial.new()
+		tl_mat.shader = rarity_particle_shader
+		tl_mat.set_shader_parameter("rarity_color", rarity_color)
+		tl_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tl_mat.set_shader_parameter("speed", 1.0)
+		tl_mat.set_shader_parameter("particle_density", density * 0.5)
+		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		top_left_particles.material = tl_mat
+	else:
+		top_left_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(top_left_particles)
+
+	# Create top-right corner particle effect
+	var top_right_particles = ColorRect.new()
+	top_right_particles.custom_minimum_size = Vector2(80, 130)
+	top_right_particles.anchor_left = 1.0
+	top_right_particles.anchor_right = 1.0
+	top_right_particles.anchor_top = 0.0
+	top_right_particles.anchor_bottom = 0.0
+	top_right_particles.offset_left = -50
+	top_right_particles.offset_right = 30
+	top_right_particles.offset_top = -80
+	top_right_particles.offset_bottom = 50
+	top_right_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tr_mat = ShaderMaterial.new()
+		tr_mat.shader = rarity_particle_shader
+		tr_mat.set_shader_parameter("rarity_color", rarity_color)
+		tr_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tr_mat.set_shader_parameter("speed", 1.1)
+		tr_mat.set_shader_parameter("particle_density", density * 0.5)
+		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		top_right_particles.material = tr_mat
+	else:
+		top_right_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
+
+	container.add_child(top_right_particles)
+
+	return container
+
+func _get_particle_intensity(rarity: ActiveAbilityData.Rarity) -> float:
+	match rarity:
+		ActiveAbilityData.Rarity.RARE:
+			return 1.2
+		ActiveAbilityData.Rarity.EPIC:
+			return 1.6
+		ActiveAbilityData.Rarity.LEGENDARY:
+			return 2.0
+		ActiveAbilityData.Rarity.MYTHIC:
+			return 2.5
+		_:
+			return 0.0
+
+func _get_particle_density(rarity: ActiveAbilityData.Rarity) -> float:
+	match rarity:
+		ActiveAbilityData.Rarity.RARE:
+			return 10.0
+		ActiveAbilityData.Rarity.EPIC:
+			return 14.0
+		ActiveAbilityData.Rarity.LEGENDARY:
+			return 20.0
+		ActiveAbilityData.Rarity.MYTHIC:
+			return 28.0
+		_:
+			return 0.0
+
+func _update_particle_container(container: Control, rarity: ActiveAbilityData.Rarity) -> void:
+	if rarity == ActiveAbilityData.Rarity.COMMON:
+		container.visible = false
+		return
+
+	container.visible = true
+	var rarity_color = ActiveAbilityData.get_rarity_color(rarity)
+	var intensity = _get_particle_intensity(rarity)
+	var density = _get_particle_density(rarity)
+
+	# Update all particle strips
+	var child_index = 0
+	for child in container.get_children():
+		if child is ColorRect and child.material is ShaderMaterial:
+			child.material.set_shader_parameter("rarity_color", rarity_color)
+			if child_index == 0:
+				child.material.set_shader_parameter("intensity", intensity)
+				child.material.set_shader_parameter("particle_density", density)
+			else:
+				child.material.set_shader_parameter("intensity", intensity * 0.8)
+				child.material.set_shader_parameter("particle_density", density * 0.5)
+			child_index += 1
