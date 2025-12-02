@@ -15,7 +15,7 @@ var shield_max: float = 0.0
 var highlight: ColorRect
 var shadow: ColorRect
 var shield_fill: Panel
-var drop_shadow: ColorRect
+var border_bottom: ColorRect
 
 func _ready() -> void:
 	position.y = offset_y
@@ -24,13 +24,13 @@ func _ready() -> void:
 	fill.size = Vector2(bar_width, bar_height)
 	fill.position = Vector2(-bar_width / 2, -bar_height / 2)
 
-	# Create drop shadow behind the entire bar
-	drop_shadow = ColorRect.new()
-	drop_shadow.size = Vector2(bar_width + 2, bar_height + 2)
-	drop_shadow.position = Vector2(-bar_width / 2, -bar_height / 2 + 1)
-	drop_shadow.color = Color(0, 0, 0, 0.5)
-	drop_shadow.z_index = -1
-	add_child(drop_shadow)
+	# Create black border-bottom below the bar
+	border_bottom = ColorRect.new()
+	border_bottom.size = Vector2(bar_width, 2)
+	border_bottom.position = Vector2(-bar_width / 2, bar_height / 2)
+	border_bottom.color = Color(0, 0, 0, 0.8)
+	border_bottom.z_index = -1
+	add_child(border_bottom)
 
 	# Set background to black (missing health portion)
 	var bg_style = StyleBoxFlat.new()
