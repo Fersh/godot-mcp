@@ -29,6 +29,7 @@ var walking: bool = true
 var speech_timer: float = 0.0
 var current_speech_index: int = 0
 var modal_shown: bool = false
+var waiting_for_player: bool = false  # Prevents multiple concurrent approach timers
 var animation_frame: int = 0
 var animation_timer: float = 0.0
 var animation_fps: float = 8.0
@@ -131,8 +132,13 @@ func _update_walking(delta: float) -> void:
 		animation_frame = 0  # Reset to idle
 
 func _check_player_approach() -> void:
+	# Guard against multiple concurrent timers from being started
+	if waiting_for_player:
+		return
+
 	if not player_ref or not is_instance_valid(player_ref):
-		# If no player, show modal after a delay
+		# If no player, show modal after a delay (only start one timer)
+		waiting_for_player = true
 		await get_tree().create_timer(2.0).timeout
 		if not modal_shown:
 			_show_unlock_modal()

@@ -2994,7 +2994,7 @@ func _spawn_mirror_clone(position: Vector2, damage: float, duration: float, play
 	get_tree().current_scene.add_child(clone)
 
 	# Get player sprite and copy all properties exactly
-	var player_sprite = player.get_node_or_null("Sprite2D")
+	var player_sprite = player.get_node_or_null("Sprite")
 	var clone_sprite: Sprite2D = null
 
 	if player_sprite and player_sprite.texture:
