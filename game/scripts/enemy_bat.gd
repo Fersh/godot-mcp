@@ -1,26 +1,26 @@
 extends EnemyBase
 
 # Bat - Fast, nimble, aggressive glass cannon
-# Dives at player, deals quick hits, very fragile
+# Immediately dives at player from spawn, very fragile
 
 # Dive attack behavior
-var is_diving: bool = false
-var dive_speed_mult: float = 2.5  # Speed multiplier during dive
+var is_diving: bool = true  # Start diving immediately
+var dive_speed_mult: float = 3.0  # Speed multiplier during dive
 var dive_cooldown: float = 0.0
-var dive_cooldown_time: float = 1.5  # Time between dives
+var dive_cooldown_time: float = 0.8  # Short time between dives
 var dive_target: Vector2 = Vector2.ZERO
 
 func _on_ready() -> void:
 	enemy_type = "bat"
 
-	# Bat stats - extremely fast glass cannon
-	speed = 95.0            # Very fast base movement
+	# Bat stats - extremely fast aggressive glass cannon
+	speed = 160.0           # Very fast base movement (aggressive)
 	max_health = 6.0        # Extremely fragile
 	attack_damage = 5.0     # Moderate damage per hit
 	attack_cooldown = 0.4   # Very fast attacks
 	attack_range = 35.0     # Close range (dive in)
 	windup_duration = 0.1   # Almost instant attack
-	animation_speed = 14.0  # Fast flapping animation
+	animation_speed = 18.0  # Faster flapping animation
 
 	# Bat sprite sheet: 5 columns x 3 rows (16x24 frames)
 	# Row 0: Idle/Move (5 frames) - flapping
@@ -53,40 +53,36 @@ func _process_behavior(delta: float) -> void:
 		var distance = direction.length()
 		var dir_normalized = direction.normalized()
 
+		# Set initial dive target if not set (aggressive from spawn)
+		if is_diving and dive_target == Vector2.ZERO:
+			dive_target = player.global_position
+
 		if is_diving:
-			# Continue dive toward target
+			# Aggressive dive - constantly update target to track player
+			dive_target = player.global_position
 			var dive_dir = (dive_target - global_position).normalized()
 			velocity = dive_dir * speed * dive_speed_mult
 			move_and_slide()
 			update_animation(delta, ROW_MOVE, dive_dir)
 
-			# Check if reached dive target or close to player
-			if global_position.distance_to(dive_target) < 20 or distance < attack_range:
+			# Only end dive when very close to player (to attack)
+			if distance < attack_range:
 				is_diving = false
 				dive_cooldown = dive_cooldown_time
-				# Attack if in range
-				if distance < attack_range and can_attack:
+				if can_attack:
 					start_attack()
 		else:
-			# Normal movement - circle and prepare to dive
-			if distance > attack_range * 3 or dive_cooldown > 0:
-				# Approach with erratic movement
-				var offset = Vector2(sin(game_time() * 5), cos(game_time() * 5)) * 30
-				var target = player.global_position + offset
-				var move_dir = (target - global_position).normalized()
-				velocity = move_dir * speed
-				move_and_slide()
-				update_animation(delta, ROW_MOVE, move_dir)
-			elif dive_cooldown <= 0:
-				# Start dive attack!
+			# Brief pause then immediately dive again
+			if dive_cooldown <= 0:
+				# Start another dive attack!
 				is_diving = true
 				dive_target = player.global_position
 			else:
-				# In range, attack
-				velocity = dir_normalized * speed * 0.5
+				# Still approaching aggressively even between dives
+				velocity = dir_normalized * speed
 				move_and_slide()
 				update_animation(delta, ROW_MOVE, dir_normalized)
-				if can_attack:
+				if distance < attack_range and can_attack:
 					start_attack()
 	else:
 		velocity = Vector2.ZERO

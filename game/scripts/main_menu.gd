@@ -11,7 +11,7 @@ var version_label: Label = null
 var pixel_font: Font = null
 
 const VERSION = "1.0.0"
-const BUILD = 9
+const BUILD = 10
 
 func _ready() -> void:
 	# Load pixel font
