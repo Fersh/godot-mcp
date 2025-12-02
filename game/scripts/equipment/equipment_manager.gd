@@ -622,9 +622,12 @@ func get_sorted_inventory(sort_by: SortBy, ascending: bool = true) -> Array[Item
 	match sort_by:
 		SortBy.CATEGORY:
 			sorted_items.sort_custom(func(a, b):
-				if ascending:
-					return a.slot < b.slot
-				return a.slot > b.slot
+				if a.slot != b.slot:
+					if ascending:
+						return a.slot < b.slot
+					return a.slot > b.slot
+				# Same slot - sort by rarity descending (most rare first)
+				return a.rarity > b.rarity
 			)
 		SortBy.RARITY:
 			sorted_items.sort_custom(func(a, b):

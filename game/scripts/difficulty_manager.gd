@@ -33,7 +33,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
-		"spawn_rate_mult": 1.0,
+		"spawn_rate_mult": 1.25,  # +25% spawns for challenge mode
 		"points_mult": 1.0,
 		"color": Color(0.5, 0.8, 0.5),  # Soft green
 		"modifiers": [],
@@ -44,7 +44,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 3.2,
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
-		"spawn_rate_mult": 2.4,
+		"spawn_rate_mult": 3.0,  # +25% spawns (was 2.4)
 		"points_mult": 2.0,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
@@ -55,7 +55,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 4.8,
 		"damage_mult": 3.3,
 		"speed_mult": 1.44,
-		"spawn_rate_mult": 2.8,
+		"spawn_rate_mult": 3.5,  # +25% spawns (was 2.8)
 		"points_mult": 3.0,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
@@ -66,7 +66,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 7.6,
 		"damage_mult": 4.2,
 		"speed_mult": 1.64,
-		"spawn_rate_mult": 3.2,
+		"spawn_rate_mult": 4.0,  # +25% spawns (was 3.2)
 		"points_mult": 4.0,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
@@ -77,7 +77,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 11.0,
 		"damage_mult": 5.5,
 		"speed_mult": 1.9,
-		"spawn_rate_mult": 3.7,
+		"spawn_rate_mult": 4.625,  # +25% spawns (was 3.7)
 		"points_mult": 5.0,
 		"color": Color(0.9, 0.2, 0.2),  # Red
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
@@ -172,27 +172,27 @@ func get_difficulty_color(tier: DifficultyTier = current_difficulty) -> Color:
 
 func get_health_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0  # Endless mode uses base stats
+		return 2.0  # Endless mode uses 2x difficulty
 	return DIFFICULTY_DATA[current_difficulty]["health_mult"]
 
 func get_damage_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return 2.0  # Endless mode uses 2x difficulty
 	return DIFFICULTY_DATA[current_difficulty]["damage_mult"]
 
 func get_speed_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return 2.0  # Endless mode uses 2x difficulty
 	return DIFFICULTY_DATA[current_difficulty]["speed_mult"]
 
 func get_spawn_rate_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return 1.0  # Spawn rate not doubled for endless
 	return DIFFICULTY_DATA[current_difficulty]["spawn_rate_mult"]
 
 func get_points_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return 2.0  # Endless mode uses 2x difficulty
 	return DIFFICULTY_DATA[current_difficulty]["points_mult"]
 
 # ============================================
