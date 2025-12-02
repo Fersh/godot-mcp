@@ -90,12 +90,12 @@ func _trigger_screen_shake() -> void:
 		camera.add_trauma(0.3)
 
 # Golem takes reduced knockback
-func apply_knockback(direction: Vector2, force: float) -> void:
+func apply_knockback(force: Vector2) -> void:
 	# Golem is too heavy for normal knockback
-	super.apply_knockback(direction, force * 0.2)
+	super.apply_knockback(force * 0.2)
 
 # Golem has natural damage resistance
-func take_damage(amount: float, knockback_dir: Vector2 = Vector2.ZERO, knockback_force: float = 0.0) -> void:
+func take_damage(amount: float, is_critical: bool = false) -> void:
 	# 20% damage reduction from stone body
 	var reduced_damage = amount * 0.8
-	super.take_damage(reduced_damage, knockback_dir, knockback_force)
+	super.take_damage(reduced_damage, is_critical)

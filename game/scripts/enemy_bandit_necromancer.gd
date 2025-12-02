@@ -102,10 +102,10 @@ func _cleanup_dead_summons() -> void:
 	summon_count = summons.size()
 
 func start_summon() -> void:
-	if is_attacking or is_dying or is_stunned:
+	if is_winding_up or is_dying or is_stunned:
 		return
 
-	is_attacking = true
+	is_winding_up = true
 	can_attack = false
 	animation_frame = 0.0
 
@@ -115,7 +115,7 @@ func start_summon() -> void:
 	if not is_dying:
 		_on_summon_complete()
 
-	is_attacking = false
+	is_winding_up = false
 
 	# Start attack cooldown
 	await get_tree().create_timer(attack_cooldown).timeout

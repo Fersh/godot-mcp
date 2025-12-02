@@ -107,7 +107,7 @@ func activate_frenzy() -> void:
 	attack_cooldown *= frenzy_cooldown_mult
 
 func start_lunge(direction: Vector2) -> void:
-	if is_attacking or is_dying or is_stunned or is_lunging:
+	if is_winding_up or is_dying or is_stunned or is_lunging:
 		return
 
 	is_lunging = true

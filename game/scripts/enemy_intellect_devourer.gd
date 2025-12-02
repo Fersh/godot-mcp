@@ -85,10 +85,10 @@ func _process_behavior(delta: float) -> void:
 var is_devouring: bool = false
 
 func start_devour_attack() -> void:
-	if is_attacking or is_dying or is_stunned:
+	if is_winding_up or is_dying or is_stunned:
 		return
 
-	is_attacking = true
+	is_winding_up = true
 	is_devouring = true
 	can_attack = false
 	animation_frame = 0.0
@@ -99,7 +99,7 @@ func start_devour_attack() -> void:
 	if not is_dying:
 		_on_devour_complete()
 
-	is_attacking = false
+	is_winding_up = false
 	is_devouring = false
 
 	# Start attack cooldown

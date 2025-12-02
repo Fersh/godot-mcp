@@ -4,9 +4,9 @@ extends EnemyBase
 # A yokai creature that licks enemies with its poisonous tongue
 
 # Poison configuration
-var poison_damage: float = 3.0      # Damage per tick
-var poison_duration: float = 4.0    # How long poison lasts
-var poison_chance: float = 0.7      # 70% chance to poison on hit
+var akaname_poison_damage: float = 3.0   # Damage per tick
+var akaname_poison_duration: float = 4.0  # How long poison lasts
+var poison_chance: float = 0.7            # 70% chance to poison on hit
 
 func _on_ready() -> void:
 	enemy_type = "akaname"
@@ -61,20 +61,20 @@ func apply_poison_to_player() -> void:
 	if player and is_instance_valid(player):
 		# Check if player has poison handling
 		if player.has_method("apply_poison"):
-			var total_poison_damage = poison_damage * (poison_duration / 0.5)  # Damage per tick * ticks
-			player.apply_poison(total_poison_damage, poison_duration)
+			var total_poison_damage = akaname_poison_damage * (akaname_poison_duration / 0.5)  # Damage per tick * ticks
+			player.apply_poison(total_poison_damage, akaname_poison_duration)
 		elif player.has_method("apply_status_effect"):
-			player.apply_status_effect("poison", poison_duration, poison_damage)
+			player.apply_status_effect("poison", akaname_poison_duration, akaname_poison_damage)
 		else:
 			# Fallback: just do extra damage over time by scheduling
 			_apply_fallback_poison()
 
 func _apply_fallback_poison() -> void:
 	# Simple fallback poison implementation
-	var ticks = int(poison_duration / 0.5)
+	var ticks = int(akaname_poison_duration / 0.5)
 	for i in range(ticks):
 		var timer = get_tree().create_timer(0.5 * (i + 1))
 		timer.timeout.connect(func():
 			if player and is_instance_valid(player) and player.has_method("take_damage"):
-				player.take_damage(poison_damage)
+				player.take_damage(akaname_poison_damage)
 		)
