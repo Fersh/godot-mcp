@@ -220,18 +220,27 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 				item.base_stats[stat] = _roll_stat(stat, false)
 
 	# Add one affix (prefix OR suffix) with rolled stats
+	item.affix_abilities = []
 	if randf() > 0.5:
 		var prefix_data = ItemDatabase.get_random_prefix()
 		item.prefix = prefix_data.name
 		item.magic_stats = {}
 		for stat in prefix_data.stats:
-			item.magic_stats[stat] = _roll_stat(stat, true)
+			if stat != "affix_ability":
+				item.magic_stats[stat] = _roll_stat(stat, true)
+		# Check for affix ability
+		if prefix_data.stats.has("affix_ability"):
+			item.affix_abilities.append(prefix_data.stats.affix_ability)
 	else:
 		var suffix_data = ItemDatabase.get_random_suffix()
 		item.suffix = suffix_data.name
 		item.magic_stats = {}
 		for stat in suffix_data.stats:
-			item.magic_stats[stat] = _roll_stat(stat, true)
+			if stat != "affix_ability":
+				item.magic_stats[stat] = _roll_stat(stat, true)
+		# Check for affix ability
+		if suffix_data.stats.has("affix_ability"):
+			item.affix_abilities.append(suffix_data.stats.affix_ability)
 
 	# Upgrade icons for Rare rarity (icons 9-18)
 	var icon_num = randi_range(9, 18)
@@ -282,10 +291,17 @@ func _generate_epic_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 	var suffix_data = ItemDatabase.get_random_suffix()
 
 	item.magic_stats = {}
+	item.affix_abilities = []
 	for stat in prefix_data.stats:
-		item.magic_stats[stat] = _roll_stat(stat, true)
+		if stat == "affix_ability":
+			item.affix_abilities.append(prefix_data.stats.affix_ability)
+		else:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 	for stat in suffix_data.stats:
-		if item.magic_stats.has(stat):
+		if stat == "affix_ability":
+			if not item.affix_abilities.has(suffix_data.stats.affix_ability):
+				item.affix_abilities.append(suffix_data.stats.affix_ability)
+		elif item.magic_stats.has(stat):
 			item.magic_stats[stat] += _roll_stat(stat, true)
 		else:
 			item.magic_stats[stat] = _roll_stat(stat, true)
@@ -321,10 +337,17 @@ func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id:
 	var suffix_data = ItemDatabase.get_random_suffix()
 
 	item.magic_stats = {}
+	item.affix_abilities = []
 	for stat in prefix_data.stats:
-		item.magic_stats[stat] = _roll_stat(stat, true)
+		if stat == "affix_ability":
+			item.affix_abilities.append(prefix_data.stats.affix_ability)
+		else:
+			item.magic_stats[stat] = _roll_stat(stat, true)
 	for stat in suffix_data.stats:
-		if item.magic_stats.has(stat):
+		if stat == "affix_ability":
+			if not item.affix_abilities.has(suffix_data.stats.affix_ability):
+				item.affix_abilities.append(suffix_data.stats.affix_ability)
+		elif item.magic_stats.has(stat):
 			item.magic_stats[stat] += _roll_stat(stat, true)
 		else:
 			item.magic_stats[stat] = _roll_stat(stat, true)
@@ -481,6 +504,31 @@ func get_equipment_exclusive_abilities(character_id: String) -> Array[String]:
 			abilities.append(item.grants_equipment_ability)
 
 	return abilities
+
+# Get all affix-triggered abilities from equipment
+func get_affix_abilities(character_id: String) -> Array:
+	var abilities = []
+	var items = get_all_equipped_items(character_id)
+
+	for item in items:
+		for affix_id in item.affix_abilities:
+			if not abilities.has(affix_id):
+				abilities.append(affix_id)
+
+	return abilities
+
+# Get affix abilities by trigger type
+func get_affix_abilities_by_trigger(character_id: String, trigger_type: String) -> Array:
+	var matching = []
+	var affix_ids = get_affix_abilities(character_id)
+
+	for affix_id in affix_ids:
+		if ItemDatabase.AFFIX_ABILITIES.has(affix_id):
+			var ability = ItemDatabase.AFFIX_ABILITIES[affix_id]
+			if ability.get("trigger", "") == trigger_type:
+				matching.append({"id": affix_id, "data": ability})
+
+	return matching
 
 # Get all items not currently equipped
 func get_unequipped_items() -> Array[ItemData]:

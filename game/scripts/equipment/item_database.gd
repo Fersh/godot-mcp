@@ -65,6 +65,30 @@ const PREFIXES: Dictionary = {
 
 	# NEW: Execute damage prefix
 	"Merciless": {"execute_damage": 0.25},
+
+	# Ability-triggering prefixes (stats + mini ability)
+	"Shocking": {"damage": 0.03, "affix_ability": "mini_lightning"},
+	"Crackling": {"crit_chance": 0.04, "affix_ability": "mini_lightning"},
+	"Freezing": {"damage": 0.03, "affix_ability": "mini_freeze"},
+	"Frostbitten": {"attack_speed": 0.05, "affix_ability": "mini_freeze"},
+	"Serrated": {"damage": 0.05, "affix_ability": "mini_bleed"},
+	"Jagged": {"crit_chance": 0.03, "affix_ability": "mini_bleed"},
+	"Smoldering": {"damage": 0.04, "affix_ability": "mini_burn"},
+	"Blazing": {"attack_speed": 0.04, "affix_ability": "mini_burn"},
+	"Toxic": {"damage": 0.03, "affix_ability": "mini_poison"},
+	"Venomous": {"attack_speed": 0.05, "affix_ability": "mini_poison"},
+	"Forceful": {"damage": 0.04, "affix_ability": "mini_knockback"},
+	"Explosive": {"damage": 0.06, "affix_ability": "mini_explosion"},
+	"Siphoning": {"max_hp": 0.05, "affix_ability": "mini_heal"},
+	"Rushing": {"move_speed": 0.04, "affix_ability": "mini_speed"},
+	"Chaining": {"damage": 0.04, "affix_ability": "mini_chain"},
+	"Executing": {"crit_chance": 0.05, "affix_ability": "mini_execute"},
+	"Stunning": {"crit_damage": 0.10, "affix_ability": "mini_stun"},
+	"Spiked": {"damage_reduction": 0.03, "affix_ability": "mini_thorns"},
+	"Shielding": {"max_hp": 0.05, "affix_ability": "mini_shield"},
+	"Retaliating": {"damage": 0.04, "affix_ability": "mini_retaliate"},
+	"Radiating": {"damage": 0.03, "affix_ability": "mini_aura_damage"},
+	"Chilling": {"max_hp": 0.04, "affix_ability": "mini_aura_slow"},
 }
 
 const SUFFIXES: Dictionary = {
@@ -126,6 +150,30 @@ const SUFFIXES: Dictionary = {
 	# NEW: Summon damage suffixes
 	"of Summoning": {"summon_damage": 0.15},
 	"of Minions": {"summon_damage": 0.25},
+
+	# Ability-triggering suffixes (stats + mini ability)
+	"of Storms": {"damage": 0.04, "affix_ability": "mini_lightning"},
+	"of Thunder": {"crit_chance": 0.03, "affix_ability": "mini_lightning"},
+	"of the Glacier": {"damage": 0.03, "affix_ability": "mini_freeze"},
+	"of Winter": {"max_hp": 0.05, "affix_ability": "mini_freeze"},
+	"of Bloodletting": {"damage": 0.04, "affix_ability": "mini_bleed"},
+	"of Wounds": {"crit_damage": 0.10, "affix_ability": "mini_bleed"},
+	"of Embers": {"damage": 0.04, "affix_ability": "mini_burn"},
+	"of Flames": {"attack_speed": 0.05, "affix_ability": "mini_burn"},
+	"of Venom": {"damage": 0.03, "affix_ability": "mini_poison"},
+	"of Pestilence": {"max_hp": 0.04, "affix_ability": "mini_poison"},
+	"of Impact": {"damage": 0.05, "affix_ability": "mini_knockback"},
+	"of Detonation": {"crit_chance": 0.04, "affix_ability": "mini_explosion"},
+	"of the Leech": {"max_hp": 0.06, "affix_ability": "mini_heal"},
+	"of Momentum": {"move_speed": 0.05, "affix_ability": "mini_speed"},
+	"of Chaining": {"attack_speed": 0.04, "affix_ability": "mini_chain"},
+	"of Execution": {"crit_chance": 0.04, "affix_ability": "mini_execute"},
+	"of Concussions": {"crit_damage": 0.12, "affix_ability": "mini_stun"},
+	"of Thorns": {"damage_reduction": 0.04, "affix_ability": "mini_thorns"},
+	"of Warding": {"max_hp": 0.06, "affix_ability": "mini_shield"},
+	"of Vengeance": {"damage": 0.03, "affix_ability": "mini_retaliate"},
+	"of Burning Aura": {"damage": 0.02, "affix_ability": "mini_aura_damage"},
+	"of the Frozen Aura": {"max_hp": 0.04, "affix_ability": "mini_aura_slow"},
 }
 
 # Base item templates by slot
@@ -1004,6 +1052,160 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"grants_ability": "regeneration",
 		"grants_equipment_ability": "sugar_rush",
 		"icon_path": "res://assets/sprites/items/rings/Icon37_10.png"
+	},
+}
+
+# Affix-triggered mini abilities (scaled-down versions of full abilities)
+# Trigger types: "on_hit", "on_kill", "on_crit", "on_damage_taken", "periodic"
+const AFFIX_ABILITIES: Dictionary = {
+	# On-Hit Triggers (chance-based)
+	"mini_lightning": {
+		"name": "Static Discharge",
+		"description": "8% chance to zap nearby enemy",
+		"trigger": "on_hit",
+		"chance": 0.08,
+		"effect": "lightning",
+		"damage_mult": 0.25,  # 25% of weapon damage
+		"chain_count": 1
+	},
+	"mini_freeze": {
+		"name": "Chilling Touch",
+		"description": "10% chance to slow enemy",
+		"trigger": "on_hit",
+		"chance": 0.10,
+		"effect": "freeze",
+		"slow_percent": 0.30,
+		"duration": 1.5
+	},
+	"mini_bleed": {
+		"name": "Lacerate",
+		"description": "12% chance to cause bleeding",
+		"trigger": "on_hit",
+		"chance": 0.12,
+		"effect": "bleed",
+		"damage_mult": 0.15,
+		"duration": 3.0,
+		"tick_rate": 0.5
+	},
+	"mini_burn": {
+		"name": "Ember Touch",
+		"description": "10% chance to ignite enemy",
+		"trigger": "on_hit",
+		"chance": 0.10,
+		"effect": "burn",
+		"damage_mult": 0.10,
+		"duration": 2.0
+	},
+	"mini_poison": {
+		"name": "Venomous",
+		"description": "15% chance to poison enemy",
+		"trigger": "on_hit",
+		"chance": 0.15,
+		"effect": "poison",
+		"damage_mult": 0.08,
+		"duration": 4.0
+	},
+	"mini_knockback": {
+		"name": "Forceful",
+		"description": "20% chance to knock enemy back",
+		"trigger": "on_hit",
+		"chance": 0.20,
+		"effect": "knockback",
+		"force": 150.0
+	},
+
+	# On-Kill Triggers (guaranteed on kill)
+	"mini_explosion": {
+		"name": "Death Burst",
+		"description": "Enemies explode on death",
+		"trigger": "on_kill",
+		"effect": "explosion",
+		"damage_mult": 0.30,
+		"radius": 60.0
+	},
+	"mini_heal": {
+		"name": "Soul Siphon",
+		"description": "Heal on enemy kill",
+		"trigger": "on_kill",
+		"effect": "heal",
+		"heal_amount": 2.0
+	},
+	"mini_speed": {
+		"name": "Rush",
+		"description": "Speed boost on kill",
+		"trigger": "on_kill",
+		"effect": "speed_boost",
+		"speed_mult": 0.25,
+		"duration": 2.0
+	},
+	"mini_chain": {
+		"name": "Chain Kill",
+		"description": "Damage nearby enemy on kill",
+		"trigger": "on_kill",
+		"effect": "chain_damage",
+		"damage_mult": 0.20,
+		"radius": 100.0
+	},
+
+	# On-Crit Triggers
+	"mini_execute": {
+		"name": "Finisher",
+		"description": "Crits deal bonus damage to low HP enemies",
+		"trigger": "on_crit",
+		"effect": "execute",
+		"hp_threshold": 0.30,
+		"damage_mult": 0.50
+	},
+	"mini_stun": {
+		"name": "Concussive",
+		"description": "Crits briefly stun enemies",
+		"trigger": "on_crit",
+		"effect": "stun",
+		"duration": 0.5
+	},
+
+	# On-Damage-Taken Triggers
+	"mini_thorns": {
+		"name": "Spiky",
+		"description": "Reflect damage when hit",
+		"trigger": "on_damage_taken",
+		"effect": "reflect",
+		"reflect_percent": 0.15
+	},
+	"mini_shield": {
+		"name": "Reactive Shield",
+		"description": "25% chance to block damage",
+		"trigger": "on_damage_taken",
+		"chance": 0.25,
+		"effect": "block"
+	},
+	"mini_retaliate": {
+		"name": "Retaliation",
+		"description": "Counter-attack when hit",
+		"trigger": "on_damage_taken",
+		"effect": "counter_attack",
+		"damage_mult": 0.20,
+		"radius": 80.0
+	},
+
+	# Periodic Triggers
+	"mini_aura_damage": {
+		"name": "Damaging Aura",
+		"description": "Deal damage to nearby enemies",
+		"trigger": "periodic",
+		"interval": 1.0,
+		"effect": "aura_damage",
+		"damage_mult": 0.05,
+		"radius": 80.0
+	},
+	"mini_aura_slow": {
+		"name": "Chilling Aura",
+		"description": "Slow nearby enemies",
+		"trigger": "periodic",
+		"interval": 0.5,
+		"effect": "aura_slow",
+		"slow_percent": 0.15,
+		"radius": 100.0
 	},
 }
 

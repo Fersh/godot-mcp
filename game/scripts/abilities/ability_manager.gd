@@ -665,6 +665,7 @@ func _process(delta: float) -> void:
 
 	process_periodic_effects(delta, player)
 	_update_active_synergy_timers(delta)
+	process_affix_periodic(delta, player)
 
 func process_periodic_effects(delta: float, player: Node2D) -> void:
 	# Regeneration (from abilities and permanent upgrades) - percentage based
@@ -2283,6 +2284,9 @@ func on_enemy_killed(enemy: Node2D, player: Node2D) -> void:
 	if has_blood_trail:
 		spawn_blood_pool(enemy.global_position)
 
+	# Affix ability on-kill triggers
+	process_affix_on_kill(enemy, player, 0.0)
+
 # ============================================
 # EXTENDED ABILITY UTILITY FUNCTIONS
 # ============================================
@@ -2844,3 +2848,321 @@ func _update_active_synergy_timers(delta: float) -> void:
 		swift_dodge_timer -= delta
 		if swift_dodge_timer <= 0:
 			swift_dodge_active = false
+
+# ============================================
+# AFFIX ABILITY TRIGGERS (Equipment mini-abilities)
+# ============================================
+
+var affix_periodic_timers: Dictionary = {}  # {affix_id: current_time}
+var affix_speed_boost_active: bool = false
+var affix_speed_boost_timer: float = 0.0
+var affix_speed_boost_mult: float = 1.0
+
+func process_affix_on_hit(enemy: Node2D, player: Node2D, damage: float, is_crit: bool) -> void:
+	"""Process affix abilities that trigger on hit."""
+	if player == null or not is_instance_valid(enemy):
+		return
+
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	if character_id == "" or not EquipmentManager:
+		return
+
+	var on_hit_abilities = EquipmentManager.get_affix_abilities_by_trigger(character_id, "on_hit")
+
+	for ability_data in on_hit_abilities:
+		var data = ability_data.data
+		var chance = data.get("chance", 1.0)
+
+		if randf() > chance:
+			continue
+
+		match data.effect:
+			"lightning":
+				_affix_trigger_lightning(enemy, player, damage * data.get("damage_mult", 0.25))
+			"freeze":
+				_affix_trigger_freeze(enemy, data.get("slow_percent", 0.3), data.get("duration", 1.5))
+			"bleed":
+				_affix_trigger_bleed(enemy, damage * data.get("damage_mult", 0.15), data.get("duration", 3.0))
+			"burn":
+				_affix_trigger_burn(enemy, data.get("duration", 2.0))
+			"poison":
+				_affix_trigger_poison(enemy, damage * data.get("damage_mult", 0.08), data.get("duration", 4.0))
+			"knockback":
+				_affix_trigger_knockback(enemy, player, data.get("force", 150.0))
+
+	# Also check on_crit triggers if this was a crit
+	if is_crit:
+		process_affix_on_crit(enemy, player, damage)
+
+func process_affix_on_crit(enemy: Node2D, player: Node2D, damage: float) -> void:
+	"""Process affix abilities that trigger on critical hit."""
+	if player == null or not is_instance_valid(enemy):
+		return
+
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	if character_id == "" or not EquipmentManager:
+		return
+
+	var on_crit_abilities = EquipmentManager.get_affix_abilities_by_trigger(character_id, "on_crit")
+
+	for ability_data in on_crit_abilities:
+		var data = ability_data.data
+
+		match data.effect:
+			"execute":
+				_affix_trigger_execute(enemy, damage * data.get("damage_mult", 0.5), data.get("hp_threshold", 0.3))
+			"stun":
+				_affix_trigger_stun(enemy, data.get("duration", 0.5))
+
+func process_affix_on_kill(enemy: Node2D, player: Node2D, damage: float) -> void:
+	"""Process affix abilities that trigger on enemy kill."""
+	if player == null:
+		return
+
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	if character_id == "" or not EquipmentManager:
+		return
+
+	var on_kill_abilities = EquipmentManager.get_affix_abilities_by_trigger(character_id, "on_kill")
+
+	for ability_data in on_kill_abilities:
+		var data = ability_data.data
+
+		match data.effect:
+			"explosion":
+				_affix_trigger_explosion(enemy.global_position, damage * data.get("damage_mult", 0.3), data.get("radius", 60.0))
+			"heal":
+				heal_player(player, data.get("heal_amount", 2.0))
+			"speed_boost":
+				_affix_trigger_speed_boost(data.get("speed_mult", 0.25), data.get("duration", 2.0))
+			"chain_damage":
+				_affix_trigger_chain_damage(enemy.global_position, damage * data.get("damage_mult", 0.2), data.get("radius", 100.0))
+
+func process_affix_on_damage_taken(player: Node2D, damage: float, attacker: Node2D) -> float:
+	"""Process affix abilities that trigger when player takes damage. Returns modified damage."""
+	if player == null:
+		return damage
+
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	if character_id == "" or not EquipmentManager:
+		return damage
+
+	var on_damage_abilities = EquipmentManager.get_affix_abilities_by_trigger(character_id, "on_damage_taken")
+	var modified_damage = damage
+
+	for ability_data in on_damage_abilities:
+		var data = ability_data.data
+		var chance = data.get("chance", 1.0)
+
+		match data.effect:
+			"reflect":
+				if attacker != null and is_instance_valid(attacker) and attacker.has_method("take_damage"):
+					var reflect_damage = damage * data.get("reflect_percent", 0.15)
+					attacker.take_damage(reflect_damage)
+			"block":
+				if randf() < chance:
+					modified_damage = 0.0  # Block all damage
+					_spawn_block_effect(player.global_position)
+			"counter_attack":
+				_affix_trigger_counter_attack(player.global_position, damage * data.get("damage_mult", 0.2), data.get("radius", 80.0))
+
+	return modified_damage
+
+func process_affix_periodic(delta: float, player: Node2D) -> void:
+	"""Process periodic affix abilities."""
+	if player == null or player.is_dead:
+		return
+
+	# Update speed boost timer
+	if affix_speed_boost_active:
+		affix_speed_boost_timer -= delta
+		if affix_speed_boost_timer <= 0:
+			affix_speed_boost_active = false
+			affix_speed_boost_mult = 1.0
+
+	var character_id = ""
+	if CharacterManager:
+		character_id = CharacterManager.selected_character_id
+
+	if character_id == "" or not EquipmentManager:
+		return
+
+	var periodic_abilities = EquipmentManager.get_affix_abilities_by_trigger(character_id, "periodic")
+
+	for ability_data in periodic_abilities:
+		var affix_id = ability_data.id
+		var data = ability_data.data
+		var interval = data.get("interval", 1.0)
+
+		# Initialize timer if needed
+		if not affix_periodic_timers.has(affix_id):
+			affix_periodic_timers[affix_id] = 0.0
+
+		affix_periodic_timers[affix_id] += delta
+
+		if affix_periodic_timers[affix_id] >= interval:
+			affix_periodic_timers[affix_id] = 0.0
+
+			match data.effect:
+				"aura_damage":
+					_affix_trigger_aura_damage(player, data.get("damage_mult", 0.05), data.get("radius", 80.0))
+				"aura_slow":
+					_affix_trigger_aura_slow(player, data.get("slow_percent", 0.15), data.get("radius", 100.0))
+
+func get_affix_speed_multiplier() -> float:
+	"""Get speed multiplier from affix abilities."""
+	if affix_speed_boost_active:
+		return 1.0 + affix_speed_boost_mult
+	return 1.0
+
+# ============================================
+# AFFIX ABILITY EFFECT IMPLEMENTATIONS
+# ============================================
+
+func _affix_trigger_lightning(enemy: Node2D, player: Node2D, damage: float) -> void:
+	"""Trigger mini lightning chain."""
+	if enemy.has_method("take_damage"):
+		enemy.take_damage(damage)
+	if enemy.has_method("apply_shock"):
+		enemy.apply_shock(damage * 0.5)
+	trigger_lightning_at(enemy.global_position)
+
+func _affix_trigger_freeze(enemy: Node2D, slow_percent: float, duration: float) -> void:
+	"""Apply slow to enemy."""
+	if enemy.has_method("apply_slow"):
+		enemy.apply_slow(slow_percent, duration)
+	elif enemy.has_method("apply_chill"):
+		enemy.apply_chill(duration)
+
+func _affix_trigger_bleed(enemy: Node2D, damage: float, duration: float) -> void:
+	"""Apply bleed DoT to enemy."""
+	if enemy.has_method("apply_bleed"):
+		enemy.apply_bleed(damage, duration)
+
+func _affix_trigger_burn(enemy: Node2D, duration: float) -> void:
+	"""Apply burn to enemy."""
+	if enemy.has_method("apply_burn"):
+		enemy.apply_burn(duration)
+
+func _affix_trigger_poison(enemy: Node2D, damage: float, duration: float) -> void:
+	"""Apply poison to enemy."""
+	if enemy.has_method("apply_poison"):
+		enemy.apply_poison(damage, duration)
+
+func _affix_trigger_knockback(enemy: Node2D, player: Node2D, force: float) -> void:
+	"""Knock enemy back from player."""
+	if enemy.has_method("apply_knockback"):
+		var direction = (enemy.global_position - player.global_position).normalized()
+		enemy.apply_knockback(direction * force)
+
+func _affix_trigger_execute(enemy: Node2D, bonus_damage: float, hp_threshold: float) -> void:
+	"""Deal bonus damage if enemy below HP threshold."""
+	if enemy.has_method("get_health_percent"):
+		if enemy.get_health_percent() < hp_threshold:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(bonus_damage)
+
+func _affix_trigger_stun(enemy: Node2D, duration: float) -> void:
+	"""Stun enemy briefly."""
+	if enemy.has_method("apply_stun"):
+		enemy.apply_stun(duration)
+
+func _affix_trigger_explosion(pos: Vector2, damage: float, radius: float) -> void:
+	"""Create small explosion at position."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.global_position.distance_to(pos) <= radius:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(damage)
+	spawn_explosion_effect(pos)
+
+func _affix_trigger_speed_boost(speed_mult: float, duration: float) -> void:
+	"""Apply temporary speed boost."""
+	affix_speed_boost_active = true
+	affix_speed_boost_timer = duration
+	affix_speed_boost_mult = speed_mult
+
+func _affix_trigger_chain_damage(pos: Vector2, damage: float, radius: float) -> void:
+	"""Deal damage to nearest enemy within radius."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest_enemy = null
+	var closest_dist = radius
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var dist = enemy.global_position.distance_to(pos)
+			if dist < closest_dist:
+				closest_dist = dist
+				closest_enemy = enemy
+
+	if closest_enemy != null and closest_enemy.has_method("take_damage"):
+		closest_enemy.take_damage(damage)
+
+func _affix_trigger_counter_attack(pos: Vector2, damage: float, radius: float) -> void:
+	"""Counter attack nearby enemies."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.global_position.distance_to(pos) <= radius:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(damage)
+
+func _affix_trigger_aura_damage(player: Node2D, damage_mult: float, radius: float) -> void:
+	"""Deal periodic damage to nearby enemies."""
+	var base_damage = 10.0
+	if player.has_method("get_attack_damage"):
+		base_damage = player.get_attack_damage()
+	var damage = base_damage * damage_mult
+
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.global_position.distance_to(player.global_position) <= radius:
+			if enemy.has_method("take_damage"):
+				enemy.take_damage(damage)
+
+func _affix_trigger_aura_slow(player: Node2D, slow_percent: float, radius: float) -> void:
+	"""Apply slow aura to nearby enemies."""
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy) and enemy.global_position.distance_to(player.global_position) <= radius:
+			if enemy.has_method("apply_slow"):
+				enemy.apply_slow(slow_percent, 0.6)
+
+func _spawn_block_effect(pos: Vector2) -> void:
+	"""Spawn visual effect for blocked damage."""
+	var particles = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 8
+	particles.lifetime = 0.2
+	particles.direction = Vector2.UP
+	particles.spread = 60
+	particles.initial_velocity_min = 50
+	particles.initial_velocity_max = 100
+	particles.scale_amount_min = 2.0
+	particles.scale_amount_max = 4.0
+	particles.color = Color(0.8, 0.8, 1.0, 0.9)  # Light blue/white
+
+	get_tree().current_scene.add_child(particles)
+	var timer = get_tree().create_timer(0.4)
+	timer.timeout.connect(func(): particles.queue_free())
+
+func reset_affix_abilities() -> void:
+	"""Reset affix ability state (called on run start)."""
+	affix_periodic_timers.clear()
+	affix_speed_boost_active = false
+	affix_speed_boost_timer = 0.0
+	affix_speed_boost_mult = 1.0

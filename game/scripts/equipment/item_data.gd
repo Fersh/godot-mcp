@@ -124,6 +124,9 @@ const AFFIX_STAT_RANGES: Dictionary = {
 @export var grants_ability: String = ""  # Ability ID from AbilityDatabase
 @export var grants_equipment_ability: String = ""  # Equipment-exclusive ability ID
 
+# Affix-triggered mini abilities (from prefix/suffix)
+@export var affix_abilities: Array = []  # Array of ability IDs from AFFIX_ABILITIES
+
 # Item level (affects stat rolls)
 @export var item_level: int = 1
 
@@ -193,6 +196,12 @@ func get_stat_description() -> String:
 			var special_name = grants_equipment_ability.replace("_", " ").capitalize()
 			lines.append("Special: %s" % special_name)
 
+	# Show affix-triggered abilities
+	for affix_id in affix_abilities:
+		if ItemDatabase and ItemDatabase.AFFIX_ABILITIES.has(affix_id):
+			var affix_info = ItemDatabase.AFFIX_ABILITIES[affix_id]
+			lines.append("[%s] %s" % [affix_info.name, affix_info.description])
+
 	return "\n".join(lines)
 
 func can_be_equipped_by(character_id: String) -> bool:
@@ -230,6 +239,7 @@ func duplicate_item() -> ItemData:
 	new_item.suffix = suffix
 	new_item.grants_ability = grants_ability
 	new_item.grants_equipment_ability = grants_equipment_ability
+	new_item.affix_abilities = affix_abilities.duplicate()
 	new_item.item_level = item_level
 	new_item.equipped_by = equipped_by
 	return new_item
@@ -250,6 +260,7 @@ func to_save_dict() -> Dictionary:
 		"suffix": suffix,
 		"grants_ability": grants_ability,
 		"grants_equipment_ability": grants_equipment_ability,
+		"affix_abilities": affix_abilities,
 		"item_level": item_level,
 		"equipped_by": equipped_by
 	}
@@ -269,6 +280,7 @@ static func from_save_dict(data: Dictionary) -> ItemData:
 	item.suffix = data.get("suffix", "")
 	item.grants_ability = data.get("grants_ability", "")
 	item.grants_equipment_ability = data.get("grants_equipment_ability", "")
+	item.affix_abilities = data.get("affix_abilities", [])
 	item.item_level = data.get("item_level", 1)
 	item.equipped_by = data.get("equipped_by", "")
 
