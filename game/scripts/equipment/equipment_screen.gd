@@ -486,6 +486,8 @@ func _refresh_equipment_slots() -> void:
 func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
 	container.add_theme_constant_override("separation", 8)
+	# Set consistent width for all slots (matches width with equipped item)
+	container.custom_minimum_size = Vector2(90, 0)
 
 	# Slot label
 	var slot_label = Label.new()
@@ -1350,7 +1352,7 @@ func _create_comparison_card(item: ItemData, show_arrows: bool, comparison: Dict
 	var rarity_label = Label.new()
 	var type_text = item.get_slot_name()
 	if item.slot == ItemData.Slot.WEAPON:
-		type_text = "%s %s" % [item.display_name, item.get_slot_name()]
+		type_text = "%s %s" % [item.get_weapon_type_name(), item.get_slot_name()]
 	rarity_label.text = "%s %s" % [item.get_rarity_name(), type_text]
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)

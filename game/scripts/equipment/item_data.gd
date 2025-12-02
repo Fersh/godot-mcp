@@ -52,6 +52,14 @@ const SLOT_NAMES: Dictionary = {
 	Slot.RING: "Ring"
 }
 
+const WEAPON_TYPE_NAMES: Dictionary = {
+	WeaponType.NONE: "Weapon",
+	WeaponType.MELEE: "Melee",
+	WeaponType.RANGED: "Bow",
+	WeaponType.MAGIC: "Staff",
+	WeaponType.DAGGER: "Dagger"
+}
+
 # Drop weights by rarity (base %, modified by game time and enemy type)
 const BASE_DROP_WEIGHTS: Dictionary = {
 	Rarity.COMMON: 70.0,
@@ -157,6 +165,9 @@ func get_rarity_name() -> String:
 func get_slot_name() -> String:
 	return SLOT_NAMES.get(slot, "Unknown")
 
+func get_weapon_type_name() -> String:
+	return WEAPON_TYPE_NAMES.get(weapon_type, "Weapon")
+
 func get_all_stats() -> Dictionary:
 	var combined = base_stats.duplicate()
 	for stat in magic_stats:
@@ -172,12 +183,17 @@ func get_stat_description() -> String:
 
 	for stat in all_stats:
 		var value = all_stats[stat]
+
+		# Skip effectively zero values
+		if abs(value) < 0.001:
+			continue
+
 		var stat_name = stat.replace("_", " ").capitalize()
 		var sign = "+" if value >= 0 else ""
 
 		# Format percentage stats
 		if stat in ["crit_chance", "dodge_chance", "block_chance", "attack_speed",
-					"move_speed", "damage", "max_hp", "xp_gain", "luck"]:
+					"move_speed", "damage", "max_hp", "xp_gain", "luck", "damage_reduction"]:
 			lines.append("%s%d%% %s" % [sign, int(value * 100), stat_name])
 		else:
 			lines.append("%s%d %s" % [sign, int(value), stat_name])

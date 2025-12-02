@@ -5,6 +5,12 @@ extends Node2D
 
 @export var cyclops_scene: PackedScene
 @export var goblin_king_scene: PackedScene
+@export var orc_elite_scene: PackedScene
+@export var ratfolk_elite_scene: PackedScene
+@export var skeleton_elite_scene: PackedScene
+@export var slime_elite_scene: PackedScene
+@export var imp_elite_scene: PackedScene
+@export var kobold_priest_elite_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
 @export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
@@ -69,9 +75,18 @@ var elite_health_bars: Array[Dictionary] = []  # Array of {elite, bar_container,
 var pixel_font: Font = null
 
 # Available elite types
-enum EliteType { CYCLOPS, GOBLIN_KING }
+enum EliteType { CYCLOPS, GOBLIN_KING, ORC, RATFOLK, SKELETON, SLIME, IMP, KOBOLD_PRIEST }
 enum BossType { MINOTAUR }
-var elite_pool: Array[EliteType] = [EliteType.CYCLOPS, EliteType.GOBLIN_KING]
+var elite_pool: Array[EliteType] = [
+	EliteType.CYCLOPS,
+	EliteType.GOBLIN_KING,
+	EliteType.ORC,
+	EliteType.RATFOLK,
+	EliteType.SKELETON,
+	EliteType.SLIME,
+	EliteType.IMP,
+	EliteType.KOBOLD_PRIEST
+]
 var boss_pool: Array[BossType] = [BossType.MINOTAUR]
 
 # Portal spawn system
@@ -556,34 +571,21 @@ func _on_portal_spawn_ready(spawn_pos: Vector2, is_boss: bool) -> void:
 		_do_spawn_elite_from_portal(spawn_pos)
 
 func _select_elite_type() -> EliteType:
-	# Elite spawn pattern:
-	# 1st elite: random (Cyclops or Goblin King)
-	# 2nd elite: the other one
-	# 3rd elite: random
-	# 4th elite: the other one
-	# ... and so on
+	# Elite spawn pattern: Randomly select from all available elites
+	# Avoid spawning the same elite twice in a row
 
-	var selected_type: EliteType
+	var available_types = elite_pool.duplicate()
 
-	if elite_spawn_count == 0:
-		# First elite: random choice
-		selected_type = EliteType.CYCLOPS if randi() % 2 == 0 else EliteType.GOBLIN_KING
-	elif elite_spawn_count == 1:
-		# Second elite: must be the other one
-		selected_type = EliteType.GOBLIN_KING if last_elite_type == EliteType.CYCLOPS else EliteType.CYCLOPS
-	else:
-		# From 3rd onwards: odd positions (2, 4, 6...) are random, even positions (3, 5, 7...) are the other
-		# elite_spawn_count 2 = 3rd elite (random)
-		# elite_spawn_count 3 = 4th elite (other)
-		# elite_spawn_count 4 = 5th elite (random)
-		# etc.
-		var position_in_cycle = (elite_spawn_count - 2) % 2
-		if position_in_cycle == 0:
-			# Random choice
-			selected_type = EliteType.CYCLOPS if randi() % 2 == 0 else EliteType.GOBLIN_KING
-		else:
-			# Must be the other one
-			selected_type = EliteType.GOBLIN_KING if last_elite_type == EliteType.CYCLOPS else EliteType.CYCLOPS
+	# Remove last spawned type to avoid repeats (if we have multiple types)
+	if last_elite_type >= 0 and available_types.size() > 1:
+		var last_type = last_elite_type as EliteType
+		var idx = available_types.find(last_type)
+		if idx >= 0:
+			available_types.remove_at(idx)
+
+	# Randomly select from available types
+	var random_index = randi() % available_types.size()
+	var selected_type = available_types[random_index]
 
 	last_elite_type = selected_type
 	elite_spawn_count += 1
@@ -599,7 +601,25 @@ func _get_scene_for_elite(elite_type: EliteType) -> PackedScene:
 			return cyclops_scene
 		EliteType.GOBLIN_KING:
 			return goblin_king_scene
+		EliteType.ORC:
+			return orc_elite_scene
+		EliteType.RATFOLK:
+			return ratfolk_elite_scene
+		EliteType.SKELETON:
+			return skeleton_elite_scene
+		EliteType.SLIME:
+			return slime_elite_scene
+		EliteType.IMP:
+			return imp_elite_scene
+		EliteType.KOBOLD_PRIEST:
+			return kobold_priest_elite_scene
 		_:
+			# Fallback to a random available scene
+			var scenes = [cyclops_scene, goblin_king_scene, orc_elite_scene, ratfolk_elite_scene,
+				skeleton_elite_scene, slime_elite_scene, imp_elite_scene, kobold_priest_elite_scene]
+			var valid_scenes = scenes.filter(func(s): return s != null)
+			if valid_scenes.size() > 0:
+				return valid_scenes[randi() % valid_scenes.size()]
 			return cyclops_scene
 
 func _get_scene_for_boss(boss_type: BossType) -> PackedScene:

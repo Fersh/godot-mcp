@@ -972,10 +972,13 @@ func _setup_curse_icons() -> void:
 		icon_button.flat = true
 		icon_button.focus_mode = Control.FOCUS_NONE
 
-		# Add diamond background (rotated 45 degrees)
+		# Add diamond background (rotated 45 degrees) with slight corner radius
 		var diamond_size = CURSE_ICON_SIZE + 4
-		var diamond = ColorRect.new()
-		diamond.color = Color(0.05, 0.05, 0.08, 0.95)
+		var diamond = Panel.new()
+		var diamond_style = StyleBoxFlat.new()
+		diamond_style.bg_color = Color(0.05, 0.05, 0.08, 0.95)
+		diamond_style.set_corner_radius_all(3)
+		diamond.add_theme_stylebox_override("panel", diamond_style)
 		diamond.size = Vector2(diamond_size * 0.75, diamond_size * 0.75)
 		diamond.rotation = PI / 4  # 45 degrees
 		diamond.pivot_offset = diamond.size / 2
@@ -992,7 +995,7 @@ func _setup_curse_icons() -> void:
 		icon_style.bg_color = Color(0.15, 0.1, 0.2, 0.9)
 		icon_style.border_color = Color(0.7, 0.3, 0.5, 1.0)  # Pink/purple curse color
 		icon_style.set_border_width_all(1)
-		icon_style.set_corner_radius_all(2)
+		icon_style.set_corner_radius_all(3)
 		icon_button.add_theme_stylebox_override("normal", icon_style)
 
 		var hover_style = icon_style.duplicate()

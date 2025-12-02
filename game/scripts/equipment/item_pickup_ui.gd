@@ -207,7 +207,10 @@ func _create_item_card(item: ItemData, is_new: bool, comparison: Dictionary, max
 
 	# Rarity and slot - above title
 	var info_label = Label.new()
-	info_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
+	var type_text = item.get_slot_name()
+	if item.slot == ItemData.Slot.WEAPON:
+		type_text = "%s %s" % [item.get_weapon_type_name(), item.get_slot_name()]
+	info_label.text = "%s %s" % [item.get_rarity_name(), type_text]
 	if pixel_font:
 		info_label.add_theme_font_override("font", pixel_font)
 	info_label.add_theme_font_size_override("font_size", 18)

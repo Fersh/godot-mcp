@@ -147,8 +147,24 @@ func _format_number(num: int) -> String:
 func _update_points_display() -> void:
 	points_label.text = _format_number(int(displayed_points)) + "  POINTS"
 
+func _get_coin_multiplier() -> float:
+	"""Get the combined coin multiplier from permanent upgrades and curses."""
+	var multiplier = 1.0
+
+	# Permanent upgrade bonus
+	if PermanentUpgrades:
+		multiplier += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
+
+	# Curse multiplier (stacking bonus from princesses)
+	if CurseEffects:
+		multiplier *= CurseEffects.get_points_multiplier()
+
+	return multiplier
+
 func _update_coins_display() -> void:
-	coins_label.text = _format_number(int(displayed_coins)) + "  COINS"
+	var multiplier = _get_coin_multiplier()
+	var multiplied_coins = int(ceil(displayed_coins * multiplier))
+	coins_label.text = _format_number(multiplied_coins) + "  COINS"
 
 func update_wave_display() -> void:
 	var minutes = int(time_survived) / 60

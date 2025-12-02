@@ -69,21 +69,31 @@ func _ready() -> void:
 		# Get updated lifetime stats
 		var lifetime = StatsManager.get_lifetime_stats()
 
-		# Calculate coins earned with bonus
+		# Calculate coins earned with bonus (permanent upgrades + curse multiplier)
 		var coin_bonus = 1.0
 		if PermanentUpgrades:
 			coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
-		var coins_earned = int(final_coins * coin_bonus)
+		if CurseEffects:
+			coin_bonus *= CurseEffects.get_points_multiplier()
+		var coins_earned = int(ceil(final_coins * coin_bonus))
 
 		# Update best labels
 		best_time_label.text = "Best: %s" % format_time(lifetime.best_time)
 		best_kills_label.text = "Best: %s" % format_number(lifetime.best_kills)
 
+	# Calculate displayed coins with multiplier
+	var display_coin_bonus = 1.0
+	if PermanentUpgrades:
+		display_coin_bonus += PermanentUpgrades.get_all_bonuses().get("coin_gain", 0.0)
+	if CurseEffects:
+		display_coin_bonus *= CurseEffects.get_points_multiplier()
+	var display_coins = int(ceil(final_coins * display_coin_bonus))
+
 	# Format the run stats with commas
 	points_label.text = "Points: %s" % format_number(final_points)
 	time_label.text = "Time: %s" % format_time(final_time)
 	kills_label.text = "Kills: %s" % format_number(final_kills)
-	coins_label.text = "+%s Coins" % format_number(final_coins)
+	coins_label.text = "+%s Coins" % format_number(display_coins)
 
 	# Show and commit loot
 	_display_loot()
