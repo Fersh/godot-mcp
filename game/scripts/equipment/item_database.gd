@@ -171,7 +171,7 @@ const SUFFIXES: Dictionary = {
 	"of Concussions": {"crit_damage": 0.12, "affix_ability": "mini_stun"},
 	"of Thorns": {"damage_reduction": 0.04, "affix_ability": "mini_thorns"},
 	"of Warding": {"max_hp": 0.06, "affix_ability": "mini_shield"},
-	"of Vengeance": {"damage": 0.03, "affix_ability": "mini_retaliate"},
+	"of Retribution": {"damage": 0.03, "affix_ability": "mini_retaliate"},
 	"of Burning Aura": {"damage": 0.02, "affix_ability": "mini_aura_damage"},
 	"of the Frozen Aura": {"max_hp": 0.04, "affix_ability": "mini_aura_slow"},
 }

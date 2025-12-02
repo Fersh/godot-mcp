@@ -106,7 +106,7 @@ func _build_ui() -> void:
 
 	# Title centered in header
 	title_label = Label.new()
-	title_label.text = "PRINCESSES"
+	title_label.text = "PRINCESS PROBLEMS"
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.offset_left = -100
 	title_label.offset_right = 100
