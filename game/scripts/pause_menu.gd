@@ -18,8 +18,10 @@ const COLOR_STAT_MODIFIED = Color(0.4, 0.9, 0.4, 1.0)  # Green - modified by gea
 const COLOR_STAT_CURSED = Color(1.0, 0.5, 0.7, 1.0)  # Pink - affected by curse
 
 # Tab button colors
-const COLOR_TAB_ACTIVE = Color(0.25, 0.22, 0.30, 1.0)
-const COLOR_TAB_INACTIVE = Color(0.15, 0.12, 0.18, 1.0)
+const COLOR_TAB_ACTIVE = Color(0.35, 0.30, 0.45, 1.0)
+const COLOR_TAB_INACTIVE = Color(0.12, 0.10, 0.14, 1.0)
+const COLOR_TAB_ACTIVE_TEXT = Color(1.0, 0.95, 0.85, 1.0)
+const COLOR_TAB_INACTIVE_TEXT = Color(0.5, 0.45, 0.40, 1.0)
 
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
@@ -31,8 +33,6 @@ const COLOR_TAB_INACTIVE = Color(0.15, 0.12, 0.18, 1.0)
 # Content containers
 @onready var powerups_content: VBoxContainer = $Panel/VBoxContainer/ContentContainer/PowerupsContent
 @onready var stats_content: VBoxContainer = $Panel/VBoxContainer/ContentContainer/StatsContent
-@onready var powerups_label: Label = $Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsLabel
-@onready var stats_label: Label = $Panel/VBoxContainer/ContentContainer/StatsContent/StatsLabel
 @onready var powerups_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll/PowerupsContainer
 @onready var stats_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll/StatsContainer
 
@@ -81,15 +81,6 @@ func _setup_style() -> void:
 	title_label.add_theme_font_size_override("font_size", 28)
 	title_label.add_theme_color_override("font_color", COLOR_TEXT)
 
-	# Style content labels
-	if pixel_font:
-		powerups_label.add_theme_font_override("font", pixel_font)
-		stats_label.add_theme_font_override("font", pixel_font)
-	powerups_label.add_theme_font_size_override("font_size", 14)
-	powerups_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	stats_label.add_theme_font_size_override("font_size", 14)
-	stats_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-
 	# Style tab buttons
 	_style_tab_button(powerups_tab)
 	_style_tab_button(stats_tab)
@@ -105,14 +96,14 @@ func _style_tab_button(button: Button) -> void:
 	style.border_width_right = 2
 	style.border_width_top = 2
 	style.border_width_bottom = 2
-	style.border_color = COLOR_BORDER
-	style.corner_radius_top_left = 3
-	style.corner_radius_top_right = 3
+	style.border_color = COLOR_BORDER.darkened(0.3)
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
 	style.corner_radius_bottom_left = 0
 	style.corner_radius_bottom_right = 0
 
 	var style_hover = style.duplicate()
-	style_hover.bg_color = COLOR_TAB_INACTIVE.lightened(0.1)
+	style_hover.bg_color = COLOR_TAB_INACTIVE.lightened(0.15)
 
 	var style_pressed = style.duplicate()
 	style_pressed.bg_color = COLOR_TAB_ACTIVE
@@ -125,7 +116,7 @@ func _style_tab_button(button: Button) -> void:
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
 	button.add_theme_font_size_override("font_size", 12)
-	button.add_theme_color_override("font_color", COLOR_TEXT)
+	button.add_theme_color_override("font_color", COLOR_TAB_INACTIVE_TEXT)
 
 func _setup_difficulty_label() -> void:
 	# Create difficulty label at top middle of screen
@@ -208,9 +199,13 @@ func _update_tab_style(button: Button, is_active: bool) -> void:
 	if is_active:
 		style.bg_color = COLOR_TAB_ACTIVE
 		style.border_width_bottom = 0
+		style.border_color = COLOR_BORDER
+		button.add_theme_color_override("font_color", COLOR_TAB_ACTIVE_TEXT)
 	else:
 		style.bg_color = COLOR_TAB_INACTIVE
 		style.border_width_bottom = 2
+		style.border_color = COLOR_BORDER.darkened(0.3)
+		button.add_theme_color_override("font_color", COLOR_TAB_INACTIVE_TEXT)
 	button.add_theme_stylebox_override("normal", style)
 
 func show_menu() -> void:
@@ -271,12 +266,17 @@ func _populate_powerups() -> void:
 		powerups_container.add_child(row)
 
 func _add_no_powerups_label() -> void:
+	# Add spacer above
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 20)
+	powerups_container.add_child(spacer)
+
 	var label = Label.new()
-	label.text = "No powerups yet!"
+	label.text = "No abilities yet!"
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_color_override("font_color", Color(0.4, 0.38, 0.35, 1.0))
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	powerups_container.add_child(label)
 
@@ -337,15 +337,10 @@ func _populate_stats() -> void:
 		_add_no_stats_label()
 		return
 
-	# Get curse count for header
+	# Get curse count
 	var curse_count = 0
 	if CurseEffects:
 		curse_count = CurseEffects.get_active_curse_count()
-
-	# Add curse indicator if any curses active
-	if curse_count > 0:
-		_add_curse_header(curse_count)
-		_add_separator()
 
 	# Gather all stats with their modification status
 	var stats = _gather_player_stats(player)
@@ -353,6 +348,10 @@ func _populate_stats() -> void:
 	# Add stat rows
 	for stat in stats:
 		_add_stat_row(stat.name, stat.value, stat.format, stat.color)
+
+	# Add princess problems count at the bottom if any curses active
+	if curse_count > 0:
+		_add_stat_row("Princess Problems", "%d" % curse_count, "%d", COLOR_STAT_CURSED)
 
 func _add_no_stats_label() -> void:
 	var label = Label.new()
@@ -364,30 +363,6 @@ func _add_no_stats_label() -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_container.add_child(label)
 
-func _add_curse_header(count: int) -> void:
-	var row = HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
-
-	var icon = ColorRect.new()
-	icon.custom_minimum_size = Vector2(10, 10)
-	icon.color = COLOR_STAT_CURSED
-	row.add_child(icon)
-
-	var label = Label.new()
-	label.text = "CURSES: %d" % count
-	if pixel_font:
-		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", COLOR_STAT_CURSED)
-	row.add_child(label)
-
-	stats_container.add_child(row)
-
-func _add_separator() -> void:
-	var sep = HSeparator.new()
-	sep.add_theme_constant_override("separation", 4)
-	stats_container.add_child(sep)
-
 func _add_stat_row(stat_name: String, value: String, format: String, color: Color) -> void:
 	var row = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
@@ -397,7 +372,7 @@ func _add_stat_row(stat_name: String, value: String, format: String, color: Colo
 	name_label.text = stat_name
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 10)
+	name_label.add_theme_font_size_override("font_size", 12)
 	name_label.add_theme_color_override("font_color", color)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
@@ -407,7 +382,7 @@ func _add_stat_row(stat_name: String, value: String, format: String, color: Colo
 	value_label.text = value
 	if pixel_font:
 		value_label.add_theme_font_override("font", pixel_font)
-	value_label.add_theme_font_size_override("font_size", 10)
+	value_label.add_theme_font_size_override("font_size", 12)
 	value_label.add_theme_color_override("font_color", color)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(value_label)
