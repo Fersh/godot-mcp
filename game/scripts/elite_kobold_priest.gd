@@ -100,7 +100,7 @@ func _setup_elite() -> void:
 			"type": AttackType.SPECIAL,
 			"name": "mass_heal",
 			"range": mass_heal_range,
-			"cooldown": 12.0,
+			"cooldown": 16.0,
 			"priority": 6
 		},
 		{
