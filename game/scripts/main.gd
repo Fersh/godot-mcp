@@ -43,6 +43,11 @@ var challenge_controller_script = preload("res://scripts/challenge_mode_controll
 # Challenge mode background texture
 var challenge_bg_texture = preload("res://assets/enviro/diff_1.png")
 
+# Tile-based background system
+var tile_background = null
+var tile_background_script = preload("res://scripts/tile_background.gd")
+var use_tile_background: bool = true  # Toggle between tile-based and static background
+
 func _ready() -> void:
 	add_to_group("main")
 
@@ -75,6 +80,9 @@ func _ready() -> void:
 
 	# Setup kill streak UI (#1)
 	_setup_kill_streak_ui()
+
+	# Setup tile-based background (if enabled and not in challenge mode)
+	_setup_tile_background()
 
 	# Setup challenge mode if selected
 	_setup_challenge_mode()
@@ -436,6 +444,56 @@ func _setup_kill_streak_ui() -> void:
 		kill_streak_ui.set_script(ui_script)
 		kill_streak_ui.name = "KillStreakUI"
 		add_child(kill_streak_ui)
+
+# ============================================
+# TILE BACKGROUND SETUP
+# ============================================
+
+func _setup_tile_background() -> void:
+	"""Initialize tile-based background if enabled (skipped in challenge mode)."""
+	# Skip if disabled or in challenge mode (challenge mode has its own background)
+	if not use_tile_background:
+		return
+	if DifficultyManager and DifficultyManager.is_challenge_mode():
+		return
+
+	# Hide the original static background
+	var background = get_node_or_null("Background")
+	if background:
+		background.visible = false
+
+	# Create tile background
+	tile_background = Node2D.new()
+	tile_background.set_script(tile_background_script)
+	tile_background.name = "TileBackground"
+	add_child(tile_background)
+	move_child(tile_background, 0)  # Move to back of scene
+
+func toggle_tile_background(enabled: bool) -> void:
+	"""Toggle between tile-based and static background at runtime."""
+	use_tile_background = enabled
+
+	var background = get_node_or_null("Background")
+
+	if enabled:
+		# Hide static, show tiles
+		if background:
+			background.visible = false
+		if tile_background:
+			tile_background.set_visible_tiles(true)
+		elif tile_background_script:
+			_setup_tile_background()
+	else:
+		# Show static, hide tiles
+		if background:
+			background.visible = true
+		if tile_background:
+			tile_background.set_visible_tiles(false)
+
+func regenerate_tile_background(new_seed: int = 0) -> void:
+	"""Regenerate the tile background with a new random layout."""
+	if tile_background and tile_background.has_method("regenerate"):
+		tile_background.regenerate(new_seed)
 
 # ============================================
 # CHALLENGE MODE SETUP
