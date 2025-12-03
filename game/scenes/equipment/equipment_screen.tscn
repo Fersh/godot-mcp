@@ -118,7 +118,7 @@ columns = 3
 layout_mode = 2
 
 [node name="StatsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel"]
-custom_minimum_size = Vector2(180, 0)
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 10
 

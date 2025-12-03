@@ -23,7 +23,7 @@ var reward_modal: Control = null
 var pixel_font: Font = null
 var pixelify_font: Font = null
 
-const CONTAINER_WIDTH: float = 500.0
+const CONTAINER_WIDTH: float = 600.0
 const PROGRESS_BAR_WIDTH: float = 200.0
 
 # Tab colors
@@ -100,30 +100,38 @@ func _build_ui() -> void:
 	title_label.add_theme_constant_override("shadow_offset_y", 2)
 	header.add_child(title_label)
 
-	# Coin display in header (right side)
+	# Coin display in header (right side, styled like other pages)
 	var coin_container = HBoxContainer.new()
 	coin_container.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	coin_container.offset_left = -140
-	coin_container.offset_right = -20
+	coin_container.offset_left = -180
+	coin_container.offset_right = -60
 	coin_container.offset_top = 10
 	coin_container.offset_bottom = 40
-	coin_container.add_theme_constant_override("separation", 8)
+	coin_container.add_theme_constant_override("separation", 6)
 	header.add_child(coin_container)
 
 	var coin_icon = Label.new()
-	coin_icon.text = "$"
+	coin_icon.text = "●"
 	if pixel_font:
 		coin_icon.add_theme_font_override("font", pixel_font)
-	coin_icon.add_theme_font_size_override("font_size", 18)
-	coin_icon.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	coin_icon.add_theme_font_size_override("font_size", 22)
+	coin_icon.add_theme_color_override("font_color", Color(1, 0.84, 0))
+	coin_icon.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	coin_icon.add_theme_constant_override("shadow_offset_x", 2)
+	coin_icon.add_theme_constant_override("shadow_offset_y", 2)
+	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	coin_container.add_child(coin_icon)
 
 	coin_label = Label.new()
 	coin_label.text = "0"
 	if pixel_font:
 		coin_label.add_theme_font_override("font", pixel_font)
-	coin_label.add_theme_font_size_override("font_size", 16)
+	coin_label.add_theme_font_size_override("font_size", 18)
 	coin_label.add_theme_color_override("font_color", Color.WHITE)
+	coin_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	coin_label.add_theme_constant_override("shadow_offset_x", 2)
+	coin_label.add_theme_constant_override("shadow_offset_y", 2)
+	coin_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	coin_container.add_child(coin_label)
 	_update_coin_display()
 

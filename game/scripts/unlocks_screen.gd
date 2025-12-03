@@ -14,7 +14,7 @@ var pixel_font: Font = null
 var pixelify_font: Font = null
 
 const PROGRESS_BAR_WIDTH: float = 140.0
-const CONTAINER_WIDTH: float = 500.0
+const CONTAINER_WIDTH: float = 600.0
 
 func _ready() -> void:
 	# Load fonts

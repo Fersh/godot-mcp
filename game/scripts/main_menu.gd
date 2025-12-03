@@ -20,6 +20,7 @@ var version_label: Label = null
 var pixel_font: Font = null
 var settings_panel: Control = null
 var confirmation_dialog: Control = null
+var locked_message_label: Label = null
 
 # Notification badges
 var missions_badge: Control = null
@@ -56,6 +57,9 @@ func _ready() -> void:
 	# Check if princess button should be locked
 	_update_princess_button_state()
 
+	# Check if library button should be locked
+	_update_library_button_state()
+
 	# Update displays
 	_update_coin_display()
 	_update_curse_display()
@@ -78,10 +82,10 @@ func _update_princess_button_state() -> void:
 		return
 
 	var has_beaten_challenge = PrincessManager.has_beaten_any_challenge()
-	princesses_button.disabled = not has_beaten_challenge
+	# Keep button enabled so click shows message
 
 	if not has_beaten_challenge:
-		# Style as locked/disabled
+		# Style as locked
 		_style_locked_button_small(princesses_button)
 		princesses_button.text = "LOCKED"
 	else:
@@ -110,6 +114,62 @@ func _style_locked_button_small(button: Button) -> void:
 	button.add_theme_stylebox_override("focus", style_disabled)
 	button.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1))
 	button.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5, 1))
+
+func _update_library_button_state() -> void:
+	"""Lock/unlock library button based on having any achievement."""
+	var has_any_achievement = false
+
+	# Check if player has completed any mission/achievement
+	if MissionsManager:
+		has_any_achievement = MissionsManager.get_completed_count() > 0
+
+	# Also check if player has beaten any difficulty
+	if not has_any_achievement and DifficultyManager:
+		has_any_achievement = DifficultyManager.completed_difficulties.size() > 0
+
+	# Keep button enabled so click shows message
+
+	if not has_any_achievement:
+		# Style as locked
+		_style_locked_button_small(unlocks_button)
+		unlocks_button.text = "LOCKED"
+	else:
+		# Restore normal teal style
+		_style_teal_button_small(unlocks_button)
+		unlocks_button.text = "LIBRARY"
+
+func _show_locked_message(message: String) -> void:
+	"""Show a temporary message when clicking a locked button."""
+	# Remove existing message if any
+	if locked_message_label:
+		locked_message_label.queue_free()
+
+	locked_message_label = Label.new()
+	locked_message_label.text = message
+	locked_message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	locked_message_label.set_anchors_preset(Control.PRESET_CENTER)
+	locked_message_label.offset_left = -250
+	locked_message_label.offset_right = 250
+	locked_message_label.offset_top = 150
+	locked_message_label.offset_bottom = 200
+	if pixel_font:
+		locked_message_label.add_theme_font_override("font", pixel_font)
+	locked_message_label.add_theme_font_size_override("font_size", 16)
+	locked_message_label.add_theme_color_override("font_color", Color(1, 0.8, 0.3))
+	locked_message_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	locked_message_label.add_theme_constant_override("shadow_offset_x", 2)
+	locked_message_label.add_theme_constant_override("shadow_offset_y", 2)
+	add_child(locked_message_label)
+
+	# Fade out after 2 seconds
+	var tween = create_tween()
+	tween.tween_interval(1.5)
+	tween.tween_property(locked_message_label, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(func():
+		if locked_message_label:
+			locked_message_label.queue_free()
+			locked_message_label = null
+	)
 
 func _update_curse_display() -> void:
 	"""Show active curse count below play button (if any)."""
@@ -360,6 +420,12 @@ func _on_princesses_pressed() -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
+
+	# Check if locked
+	if not PrincessManager or not PrincessManager.has_beaten_any_challenge():
+		_show_locked_message("Beat Pitiful difficulty to unlock")
+		return
+
 	get_tree().change_scene_to_file("res://scenes/princesses.tscn")
 
 func _on_unlocks_pressed() -> void:
@@ -367,6 +433,18 @@ func _on_unlocks_pressed() -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
+
+	# Check if locked
+	var has_any_achievement = false
+	if MissionsManager:
+		has_any_achievement = MissionsManager.get_completed_count() > 0
+	if not has_any_achievement and DifficultyManager:
+		has_any_achievement = DifficultyManager.completed_difficulties.size() > 0
+
+	if not has_any_achievement:
+		_show_locked_message("Progress further to unlock")
+		return
+
 	get_tree().change_scene_to_file("res://scenes/unlocks.tscn")
 
 func _on_missions_pressed() -> void:

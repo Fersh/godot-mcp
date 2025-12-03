@@ -335,9 +335,9 @@ func _setup_top_coins_display() -> void:
 	coins_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	coins_container.anchor_left = 1.0
 	coins_container.anchor_right = 1.0
-	coins_container.offset_left = -130
+	coins_container.offset_left = -170
 	coins_container.offset_top = 30
-	coins_container.offset_right = -30
+	coins_container.offset_right = -70
 	coins_container.offset_bottom = 65
 	coins_container.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	coins_container.alignment = BoxContainer.ALIGNMENT_END
@@ -486,8 +486,8 @@ func _refresh_equipment_slots() -> void:
 func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
 	container.add_theme_constant_override("separation", 8)
-	# Set consistent width for all slots (matches width with equipped item)
-	container.custom_minimum_size = Vector2(90, 0)
+	# Set consistent width for all slots (matches width with equipped item) - widened by ~17px
+	container.custom_minimum_size = Vector2(107, 0)
 
 	# Slot label
 	var slot_label = Label.new()
