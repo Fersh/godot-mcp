@@ -46,7 +46,12 @@ var challenge_bg_texture = preload("res://assets/enviro/diff_1.png")
 # Tile-based background system
 var tile_background = null
 var tile_background_script = preload("res://scripts/tile_background.gd")
-var use_tile_background: bool = true  # Toggle between tile-based and static background
+var use_tile_background: bool = false  # Toggle between tile-based and static background
+
+# Painted arena system (hand-painted TileMap for challenge mode)
+var painted_arena = null
+var painted_arena_scene: PackedScene = null
+var use_painted_arena: bool = true  # Use painted arena for challenge mode instead of procedural
 
 func _ready() -> void:
 	add_to_group("main")
@@ -469,11 +474,17 @@ func _setup_tile_background() -> void:
 		top_wall.collision_layer = 0
 		top_wall.collision_mask = 0
 
+	# Check if we should use painted arena for challenge mode
+	var is_challenge = DifficultyManager and DifficultyManager.is_challenge_mode()
+	if is_challenge and use_painted_arena and ResourceLoader.exists("res://scenes/painted_arena.tscn"):
+		_setup_painted_arena()
+		return
+
 	# Set arena bounds IMMEDIATELY before any gameplay can happen
 	# This prevents dodge/dash bugs from using wrong bounds
 	_set_tile_arena_bounds()
 
-	# Create tile background
+	# Create procedural tile background
 	tile_background = Node2D.new()
 	tile_background.set_script(tile_background_script)
 	tile_background.name = "TileBackground"
@@ -482,6 +493,53 @@ func _setup_tile_background() -> void:
 
 	# Setup camera limits after tile background is created
 	call_deferred("_setup_tile_camera_bounds")
+
+func _setup_painted_arena() -> void:
+	"""Initialize hand-painted TileMap arena for challenge mode."""
+	painted_arena_scene = load("res://scenes/painted_arena.tscn")
+	if not painted_arena_scene:
+		# Fall back to procedural if painted arena not found
+		push_warning("Painted arena scene not found, falling back to procedural")
+		_set_tile_arena_bounds()
+		tile_background = Node2D.new()
+		tile_background.set_script(tile_background_script)
+		tile_background.name = "TileBackground"
+		add_child(tile_background)
+		move_child(tile_background, 0)
+		call_deferred("_setup_tile_camera_bounds")
+		return
+
+	# Instance the painted arena
+	painted_arena = painted_arena_scene.instantiate()
+	painted_arena.name = "PaintedArena"
+	add_child(painted_arena)
+	move_child(painted_arena, 0)  # Move to back of scene
+
+	# Set arena bounds from painted arena
+	call_deferred("_setup_painted_arena_bounds")
+
+func _setup_painted_arena_bounds() -> void:
+	"""Set up arena bounds from the painted arena."""
+	if not painted_arena or not player:
+		return
+
+	# Get bounds from painted arena
+	var bounds = painted_arena.get_arena_bounds() if painted_arena.has_method("get_arena_bounds") else Rect2()
+
+	if bounds.size == Vector2.ZERO:
+		# If no tiles painted yet, use default bounds
+		push_warning("Painted arena has no tiles - using default bounds")
+		bounds = Rect2(-768, 100, 3072, 2304)
+
+	# Set player arena bounds
+	if player.has_method("set_arena_bounds"):
+		var camera_bounds = Rect2(
+			bounds.position.x - 200,
+			bounds.position.y - 200,
+			bounds.size.x + 400,
+			bounds.size.y + 400
+		)
+		player.set_arena_bounds(bounds, camera_bounds)
 
 func _set_tile_arena_bounds() -> void:
 	"""Set arena bounds immediately for player movement clamping."""
