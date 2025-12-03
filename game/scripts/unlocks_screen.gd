@@ -357,17 +357,17 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	right_container.add_theme_constant_override("separation", 8)
 	hbox.add_child(right_container)
 
+	var progress = float(current) / float(total) if total > 0 else 0.0
+
 	var count_label = Label.new()
-	count_label.text = "%d/%d" % [current, total]
-	count_label.custom_minimum_size = Vector2(60, 0)
+	count_label.text = "%d%%" % int(progress * 100)
+	count_label.custom_minimum_size = Vector2(50, 0)
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if pixel_font:
 		count_label.add_theme_font_override("font", pixel_font)
 	count_label.add_theme_font_size_override("font_size", 11)
 	count_label.add_theme_color_override("font_color", color)
 	right_container.add_child(count_label)
-
-	var progress = float(current) / float(total) if total > 0 else 0.0
 	var bar = _create_xp_style_progress_bar(progress, color, PROGRESS_BAR_WIDTH)
 	right_container.add_child(bar)
 
@@ -397,9 +397,13 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	container.add_child(hbox)
 
 func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: float) -> Control:
-	"""Create a progress bar styled like the XP bar with rounded corners and borders."""
+	"""Create a progress bar styled like the XP bar with rounded corners, borders, and texture."""
+	var container = Control.new()
+	container.custom_minimum_size = Vector2(width, 20)
+
 	var bar = ProgressBar.new()
 	bar.custom_minimum_size = Vector2(width, 20)
+	bar.size = Vector2(width, 20)
 	bar.max_value = 1.0
 	bar.value = progress
 	bar.show_percentage = false
@@ -409,18 +413,35 @@ func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: fl
 	bg_style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
 	bg_style.border_color = fill_color.darkened(0.5)
 	bg_style.set_border_width_all(2)
-	bg_style.set_corner_radius_all(6)
+	bg_style.set_corner_radius_all(4)
 	bar.add_theme_stylebox_override("background", bg_style)
 
 	# Fill style (colored with border)
 	var fill_style = StyleBoxFlat.new()
 	fill_style.bg_color = fill_color
 	fill_style.border_color = fill_color.darkened(0.3)
-	fill_style.set_border_width_all(2)
-	fill_style.set_corner_radius_all(6)
+	fill_style.set_border_width_all(1)
+	fill_style.set_corner_radius_all(3)
 	bar.add_theme_stylebox_override("fill", fill_style)
 
-	return bar
+	container.add_child(bar)
+
+	# Add texture overlays (highlight and shadow)
+	var highlight = ColorRect.new()
+	highlight.color = Color(1.0, 1.0, 1.0, 0.2)
+	highlight.size = Vector2(width, 5)
+	highlight.position = Vector2(0, 2)
+	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.add_child(highlight)
+
+	var shadow = ColorRect.new()
+	shadow.color = Color(0.0, 0.0, 0.0, 0.25)
+	shadow.size = Vector2(width, 6)
+	shadow.position = Vector2(0, 14)
+	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.add_child(shadow)
+
+	return container
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()

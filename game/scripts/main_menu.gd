@@ -169,6 +169,9 @@ func _sweep_light_on_button(button: Button) -> void:
 			sweep.queue_free()
 		if current_sweep_rect == sweep:
 			current_sweep_rect = null
+		# Reset clip_contents to allow badges to show outside button bounds
+		if is_instance_valid(button):
+			button.clip_contents = false
 	)
 
 func _update_princess_button_state() -> void:

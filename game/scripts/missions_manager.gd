@@ -974,6 +974,15 @@ func get_unclaimed_count() -> int:
 			count += 1
 	return count
 
+func claim_all_unclaimed() -> int:
+	"""Claim all unclaimed rewards. Returns number of rewards claimed."""
+	var claimed_count = 0
+	for mission in all_missions.values():
+		if mission.is_completed and not mission.is_claimed:
+			if claim_reward(mission.id):
+				claimed_count += 1
+	return claimed_count
+
 # ============================================
 # DAILY MISSIONS
 # ============================================

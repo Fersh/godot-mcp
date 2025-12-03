@@ -160,6 +160,15 @@ func _build_ui() -> void:
 	tab_container.add_child(tab_daily)
 	tab_container.add_child(tab_challenges)
 
+	# Claim All button if there are unclaimed rewards
+	if MissionsManager and MissionsManager.get_unclaimed_count() > 0:
+		var claim_all_btn = Button.new()
+		claim_all_btn.text = "CLAIM ALL"
+		claim_all_btn.custom_minimum_size = Vector2(120, 45)
+		_style_green_button(claim_all_btn)
+		claim_all_btn.pressed.connect(_on_claim_all_pressed)
+		tab_container.add_child(claim_all_btn)
+
 	# Scrollable content area
 	scroll_container = ScrollContainer.new()
 	scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -778,6 +787,21 @@ func _on_claim_daily_pressed() -> void:
 				JuiceManager.shake_medium()
 			_update_coin_display()
 			_show_tab(0)  # Refresh daily tab
+
+func _on_claim_all_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.heavy()
+
+	if MissionsManager:
+		var claimed = MissionsManager.claim_all_unclaimed()
+		if claimed > 0:
+			if JuiceManager:
+				JuiceManager.shake_medium()
+			_update_coin_display()
+			# Rebuild UI to remove the Claim All button
+			get_tree().reload_current_scene()
 
 func _on_claim_mission_pressed(mission_id: String) -> void:
 	if SoundManager:
