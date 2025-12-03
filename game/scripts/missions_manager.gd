@@ -956,6 +956,9 @@ func has_unclaimed_rewards() -> bool:
 	"""Check if any missions have unclaimed rewards."""
 	for mission in all_missions.values():
 		if mission.is_completed and not mission.is_claimed:
+			# Exclude hidden social missions that can't be claimed in UI
+			if mission.id in ["rate_game", "youtube_sub"]:
+				continue
 			return true
 	return false
 
@@ -964,6 +967,10 @@ func get_unclaimed_count() -> int:
 	var count = 0
 	for mission in all_missions.values():
 		if mission.is_completed and not mission.is_claimed:
+			# Exclude hidden social missions that can't be claimed in UI
+			if mission.id in ["rate_game", "youtube_sub"]:
+				continue
+			print("[MissionsManager] Unclaimed mission: ", mission.id, " - ", mission.title)
 			count += 1
 	return count
 
@@ -974,7 +981,22 @@ func get_unclaimed_count() -> int:
 func _check_daily_refresh() -> void:
 	"""Check if daily missions need to be refreshed."""
 	var today = Time.get_date_string_from_system()
-	if daily_date != today:
+
+	# Refresh if date changed OR if active missions are invalid/empty
+	var needs_refresh = daily_date != today
+
+	# Also check if current active missions are valid
+	if not needs_refresh and active_daily_missions.size() > 0:
+		for id in active_daily_missions:
+			if not all_missions.has(id):
+				needs_refresh = true
+				break
+
+	# Also refresh if we have no active daily missions
+	if active_daily_missions.is_empty():
+		needs_refresh = true
+
+	if needs_refresh:
 		_refresh_daily_missions()
 
 func _refresh_daily_missions() -> void:

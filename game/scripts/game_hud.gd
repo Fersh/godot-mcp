@@ -4,7 +4,7 @@ extends CanvasLayer
 # Clicking pause button opens pause menu
 
 const PAUSE_BUTTON_SIZE := 32  # Simple pause button size (smaller)
-const PROGRESS_BAR_HEIGHT := 34  # XP bar height (increased by 4px)
+const PROGRESS_BAR_HEIGHT := 26  # XP bar height (reduced by 8px)
 const MARGIN := 48  # Distance from edge of screen
 const SPACING := 11
 

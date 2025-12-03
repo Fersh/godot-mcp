@@ -100,15 +100,12 @@ func _build_ui() -> void:
 	title_label.add_theme_constant_override("shadow_offset_y", 2)
 	header.add_child(title_label)
 
-	# Coin display in header (right side, styled like other pages)
+	# Coin display (top right of screen, not inside header)
+	var viewport_size = get_viewport().get_visible_rect().size
 	var coin_container = HBoxContainer.new()
-	coin_container.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	coin_container.offset_left = -180
-	coin_container.offset_right = -60
-	coin_container.offset_top = 10
-	coin_container.offset_bottom = 40
+	coin_container.position = Vector2(viewport_size.x - 140, 30)
 	coin_container.add_theme_constant_override("separation", 6)
-	header.add_child(coin_container)
+	add_child(coin_container)
 
 	var coin_icon = Label.new()
 	coin_icon.text = "●"
@@ -178,7 +175,7 @@ func _build_ui() -> void:
 func _create_tab_button(text: String, tab_index: int) -> Button:
 	var btn = Button.new()
 	btn.text = text
-	btn.custom_minimum_size = Vector2(110, 45)
+	btn.custom_minimum_size = Vector2(160, 45)  # Wider for more padding
 	btn.pressed.connect(func(): _show_tab(tab_index))
 
 	if pixel_font:
@@ -250,6 +247,25 @@ func _show_tab(tab_index: int) -> void:
 		SoundManager.play_click()
 
 func _show_daily_missions() -> void:
+	# Check for ANY claimable missions (daily or social) and show at top
+	if MissionsManager:
+		var claimable: Array = []
+		for mission in MissionsManager.get_active_daily_missions():
+			if mission.is_completed and not mission.is_claimed:
+				claimable.append(mission)
+		for mission in MissionsManager.get_all_social_missions():
+			if mission.is_completed and not mission.is_claimed:
+				claimable.append(mission)
+
+		if claimable.size() > 0:
+			var claim_header = _create_section_header("READY TO CLAIM (%d)" % claimable.size(), Color(0.3, 0.9, 0.4))
+			content_vbox.add_child(claim_header)
+			for mission in claimable:
+				_add_mission_card(mission)
+			var sep0 = Control.new()
+			sep0.custom_minimum_size = Vector2(0, 15)
+			content_vbox.add_child(sep0)
+
 	# Daily login section first
 	_add_daily_login_section()
 
@@ -264,9 +280,13 @@ func _show_daily_missions() -> void:
 
 	# Show active daily missions
 	if MissionsManager:
+		# Force refresh daily missions if none are active
+		if MissionsManager.active_daily_missions.is_empty():
+			MissionsManager._check_daily_refresh()
+
 		var daily = MissionsManager.get_active_daily_missions()
 		if daily.is_empty():
-			_add_empty_message("No daily missions available")
+			_add_empty_message("No daily missions - try restarting the game")
 		else:
 			for mission in daily:
 				_add_mission_card(mission)
@@ -400,6 +420,24 @@ func _show_challenge_missions() -> void:
 	var progress_label = _create_section_header("PROGRESS: %d/%d" % [completed, total], TAB_COLORS[1])
 	content_vbox.add_child(progress_label)
 
+	# READY TO CLAIM section - show claimable missions at the top
+	var claimable_missions: Array = []
+	for mission in MissionsManager.get_all_permanent_missions():
+		if mission.is_completed and not mission.is_claimed:
+			claimable_missions.append(mission)
+
+	if claimable_missions.size() > 0:
+		var claim_header = _create_section_header("READY TO CLAIM (%d)" % claimable_missions.size(), Color(0.3, 0.9, 0.4))
+		content_vbox.add_child(claim_header)
+
+		for mission in claimable_missions:
+			_add_mission_card(mission)
+
+		# Separator
+		var sep = Control.new()
+		sep.custom_minimum_size = Vector2(0, 20)
+		content_vbox.add_child(sep)
+
 	# Get all permanent missions grouped by type
 	var missions_by_type: Dictionary = {}
 	for mission in MissionsManager.get_all_permanent_missions():
@@ -424,10 +462,11 @@ func _add_social_section() -> void:
 	if not MissionsManager:
 		return
 
-	# Get visible social missions (filter out hidden ones)
+	# Get visible social missions (filter out hidden ones, unless they're completed)
 	var social_missions = []
 	for mission in MissionsManager.get_all_social_missions():
-		if mission.id not in HIDDEN_SOCIAL_MISSIONS:
+		# Show if not hidden, or if completed (so it can be claimed)
+		if mission.id not in HIDDEN_SOCIAL_MISSIONS or mission.is_completed:
 			social_missions.append(mission)
 
 	if social_missions.is_empty():
@@ -660,7 +699,7 @@ func _create_subsection_header(text: String) -> Label:
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.65))
+	label.add_theme_color_override("font_color", Color.WHITE)
 	return label
 
 func _add_empty_message(text: String) -> void:
