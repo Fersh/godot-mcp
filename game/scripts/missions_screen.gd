@@ -727,6 +727,8 @@ func _on_claim_daily_pressed() -> void:
 	if DailyLoginManager:
 		var reward = DailyLoginManager.claim_daily_reward()
 		if reward.size() > 0:
+			if JuiceManager:
+				JuiceManager.shake_medium()
 			_update_coin_display()
 			_show_tab(0)  # Refresh daily tab
 
@@ -739,6 +741,8 @@ func _on_claim_mission_pressed(mission_id: String) -> void:
 	if MissionsManager:
 		var mission = MissionsManager.get_mission(mission_id)
 		if mission and MissionsManager.claim_reward(mission_id):
+			if JuiceManager:
+				JuiceManager.shake_medium()
 			_update_coin_display()
 			_show_reward_celebration(mission)
 			_show_tab(current_tab)  # Refresh current tab

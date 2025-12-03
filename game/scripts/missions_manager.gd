@@ -34,6 +34,22 @@ var run_character: String = ""
 var run_difficulty: int = 0
 var run_game_mode: int = 0
 
+# Killstreak tracking
+var current_killstreak: int = 0
+var best_killstreak: int = 0
+var last_kill_time: float = 0.0
+const KILLSTREAK_TIMEOUT: float = 2.0  # Seconds between kills to maintain streak
+
+# Damage tracking for no-hit achievements
+var run_damage_taken: int = 0
+var run_final_hp: int = 0
+var run_max_hp: int = 0
+
+# Ability tracking
+var run_abilities_collected: int = 0
+var run_legendary_abilities: int = 0
+var run_ability_declines: int = 0
+
 func _ready() -> void:
 	_initialize_all_missions()
 	load_progress()
@@ -122,57 +138,15 @@ func _initialize_all_missions() -> void:
 	_add_mission(MissionData.create_character_mission("win_barbarian", "Barbarian King", "Win Challenge Mode with Barbarian", "barbarian", 60, true))
 	_add_mission(MissionData.create_character_mission("win_assassin", "Master Assassin", "Win Challenge Mode with Assassin", "assassin", 50, true))
 
-	# Survival missions (Endless) - reduced rewards
+	# Survival missions (Endless) - Time-based only
 	_add_mission(MissionData.create_survival_mission("survive_5min", "Survivor", "Survive 5 minutes in Endless Mode", 300, 30, 0))
 	_add_mission(MissionData.create_survival_mission("survive_10min", "Endurance", "Survive 10 minutes in Endless Mode", 600, 60, 0))
 	_add_mission(MissionData.create_survival_mission("survive_15min", "Marathon", "Survive 15 minutes in Endless Mode", 900, 100, 0))
 	_add_mission(MissionData.create_survival_mission("survive_20min", "Iron Will", "Survive 20 minutes in Endless Mode", 1200, 150, 0))
+	_add_mission(MissionData.create_survival_mission("survive_25min", "Relentless", "Survive 25 minutes in Endless Mode", 1500, 200, 0))
 	_add_mission(MissionData.create_survival_mission("survive_30min", "Immortal", "Survive 30 minutes in Endless Mode", 1800, 300, 0))
-
-	# Wave missions (Endless) - reduced rewards
-	var wave_mission_5 = MissionData.new("wave_5")
-	wave_mission_5.title = "Wave 5"
-	wave_mission_5.description = "Reach Wave 5 in Endless Mode"
-	wave_mission_5.type = MissionData.MissionType.SURVIVAL
-	wave_mission_5.category = MissionData.MissionCategory.PERMANENT
-	wave_mission_5.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
-	wave_mission_5.game_mode = 0
-	wave_mission_5.target_value = 5
-	wave_mission_5.reward_coins = 20
-	_add_mission(wave_mission_5)
-
-	var wave_mission_10 = MissionData.new("wave_10")
-	wave_mission_10.title = "Wave 10"
-	wave_mission_10.description = "Reach Wave 10 in Endless Mode"
-	wave_mission_10.type = MissionData.MissionType.SURVIVAL
-	wave_mission_10.category = MissionData.MissionCategory.PERMANENT
-	wave_mission_10.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
-	wave_mission_10.game_mode = 0
-	wave_mission_10.target_value = 10
-	wave_mission_10.reward_coins = 40
-	_add_mission(wave_mission_10)
-
-	var wave_mission_15 = MissionData.new("wave_15")
-	wave_mission_15.title = "Wave 15"
-	wave_mission_15.description = "Reach Wave 15 in Endless Mode"
-	wave_mission_15.type = MissionData.MissionType.SURVIVAL
-	wave_mission_15.category = MissionData.MissionCategory.PERMANENT
-	wave_mission_15.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
-	wave_mission_15.game_mode = 0
-	wave_mission_15.target_value = 15
-	wave_mission_15.reward_coins = 70
-	_add_mission(wave_mission_15)
-
-	var wave_mission_20 = MissionData.new("wave_20")
-	wave_mission_20.title = "Wave 20"
-	wave_mission_20.description = "Reach Wave 20 in Endless Mode"
-	wave_mission_20.type = MissionData.MissionType.SURVIVAL
-	wave_mission_20.category = MissionData.MissionCategory.PERMANENT
-	wave_mission_20.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
-	wave_mission_20.game_mode = 0
-	wave_mission_20.target_value = 20
-	wave_mission_20.reward_coins = 120
-	_add_mission(wave_mission_20)
+	_add_mission(MissionData.create_survival_mission("survive_45min", "Eternal", "Survive 45 minutes in Endless Mode", 2700, 500, 0))
+	_add_mission(MissionData.create_survival_mission("survive_60min", "Godlike", "Survive 60 minutes in Endless Mode", 3600, 1000, 0))
 
 	# Economy missions - reduced rewards
 	var econ_100 = MissionData.new("earn_100")
@@ -279,6 +253,237 @@ func _initialize_all_missions() -> void:
 	var secret_speedster = MissionData.create_secret_mission("secret_speedster", "Speedster", "Kill 10 enemies in 5 seconds", MissionData.MissionType.SECRET, 1, 50)
 	_add_mission(secret_speedster)
 
+	# ============================================
+	# KILLSTREAK ACHIEVEMENTS
+	# ============================================
+	var streak_50 = MissionData.new("killstreak_50")
+	streak_50.title = "Combo Starter"
+	streak_50.description = "Get a 50 kill streak in a single run"
+	streak_50.type = MissionData.MissionType.MISC
+	streak_50.category = MissionData.MissionCategory.PERMANENT
+	streak_50.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	streak_50.target_value = 50
+	streak_50.reward_coins = 50
+	_add_mission(streak_50)
+
+	var streak_250 = MissionData.new("killstreak_250")
+	streak_250.title = "Combo Master"
+	streak_250.description = "Get a 250 kill streak in a single run"
+	streak_250.type = MissionData.MissionType.MISC
+	streak_250.category = MissionData.MissionCategory.PERMANENT
+	streak_250.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	streak_250.target_value = 250
+	streak_250.reward_coins = 150
+	_add_mission(streak_250)
+
+	var streak_500 = MissionData.new("killstreak_500")
+	streak_500.title = "Combo God"
+	streak_500.description = "Get a 500 kill streak in a single run"
+	streak_500.type = MissionData.MissionType.MISC
+	streak_500.category = MissionData.MissionCategory.PERMANENT
+	streak_500.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	streak_500.target_value = 500
+	streak_500.reward_coins = 300
+	_add_mission(streak_500)
+
+	var streak_1000 = MissionData.new("killstreak_1000")
+	streak_1000.title = "Unstoppable Force"
+	streak_1000.description = "Get a 1,000 kill streak in a single run"
+	streak_1000.type = MissionData.MissionType.MISC
+	streak_1000.category = MissionData.MissionCategory.PERMANENT
+	streak_1000.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	streak_1000.target_value = 1000
+	streak_1000.reward_coins = 500
+	_add_mission(streak_1000)
+
+	# ============================================
+	# COINS IN SINGLE RUN ACHIEVEMENTS
+	# ============================================
+	var run_coins_500 = MissionData.new("run_coins_500")
+	run_coins_500.title = "Coin Collector"
+	run_coins_500.description = "Earn 500 coins in a single run"
+	run_coins_500.type = MissionData.MissionType.ECONOMY
+	run_coins_500.category = MissionData.MissionCategory.PERMANENT
+	run_coins_500.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	run_coins_500.target_value = 500
+	run_coins_500.reward_coins = 100
+	_add_mission(run_coins_500)
+
+	var run_coins_1000 = MissionData.new("run_coins_1000")
+	run_coins_1000.title = "Treasure Hunter"
+	run_coins_1000.description = "Earn 1,000 coins in a single run"
+	run_coins_1000.type = MissionData.MissionType.ECONOMY
+	run_coins_1000.category = MissionData.MissionCategory.PERMANENT
+	run_coins_1000.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	run_coins_1000.target_value = 1000
+	run_coins_1000.reward_coins = 200
+	_add_mission(run_coins_1000)
+
+	var run_coins_2500 = MissionData.new("run_coins_2500")
+	run_coins_2500.title = "Gold Rush"
+	run_coins_2500.description = "Earn 2,500 coins in a single run"
+	run_coins_2500.type = MissionData.MissionType.ECONOMY
+	run_coins_2500.category = MissionData.MissionCategory.PERMANENT
+	run_coins_2500.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	run_coins_2500.target_value = 2500
+	run_coins_2500.reward_coins = 400
+	_add_mission(run_coins_2500)
+
+	var run_coins_5000 = MissionData.new("run_coins_5000")
+	run_coins_5000.title = "Dragon's Hoard"
+	run_coins_5000.description = "Earn 5,000 coins in a single run"
+	run_coins_5000.type = MissionData.MissionType.ECONOMY
+	run_coins_5000.category = MissionData.MissionCategory.PERMANENT
+	run_coins_5000.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	run_coins_5000.target_value = 5000
+	run_coins_5000.reward_coins = 750
+	_add_mission(run_coins_5000)
+
+	# ============================================
+	# DIFFICULT ASPIRATIONAL ACHIEVEMENTS
+	# ============================================
+
+	# No damage achievements
+	var no_damage_5min = MissionData.new("no_damage_5min")
+	no_damage_5min.title = "Untouchable"
+	no_damage_5min.description = "Survive 5 minutes without taking damage"
+	no_damage_5min.type = MissionData.MissionType.MISC
+	no_damage_5min.category = MissionData.MissionCategory.PERMANENT
+	no_damage_5min.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	no_damage_5min.target_value = 1
+	no_damage_5min.reward_coins = 500
+	_add_mission(no_damage_5min)
+
+	var no_damage_win = MissionData.new("no_damage_win")
+	no_damage_win.title = "Flawless Victory"
+	no_damage_win.description = "Win Challenge Mode without taking any damage"
+	no_damage_win.type = MissionData.MissionType.MISC
+	no_damage_win.category = MissionData.MissionCategory.PERMANENT
+	no_damage_win.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
+	no_damage_win.target_value = 1
+	no_damage_win.reward_coins = 2000
+	_add_mission(no_damage_win)
+
+	# Multi-kill achievements
+	var multi_kill_10 = MissionData.new("multi_kill_10")
+	multi_kill_10.title = "Multi-Kill"
+	multi_kill_10.description = "Kill 10 enemies within 2 seconds"
+	multi_kill_10.type = MissionData.MissionType.MISC
+	multi_kill_10.category = MissionData.MissionCategory.PERMANENT
+	multi_kill_10.tracking_mode = MissionData.TrackingMode.INSTANT
+	multi_kill_10.target_value = 1
+	multi_kill_10.reward_coins = 75
+	_add_mission(multi_kill_10)
+
+	var multi_kill_25 = MissionData.new("multi_kill_25")
+	multi_kill_25.title = "Mega Kill"
+	multi_kill_25.description = "Kill 25 enemies within 3 seconds"
+	multi_kill_25.type = MissionData.MissionType.MISC
+	multi_kill_25.category = MissionData.MissionCategory.PERMANENT
+	multi_kill_25.tracking_mode = MissionData.TrackingMode.INSTANT
+	multi_kill_25.target_value = 1
+	multi_kill_25.reward_coins = 200
+	_add_mission(multi_kill_25)
+
+	var screen_wipe = MissionData.new("screen_wipe")
+	screen_wipe.title = "Screen Wipe"
+	screen_wipe.description = "Kill 50 enemies within 5 seconds"
+	screen_wipe.type = MissionData.MissionType.MISC
+	screen_wipe.category = MissionData.MissionCategory.PERMANENT
+	screen_wipe.tracking_mode = MissionData.TrackingMode.INSTANT
+	screen_wipe.target_value = 1
+	screen_wipe.reward_coins = 500
+	_add_mission(screen_wipe)
+
+	# Character mastery - Win with all characters
+	var all_chars_win = MissionData.new("all_chars_win")
+	all_chars_win.title = "Renaissance Hero"
+	all_chars_win.description = "Win Challenge Mode with every character"
+	all_chars_win.type = MissionData.MissionType.CHARACTER
+	all_chars_win.category = MissionData.MissionCategory.PERMANENT
+	all_chars_win.tracking_mode = MissionData.TrackingMode.CUMULATIVE
+	all_chars_win.target_value = 7  # All 7 characters
+	all_chars_win.reward_coins = 1000
+	_add_mission(all_chars_win)
+
+	# Beat all difficulties with all characters
+	var all_chars_hell = MissionData.new("all_chars_hell")
+	all_chars_hell.title = "Hell Conqueror"
+	all_chars_hell.description = "Beat Hell difficulty with every character"
+	all_chars_hell.type = MissionData.MissionType.CHARACTER
+	all_chars_hell.category = MissionData.MissionCategory.PERMANENT
+	all_chars_hell.tracking_mode = MissionData.TrackingMode.CUMULATIVE
+	all_chars_hell.target_value = 7
+	all_chars_hell.reward_coins = 2500
+	_add_mission(all_chars_hell)
+
+	var all_chars_inferno = MissionData.new("all_chars_inferno")
+	all_chars_inferno.title = "Inferno Legend"
+	all_chars_inferno.description = "Beat Inferno difficulty with every character"
+	all_chars_inferno.type = MissionData.MissionType.CHARACTER
+	all_chars_inferno.category = MissionData.MissionCategory.PERMANENT
+	all_chars_inferno.tracking_mode = MissionData.TrackingMode.CUMULATIVE
+	all_chars_inferno.target_value = 7
+	all_chars_inferno.reward_coins = 5000
+	_add_mission(all_chars_inferno)
+
+	# Ultimate kill milestones
+	_add_mission(MissionData.create_kill_mission("kill_250000", "Extinction Event", "Kill 250,000 enemies", 250000, 2000))
+	_add_mission(MissionData.create_kill_mission("kill_500000", "Harbinger of Doom", "Kill 500,000 enemies", 500000, 5000))
+	_add_mission(MissionData.create_kill_mission("kill_1000000", "Million Kill Club", "Kill 1,000,000 enemies", 1000000, 10000))
+
+	# Ultimate single-run achievements
+	_add_mission(MissionData.create_kill_mission("run_kill_2000", "Legendary Warrior", "Kill 2,000 enemies in a single run", 2000, 400, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_3000", "Mythic Slayer", "Kill 3,000 enemies in a single run", 3000, 750, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_5000", "God of War", "Kill 5,000 enemies in a single run", 5000, 1500, MissionData.TrackingMode.SINGLE_RUN))
+
+	# Elite mastery
+	_add_mission(MissionData.create_elite_mission("elite_250", "Elite Annihilator", "Kill 250 elite enemies", 250, 300))
+	_add_mission(MissionData.create_elite_mission("elite_500", "Elite Destroyer", "Kill 500 elite enemies", 500, 600))
+	_add_mission(MissionData.create_elite_mission("elite_1000", "Elite Obliterator", "Kill 1,000 elite enemies", 1000, 1500))
+
+	# Boss mastery
+	_add_mission(MissionData.create_boss_mission("boss_250", "Boss Nightmare", "Defeat 250 bosses", 250, 1000))
+	_add_mission(MissionData.create_boss_mission("boss_500", "Boss Annihilator", "Defeat 500 bosses", 500, 2500))
+
+	# Secret difficult achievements
+	var secret_one_hp = MissionData.create_secret_mission("secret_one_hp_50", "Death's Door", "Kill 50 enemies while at 1 HP", MissionData.MissionType.SECRET, 1, 300)
+	_add_mission(secret_one_hp)
+
+	var secret_pacifist = MissionData.create_secret_mission("secret_pacifist", "Pacifist", "Survive 1 minute without killing anything", MissionData.MissionType.SECRET, 1, 200)
+	_add_mission(secret_pacifist)
+
+	var secret_no_abilities = MissionData.create_secret_mission("secret_no_abilities", "Ascetic", "Win without picking any abilities", MissionData.MissionType.SECRET, 1, 1000)
+	_add_mission(secret_no_abilities)
+
+	# ============================================
+	# DAILY MISSIONS POOL
+	# ============================================
+
+	# Easy tier (100 coins)
+	_add_mission(MissionData.create_daily_mission("daily_kill_50", "Daily Slayer", "Kill 50 enemies today", MissionData.MissionType.KILL, 50, 100))
+	_add_mission(MissionData.create_daily_mission("daily_kill_100", "Centurion", "Kill 100 enemies today", MissionData.MissionType.KILL, 100, 100))
+	_add_mission(MissionData.create_daily_mission("daily_play_1", "Show Up", "Complete 1 run today", MissionData.MissionType.MISC, 1, 100))
+	_add_mission(MissionData.create_daily_mission("daily_coins_100", "Coin Grabber", "Earn 100 coins in runs today", MissionData.MissionType.ECONOMY, 100, 100))
+	_add_mission(MissionData.create_daily_mission("daily_elite_1", "Elite Encounter", "Kill 1 elite enemy today", MissionData.MissionType.ELITE_KILL, 1, 100))
+
+	# Medium tier (200 coins)
+	_add_mission(MissionData.create_daily_mission("daily_kill_250", "Slaughter", "Kill 250 enemies today", MissionData.MissionType.KILL, 250, 200))
+	_add_mission(MissionData.create_daily_mission("daily_play_3", "Dedicated", "Complete 3 runs today", MissionData.MissionType.MISC, 3, 200))
+	_add_mission(MissionData.create_daily_mission("daily_elite_3", "Elite Hunter", "Kill 3 elite enemies today", MissionData.MissionType.ELITE_KILL, 3, 200))
+	_add_mission(MissionData.create_daily_mission("daily_boss_1", "Boss Slayer", "Defeat a boss today", MissionData.MissionType.BOSS_KILL, 1, 200))
+	_add_mission(MissionData.create_daily_mission("daily_survive_5", "Daily Survivor", "Survive 5 minutes in Endless", MissionData.MissionType.SURVIVAL, 300, 200))
+	_add_mission(MissionData.create_daily_mission("daily_coins_300", "Gold Digger", "Earn 300 coins in runs today", MissionData.MissionType.ECONOMY, 300, 200))
+
+	# Hard tier (500 coins)
+	_add_mission(MissionData.create_daily_mission("daily_kill_500", "Massacre", "Kill 500 enemies today", MissionData.MissionType.KILL, 500, 500))
+	_add_mission(MissionData.create_daily_mission("daily_play_5", "Grinder", "Complete 5 runs today", MissionData.MissionType.MISC, 5, 500))
+	_add_mission(MissionData.create_daily_mission("daily_elite_5", "Elite Purge", "Kill 5 elite enemies today", MissionData.MissionType.ELITE_KILL, 5, 500))
+	_add_mission(MissionData.create_daily_mission("daily_boss_3", "Boss Hunter", "Defeat 3 bosses today", MissionData.MissionType.BOSS_KILL, 3, 500))
+	_add_mission(MissionData.create_daily_mission("daily_survive_10", "Daily Endurance", "Survive 10 minutes in Endless", MissionData.MissionType.SURVIVAL, 600, 500))
+	_add_mission(MissionData.create_daily_mission("daily_challenge_win", "Daily Champion", "Win a Challenge Mode run today", MissionData.MissionType.DIFFICULTY, 1, 500))
+	_add_mission(MissionData.create_daily_mission("daily_coins_500", "Daily Fortune", "Earn 500 coins in runs today", MissionData.MissionType.ECONOMY, 500, 500))
+
 	# Categorize missions
 	for mission in all_missions.values():
 		match mission.category:
@@ -296,9 +501,31 @@ func _add_mission(mission: MissionData) -> void:
 # PROGRESS TRACKING - Called from game events
 # ============================================
 
+# Multi-kill tracking (time-windowed)
+var recent_kills: Array = []  # Array of kill timestamps
+
 func track_kill(enemy_type: String = "") -> void:
 	"""Called when any enemy is killed."""
 	run_kills += 1
+	var current_time = Time.get_ticks_msec() / 1000.0
+
+	# Track killstreak
+	if current_time - last_kill_time <= KILLSTREAK_TIMEOUT or current_killstreak == 0:
+		current_killstreak += 1
+	else:
+		current_killstreak = 1
+
+	last_kill_time = current_time
+	best_killstreak = maxi(best_killstreak, current_killstreak)
+
+	# Track multi-kills (time-windowed)
+	recent_kills.append(current_time)
+	# Remove kills older than 5 seconds
+	while recent_kills.size() > 0 and current_time - recent_kills[0] > 5.0:
+		recent_kills.pop_front()
+
+	# Check multi-kill achievements
+	_check_multi_kill_achievements(current_time)
 
 	# Track specific enemy type
 	if enemy_type != "":
@@ -329,6 +556,62 @@ func track_kill(enemy_type: String = "") -> void:
 					mission_completed.emit(mission)
 					save_progress()
 
+	# Update daily kill missions
+	_update_daily_progress(MissionData.MissionType.KILL, 1)
+
+func _check_multi_kill_achievements(current_time: float) -> void:
+	"""Check for multi-kill achievements based on recent kills."""
+	# Count kills in last 2 seconds
+	var kills_2s = 0
+	for kill_time in recent_kills:
+		if current_time - kill_time <= 2.0:
+			kills_2s += 1
+
+	# Count kills in last 3 seconds
+	var kills_3s = 0
+	for kill_time in recent_kills:
+		if current_time - kill_time <= 3.0:
+			kills_3s += 1
+
+	# Count kills in last 5 seconds (full window)
+	var kills_5s = recent_kills.size()
+
+	# Multi-Kill (10 in 2s)
+	if kills_2s >= 10:
+		var mission = all_missions.get("multi_kill_10")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+				save_progress()
+
+	# Mega Kill (25 in 3s)
+	if kills_3s >= 25:
+		var mission = all_missions.get("multi_kill_25")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+				save_progress()
+
+	# Screen Wipe (50 in 5s)
+	if kills_5s >= 50:
+		var mission = all_missions.get("screen_wipe")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+				save_progress()
+
+	# Secret Speedster (10 in 5s) - original
+	if kills_5s >= 10:
+		var mission = all_missions.get("secret_speedster")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+				save_progress()
+
 func track_elite_kill() -> void:
 	"""Called when an elite enemy is killed."""
 	run_elite_kills += 1
@@ -341,6 +624,9 @@ func track_elite_kill() -> void:
 		if completed:
 			mission_completed.emit(mission)
 			save_progress()
+
+	# Update daily elite missions
+	_update_daily_progress(MissionData.MissionType.ELITE_KILL, 1)
 
 func track_boss_kill() -> void:
 	"""Called when a boss is killed."""
@@ -355,6 +641,9 @@ func track_boss_kill() -> void:
 			mission_completed.emit(mission)
 			save_progress()
 
+	# Update daily boss missions
+	_update_daily_progress(MissionData.MissionType.BOSS_KILL, 1)
+
 func track_coins_earned(amount: int) -> void:
 	"""Called when coins are earned."""
 	run_coins_earned += amount
@@ -363,6 +652,36 @@ func track_coins_earned(amount: int) -> void:
 		if mission.is_completed or mission.type != MissionData.MissionType.ECONOMY:
 			continue
 		if mission.tracking_mode == MissionData.TrackingMode.CUMULATIVE:
+			var completed = mission.add_progress(amount)
+			mission_progress_updated.emit(mission)
+			if completed:
+				mission_completed.emit(mission)
+				save_progress()
+
+	# Update daily economy missions
+	_update_daily_progress(MissionData.MissionType.ECONOMY, amount)
+
+func track_damage_taken(amount: int, current_hp: int, max_hp: int) -> void:
+	"""Called when player takes damage."""
+	run_damage_taken += amount
+	run_final_hp = current_hp
+	run_max_hp = max_hp
+
+func track_ability_collected(is_legendary: bool = false) -> void:
+	"""Called when an ability is picked up."""
+	run_abilities_collected += 1
+	if is_legendary:
+		run_legendary_abilities += 1
+
+func track_ability_declined() -> void:
+	"""Called when player skips/declines an ability choice."""
+	run_ability_declines += 1
+
+func _update_daily_progress(mission_type: MissionData.MissionType, amount: int) -> void:
+	"""Update progress for active daily missions of the given type."""
+	for mission_id in active_daily_missions:
+		var mission = all_missions.get(mission_id)
+		if mission and not mission.is_completed and mission.type == mission_type:
 			var completed = mission.add_progress(amount)
 			mission_progress_updated.emit(mission)
 			if completed:
@@ -437,6 +756,22 @@ func start_run(char_id: String, difficulty: int, game_mode: int) -> void:
 	run_difficulty = difficulty
 	run_game_mode = game_mode
 
+	# Reset killstreak tracking
+	current_killstreak = 0
+	best_killstreak = 0
+	last_kill_time = 0.0
+	recent_kills.clear()
+
+	# Reset damage tracking
+	run_damage_taken = 0
+	run_final_hp = 0
+	run_max_hp = 0
+
+	# Reset ability tracking
+	run_abilities_collected = 0
+	run_legendary_abilities = 0
+	run_ability_declines = 0
+
 	# Reset single-run mission progress
 	for mission in all_missions.values():
 		if mission.tracking_mode == MissionData.TrackingMode.SINGLE_RUN and not mission.is_completed:
@@ -469,12 +804,8 @@ func end_run(victory: bool) -> void:
 				# Check if correct game mode
 				if mission.game_mode >= 0 and mission.game_mode != run_game_mode:
 					continue
-				# For time-based, target is in seconds
-				if mission.id.begins_with("survive_"):
-					mission.current_progress = int(run_time)
-				# For wave-based
-				elif mission.id.begins_with("wave_"):
-					mission.current_progress = run_wave
+				# All survival missions are time-based now
+				mission.current_progress = int(run_time)
 				if mission.check_completion():
 					mission_completed.emit(mission)
 			MissionData.MissionType.SPECIFIC_ENEMY:
@@ -482,6 +813,38 @@ func end_run(victory: bool) -> void:
 				mission.current_progress = maxi(mission.current_progress, count)
 				if mission.check_completion():
 					mission_completed.emit(mission)
+			MissionData.MissionType.ECONOMY:
+				# Single-run coins achievements
+				if mission.id.begins_with("run_coins_"):
+					mission.current_progress = run_coins_earned
+					if mission.check_completion():
+						mission_completed.emit(mission)
+
+	# Check killstreak achievements
+	_check_killstreak_achievements()
+
+	# Check no-damage achievements
+	_check_no_damage_achievements(victory)
+
+	# Check secret achievements
+	_check_secret_achievements(victory)
+
+	# Update daily run count missions
+	_update_daily_progress(MissionData.MissionType.MISC, 1)
+
+	# Update daily survival missions (check if survived long enough)
+	for mission_id in active_daily_missions:
+		var mission = all_missions.get(mission_id)
+		if mission and not mission.is_completed and mission.type == MissionData.MissionType.SURVIVAL:
+			if int(run_time) >= mission.target_value:
+				mission.current_progress = mission.target_value
+				if mission.check_completion():
+					mission_completed.emit(mission)
+					save_progress()
+
+	# Update daily challenge win mission
+	if victory and run_game_mode == 1:  # Challenge mode
+		_update_daily_progress(MissionData.MissionType.DIFFICULTY, 1)
 
 	# Track character completion
 	track_character_run(run_character, victory)
@@ -494,6 +857,63 @@ func end_run(victory: bool) -> void:
 	track_run_completed()
 
 	save_progress()
+
+func _check_killstreak_achievements() -> void:
+	"""Check killstreak achievements at end of run."""
+	for mission in all_missions.values():
+		if mission.is_completed:
+			continue
+		if not mission.id.begins_with("killstreak_"):
+			continue
+		mission.current_progress = best_killstreak
+		if mission.check_completion():
+			mission_completed.emit(mission)
+
+func _check_no_damage_achievements(victory: bool) -> void:
+	"""Check no-damage achievements."""
+	# Untouchable - 5 min without damage (checked during run via run_time and damage tracking)
+	if run_damage_taken == 0 and run_time >= 300:  # 5 minutes
+		var mission = all_missions.get("no_damage_5min")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+
+	# Flawless Victory - Win challenge mode without taking damage
+	if victory and run_game_mode == 1 and run_damage_taken == 0:
+		var mission = all_missions.get("no_damage_win")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+
+func _check_secret_achievements(victory: bool) -> void:
+	"""Check secret achievements at end of run."""
+	# Close Call - Win with 1 HP
+	if victory and run_final_hp == 1:
+		var mission = all_missions.get("secret_close_call")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+
+	# Ascetic - Win without picking abilities
+	if victory and run_abilities_collected == 0:
+		var mission = all_missions.get("secret_no_abilities")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
+
+	# Pacifist - Survive 1 minute without killing (checked if run_time >= 60 and run_kills == 0 at that point)
+	# Note: This would need to be tracked during the run, setting a flag when 60s passes with 0 kills
+	# For now, check if entire run was pacifist and lasted at least 60s
+	if run_kills == 0 and run_time >= 60:
+		var mission = all_missions.get("secret_pacifist")
+		if mission and not mission.is_completed:
+			mission.current_progress = 1
+			if mission.check_completion():
+				mission_completed.emit(mission)
 
 # ============================================
 # REWARD CLAIMING
@@ -558,7 +978,7 @@ func _check_daily_refresh() -> void:
 		_refresh_daily_missions()
 
 func _refresh_daily_missions() -> void:
-	"""Generate new daily missions for today."""
+	"""Generate new daily missions for today - one from each tier."""
 	daily_date = Time.get_date_string_from_system()
 	active_daily_missions.clear()
 
@@ -566,12 +986,32 @@ func _refresh_daily_missions() -> void:
 	for mission in daily_missions:
 		mission.reset_progress()
 
-	# Select 3 random daily missions
-	var available = daily_missions.duplicate()
-	available.shuffle()
+	# Organize missions by tier based on reward coins
+	var easy_tier: Array = []    # 100 coins
+	var medium_tier: Array = []  # 200 coins
+	var hard_tier: Array = []    # 500 coins
 
-	for i in range(mini(3, available.size())):
-		active_daily_missions.append(available[i].id)
+	for mission in daily_missions:
+		match mission.reward_coins:
+			100:
+				easy_tier.append(mission)
+			200:
+				medium_tier.append(mission)
+			500:
+				hard_tier.append(mission)
+
+	# Shuffle each tier
+	easy_tier.shuffle()
+	medium_tier.shuffle()
+	hard_tier.shuffle()
+
+	# Pick one from each tier
+	if easy_tier.size() > 0:
+		active_daily_missions.append(easy_tier[0].id)
+	if medium_tier.size() > 0:
+		active_daily_missions.append(medium_tier[0].id)
+	if hard_tier.size() > 0:
+		active_daily_missions.append(hard_tier[0].id)
 
 	daily_missions_refreshed.emit()
 	save_progress()
