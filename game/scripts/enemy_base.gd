@@ -491,6 +491,10 @@ func die() -> void:
 	if KillStreakManager:
 		KillStreakManager.register_kill()
 
+	# Track kill for missions
+	if MissionsManager:
+		MissionsManager.track_kill(enemy_type)
+
 	# Remove from group AFTER on_enemy_killed so abilities can find other enemies
 	remove_from_group("enemies")
 

@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var shop_button: Button = $ButtonContainer/ShopButton
 @onready var princesses_button: Button = $ButtonContainer/PrincessesButton
 @onready var unlocks_button: Button = $ButtonContainer/UnlocksButton
+@onready var missions_button: Button = $ButtonContainer/MissionsButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 @onready var settings_button: Button = $SettingsButton
 
@@ -28,6 +29,7 @@ func _ready() -> void:
 	shop_button.pressed.connect(_on_shop_pressed)
 	princesses_button.pressed.connect(_on_princesses_pressed)
 	unlocks_button.pressed.connect(_on_unlocks_pressed)
+	missions_button.pressed.connect(_on_missions_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 
 	# Style settings button like home button with gear icon
@@ -39,6 +41,7 @@ func _ready() -> void:
 	_style_purple_button(shop_button)  # Purple for Upgrade
 	_style_pink_button(princesses_button)  # Pink for Princesses
 	_style_teal_button(unlocks_button)  # Teal for Unlocks
+	_style_orange_button(missions_button)  # Orange for Missions
 
 	# Check if princess button should be locked
 	_update_princess_button_state()
@@ -51,6 +54,12 @@ func _ready() -> void:
 	# Play main menu music (1. Stolen Future)
 	if SoundManager:
 		SoundManager.play_menu_music()
+
+	# Show daily login popup if reward available
+	_check_daily_login()
+
+	# Update missions button badge if rewards available
+	_update_missions_badge()
 
 func _update_princess_button_state() -> void:
 	"""Lock/unlock princess button based on challenge progress."""
@@ -318,6 +327,13 @@ func _on_unlocks_pressed() -> void:
 	if HapticManager:
 		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/unlocks.tscn")
+
+func _on_missions_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+	get_tree().change_scene_to_file("res://scenes/missions.tscn")
 
 func _style_teal_button(button: Button) -> void:
 	# Teal/green button for Unlocks
@@ -739,3 +755,83 @@ func _confirm_reset_progress() -> void:
 	_update_coin_display()
 	_update_princess_button_state()
 	_update_curse_display()
+
+	# Reset missions too
+	if MissionsManager:
+		MissionsManager.reset_all_progress()
+	if DailyLoginManager:
+		DailyLoginManager.reset_all_data()
+
+func _style_orange_button(button: Button) -> void:
+	# Orange button for Missions
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.9, 0.55, 0.2, 1)  # Orange
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 8
+	style_normal.border_color = Color(0.5, 0.3, 0.1, 1)  # Dark orange
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.95, 0.65, 0.3, 1)  # Brighter orange
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 8
+	style_hover.border_color = Color(0.55, 0.35, 0.15, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.8, 0.45, 0.15, 1)  # Darker orange
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_top = 6
+	style_pressed.border_width_bottom = 5
+	style_pressed.border_color = Color(0.45, 0.25, 0.08, 1)
+	style_pressed.corner_radius_top_left = 6
+	style_pressed.corner_radius_top_right = 6
+	style_pressed.corner_radius_bottom_left = 6
+	style_pressed.corner_radius_bottom_right = 6
+
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style_normal)
+	button.add_theme_color_override("font_color", Color(1, 0.98, 0.95, 1))
+	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	button.add_theme_color_override("font_pressed_color", Color(0.95, 0.9, 0.85, 1))
+
+func _check_daily_login() -> void:
+	"""Check if daily login popup should be shown."""
+	if not DailyLoginManager:
+		return
+
+	if DailyLoginManager.can_claim_reward():
+		# Show daily login popup
+		var popup_scene = load("res://scenes/daily_login_popup.tscn")
+		if popup_scene:
+			var popup = popup_scene.instantiate()
+			add_child(popup)
+			popup.show_popup()
+			popup.closed.connect(func():
+				_update_coin_display()
+				_update_missions_badge()
+			)
+
+func _update_missions_badge() -> void:
+	"""Update missions button to show notification if rewards available."""
+	if not MissionsManager:
+		return
+
+	var unclaimed = MissionsManager.get_unclaimed_count()
+	if unclaimed > 0:
+		missions_button.text = "MISSIONS (%d)" % unclaimed
+	else:
+		missions_button.text = "MISSIONS"

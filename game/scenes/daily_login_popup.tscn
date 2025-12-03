@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bk5p2m9xrj4qt"]
+
+[ext_resource type="Script" path="res://scripts/daily_login_popup.gd" id="1_script"]
+
+[node name="DailyLoginPopup" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_script")

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://dqj3v2m8xkp5n"]
+
+[ext_resource type="Script" path="res://scripts/missions_screen.gd" id="1_script"]
+
+[node name="MissionsScreen" type="CanvasLayer"]
+script = ExtResource("1_script")

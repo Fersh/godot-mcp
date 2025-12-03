@@ -213,6 +213,10 @@ func die() -> void:
 	if enemy_rarity == "elite" and UnlocksManager:
 		UnlocksManager.add_elite_kill()
 
+	# Track elite kill for missions
+	if enemy_rarity == "elite" and MissionsManager:
+		MissionsManager.track_elite_kill()
+
 	# End elite music (only if this is an elite, not a boss)
 	if enemy_rarity == "elite" and SoundManager:
 		SoundManager.on_elite_died()

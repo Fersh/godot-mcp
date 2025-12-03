@@ -65,6 +65,11 @@ func end_run() -> void:
 		UnlocksManager.add_monster_kills(run_kills)
 		UnlocksManager.reset_run_kills()
 
+	# Track run end for missions
+	if MissionsManager:
+		MissionsManager.end_run(run_victory)
+		MissionsManager.track_coins_earned(run_coins)
+
 		# Update endless stats if in endless mode
 		if run_game_mode == 0:  # Endless mode
 			UnlocksManager.update_endless_stats(run_time, run_wave, run_points)
@@ -113,6 +118,11 @@ func reset_run() -> void:
 	else:
 		run_game_mode = 0
 		run_difficulty = 0
+
+	# Start run tracking for missions
+	if MissionsManager and CharacterManager:
+		var char_id = CharacterManager.selected_character_id
+		MissionsManager.start_run(char_id, run_difficulty, run_game_mode)
 
 # Get current run stats as dictionary
 func get_run_stats() -> Dictionary:

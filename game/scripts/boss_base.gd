@@ -156,6 +156,10 @@ func die() -> void:
 	if UnlocksManager:
 		UnlocksManager.add_boss_kill()
 
+	# Track boss kill for missions
+	if MissionsManager:
+		MissionsManager.track_boss_kill()
+
 	# End boss music
 	if SoundManager:
 		SoundManager.on_boss_died()
