@@ -954,7 +954,12 @@ func _check_and_show_mission_celebration() -> void:
 	_show_mission_celebration_modal(completed_missions)
 
 func _show_mission_celebration_modal(completed_missions: Array) -> void:
-	"""Display a celebratory modal for completed missions."""
+	"""Display a celebratory modal for completed missions (max 5 shown)."""
+	# Limit to 5 missions to prevent overflow
+	const MAX_DISPLAYED_MISSIONS = 5
+	var missions_to_show = completed_missions.slice(0, MAX_DISPLAYED_MISSIONS)
+	var extra_count = completed_missions.size() - missions_to_show.size()
+
 	# Create fullscreen overlay
 	mission_celebration_modal = Control.new()
 	mission_celebration_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1033,10 +1038,21 @@ func _show_mission_celebration_modal(completed_missions: Array) -> void:
 	var missions_vbox = VBoxContainer.new()
 	missions_vbox.add_theme_constant_override("separation", 12)
 
-	for i in range(completed_missions.size()):
-		var mission = completed_missions[i]
+	for i in range(missions_to_show.size()):
+		var mission = missions_to_show[i]
 		var mission_row = _create_celebration_mission_row(mission, i)
 		missions_vbox.add_child(mission_row)
+
+	# Show "+X more" if there are additional missions
+	if extra_count > 0:
+		var more_label = Label.new()
+		more_label.text = "+%d more mission%s!" % [extra_count, "s" if extra_count > 1 else ""]
+		more_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if pixel_font:
+			more_label.add_theme_font_override("font", pixel_font)
+		more_label.add_theme_font_size_override("font_size", 12)
+		more_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+		missions_vbox.add_child(more_label)
 
 	vbox.add_child(missions_vbox)
 

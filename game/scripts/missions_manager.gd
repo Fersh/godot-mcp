@@ -1048,30 +1048,30 @@ func get_total_permanent_count() -> int:
 	return permanent_missions.size()
 
 func get_in_progress_missions(max_count: int = 3) -> Array:
-	"""Get missions that are in progress (have progress but not completed)."""
-	var in_progress: Array = []
+	"""Get missions that are closest to completion (most likely to complete next)."""
+	var candidates: Array = []
 
-	# First, get missions that have some progress
+	# Collect all incomplete, unclaimed missions
 	for mission in permanent_missions:
-		if not mission.is_completed and not mission.is_claimed and mission.current_progress > 0:
-			in_progress.append(mission)
+		if not mission.is_completed and not mission.is_claimed:
+			candidates.append(mission)
 
-	# Sort by completion percentage (closest to done first)
-	in_progress.sort_custom(func(a, b):
+	# Sort by closeness to completion:
+	# 1. Higher completion percentage first
+	# 2. If same percentage (including 0%), smaller target value first (easier missions)
+	candidates.sort_custom(func(a, b):
 		var a_pct = float(a.current_progress) / float(a.target_value) if a.target_value > 0 else 0
 		var b_pct = float(b.current_progress) / float(b.target_value) if b.target_value > 0 else 0
-		return a_pct > b_pct
+
+		# If percentages differ significantly, sort by percentage
+		if abs(a_pct - b_pct) > 0.001:
+			return a_pct > b_pct
+
+		# If same percentage, prefer smaller target (easier to complete)
+		return a.target_value < b.target_value
 	)
 
-	# If we don't have enough, add missions with 0 progress
-	if in_progress.size() < max_count:
-		for mission in permanent_missions:
-			if not mission.is_completed and not mission.is_claimed and mission.current_progress == 0:
-				in_progress.append(mission)
-				if in_progress.size() >= max_count:
-					break
-
-	return in_progress.slice(0, max_count)
+	return candidates.slice(0, max_count)
 
 # Track missions completed during this run (for game over celebration)
 var run_completed_missions: Array = []
