@@ -10,16 +10,16 @@ script = ExtResource("1_script")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -100.0
+offset_left = -140.0
 offset_right = 0.0
-offset_bottom = 80.0
+offset_bottom = 110.0
 grow_horizontal = 0
 mouse_filter = 0
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 
 [node name="PauseButton" type="Button" parent="MarginContainer"]
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(55, 55)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0

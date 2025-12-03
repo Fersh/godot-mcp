@@ -142,7 +142,7 @@ func _create_ui() -> void:
 	xp_container.name = "XPContainer"
 	xp_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	xp_container.offset_top = MARGIN - 30  # Raised 30px (was 40px)
-	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT
+	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT + 10  # Added 10px margin below
 	add_child(xp_container)
 
 	# Progress bar background

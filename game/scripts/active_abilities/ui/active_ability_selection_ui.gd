@@ -137,19 +137,23 @@ func _create_ui() -> void:
 	# Reroll button - red with white font like Refund All
 	reroll_button = Button.new()
 	reroll_button.name = "RerollButton"
-	reroll_button.text = "Reroll"
-	reroll_button.custom_minimum_size = Vector2(80, 36)
+	reroll_button.text = "Reroll Abilities"
+	reroll_button.custom_minimum_size = Vector2(180, 44)
 	reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		reroll_button.add_theme_font_override("font", pixel_font)
-	reroll_button.add_theme_font_size_override("font_size", 13)
+	reroll_button.add_theme_font_size_override("font_size", 15)
 
-	# Style the reroll button - red background, white text
+	# Style the reroll button - red background, white text, more padding
 	var reroll_style = StyleBoxFlat.new()
 	reroll_style.bg_color = Color(0.7, 0.15, 0.15, 0.95)
 	reroll_style.border_color = Color(0.9, 0.3, 0.3)
 	reroll_style.set_border_width_all(2)
 	reroll_style.set_corner_radius_all(6)
+	reroll_style.content_margin_left = 20
+	reroll_style.content_margin_right = 20
+	reroll_style.content_margin_top = 8
+	reroll_style.content_margin_bottom = 8
 	reroll_button.add_theme_stylebox_override("normal", reroll_style)
 
 	var reroll_hover = reroll_style.duplicate()
@@ -275,7 +279,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 
 func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(260, 300)
+	button.custom_minimum_size = Vector2(312, 360)  # Increased by 20%
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -401,25 +405,26 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 func _style_button(button: Button, rarity: ActiveAbilityData.Rarity) -> void:
 	var style = StyleBoxFlat.new()
 
+	# Reduced transparency (0.98 instead of 0.95)
 	match rarity:
 		ActiveAbilityData.Rarity.COMMON:
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
+			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
 			style.border_color = Color(0.4, 0.4, 0.4)
 		ActiveAbilityData.Rarity.RARE:
-			style.bg_color = Color(0.1, 0.15, 0.25, 0.95)
+			style.bg_color = Color(0.1, 0.15, 0.25, 0.98)
 			style.border_color = Color(0.3, 0.5, 1.0)
 		ActiveAbilityData.Rarity.EPIC:
-			style.bg_color = Color(0.15, 0.1, 0.2, 0.95)  # Purple-tinted background
+			style.bg_color = Color(0.15, 0.1, 0.2, 0.98)  # Purple-tinted background
 			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
 		ActiveAbilityData.Rarity.LEGENDARY:
-			style.bg_color = Color(0.2, 0.18, 0.1, 0.95)  # Yellow-tinted background
+			style.bg_color = Color(0.2, 0.18, 0.1, 0.98)  # Yellow-tinted background
 			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
 		ActiveAbilityData.Rarity.MYTHIC:
-			style.bg_color = Color(0.18, 0.08, 0.1, 0.95)  # Dark red-tinted background
+			style.bg_color = Color(0.18, 0.08, 0.1, 0.98)  # Dark red-tinted background
 			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
 		_:
 			# Fallback for unknown rarity
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
+			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
 			style.border_color = Color(0.4, 0.4, 0.4)
 
 	style.set_border_width_all(3)

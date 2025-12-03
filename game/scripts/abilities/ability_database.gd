@@ -155,11 +155,11 @@ static func get_common_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"high_voltage",
 			"High Voltage",
-			"+40% Damage, +Size",
+			"+20% Damage, +Size",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.STAT_BOOST,
 			[
-				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.4},
+				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.2},
 				{effect_type = AbilityData.EffectType.SIZE, value = 0.15}
 			]
 		),

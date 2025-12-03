@@ -131,7 +131,7 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 
 func create_ability_card(ability: AbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(260, 300)
+	button.custom_minimum_size = Vector2(312, 360)  # Increased by 20%
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -396,26 +396,26 @@ func _update_particle_container(container: Control, rarity: AbilityData.Rarity) 
 func style_button(button: Button, rarity: AbilityData.Rarity) -> void:
 	var style = StyleBoxFlat.new()
 
-	# Background based on rarity
+	# Background based on rarity - reduced transparency (0.98 instead of 0.95)
 	match rarity:
 		AbilityData.Rarity.COMMON:
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
+			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
 			style.border_color = Color(0.4, 0.4, 0.4)
 		AbilityData.Rarity.RARE:
-			style.bg_color = Color(0.1, 0.15, 0.25, 0.95)
+			style.bg_color = Color(0.1, 0.15, 0.25, 0.98)
 			style.border_color = Color(0.3, 0.5, 1.0)
 		AbilityData.Rarity.EPIC:
-			style.bg_color = Color(0.15, 0.1, 0.2, 0.95)  # Purple-tinted background
+			style.bg_color = Color(0.15, 0.1, 0.2, 0.98)  # Purple-tinted background
 			style.border_color = AbilityData.get_rarity_color(rarity)
 		AbilityData.Rarity.LEGENDARY:
-			style.bg_color = Color(0.2, 0.18, 0.1, 0.95)  # Yellow-tinted background
+			style.bg_color = Color(0.2, 0.18, 0.1, 0.98)  # Yellow-tinted background
 			style.border_color = AbilityData.get_rarity_color(rarity)
 		AbilityData.Rarity.MYTHIC:
-			style.bg_color = Color(0.18, 0.08, 0.1, 0.95)  # Dark red-tinted background
+			style.bg_color = Color(0.18, 0.08, 0.1, 0.98)  # Dark red-tinted background
 			style.border_color = AbilityData.get_rarity_color(rarity)
 		_:
 			# Fallback for unknown rarity
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.95)
+			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
 			style.border_color = Color(0.4, 0.4, 0.4)
 
 	style.set_border_width_all(3)
