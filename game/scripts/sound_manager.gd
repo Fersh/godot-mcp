@@ -20,6 +20,7 @@ var buff_sound: AudioStream
 var ding_sound: AudioStream
 var block_sound: AudioStream
 var click_sound: AudioStream
+var player_join_sound: AudioStream
 
 # Audio players pool for concurrent sounds
 var audio_players: Array[AudioStreamPlayer] = []
@@ -114,6 +115,7 @@ func _load_sounds() -> void:
 	ding_sound = load("res://assets/sounds/ding.mp3")
 	block_sound = load("res://assets/sounds/block.mp3")
 	click_sound = load("res://assets/sounds/click.mp3")
+	player_join_sound = load("res://assets/sounds/player_join.mp3")
 
 func _create_audio_pool() -> void:
 	for i in POOL_SIZE:
@@ -258,6 +260,10 @@ func play_block() -> void:
 func play_click() -> void:
 	# UI button click sound
 	_play_sound(click_sound, -5.0, 0.05)
+
+func play_player_join() -> void:
+	# Celebration/reward claimed sound
+	_play_sound(player_join_sound, -3.0)
 
 # ============================================
 # MUSIC CONTROL API

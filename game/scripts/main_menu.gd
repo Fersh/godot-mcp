@@ -1,11 +1,17 @@
 extends CanvasLayer
 
-@onready var play_button: Button = $ButtonContainer/PlayButton
-@onready var gear_button: Button = $ButtonContainer/GearButton
-@onready var shop_button: Button = $ButtonContainer/ShopButton
-@onready var princesses_button: Button = $ButtonContainer/PrincessesButton
-@onready var unlocks_button: Button = $ButtonContainer/UnlocksButton
-@onready var missions_button: Button = $ButtonContainer/MissionsButton
+# Play button (right side)
+@onready var play_button: Button = $PlayButton
+
+# Left side buttons - Vertical stack (Princesses, Library)
+@onready var princesses_button: Button = $LeftButtonContainer/PrincessesButton
+@onready var unlocks_button: Button = $LeftButtonContainer/UnlocksButton
+
+# Left side buttons - Bottom row (Missions, Gear, Upgrade)
+@onready var missions_button: Button = $LeftButtonContainer/BottomRow/MissionsButton
+@onready var gear_button: Button = $LeftButtonContainer/BottomRow/GearButton
+@onready var shop_button: Button = $LeftButtonContainer/BottomRow/ShopButton
+
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 @onready var settings_button: Button = $SettingsButton
 
@@ -40,12 +46,12 @@ func _ready() -> void:
 	_style_settings_button()
 
 	# Style buttons with different colors
-	_style_golden_button(play_button)  # Gold for Play
-	_style_blue_button(gear_button)    # Blue for Gear
-	_style_purple_button(shop_button)  # Purple for Upgrade
-	_style_pink_button(princesses_button)  # Pink for Princesses
-	_style_teal_button(unlocks_button)  # Teal for Unlocks
-	_style_orange_button(missions_button)  # Orange for Missions
+	_style_bright_golden_button(play_button)  # Bright Gold for Play
+	_style_pink_button_small(princesses_button)  # Pink for Princesses
+	_style_teal_button_small(unlocks_button)  # Teal for Library
+	_style_orange_button_small(missions_button)  # Orange for Missions
+	_style_blue_button_small(gear_button)    # Blue for Gear
+	_style_purple_button_small(shop_button)  # Purple for Upgrade
 
 	# Check if princess button should be locked
 	_update_princess_button_state()
@@ -76,26 +82,26 @@ func _update_princess_button_state() -> void:
 
 	if not has_beaten_challenge:
 		# Style as locked/disabled
-		_style_locked_button(princesses_button)
+		_style_locked_button_small(princesses_button)
 		princesses_button.text = "LOCKED"
 	else:
 		# Restore normal pink style
-		_style_pink_button(princesses_button)
+		_style_pink_button_small(princesses_button)
 		princesses_button.text = "PRINCESSES"
 
-func _style_locked_button(button: Button) -> void:
-	"""Style a button as locked/disabled."""
+func _style_locked_button_small(button: Button) -> void:
+	"""Style a button as locked/disabled (small version)."""
 	var style_disabled = StyleBoxFlat.new()
 	style_disabled.bg_color = Color(0.3, 0.3, 0.3, 1)  # Gray
-	style_disabled.border_width_left = 3
-	style_disabled.border_width_right = 3
-	style_disabled.border_width_top = 3
-	style_disabled.border_width_bottom = 8
+	style_disabled.border_width_left = 2
+	style_disabled.border_width_right = 2
+	style_disabled.border_width_top = 2
+	style_disabled.border_width_bottom = 5
 	style_disabled.border_color = Color(0.2, 0.2, 0.2, 1)  # Dark gray
-	style_disabled.corner_radius_top_left = 6
-	style_disabled.corner_radius_top_right = 6
-	style_disabled.corner_radius_bottom_left = 6
-	style_disabled.corner_radius_bottom_right = 6
+	style_disabled.corner_radius_top_left = 5
+	style_disabled.corner_radius_top_right = 5
+	style_disabled.corner_radius_bottom_left = 5
+	style_disabled.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_disabled)
 	button.add_theme_stylebox_override("hover", style_disabled)
@@ -139,58 +145,83 @@ func _update_curse_display() -> void:
 	curse_label.visible = true
 
 func _create_version_label() -> void:
-	"""Create version/build label in bottom left corner."""
+	"""Create version/build label in bottom center."""
 	version_label = Label.new()
 	version_label.text = "v%s (Build %d)" % [VERSION, BUILD]
-	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	version_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	version_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	version_label.offset_left = 110
-	version_label.offset_bottom = -50
-	version_label.offset_top = -70
-	version_label.offset_right = 200
+	version_label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	version_label.offset_left = 0
+	version_label.offset_right = 0
+	version_label.offset_bottom = -30
+	version_label.offset_top = -50
 	if pixel_font:
 		version_label.add_theme_font_override("font", pixel_font)
-	version_label.add_theme_font_size_override("font_size", 12)
-	version_label.add_theme_color_override("font_color", Color.WHITE)
+	version_label.add_theme_font_size_override("font_size", 10)
+	version_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 0.8))
 	version_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	version_label.add_theme_constant_override("shadow_offset_x", 1)
 	version_label.add_theme_constant_override("shadow_offset_y", 1)
 	add_child(version_label)
 
 func _style_golden_button(button: Button) -> void:
-	# Golden/yellow button with wooden bottom border (matching reference image)
+	# Standard golden button for dialogs
 	var style_normal = StyleBoxFlat.new()
-	style_normal.bg_color = Color(0.85, 0.65, 0.2, 1)  # Golden yellow
+	style_normal.bg_color = Color(0.85, 0.65, 0.2, 1)
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
+	style_normal.border_color = Color(0.45, 0.3, 0.15, 1)
+	style_normal.set_corner_radius_all(6)
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.92, 0.72, 0.25, 1)
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
+	style_hover.border_color = Color(0.5, 0.35, 0.18, 1)
+	style_hover.set_corner_radius_all(6)
+
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_normal)
+	button.add_theme_stylebox_override("focus", style_normal)
+
+func _style_bright_golden_button(button: Button) -> void:
+	# Bright golden/yellow button for PLAY - more vibrant
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(1.0, 0.85, 0.2, 1)  # Bright golden yellow
 	style_normal.border_width_left = 3
 	style_normal.border_width_right = 3
 	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8  # Thicker bottom for wooden plank effect
-	style_normal.border_color = Color(0.45, 0.3, 0.15, 1)  # Dark brown wood
+	style_normal.border_width_bottom = 6
+	style_normal.border_color = Color(0.6, 0.45, 0.1, 1)  # Dark gold border
 	style_normal.corner_radius_top_left = 6
 	style_normal.corner_radius_top_right = 6
 	style_normal.corner_radius_bottom_left = 6
 	style_normal.corner_radius_bottom_right = 6
 
 	var style_hover = StyleBoxFlat.new()
-	style_hover.bg_color = Color(0.92, 0.72, 0.25, 1)  # Brighter gold on hover
+	style_hover.bg_color = Color(1.0, 0.92, 0.4, 1)  # Even brighter on hover
 	style_hover.border_width_left = 3
 	style_hover.border_width_right = 3
 	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
-	style_hover.border_color = Color(0.5, 0.35, 0.18, 1)
+	style_hover.border_width_bottom = 6
+	style_hover.border_color = Color(0.65, 0.5, 0.15, 1)
 	style_hover.corner_radius_top_left = 6
 	style_hover.corner_radius_top_right = 6
 	style_hover.corner_radius_bottom_left = 6
 	style_hover.corner_radius_bottom_right = 6
 
 	var style_pressed = StyleBoxFlat.new()
-	style_pressed.bg_color = Color(0.75, 0.55, 0.15, 1)  # Darker when pressed
+	style_pressed.bg_color = Color(0.9, 0.75, 0.15, 1)  # Darker when pressed
 	style_pressed.border_width_left = 3
 	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6  # Inverted border for pressed effect
-	style_pressed.border_width_bottom = 5
-	style_pressed.border_color = Color(0.4, 0.25, 0.1, 1)
+	style_pressed.border_width_top = 5
+	style_pressed.border_width_bottom = 4
+	style_pressed.border_color = Color(0.5, 0.35, 0.08, 1)
 	style_pressed.corner_radius_top_left = 6
 	style_pressed.corner_radius_top_right = 6
 	style_pressed.corner_radius_bottom_left = 6
@@ -200,44 +231,47 @@ func _style_golden_button(button: Button) -> void:
 	button.add_theme_stylebox_override("hover", style_hover)
 	button.add_theme_stylebox_override("pressed", style_pressed)
 	button.add_theme_stylebox_override("focus", style_normal)
+	button.add_theme_color_override("font_color", Color(0.15, 0.1, 0.0, 1))
+	button.add_theme_color_override("font_hover_color", Color(0.1, 0.05, 0.0, 1))
+	button.add_theme_color_override("font_pressed_color", Color(0.2, 0.15, 0.05, 1))
 
-func _style_blue_button(button: Button) -> void:
-	# Blue button for Gear
+func _style_blue_button_small(button: Button) -> void:
+	# Blue button for Gear (smaller)
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.3, 0.5, 0.75, 1)  # Steel blue
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
 	style_normal.border_color = Color(0.15, 0.25, 0.4, 1)  # Dark blue
-	style_normal.corner_radius_top_left = 6
-	style_normal.corner_radius_top_right = 6
-	style_normal.corner_radius_bottom_left = 6
-	style_normal.corner_radius_bottom_right = 6
+	style_normal.corner_radius_top_left = 5
+	style_normal.corner_radius_top_right = 5
+	style_normal.corner_radius_bottom_left = 5
+	style_normal.corner_radius_bottom_right = 5
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.4, 0.6, 0.85, 1)  # Brighter blue
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
 	style_hover.border_color = Color(0.2, 0.3, 0.5, 1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.corner_radius_top_left = 5
+	style_hover.corner_radius_top_right = 5
+	style_hover.corner_radius_bottom_left = 5
+	style_hover.corner_radius_bottom_right = 5
 
 	var style_pressed = StyleBoxFlat.new()
 	style_pressed.bg_color = Color(0.25, 0.4, 0.6, 1)  # Darker blue
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6
-	style_pressed.border_width_bottom = 5
+	style_pressed.border_width_left = 2
+	style_pressed.border_width_right = 2
+	style_pressed.border_width_top = 4
+	style_pressed.border_width_bottom = 3
 	style_pressed.border_color = Color(0.1, 0.2, 0.35, 1)
-	style_pressed.corner_radius_top_left = 6
-	style_pressed.corner_radius_top_right = 6
-	style_pressed.corner_radius_bottom_left = 6
-	style_pressed.corner_radius_bottom_right = 6
+	style_pressed.corner_radius_top_left = 5
+	style_pressed.corner_radius_top_right = 5
+	style_pressed.corner_radius_bottom_left = 5
+	style_pressed.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
@@ -247,43 +281,43 @@ func _style_blue_button(button: Button) -> void:
 	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
 	button.add_theme_color_override("font_pressed_color", Color(0.8, 0.85, 0.95, 1))
 
-func _style_purple_button(button: Button) -> void:
-	# Purple button for Upgrade
+func _style_purple_button_small(button: Button) -> void:
+	# Purple button for Upgrade (smaller)
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.55, 0.3, 0.7, 1)  # Purple
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
 	style_normal.border_color = Color(0.3, 0.15, 0.4, 1)  # Dark purple
-	style_normal.corner_radius_top_left = 6
-	style_normal.corner_radius_top_right = 6
-	style_normal.corner_radius_bottom_left = 6
-	style_normal.corner_radius_bottom_right = 6
+	style_normal.corner_radius_top_left = 5
+	style_normal.corner_radius_top_right = 5
+	style_normal.corner_radius_bottom_left = 5
+	style_normal.corner_radius_bottom_right = 5
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.65, 0.4, 0.8, 1)  # Brighter purple
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
 	style_hover.border_color = Color(0.35, 0.2, 0.45, 1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.corner_radius_top_left = 5
+	style_hover.corner_radius_top_right = 5
+	style_hover.corner_radius_bottom_left = 5
+	style_hover.corner_radius_bottom_right = 5
 
 	var style_pressed = StyleBoxFlat.new()
 	style_pressed.bg_color = Color(0.45, 0.25, 0.55, 1)  # Darker purple
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6
-	style_pressed.border_width_bottom = 5
+	style_pressed.border_width_left = 2
+	style_pressed.border_width_right = 2
+	style_pressed.border_width_top = 4
+	style_pressed.border_width_bottom = 3
 	style_pressed.border_color = Color(0.25, 0.1, 0.35, 1)
-	style_pressed.corner_radius_top_left = 6
-	style_pressed.corner_radius_top_right = 6
-	style_pressed.corner_radius_bottom_left = 6
-	style_pressed.corner_radius_bottom_right = 6
+	style_pressed.corner_radius_top_left = 5
+	style_pressed.corner_radius_top_right = 5
+	style_pressed.corner_radius_bottom_left = 5
+	style_pressed.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
@@ -342,43 +376,43 @@ func _on_missions_pressed() -> void:
 		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/missions.tscn")
 
-func _style_teal_button(button: Button) -> void:
-	# Teal/green button for Unlocks
+func _style_teal_button_small(button: Button) -> void:
+	# Teal/green button for Library (smaller)
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.2, 0.6, 0.55, 1)  # Teal
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
 	style_normal.border_color = Color(0.1, 0.3, 0.28, 1)  # Dark teal
-	style_normal.corner_radius_top_left = 6
-	style_normal.corner_radius_top_right = 6
-	style_normal.corner_radius_bottom_left = 6
-	style_normal.corner_radius_bottom_right = 6
+	style_normal.corner_radius_top_left = 5
+	style_normal.corner_radius_top_right = 5
+	style_normal.corner_radius_bottom_left = 5
+	style_normal.corner_radius_bottom_right = 5
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.3, 0.7, 0.65, 1)  # Brighter teal
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
 	style_hover.border_color = Color(0.15, 0.35, 0.33, 1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.corner_radius_top_left = 5
+	style_hover.corner_radius_top_right = 5
+	style_hover.corner_radius_bottom_left = 5
+	style_hover.corner_radius_bottom_right = 5
 
 	var style_pressed = StyleBoxFlat.new()
 	style_pressed.bg_color = Color(0.15, 0.5, 0.45, 1)  # Darker teal
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6
-	style_pressed.border_width_bottom = 5
+	style_pressed.border_width_left = 2
+	style_pressed.border_width_right = 2
+	style_pressed.border_width_top = 4
+	style_pressed.border_width_bottom = 3
 	style_pressed.border_color = Color(0.08, 0.25, 0.22, 1)
-	style_pressed.corner_radius_top_left = 6
-	style_pressed.corner_radius_top_right = 6
-	style_pressed.corner_radius_bottom_left = 6
-	style_pressed.corner_radius_bottom_right = 6
+	style_pressed.corner_radius_top_left = 5
+	style_pressed.corner_radius_top_right = 5
+	style_pressed.corner_radius_bottom_left = 5
+	style_pressed.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
@@ -388,43 +422,43 @@ func _style_teal_button(button: Button) -> void:
 	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
 	button.add_theme_color_override("font_pressed_color", Color(0.85, 0.95, 0.9, 1))
 
-func _style_pink_button(button: Button) -> void:
-	# Pink button for Princesses
+func _style_pink_button_small(button: Button) -> void:
+	# Pink button for Princesses (smaller)
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.75, 0.4, 0.6, 1)  # Pink
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
 	style_normal.border_color = Color(0.4, 0.2, 0.35, 1)  # Dark pink
-	style_normal.corner_radius_top_left = 6
-	style_normal.corner_radius_top_right = 6
-	style_normal.corner_radius_bottom_left = 6
-	style_normal.corner_radius_bottom_right = 6
+	style_normal.corner_radius_top_left = 5
+	style_normal.corner_radius_top_right = 5
+	style_normal.corner_radius_bottom_left = 5
+	style_normal.corner_radius_bottom_right = 5
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.85, 0.5, 0.7, 1)  # Brighter pink
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
 	style_hover.border_color = Color(0.45, 0.25, 0.4, 1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.corner_radius_top_left = 5
+	style_hover.corner_radius_top_right = 5
+	style_hover.corner_radius_bottom_left = 5
+	style_hover.corner_radius_bottom_right = 5
 
 	var style_pressed = StyleBoxFlat.new()
 	style_pressed.bg_color = Color(0.6, 0.3, 0.5, 1)  # Darker pink
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6
-	style_pressed.border_width_bottom = 5
+	style_pressed.border_width_left = 2
+	style_pressed.border_width_right = 2
+	style_pressed.border_width_top = 4
+	style_pressed.border_width_bottom = 3
 	style_pressed.border_color = Color(0.35, 0.15, 0.3, 1)
-	style_pressed.corner_radius_top_left = 6
-	style_pressed.corner_radius_top_right = 6
-	style_pressed.corner_radius_bottom_left = 6
-	style_pressed.corner_radius_bottom_right = 6
+	style_pressed.corner_radius_top_left = 5
+	style_pressed.corner_radius_top_right = 5
+	style_pressed.corner_radius_bottom_left = 5
+	style_pressed.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
@@ -769,43 +803,43 @@ func _confirm_reset_progress() -> void:
 	if DailyLoginManager:
 		DailyLoginManager.reset_all_data()
 
-func _style_orange_button(button: Button) -> void:
-	# Orange button for Missions
+func _style_orange_button_small(button: Button) -> void:
+	# Orange button for Missions (smaller)
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.9, 0.55, 0.2, 1)  # Orange
-	style_normal.border_width_left = 3
-	style_normal.border_width_right = 3
-	style_normal.border_width_top = 3
-	style_normal.border_width_bottom = 8
+	style_normal.border_width_left = 2
+	style_normal.border_width_right = 2
+	style_normal.border_width_top = 2
+	style_normal.border_width_bottom = 5
 	style_normal.border_color = Color(0.5, 0.3, 0.1, 1)  # Dark orange
-	style_normal.corner_radius_top_left = 6
-	style_normal.corner_radius_top_right = 6
-	style_normal.corner_radius_bottom_left = 6
-	style_normal.corner_radius_bottom_right = 6
+	style_normal.corner_radius_top_left = 5
+	style_normal.corner_radius_top_right = 5
+	style_normal.corner_radius_bottom_left = 5
+	style_normal.corner_radius_bottom_right = 5
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.95, 0.65, 0.3, 1)  # Brighter orange
-	style_hover.border_width_left = 3
-	style_hover.border_width_right = 3
-	style_hover.border_width_top = 3
-	style_hover.border_width_bottom = 8
+	style_hover.border_width_left = 2
+	style_hover.border_width_right = 2
+	style_hover.border_width_top = 2
+	style_hover.border_width_bottom = 5
 	style_hover.border_color = Color(0.55, 0.35, 0.15, 1)
-	style_hover.corner_radius_top_left = 6
-	style_hover.corner_radius_top_right = 6
-	style_hover.corner_radius_bottom_left = 6
-	style_hover.corner_radius_bottom_right = 6
+	style_hover.corner_radius_top_left = 5
+	style_hover.corner_radius_top_right = 5
+	style_hover.corner_radius_bottom_left = 5
+	style_hover.corner_radius_bottom_right = 5
 
 	var style_pressed = StyleBoxFlat.new()
 	style_pressed.bg_color = Color(0.8, 0.45, 0.15, 1)  # Darker orange
-	style_pressed.border_width_left = 3
-	style_pressed.border_width_right = 3
-	style_pressed.border_width_top = 6
-	style_pressed.border_width_bottom = 5
+	style_pressed.border_width_left = 2
+	style_pressed.border_width_right = 2
+	style_pressed.border_width_top = 4
+	style_pressed.border_width_bottom = 3
 	style_pressed.border_color = Color(0.45, 0.25, 0.08, 1)
-	style_pressed.corner_radius_top_left = 6
-	style_pressed.corner_radius_top_right = 6
-	style_pressed.corner_radius_bottom_left = 6
-	style_pressed.corner_radius_bottom_right = 6
+	style_pressed.corner_radius_top_left = 5
+	style_pressed.corner_radius_top_right = 5
+	style_pressed.corner_radius_bottom_left = 5
+	style_pressed.corner_radius_bottom_right = 5
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)
@@ -895,22 +929,22 @@ func _create_notification_badge(count: int) -> Control:
 	"""Create a red circle notification badge with optional white number."""
 	var badge = Control.new()
 
-	# Position in top-right corner of button
+	# Position in top-right corner of button - bigger size
 	badge.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	badge.offset_left = -12
-	badge.offset_right = 12
-	badge.offset_top = -8
-	badge.offset_bottom = 16
+	badge.offset_left = -18
+	badge.offset_right = 18
+	badge.offset_top = -12
+	badge.offset_bottom = 24
 
-	# Red circle background
-	var circle = ColorRect.new()
-	circle.set_anchors_preset(Control.PRESET_FULL_RECT)
-	circle.color = Color(0.9, 0.2, 0.2, 1.0)
-
-	# Make it circular using a shader or just use a small square with rounded corners
+	# Red circle background with border for better visibility
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.9, 0.2, 0.2, 1.0)
-	style.set_corner_radius_all(12)  # Fully rounded
+	style.bg_color = Color(0.95, 0.15, 0.15, 1.0)
+	style.set_corner_radius_all(18)  # Fully rounded
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.5, 0.05, 0.05, 1.0)
 
 	var panel = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -926,13 +960,16 @@ func _create_notification_badge(count: int) -> Control:
 		label.set_anchors_preset(Control.PRESET_FULL_RECT)
 		if pixel_font:
 			label.add_theme_font_override("font", pixel_font)
-		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_font_size_override("font_size", 14)
 		label.add_theme_color_override("font_color", Color.WHITE)
+		label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+		label.add_theme_constant_override("shadow_offset_x", 1)
+		label.add_theme_constant_override("shadow_offset_y", 1)
 		badge.add_child(label)
 
 		# Adjust badge size based on number width
 		if count >= 10:
-			badge.offset_left = -16
-			badge.offset_right = 16
+			badge.offset_left = -24
+			badge.offset_right = 24
 
 	return badge

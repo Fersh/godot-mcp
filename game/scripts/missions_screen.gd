@@ -14,8 +14,10 @@ var content_vbox: VBoxContainer
 # Tabs
 var tab_daily: Button
 var tab_challenges: Button
-var tab_social: Button
-var current_tab: int = 0  # 0=Daily, 1=Challenges, 2=Social
+var current_tab: int = 0  # 0=Daily, 1=Achievements
+
+# Reward celebration modal
+var reward_modal: Control = null
 
 # Fonts
 var pixel_font: Font = null
@@ -27,9 +29,11 @@ const PROGRESS_BAR_WIDTH: float = 200.0
 # Tab colors
 const TAB_COLORS = {
 	0: Color(0.3, 0.7, 0.95),   # Daily - Blue
-	1: Color(0.9, 0.7, 0.2),    # Challenges - Gold
-	2: Color(0.95, 0.5, 0.7),   # Social - Pink
+	1: Color(0.9, 0.7, 0.2),    # Achievements - Gold
 }
+
+# Hidden social missions (for now)
+const HIDDEN_SOCIAL_MISSIONS = ["rate_game", "youtube_sub"]
 
 func _ready() -> void:
 	# Load fonts
@@ -145,12 +149,10 @@ func _build_ui() -> void:
 	tab_spacer.custom_minimum_size = Vector2(0, 10)
 	main_vbox.add_child(tab_spacer)
 
-	# Create tabs (Social below Daily)
+	# Create tabs (only Daily and Achievements now - Social moved into Daily)
 	tab_daily = _create_tab_button("DAILY", 0)
-	tab_social = _create_tab_button("SOCIAL", 2)
-	tab_challenges = _create_tab_button("CHALLENGES", 1)
+	tab_challenges = _create_tab_button("ACHIEVEMENTS", 1)
 	tab_container.add_child(tab_daily)
-	tab_container.add_child(tab_social)
 	tab_container.add_child(tab_challenges)
 
 	# Scrollable content area
@@ -214,7 +216,6 @@ func _show_tab(tab_index: int) -> void:
 	# Update tab button styles
 	_style_tab_button(tab_daily, 0, tab_index == 0)
 	_style_tab_button(tab_challenges, 1, tab_index == 1)
-	_style_tab_button(tab_social, 2, tab_index == 2)
 
 	# Clear content
 	for child in content_vbox.get_children():
@@ -231,8 +232,6 @@ func _show_tab(tab_index: int) -> void:
 			_show_daily_missions()
 		1:
 			_show_challenge_missions()
-		2:
-			_show_social_missions()
 
 	# Bottom padding
 	var bottom_pad = Control.new()
@@ -265,6 +264,9 @@ func _show_daily_missions() -> void:
 				_add_mission_card(mission)
 	else:
 		_add_empty_message("Missions system not loaded")
+
+	# Social missions section (below daily)
+	_add_social_section()
 
 func _add_daily_login_section() -> void:
 	var panel = PanelContainer.new()
@@ -409,25 +411,41 @@ func _show_challenge_missions() -> void:
 				if not mission.is_secret or mission.is_completed:  # Hide secrets until completed
 					_add_mission_card(mission)
 
-func _show_social_missions() -> void:
-	var header_label = _create_section_header("SOCIAL REWARDS", TAB_COLORS[2])
+func _add_social_section() -> void:
+	"""Add social missions section below daily missions."""
+	if not MissionsManager:
+		return
+
+	# Get visible social missions (filter out hidden ones)
+	var social_missions = []
+	for mission in MissionsManager.get_all_social_missions():
+		if mission.id not in HIDDEN_SOCIAL_MISSIONS:
+			social_missions.append(mission)
+
+	if social_missions.is_empty():
+		return
+
+	# Separator
+	var sep = Control.new()
+	sep.custom_minimum_size = Vector2(0, 15)
+	content_vbox.add_child(sep)
+
+	# Social header
+	var header_label = _create_section_header("SOCIAL REWARDS", Color(0.95, 0.5, 0.7))
 	content_vbox.add_child(header_label)
 
 	var desc_label = Label.new()
-	desc_label.text = "Follow us on social media for rewards!"
+	desc_label.text = "Follow us for bonus rewards!"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		desc_label.add_theme_font_override("font", pixel_font)
 	desc_label.add_theme_font_size_override("font_size", 10)
-	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	desc_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	content_vbox.add_child(desc_label)
 
-	if MissionsManager:
-		for mission in MissionsManager.get_all_social_missions():
-			_add_social_mission_card(mission)
-	else:
-		_add_empty_message("Missions system not loaded")
+	# Show social missions
+	for mission in social_missions:
+		_add_social_mission_card(mission)
 
 func _add_mission_card(mission: MissionData) -> void:
 	var panel = PanelContainer.new()
@@ -719,8 +737,10 @@ func _on_claim_mission_pressed(mission_id: String) -> void:
 		HapticManager.medium()
 
 	if MissionsManager:
-		if MissionsManager.claim_reward(mission_id):
+		var mission = MissionsManager.get_mission(mission_id)
+		if mission and MissionsManager.claim_reward(mission_id):
 			_update_coin_display()
+			_show_reward_celebration(mission)
 			_show_tab(current_tab)  # Refresh current tab
 
 func _on_social_link_pressed(mission_id: String) -> void:
@@ -733,7 +753,7 @@ func _on_social_link_pressed(mission_id: String) -> void:
 		"twitter_follow":
 			url = "https://x.com/markfersh"
 		"discord_join":
-			url = "https://discord.gg/xndmaVu6B8"
+			url = "https://discord.gg/p7pCwc5yJs"
 		"rate_game":
 			url = "https://apps.apple.com/app/rogue-arena"  # Replace with actual URL
 		"youtube_sub":
@@ -894,3 +914,295 @@ func _style_pink_button(button: Button) -> void:
 		button.add_theme_font_override("font", pixel_font)
 	button.add_theme_font_size_override("font_size", 11)
 	button.add_theme_color_override("font_color", Color.WHITE)
+
+# ============================================
+# REWARD CELEBRATION MODAL
+# ============================================
+
+func _show_reward_celebration(mission: MissionData) -> void:
+	"""Show a juicy celebration modal when claiming a reward."""
+	# Remove existing modal if any
+	if reward_modal:
+		reward_modal.queue_free()
+
+	reward_modal = Control.new()
+	reward_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	reward_modal.z_index = 100
+	add_child(reward_modal)
+
+	# Play celebration sound and haptic
+	if SoundManager:
+		SoundManager.play_player_join()
+	if HapticManager:
+		HapticManager.heavy()
+
+	# Dark overlay with fade in
+	var overlay = ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	reward_modal.add_child(overlay)
+
+	# Animate overlay fade in
+	var overlay_tween = create_tween()
+	overlay_tween.tween_property(overlay, "color", Color(0, 0, 0, 0.85), 0.2)
+
+	# Main celebration container
+	var center_container = CenterContainer.new()
+	center_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	reward_modal.add_child(center_container)
+
+	# Panel with glow effect
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(380, 320)
+	panel.scale = Vector2(0.5, 0.5)
+	panel.pivot_offset = Vector2(190, 160)
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.06, 0.12, 0.98)
+	panel_style.border_color = Color(1.0, 0.85, 0.3, 1.0)
+	panel_style.set_border_width_all(4)
+	panel_style.set_corner_radius_all(16)
+	panel_style.shadow_color = Color(1.0, 0.8, 0.2, 0.4)
+	panel_style.shadow_size = 20
+	panel_style.content_margin_left = 30
+	panel_style.content_margin_right = 30
+	panel_style.content_margin_top = 25
+	panel_style.content_margin_bottom = 25
+	panel.add_theme_stylebox_override("panel", panel_style)
+	center_container.add_child(panel)
+
+	# Animate panel pop in with bounce
+	var panel_tween = create_tween()
+	panel_tween.set_ease(Tween.EASE_OUT)
+	panel_tween.set_trans(Tween.TRANS_BACK)
+	panel_tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.4)
+
+	# Content VBox
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 15)
+	panel.add_child(vbox)
+
+	# Celebration text with animated entrance
+	var congrats = Label.new()
+	congrats.text = "REWARD CLAIMED!"
+	congrats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		congrats.add_theme_font_override("font", pixel_font)
+	congrats.add_theme_font_size_override("font_size", 20)
+	congrats.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	congrats.add_theme_color_override("font_shadow_color", Color(0.5, 0.3, 0, 1))
+	congrats.add_theme_constant_override("shadow_offset_x", 2)
+	congrats.add_theme_constant_override("shadow_offset_y", 2)
+	congrats.modulate.a = 0
+	vbox.add_child(congrats)
+
+	# Animate congrats text
+	var congrats_tween = create_tween()
+	congrats_tween.tween_interval(0.2)
+	congrats_tween.tween_property(congrats, "modulate:a", 1.0, 0.3)
+
+	# Mission title
+	var title = Label.new()
+	title.text = mission.title
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color.WHITE)
+	title.modulate.a = 0
+	vbox.add_child(title)
+
+	var title_tween = create_tween()
+	title_tween.tween_interval(0.3)
+	title_tween.tween_property(title, "modulate:a", 1.0, 0.2)
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(spacer)
+
+	# Reward display with coin animation
+	if mission.reward_coins > 0:
+		var coin_container = HBoxContainer.new()
+		coin_container.alignment = BoxContainer.ALIGNMENT_CENTER
+		coin_container.add_theme_constant_override("separation", 12)
+		coin_container.modulate.a = 0
+		coin_container.scale = Vector2(0.5, 0.5)
+		coin_container.pivot_offset = Vector2(100, 20)
+		vbox.add_child(coin_container)
+
+		var coin_icon = Label.new()
+		coin_icon.text = "$"
+		if pixel_font:
+			coin_icon.add_theme_font_override("font", pixel_font)
+		coin_icon.add_theme_font_size_override("font_size", 32)
+		coin_icon.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+		coin_container.add_child(coin_icon)
+
+		var coin_amount = Label.new()
+		coin_amount.text = "+%s" % _format_number(mission.reward_coins)
+		if pixel_font:
+			coin_amount.add_theme_font_override("font", pixel_font)
+		coin_amount.add_theme_font_size_override("font_size", 28)
+		coin_amount.add_theme_color_override("font_color", Color(1, 0.95, 0.5))
+		coin_amount.add_theme_color_override("font_shadow_color", Color(0.4, 0.3, 0, 1))
+		coin_amount.add_theme_constant_override("shadow_offset_x", 2)
+		coin_amount.add_theme_constant_override("shadow_offset_y", 2)
+		coin_container.add_child(coin_amount)
+
+		# Animate coin pop
+		var coin_tween = create_tween()
+		coin_tween.set_ease(Tween.EASE_OUT)
+		coin_tween.set_trans(Tween.TRANS_ELASTIC)
+		coin_tween.tween_interval(0.4)
+		coin_tween.tween_property(coin_container, "modulate:a", 1.0, 0.1)
+		coin_tween.parallel().tween_property(coin_container, "scale", Vector2(1.0, 1.0), 0.5)
+
+		# Pulse the coin amount
+		_start_coin_pulse(coin_amount)
+
+	# Unlock reward if any
+	if mission.reward_unlock_id != "":
+		var unlock_label = Label.new()
+		unlock_label.text = "UNLOCKED: %s" % mission.reward_unlock_id.to_upper().replace("_", " ")
+		unlock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		if pixel_font:
+			unlock_label.add_theme_font_override("font", pixel_font)
+		unlock_label.add_theme_font_size_override("font_size", 12)
+		unlock_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))
+		unlock_label.modulate.a = 0
+		vbox.add_child(unlock_label)
+
+		var unlock_tween = create_tween()
+		unlock_tween.tween_interval(0.6)
+		unlock_tween.tween_property(unlock_label, "modulate:a", 1.0, 0.3)
+
+	# Spacer before button
+	var spacer2 = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 15)
+	vbox.add_child(spacer2)
+
+	# OK Button
+	var ok_button = Button.new()
+	ok_button.text = "AWESOME!"
+	ok_button.custom_minimum_size = Vector2(180, 55)
+	ok_button.modulate.a = 0
+	_style_celebration_button(ok_button)
+	ok_button.pressed.connect(_close_reward_celebration)
+	vbox.add_child(ok_button)
+
+	var btn_tween = create_tween()
+	btn_tween.tween_interval(0.6)
+	btn_tween.tween_property(ok_button, "modulate:a", 1.0, 0.2)
+
+	# Create sparkle particles around the panel
+	_spawn_celebration_particles(reward_modal)
+
+	# Screen shake for extra juice
+	if JuiceManager:
+		JuiceManager.shake_small()
+
+	# Haptic feedback
+	if HapticManager:
+		HapticManager.heavy()
+
+func _start_coin_pulse(label: Label) -> void:
+	"""Create a pulsing glow effect on the coin amount."""
+	var pulse_tween = create_tween()
+	pulse_tween.set_loops()
+	pulse_tween.tween_property(label, "modulate", Color(1.2, 1.1, 0.8, 1.0), 0.5)
+	pulse_tween.tween_property(label, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.5)
+
+func _spawn_celebration_particles(parent: Control) -> void:
+	"""Spawn sparkle/confetti particles for celebration."""
+	var colors = [
+		Color(1, 0.85, 0.2),   # Gold
+		Color(1, 1, 1),         # White
+		Color(0.5, 1, 0.6),     # Green
+		Color(0.5, 0.8, 1),     # Blue
+		Color(1, 0.5, 0.7),     # Pink
+	]
+
+	# Create multiple sparkles
+	for i in range(20):
+		var sparkle = ColorRect.new()
+		sparkle.custom_minimum_size = Vector2(8, 8)
+		sparkle.size = Vector2(8, 8)
+		sparkle.color = colors[randi() % colors.size()]
+
+		# Random position around center
+		var viewport_size = get_viewport().get_visible_rect().size
+		var center = viewport_size / 2
+		var angle = randf() * TAU
+		var distance = randf_range(50, 200)
+		sparkle.position = center + Vector2(cos(angle), sin(angle)) * distance
+
+		sparkle.modulate.a = 0
+		parent.add_child(sparkle)
+
+		# Animate sparkle
+		var delay = randf() * 0.3
+		var sparkle_tween = create_tween()
+		sparkle_tween.tween_interval(delay)
+		sparkle_tween.tween_property(sparkle, "modulate:a", 1.0, 0.1)
+		sparkle_tween.parallel().tween_property(sparkle, "scale", Vector2(1.5, 1.5), 0.2)
+		sparkle_tween.tween_property(sparkle, "modulate:a", 0.0, 0.4)
+		sparkle_tween.parallel().tween_property(sparkle, "position", sparkle.position + Vector2(0, -50), 0.6)
+		sparkle_tween.tween_callback(sparkle.queue_free)
+
+func _style_celebration_button(button: Button) -> void:
+	"""Style the celebration OK button with extra flair."""
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.2, 0.75, 0.4, 1)
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 6
+	style_normal.border_color = Color(0.1, 0.4, 0.2, 1)
+	style_normal.set_corner_radius_all(10)
+	style_normal.shadow_color = Color(0.1, 0.5, 0.2, 0.5)
+	style_normal.shadow_size = 8
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.3, 0.85, 0.5, 1)
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 6
+	style_hover.border_color = Color(0.15, 0.5, 0.25, 1)
+	style_hover.set_corner_radius_all(10)
+	style_hover.shadow_color = Color(0.2, 0.6, 0.3, 0.6)
+	style_hover.shadow_size = 12
+
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_normal)
+	button.add_theme_stylebox_override("focus", style_normal)
+
+	if pixel_font:
+		button.add_theme_font_override("font", pixel_font)
+	button.add_theme_font_size_override("font_size", 16)
+	button.add_theme_color_override("font_color", Color.WHITE)
+	button.add_theme_color_override("font_shadow_color", Color(0, 0.2, 0, 1))
+	button.add_theme_constant_override("shadow_offset_x", 2)
+	button.add_theme_constant_override("shadow_offset_y", 2)
+
+func _close_reward_celebration() -> void:
+	"""Close the reward celebration modal with animation."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	if reward_modal:
+		# Animate out
+		var tween = create_tween()
+		tween.tween_property(reward_modal, "modulate:a", 0.0, 0.15)
+		tween.tween_callback(func():
+			if reward_modal:
+				reward_modal.queue_free()
+				reward_modal = null
+		)
