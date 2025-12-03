@@ -485,7 +485,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.20},
-		"grants_equipment_ability": "bounce_attack",
 		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon25.png"
 	},
 	"cheese_knife": {
@@ -523,7 +522,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"crit_chance": 0.15, "damage": 0.10},
-		"grants_equipment_ability": "assassinate",
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon23.png"
 	},
 
@@ -583,7 +581,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.15},
-		"grants_equipment_ability": "charm_shot",
 		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon32.png"
 	},
 	"sniper_special": {
@@ -601,7 +598,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.05, "projectile_count": 2},
-		"grants_equipment_ability": "spread_shot",
 		"icon_path": "res://assets/sprites/items/Bow/PNG/Transperent/Icon34.png"
 	},
 	"boomerang_bow": {
@@ -621,7 +617,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"xp_gain": 0.20, "crit_chance": 0.05},
-		"grants_equipment_ability": "eureka",
 		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon31.png"
 	},
 	"tin_foil_hat": {
@@ -630,7 +625,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.10, "max_hp": 0.05},
-		"grants_equipment_ability": "paranoia",
 		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon32.png"
 	},
 	"bucket_helm": {
@@ -639,7 +633,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.15, "damage_reduction": 0.05},
-		"grants_equipment_ability": "tunnel_vision",
 		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon33.png"
 	},
 
@@ -650,7 +643,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "damage_reduction": 0.08},
-		"grants_equipment_ability": "dad_reflexes",
 		"icon_path": "res://assets/sprites/items/chest/PNG/Transperent/Icon20.png"
 	},
 	"hoodie_of_gaming": {
@@ -659,7 +651,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"attack_speed": 0.10, "crit_chance": 0.08},
-		"grants_equipment_ability": "gamer_mode",
 		"icon_path": "res://assets/sprites/items/chest/PNG/Transperent/Icon25.png"
 	},
 	"plot_armor_vest": {
@@ -668,7 +659,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.10, "dodge_chance": 0.08},
-		"grants_equipment_ability": "plot_convenience",
 		"icon_path": "res://assets/sprites/items/chest/PNG/Transperent/Icon30.png"
 	},
 
@@ -679,7 +669,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.BELT,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.12, "max_hp": 0.08},
-		"grants_equipment_ability": "champion_spirit",
 		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon31.png"
 	},
 	"utility_belt": {
@@ -688,7 +677,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.BELT,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"dodge_chance": 0.10, "attack_speed": 0.08},
-		"grants_equipment_ability": "gadgets",
 		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon32.png"
 	},
 
@@ -699,7 +687,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.15, "dodge_chance": 0.05},
-		"grants_equipment_ability": "low_gravity",
 		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon31.png"
 	},
 	"cargo_pants": {
@@ -708,7 +695,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.12, "damage": 0.05},
-		"grants_equipment_ability": "sport_mode",
 		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon32.png"
 	},
 	"heely_pants": {
@@ -717,7 +703,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.20},
-		"grants_equipment_ability": "momentum",
 		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon33.png"
 	},
 
@@ -728,7 +713,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.08},
-		"grants_equipment_ability": "delayed_damage",
 		"icon_path": "res://assets/sprites/items/rings/Icon37_05.png"
 	},
 	"mood_ring": {
@@ -737,7 +721,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"crit_chance": 0.08, "damage": 0.05},
-		"grants_equipment_ability": "mood_swings",
 		"icon_path": "res://assets/sprites/items/rings/Icon37_06.png"
 	},
 	"one_ring": {
@@ -746,7 +729,6 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.10, "max_hp": 0.10},
-		"grants_equipment_ability": "precious",
 		"icon_path": "res://assets/sprites/items/rings/Icon37_07.png"
 	},
 }
@@ -760,7 +742,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15, "attack_speed": 0.10},
-		"grants_ability": "cull_weak",
 		"grants_equipment_ability": "holy_smite",
 		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon40.png"
 	},
@@ -770,7 +751,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.25, "knockback": 100.0},
-		"grants_ability": "death_explosion",
 		"grants_equipment_ability": "permaban",
 		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon40.png"
 	},
@@ -780,7 +760,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.20, "attack_speed": 0.20, "crit_chance": 0.10},
-		"grants_ability": "whirlwind",
 		"grants_equipment_ability": "scaling_damage",
 		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon45.png"
 	},
@@ -790,7 +769,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.18, "max_hp": 0.15},
-		"grants_ability": "vampirism",
 		"grants_equipment_ability": "comfort_food",
 		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon42.png"
 	},
@@ -811,7 +789,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"damage": 0.25, "attack_speed": 0.25, "crit_chance": 0.20},
-		"grants_ability": "shadow_strike",
 		"grants_equipment_ability": "assassinate",
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon40.png"
 	},
@@ -821,7 +798,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"damage": 0.20, "attack_speed": 0.30, "dodge_chance": 0.15},
-		"grants_ability": "shadow_clone",
 		"grants_equipment_ability": "vanishing_strike",
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon45.png"
 	},
@@ -831,7 +807,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.DAGGER,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.25},
-		"grants_ability": "bleeding",
 		"grants_equipment_ability": "eviscerate",
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon48.png"
 	},
@@ -843,7 +818,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.25, "attack_speed": 0.20, "melee_range": 0.25},
-		"grants_ability": "whirlwind",
 		"grants_equipment_ability": "holy_smite",
 		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon40.png"
 	},
@@ -853,7 +827,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.30, "melee_range": 0.30, "crit_chance": 0.15},
-		"grants_ability": "frenzy",
 		"grants_equipment_ability": "scaling_damage",
 		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon48.png"
 	},
@@ -865,7 +838,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.25, "crit_chance": 0.20, "attack_speed": 0.10},
-		"grants_ability": "lightning_strike",
 		"grants_equipment_ability": "random_effects",
 		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon40.png"
 	},
@@ -875,7 +847,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.20, "max_hp": 0.20, "xp_gain": 0.15},
-		"grants_ability": "regeneration",
 		"grants_equipment_ability": "scaling_damage",
 		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon45.png"
 	},
@@ -885,7 +856,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15},
-		"grants_ability": "ring_of_fire",
 		"grants_equipment_ability": "random_effects",
 		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon48.png"
 	},
@@ -897,7 +867,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.20, "crit_chance": 0.25, "projectile_speed": 0.20},
-		"grants_ability": "pierce",
 		"grants_equipment_ability": "auto_aim",
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_2.png"
 	},
@@ -916,7 +885,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.25, "projectile_count": 2, "crit_chance": 0.15},
-		"grants_ability": "ring_of_fire",
 		"grants_equipment_ability": "whale_power",
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/bows/bow_4.png"
 	},
@@ -926,7 +894,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.RANGED,
 		"base_stats": {"damage": 0.20, "attack_speed": 0.15},
-		"grants_ability": "lightning_strike",
 		"grants_equipment_ability": "random_effects",
 		"icon_path": "res://assets/sprites/items/Range/TRANSPARENT/crossbows/crossbow_4.png"
 	},
@@ -956,7 +923,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.HELMET,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.20, "max_hp": 0.15, "crit_chance": 0.10},
-		"grants_ability": "frenzy",
 		"grants_equipment_ability": "power_of_friendship",
 		"icon_path": "res://assets/sprites/items/helmet/PNG/Transperent/Icon48.png"
 	},
@@ -977,7 +943,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.CHEST,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "dodge_chance": 0.15, "move_speed": 0.10},
-		"grants_ability": "deflect",
 		"grants_equipment_ability": "ethereal",
 		"icon_path": "res://assets/sprites/items/chest/PNG/Transperent/Icon48.png"
 	},
@@ -998,7 +963,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.BELT,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"damage": 0.25, "max_hp": 0.20},
-		"grants_ability": "frenzy",
 		"grants_equipment_ability": "finishing_move",
 		"icon_path": "res://assets/sprites/items/Belt/PNG/Transperent/Icon48.png"
 	},
@@ -1010,7 +974,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.LEGS,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"move_speed": 0.30, "attack_speed": 0.15},
-		"grants_ability": "adrenaline",
 		"grants_equipment_ability": "spin_dash",
 		"icon_path": "res://assets/sprites/items/Legs/PNG/Transperent/Icon45.png"
 	},
@@ -1049,7 +1012,6 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.RING,
 		"weapon_type": ItemData.WeaponType.NONE,
 		"base_stats": {"max_hp": 0.20, "attack_speed": 0.15},
-		"grants_ability": "regeneration",
 		"grants_equipment_ability": "sugar_rush",
 		"icon_path": "res://assets/sprites/items/rings/Icon37_10.png"
 	},
@@ -1346,6 +1308,26 @@ const EQUIPMENT_ABILITIES: Dictionary = {
 	"sugar_rush": {
 		"name": "Sugar Rush",
 		"description": "Healing also increases attack speed briefly"
+	},
+	"assassinate": {
+		"name": "Assassinate",
+		"description": "Attacks from behind deal 50% bonus damage"
+	},
+	"vanishing_strike": {
+		"name": "Vanishing Strike",
+		"description": "Become briefly invisible after killing an enemy"
+	},
+	"eviscerate": {
+		"name": "Eviscerate",
+		"description": "Critical hits cause enemies to bleed for 100% damage over 3s"
+	},
+	"cosmic_power": {
+		"name": "Cosmic Power",
+		"description": "All stats increase by 2% for each equipped legendary"
+	},
+	"finishing_move": {
+		"name": "Finishing Move",
+		"description": "Deal 3x damage to enemies below 20% HP"
 	},
 }
 

@@ -58,19 +58,22 @@ func _process_behavior(delta: float) -> void:
 			dive_target = player.global_position
 
 		if is_diving:
-			# Aggressive dive - constantly update target to track player
-			dive_target = player.global_position
+			# Dive toward the position the player was at when dive started
+			# This allows players to dodge by moving out of the way
 			var dive_dir = (dive_target - global_position).normalized()
 			velocity = dive_dir * speed * dive_speed_mult
 			move_and_slide()
 			update_animation(delta, ROW_MOVE, dive_dir)
 
-			# Only end dive when very close to player (to attack)
-			if distance < attack_range:
+			# End dive if we've reached the target position (even if player moved)
+			var dist_to_target = global_position.distance_to(dive_target)
+			if dist_to_target < 20.0:
 				is_diving = false
 				dive_cooldown = dive_cooldown_time
-				if can_attack:
-					start_attack()
+
+			# Attack if close to player during dive
+			if distance < attack_range and can_attack:
+				start_attack()
 		else:
 			# Brief pause then immediately dive again
 			if dive_cooldown <= 0:
