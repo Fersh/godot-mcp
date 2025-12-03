@@ -109,7 +109,7 @@ func _create_ui_elements() -> void:
 	ability_name_label = Label.new()
 	ability_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ability_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	ability_name_label.add_theme_font_size_override("font_size", 64)
+	ability_name_label.add_theme_font_size_override("font_size", 66)
 	ability_name_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))  # Golden
 	ability_name_label.add_theme_color_override("font_outline_color", Color(0.3, 0.15, 0.0))
 	ability_name_label.add_theme_constant_override("outline_size", 4)
@@ -124,7 +124,7 @@ func _create_ui_elements() -> void:
 	ability_desc_label = Label.new()
 	ability_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	ability_desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	ability_desc_label.add_theme_font_size_override("font_size", 24)
+	ability_desc_label.add_theme_font_size_override("font_size", 26)
 	ability_desc_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
 	ability_desc_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	ability_desc_label.add_theme_constant_override("outline_size", 2)

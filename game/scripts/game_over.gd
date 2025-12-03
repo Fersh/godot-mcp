@@ -161,7 +161,7 @@ func _display_loot() -> void:
 			var no_loot = Label.new()
 			no_loot.text = "LOOT:"
 			no_loot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			no_loot.add_theme_font_size_override("font_size", 12)
+			no_loot.add_theme_font_size_override("font_size", 14)
 			no_loot.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 			if pixel_font:
 				no_loot.add_theme_font_override("font", pixel_font)
@@ -170,7 +170,7 @@ func _display_loot() -> void:
 			var do_better = Label.new()
 			do_better.text = "None this run. Do better."
 			do_better.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			do_better.add_theme_font_size_override("font_size", 10)
+			do_better.add_theme_font_size_override("font_size", 12)
 			do_better.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 			if pixel_font:
 				do_better.add_theme_font_override("font", pixel_font)
@@ -183,7 +183,7 @@ func _display_loot() -> void:
 	if loot_container:
 		var loot_label = Label.new()
 		loot_label.text = "LOOT: "
-		loot_label.add_theme_font_size_override("font_size", 12)
+		loot_label.add_theme_font_size_override("font_size", 14)
 		loot_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 		if pixel_font:
 			loot_label.add_theme_font_override("font", pixel_font)
@@ -227,7 +227,7 @@ func _create_loot_card(item: ItemData) -> Control:
 	if display_name.length() > 6:
 		display_name = display_name.substr(0, 5) + ".."
 	name_label.text = display_name
-	name_label.add_theme_font_size_override("font_size", 6)
+	name_label.add_theme_font_size_override("font_size", 8)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -294,7 +294,7 @@ func _show_item_tooltip(item: ItemData, card: Button) -> void:
 	# Item name
 	var name_label = Label.new()
 	name_label.text = item.get_full_name()
-	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", item.get_rarity_color())
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -304,7 +304,7 @@ func _show_item_tooltip(item: ItemData, card: Button) -> void:
 	# Rarity and slot
 	var type_label = Label.new()
 	type_label.text = "%s %s" % [item.get_rarity_name(), item.get_slot_name()]
-	type_label.add_theme_font_size_override("font_size", 9)
+	type_label.add_theme_font_size_override("font_size", 11)
 	type_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	type_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -314,7 +314,7 @@ func _show_item_tooltip(item: ItemData, card: Button) -> void:
 	# Stats
 	var stats_label = Label.new()
 	stats_label.text = item.get_stat_description()
-	stats_label.add_theme_font_size_override("font_size", 10)
+	stats_label.add_theme_font_size_override("font_size", 12)
 	stats_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -428,7 +428,7 @@ func _create_settings_button() -> void:
 	var settings_btn = Button.new()
 	settings_btn.text = "⚙️"
 	settings_btn.custom_minimum_size = Vector2(50, 50)
-	settings_btn.add_theme_font_size_override("font_size", 24)
+	settings_btn.add_theme_font_size_override("font_size", 26)
 	settings_btn.pressed.connect(_toggle_settings_dropdown)
 
 	# Style the button
@@ -471,7 +471,7 @@ func _create_settings_dropdown() -> void:
 	# Title
 	var title = Label.new()
 	title.text = "Settings"
-	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_font_size_override("font_size", 16)
 	title.add_theme_color_override("font_color", Color(1, 1, 1))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -509,7 +509,7 @@ func _create_settings_dropdown() -> void:
 	# Volume section
 	var vol_label = Label.new()
 	vol_label.text = "Volume"
-	vol_label.add_theme_font_size_override("font_size", 12)
+	vol_label.add_theme_font_size_override("font_size", 14)
 	vol_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	if pixel_font:
 		vol_label.add_theme_font_override("font", pixel_font)
@@ -711,7 +711,7 @@ func _flash_personal_best(stat_label: Label) -> void:
 	# Create "NEW BEST!" label next to it
 	var best_label = Label.new()
 	best_label.text = "NEW BEST!"
-	best_label.add_theme_font_size_override("font_size", 10)
+	best_label.add_theme_font_size_override("font_size", 12)
 	best_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1))
 	if pixel_font:
 		best_label.add_theme_font_override("font", pixel_font)
@@ -756,7 +756,7 @@ func _show_difficulty_info() -> void:
 
 	if pixel_font:
 		diff_info.add_theme_font_override("font", pixel_font)
-	diff_info.add_theme_font_size_override("font_size", 12)
+	diff_info.add_theme_font_size_override("font_size", 14)
 	diff_info.add_theme_color_override("font_color", DifficultyManager.get_difficulty_color())
 	diff_info.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	diff_info.add_theme_constant_override("shadow_offset_x", 2)
@@ -823,7 +823,7 @@ func _create_curse_icon_button(princess) -> Button:
 	letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		letter_label.add_theme_font_override("font", pixel_font)
-	letter_label.add_theme_font_size_override("font_size", 14)
+	letter_label.add_theme_font_size_override("font_size", 16)
 	letter_label.add_theme_color_override("font_color", Color(0.95, 0.7, 0.85))
 
 	var center = CenterContainer.new()
@@ -884,7 +884,7 @@ func _show_curse_tooltip(princess, btn: Button) -> void:
 	# Curse name
 	var name_label = Label.new()
 	name_label.text = princess.curse_name
-	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color(0.95, 0.6, 0.8))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -894,7 +894,7 @@ func _show_curse_tooltip(princess, btn: Button) -> void:
 	# Princess name
 	var princess_label = Label.new()
 	princess_label.text = princess.name
-	princess_label.add_theme_font_size_override("font_size", 9)
+	princess_label.add_theme_font_size_override("font_size", 11)
 	princess_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	princess_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
@@ -904,7 +904,7 @@ func _show_curse_tooltip(princess, btn: Button) -> void:
 	# Description
 	var desc_label = Label.new()
 	desc_label.text = princess.curse_description
-	desc_label.add_theme_font_size_override("font_size", 10)
+	desc_label.add_theme_font_size_override("font_size", 12)
 	desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

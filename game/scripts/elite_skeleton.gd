@@ -204,7 +204,7 @@ func _show_bone_zone_warning() -> void:
 	if bone_zone_warning_label == null:
 		bone_zone_warning_label = Label.new()
 		bone_zone_warning_label.text = "BONE ZONE!"
-		bone_zone_warning_label.add_theme_font_size_override("font_size", 14)
+		bone_zone_warning_label.add_theme_font_size_override("font_size", 16)
 		bone_zone_warning_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.8, 1.0))
 		bone_zone_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		bone_zone_warning_label.add_theme_constant_override("shadow_offset_x", 2)

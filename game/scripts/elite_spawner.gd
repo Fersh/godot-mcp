@@ -147,7 +147,7 @@ func _setup_notification_ui() -> void:
 	# Use pixel font - very bold and large
 	if pixel_font:
 		notification_label.add_theme_font_override("font", pixel_font)
-	notification_label.add_theme_font_size_override("font_size", 48)
+	notification_label.add_theme_font_size_override("font_size", 50)
 	notification_label.add_theme_color_override("font_color", Color(1.0, 0.15, 0.15, 1.0))
 
 	# Heavy shadow/outline for bold visibility
@@ -237,7 +237,7 @@ func _setup_boss_health_bar() -> void:
 	boss_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		boss_name_label.add_theme_font_override("font", pixel_font)
-	boss_name_label.add_theme_font_size_override("font_size", 14)
+	boss_name_label.add_theme_font_size_override("font_size", 16)
 	boss_name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 	boss_name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 	boss_name_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -319,7 +319,7 @@ func _create_elite_health_bar_for(elite: Node, index: int) -> Dictionary:
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 	name_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -350,11 +350,11 @@ func _start_warning() -> void:
 	if is_boss:
 		notification_label.text = "BOSS APPROACHES"
 		notification_label.add_theme_color_override("font_color", Color(1.0, 0.15, 0.15, 1.0))
-		notification_label.add_theme_font_size_override("font_size", 56)  # Bigger for boss
+		notification_label.add_theme_font_size_override("font_size", 58)  # Bigger for boss
 	else:
 		notification_label.text = "ELITE INCOMING"
 		notification_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.2, 1.0))
-		notification_label.add_theme_font_size_override("font_size", 48)
+		notification_label.add_theme_font_size_override("font_size", 50)
 
 	# Show notification with slam-in animation (#3)
 	notification_label.visible = true

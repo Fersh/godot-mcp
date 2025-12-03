@@ -128,7 +128,7 @@ func _create_stat_row(icon_path: String, label_color: Color, min_label_width: fl
 	label.add_theme_constant_override("shadow_offset_y", 2)
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", 16)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if min_label_width > 0:
 		label.custom_minimum_size.x = min_label_width

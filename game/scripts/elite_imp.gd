@@ -322,7 +322,7 @@ func _show_inferno_warning() -> void:
 	if inferno_warning_label == null:
 		inferno_warning_label = Label.new()
 		inferno_warning_label.text = "INFERNO!"
-		inferno_warning_label.add_theme_font_size_override("font_size", 14)
+		inferno_warning_label.add_theme_font_size_override("font_size", 16)
 		inferno_warning_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.1, 1.0))
 		inferno_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		inferno_warning_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -390,7 +390,7 @@ func _show_blink_strike_warning() -> void:
 	if blink_strike_warning_label == null:
 		blink_strike_warning_label = Label.new()
 		blink_strike_warning_label.text = "BLINK!"
-		blink_strike_warning_label.add_theme_font_size_override("font_size", 14)
+		blink_strike_warning_label.add_theme_font_size_override("font_size", 16)
 		blink_strike_warning_label.add_theme_color_override("font_color", Color(0.8, 0.3, 1.0, 1.0))
 		blink_strike_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		blink_strike_warning_label.add_theme_constant_override("shadow_offset_x", 2)

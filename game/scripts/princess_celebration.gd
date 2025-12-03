@@ -212,7 +212,7 @@ func _create_speech_bubble() -> void:
 	speech_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		speech_label.add_theme_font_override("font", pixel_font)
-	speech_label.add_theme_font_size_override("font_size", 12)
+	speech_label.add_theme_font_size_override("font_size", 14)
 	speech_label.add_theme_color_override("font_color", Color(0.15, 0.15, 0.15))
 
 	panel.add_child(speech_label)
@@ -276,7 +276,7 @@ func _show_unlock_modal() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 36)
+	title.add_theme_font_size_override("font_size", 38)
 	title.add_theme_color_override("font_color", Color(1.0, 0.7, 0.85))
 	title.add_theme_color_override("font_shadow_color", Color(0.4, 0.15, 0.25, 1.0))
 	title.add_theme_constant_override("shadow_offset_x", 3)
@@ -311,7 +311,7 @@ func _show_unlock_modal() -> void:
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", 22)
 	name_label.add_theme_color_override("font_color", Color(1.0, 0.95, 0.8))
 	container.add_child(name_label)
 
@@ -339,7 +339,7 @@ func _show_unlock_modal() -> void:
 	curse_name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		curse_name.add_theme_font_override("font", pixel_font)
-	curse_name.add_theme_font_size_override("font_size", 14)
+	curse_name.add_theme_font_size_override("font_size", 16)
 	curse_name.add_theme_color_override("font_color", Color(0.9, 0.5, 0.6))
 	curse_vbox.add_child(curse_name)
 
@@ -350,7 +350,7 @@ func _show_unlock_modal() -> void:
 	curse_desc.custom_minimum_size = Vector2(300, 0)
 	if pixel_font:
 		curse_desc.add_theme_font_override("font", pixel_font)
-	curse_desc.add_theme_font_size_override("font_size", 12)
+	curse_desc.add_theme_font_size_override("font_size", 14)
 	curse_desc.add_theme_color_override("font_color", Color(0.8, 0.8, 0.85))
 	curse_vbox.add_child(curse_desc)
 
@@ -359,7 +359,7 @@ func _show_unlock_modal() -> void:
 	bonus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		bonus_label.add_theme_font_override("font", pixel_font)
-	bonus_label.add_theme_font_size_override("font_size", 12)
+	bonus_label.add_theme_font_size_override("font_size", 14)
 	bonus_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	curse_vbox.add_child(bonus_label)
 
@@ -406,7 +406,7 @@ func _style_button(button: Button, color: Color) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 14)
+	button.add_theme_font_size_override("font_size", 16)
 	button.add_theme_color_override("font_color", Color.WHITE)
 
 func _on_continue_pressed() -> void:

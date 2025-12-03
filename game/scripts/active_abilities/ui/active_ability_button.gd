@@ -488,7 +488,7 @@ func _create_tooltip() -> void:
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -504,7 +504,7 @@ func _create_tooltip() -> void:
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 11)
+	desc_label.add_theme_font_size_override("font_size", 13)
 	desc_label.add_theme_color_override("font_color", Color.WHITE)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 200
@@ -522,7 +522,7 @@ func _create_tooltip() -> void:
 	var cd_label = Label.new()
 	cd_label.name = "CooldownLabel"
 	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cd_label.add_theme_font_size_override("font_size", 10)
+	cd_label.add_theme_font_size_override("font_size", 12)
 	cd_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	if pixel_font:
 		cd_label.add_theme_font_override("font", pixel_font)
@@ -541,7 +541,7 @@ func _create_tooltip() -> void:
 	var rarity_label = Label.new()
 	rarity_label.name = "RarityLabel"
 	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_label.add_theme_font_size_override("font_size", 9)
+	rarity_label.add_theme_font_size_override("font_size", 11)
 	if pixel_font:
 		rarity_label.add_theme_font_override("font", pixel_font)
 	rarity_tag.add_child(rarity_label)

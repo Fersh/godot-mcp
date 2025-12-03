@@ -108,7 +108,7 @@ func _create_ui() -> void:
 	pause_icon.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
 		pause_icon.add_theme_font_override("font", pixel_font)
-	pause_icon.add_theme_font_size_override("font_size", 11)
+	pause_icon.add_theme_font_size_override("font_size", 13)
 	pause_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pause_button.add_child(pause_icon)
 
@@ -164,7 +164,7 @@ func _create_ui() -> void:
 	level_label.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
 		level_label.add_theme_font_override("font", pixel_font)
-	level_label.add_theme_font_size_override("font_size", 10)
+	level_label.add_theme_font_size_override("font_size", 12)
 	xp_container.add_child(level_label)
 
 	# Store XP bar width for progress updates

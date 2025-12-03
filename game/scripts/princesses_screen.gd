@@ -122,7 +122,7 @@ func _build_ui() -> void:
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
-	title_label.add_theme_font_size_override("font_size", 20)
+	title_label.add_theme_font_size_override("font_size", 22)
 	title_label.add_theme_color_override("font_color", Color.WHITE)
 	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	title_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -144,7 +144,7 @@ func _build_ui() -> void:
 	coin_icon.text = "●"
 	if pixel_font:
 		coin_icon.add_theme_font_override("font", pixel_font)
-	coin_icon.add_theme_font_size_override("font_size", 20)
+	coin_icon.add_theme_font_size_override("font_size", 22)
 	coin_icon.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))
 	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	coin_display.add_child(coin_icon)
@@ -153,7 +153,7 @@ func _build_ui() -> void:
 	coin_amount.text = "0"
 	if pixel_font:
 		coin_amount.add_theme_font_override("font", pixel_font)
-	coin_amount.add_theme_font_size_override("font_size", 16)
+	coin_amount.add_theme_font_size_override("font_size", 18)
 	coin_amount.add_theme_color_override("font_color", Color.WHITE)
 	coin_amount.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	coin_amount.add_theme_constant_override("shadow_offset_x", 1)
@@ -186,7 +186,7 @@ func _build_ui() -> void:
 	explanation_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		explanation_label.add_theme_font_override("font", pixel_font)
-	explanation_label.add_theme_font_size_override("font_size", 14)
+	explanation_label.add_theme_font_size_override("font_size", 16)
 	explanation_label.add_theme_color_override("font_color", Color(0.9, 0.88, 0.95))
 	explanation_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
 	explanation_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -205,7 +205,7 @@ func _build_ui() -> void:
 	multiplier_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		multiplier_label.add_theme_font_override("font", pixel_font)
-	multiplier_label.add_theme_font_size_override("font_size", 14)
+	multiplier_label.add_theme_font_size_override("font_size", 16)
 	multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	multiplier_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	multiplier_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -327,7 +327,7 @@ func _setup_preview_content() -> void:
 	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		preview_name_label.add_theme_font_override("font", pixel_font)
-	preview_name_label.add_theme_font_size_override("font_size", 16)
+	preview_name_label.add_theme_font_size_override("font_size", 18)
 	preview_name_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.9))
 	vbox.add_child(preview_name_label)
 
@@ -336,7 +336,7 @@ func _setup_preview_content() -> void:
 	preview_curse_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		preview_curse_name_label.add_theme_font_override("font", pixel_font)
-	preview_curse_name_label.add_theme_font_size_override("font_size", 12)
+	preview_curse_name_label.add_theme_font_size_override("font_size", 14)
 	preview_curse_name_label.add_theme_color_override("font_color", Color(0.9, 0.5, 0.6))
 	vbox.add_child(preview_curse_name_label)
 
@@ -347,7 +347,7 @@ func _setup_preview_content() -> void:
 	preview_curse_desc_label.custom_minimum_size = Vector2(200, 40)
 	if pixel_font:
 		preview_curse_desc_label.add_theme_font_override("font", pixel_font)
-	preview_curse_desc_label.add_theme_font_size_override("font_size", 13)
+	preview_curse_desc_label.add_theme_font_size_override("font_size", 15)
 	preview_curse_desc_label.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
 	vbox.add_child(preview_curse_desc_label)
 
@@ -361,7 +361,7 @@ func _setup_preview_content() -> void:
 	preview_bonus_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		preview_bonus_label.add_theme_font_override("font", pixel_font)
-	preview_bonus_label.add_theme_font_size_override("font_size", 12)
+	preview_bonus_label.add_theme_font_size_override("font_size", 14)
 	preview_bonus_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	vbox.add_child(preview_bonus_label)
 
@@ -370,7 +370,7 @@ func _setup_preview_content() -> void:
 	preview_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		preview_status_label.add_theme_font_override("font", pixel_font)
-	preview_status_label.add_theme_font_size_override("font_size", 10)
+	preview_status_label.add_theme_font_size_override("font_size", 12)
 	vbox.add_child(preview_status_label)
 
 	# Add 20px margin below status label
@@ -447,7 +447,7 @@ func _create_selector_buttons() -> void:
 			locked_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			if pixelify_font:
 				locked_label.add_theme_font_override("font", pixelify_font)
-			locked_label.add_theme_font_size_override("font_size", 28)
+			locked_label.add_theme_font_size_override("font_size", 30)
 			locked_label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.35))
 
 			var center = CenterContainer.new()
@@ -665,7 +665,7 @@ func _style_back_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override("font_size", 14)
 
 func _style_pink_button(button: Button) -> void:
 	var style = StyleBoxFlat.new()
@@ -690,7 +690,7 @@ func _style_pink_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", Color.WHITE)
 
 func _style_red_button(button: Button) -> void:
@@ -716,7 +716,7 @@ func _style_red_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", Color.WHITE)
 
 func _style_gray_button(button: Button) -> void:
@@ -742,5 +742,5 @@ func _style_gray_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 10)
+	button.add_theme_font_size_override("font_size", 12)
 	button.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))

@@ -82,7 +82,7 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# Player taking damage - red with shake animation
 		label.text = str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1))
-		label.add_theme_font_size_override("font_size", 32)
+		label.add_theme_font_size_override("font_size", 34)
 		# Add outline for visibility
 		label.add_theme_color_override("font_outline_color", Color(0.3, 0, 0, 1))
 		label.add_theme_constant_override("outline_size", 4)
@@ -92,7 +92,7 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# ENHANCED Critical hit - gold with "CRIT!" prefix (#7)
 		label.text = "CRIT! " + str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
-		label.add_theme_font_size_override("font_size", 30)
+		label.add_theme_font_size_override("font_size", 32)
 		# Strong outline for crits
 		label.add_theme_color_override("font_outline_color", Color(0.6, 0.3, 0, 1))
 		label.add_theme_constant_override("outline_size", 4)
@@ -106,7 +106,7 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# Normal enemy hit - white with subtle bounce (#22)
 		label.text = str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
-		label.add_theme_font_size_override("font_size", 26)
+		label.add_theme_font_size_override("font_size", 28)
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
 		label.add_theme_constant_override("outline_size", 3)
 		# Subtle bounce animation
@@ -116,39 +116,39 @@ func set_heal(amount: float) -> void:
 	label.text = "+" + str(int(amount))
 	# Healing - green
 	label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3, 1))
-	label.add_theme_font_size_override("font_size", 28)
+	label.add_theme_font_size_override("font_size", 30)
 
 func set_blocked(amount: float) -> void:
 	label.text = str(int(amount)) + " BLOCKED"
 	# Blocked - light blue/steel color
 	label.add_theme_color_override("font_color", Color(0.5, 0.7, 1.0, 1))
-	label.add_theme_font_size_override("font_size", 26)
+	label.add_theme_font_size_override("font_size", 28)
 
 func set_dodge() -> void:
 	label.text = "DODGE!"
 	# Dodge - cyan/teal color
 	label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.9, 1))
-	label.add_theme_font_size_override("font_size", 28)
+	label.add_theme_font_size_override("font_size", 30)
 	scale = Vector2(1.1, 1.1)
 
 func set_shield() -> void:
 	label.text = "BLOCKED"
 	# Blocked by shield - cyan/blue color
 	label.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0, 1))
-	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_font_size_override("font_size", 20)
 	scale = Vector2(0.9, 0.9)
 
 func set_shield_gain(amount: float) -> void:
 	label.text = "+" + str(int(amount))
 	# Shield gain - blue color matching shield bar
 	label.add_theme_color_override("font_color", Color(0.4, 0.6, 1.0, 1))
-	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_font_size_override("font_size", 26)
 	scale = Vector2(0.9, 0.9)
 
 func set_elemental(text: String, color: Color) -> void:
 	label.text = text
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", 16)
 	scale = Vector2(0.7, 0.7)
 
 # ============================================
@@ -194,7 +194,7 @@ func set_kill_streak(streak: int, tier_name: String, color: Color) -> void:
 	"""Special display for kill streak milestones."""
 	label.text = tier_name + " x" + str(streak)
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_font_size_override("font_size", 34)
 	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
 	label.add_theme_constant_override("outline_size", 5)
 	scale = Vector2(0.5, 0.5)

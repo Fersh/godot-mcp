@@ -112,7 +112,7 @@ func _create_ui() -> void:
 	continue_label = Label.new()
 	continue_label.text = "CONTINUE?"
 	continue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	continue_label.add_theme_font_size_override("font_size", 48)
+	continue_label.add_theme_font_size_override("font_size", 50)
 	continue_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))  # Golden
 	continue_label.add_theme_color_override("font_shadow_color", Color(0.4, 0.2, 0.0))
 	continue_label.add_theme_constant_override("shadow_offset_x", 4)
@@ -161,7 +161,7 @@ func _style_button(button: Button, bg_color: Color, border_color: Color) -> void
 	pressed_style.bg_color = bg_color.darkened(0.2)
 	button.add_theme_stylebox_override("pressed", pressed_style)
 
-	button.add_theme_font_size_override("font_size", 24)
+	button.add_theme_font_size_override("font_size", 26)
 	button.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)

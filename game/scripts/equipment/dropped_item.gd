@@ -96,7 +96,7 @@ func setup(data: ItemData) -> void:
 			rarity_label.visible = true
 			rarity_label.text = data.get_rarity_name()
 			rarity_label.add_theme_color_override("font_color", rarity_color)
-			rarity_label.add_theme_font_size_override("font_size", 12)
+			rarity_label.add_theme_font_size_override("font_size", 14)
 
 func _process(delta: float) -> void:
 	# Bobbing animation

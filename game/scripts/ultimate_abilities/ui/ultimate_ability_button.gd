@@ -64,7 +64,7 @@ func _create_ui() -> void:
 	cooldown_label.size = Vector2(BUTTON_SIZE.x, 28)
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cooldown_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 18)
+	cooldown_label.add_theme_font_size_override("font_size", 20)
 	cooldown_label.add_theme_color_override("font_color", ULTIMATE_GOLD)
 	if pixel_font:
 		cooldown_label.add_theme_font_override("font", pixel_font)
@@ -328,7 +328,7 @@ func _create_tooltip() -> void:
 	ultimate_label.name = "UltimateLabel"
 	ultimate_label.text = "ULTIMATE"
 	ultimate_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ultimate_label.add_theme_font_size_override("font_size", 10)
+	ultimate_label.add_theme_font_size_override("font_size", 12)
 	ultimate_label.add_theme_color_override("font_color", ULTIMATE_GOLD)
 	if pixel_font:
 		ultimate_label.add_theme_font_override("font", pixel_font)
@@ -338,7 +338,7 @@ func _create_tooltip() -> void:
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -352,7 +352,7 @@ func _create_tooltip() -> void:
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 11)
+	desc_label.add_theme_font_size_override("font_size", 13)
 	desc_label.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 250
@@ -364,7 +364,7 @@ func _create_tooltip() -> void:
 	var cd_label = Label.new()
 	cd_label.name = "CooldownLabel"
 	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cd_label.add_theme_font_size_override("font_size", 10)
+	cd_label.add_theme_font_size_override("font_size", 12)
 	cd_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.4))
 	if pixel_font:
 		cd_label.add_theme_font_override("font", pixel_font)

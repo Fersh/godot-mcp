@@ -113,7 +113,7 @@ func _update_curse_display() -> void:
 		curse_label.offset_right = -50
 		if pixel_font:
 			curse_label.add_theme_font_override("font", pixel_font)
-		curse_label.add_theme_font_size_override("font_size", 12)
+		curse_label.add_theme_font_size_override("font_size", 14)
 		curse_label.add_theme_color_override("font_color", Color.WHITE)
 		curse_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
 		curse_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -137,7 +137,7 @@ func _create_version_label() -> void:
 	version_label.offset_right = 200
 	if pixel_font:
 		version_label.add_theme_font_override("font", pixel_font)
-	version_label.add_theme_font_size_override("font_size", 10)
+	version_label.add_theme_font_size_override("font_size", 12)
 	version_label.add_theme_color_override("font_color", Color.WHITE)
 	version_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	version_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -497,7 +497,7 @@ func _show_settings_panel() -> void:
 	title.offset_bottom = -200
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_font_size_override("font_size", 26)
 	title.add_theme_color_override("font_color", Color.WHITE)
 	settings_panel.add_child(title)
 
@@ -534,7 +534,7 @@ func _show_settings_panel() -> void:
 	reset_button.custom_minimum_size = Vector2(300, 50)
 	if pixel_font:
 		reset_button.add_theme_font_override("font", pixel_font)
-	reset_button.add_theme_font_size_override("font_size", 12)
+	reset_button.add_theme_font_size_override("font_size", 14)
 	_style_red_button(reset_button)
 	reset_button.pressed.connect(_on_reset_progress_pressed)
 	options_container.add_child(reset_button)
@@ -550,7 +550,7 @@ func _show_settings_panel() -> void:
 	close_button.offset_bottom = 230
 	if pixel_font:
 		close_button.add_theme_font_override("font", pixel_font)
-	close_button.add_theme_font_size_override("font_size", 14)
+	close_button.add_theme_font_size_override("font_size", 16)
 	_style_golden_button(close_button)
 	close_button.pressed.connect(_hide_settings_panel)
 	settings_panel.add_child(close_button)
@@ -565,7 +565,7 @@ func _create_toggle_option(container: VBoxContainer, label_text: String, initial
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", Color.WHITE)
 	hbox.add_child(label)
 
@@ -653,7 +653,7 @@ func _show_confirmation_dialog() -> void:
 	warning.offset_bottom = -60
 	if pixel_font:
 		warning.add_theme_font_override("font", pixel_font)
-	warning.add_theme_font_size_override("font_size", 16)
+	warning.add_theme_font_size_override("font_size", 18)
 	warning.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
 	confirmation_dialog.add_child(warning)
 
@@ -668,7 +668,7 @@ func _show_confirmation_dialog() -> void:
 	desc.offset_bottom = 30
 	if pixel_font:
 		desc.add_theme_font_override("font", pixel_font)
-	desc.add_theme_font_size_override("font_size", 10)
+	desc.add_theme_font_size_override("font_size", 12)
 	desc.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	confirmation_dialog.add_child(desc)
 
@@ -688,7 +688,7 @@ func _show_confirmation_dialog() -> void:
 	cancel_button.custom_minimum_size = Vector2(140, 50)
 	if pixel_font:
 		cancel_button.add_theme_font_override("font", pixel_font)
-	cancel_button.add_theme_font_size_override("font_size", 12)
+	cancel_button.add_theme_font_size_override("font_size", 14)
 	_style_golden_button(cancel_button)
 	cancel_button.pressed.connect(_hide_confirmation_dialog)
 	button_container.add_child(cancel_button)
@@ -699,7 +699,7 @@ func _show_confirmation_dialog() -> void:
 	confirm_button.custom_minimum_size = Vector2(140, 50)
 	if pixel_font:
 		confirm_button.add_theme_font_override("font", pixel_font)
-	confirm_button.add_theme_font_size_override("font_size", 12)
+	confirm_button.add_theme_font_size_override("font_size", 14)
 	_style_red_button(confirm_button)
 	confirm_button.pressed.connect(_confirm_reset_progress)
 	button_container.add_child(confirm_button)

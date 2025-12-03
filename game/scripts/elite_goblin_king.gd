@@ -224,7 +224,7 @@ func _show_gold_rain_warning() -> void:
 	if gold_rain_warning_label == null:
 		gold_rain_warning_label = Label.new()
 		gold_rain_warning_label.text = "GOLD RAIN!"
-		gold_rain_warning_label.add_theme_font_size_override("font_size", 14)
+		gold_rain_warning_label.add_theme_font_size_override("font_size", 16)
 		gold_rain_warning_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
 		gold_rain_warning_label.add_theme_color_override("font_shadow_color", Color(0.4, 0.3, 0, 1))
 		gold_rain_warning_label.add_theme_constant_override("shadow_offset_x", 2)

@@ -210,7 +210,7 @@ func _show_revived_effect() -> void:
 	var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_font_size_override("font_size", 50)
 	label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 1.0))  # Green/healing color
 
 	# Shadow for visibility
@@ -314,6 +314,11 @@ func _check_nearby_items() -> void:
 func _safe_unpause() -> void:
 	"""Only unpause if no modal UI is open."""
 	if not get_tree().paused:
+		return
+
+	# Check if pause menu is visible
+	var pause_menu = get_tree().get_first_node_in_group("pause_menu")
+	if pause_menu and pause_menu.visible:
 		return
 
 	# Check if ability selection UI is visible

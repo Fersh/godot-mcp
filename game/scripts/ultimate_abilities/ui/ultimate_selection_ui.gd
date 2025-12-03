@@ -71,7 +71,7 @@ func _create_ui() -> void:
 	var ultimate_tag = Label.new()
 	ultimate_tag.text = "LEVEL 15"
 	ultimate_tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ultimate_tag.add_theme_font_size_override("font_size", 12)
+	ultimate_tag.add_theme_font_size_override("font_size", 14)
 	ultimate_tag.add_theme_color_override("font_color", Color(0.7, 0.6, 0.4))
 	if pixel_font:
 		ultimate_tag.add_theme_font_override("font", pixel_font)
@@ -82,7 +82,7 @@ func _create_ui() -> void:
 	title_label.name = "TitleLabel"
 	title_label.text = "ULTIMATE ABILITY"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 36)
+	title_label.add_theme_font_size_override("font_size", 38)
 	title_label.add_theme_color_override("font_color", ULTIMATE_BASE)  # Bright green
 	title_label.add_theme_color_override("font_outline_color", ULTIMATE_DARK)
 	title_label.add_theme_constant_override("outline_size", 3)
@@ -94,7 +94,7 @@ func _create_ui() -> void:
 	var subtitle = Label.new()
 	subtitle.text = "Choose your signature power"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 14)
+	subtitle.add_theme_font_size_override("font_size", 16)
 	subtitle.add_theme_color_override("font_color", Color(0.85, 0.8, 0.6))
 	if pixel_font:
 		subtitle.add_theme_font_override("font", pixel_font)
@@ -221,7 +221,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	name_label.name = "NameLabel"
 	name_label.text = ultimate.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 20)
 	name_label.add_theme_color_override("font_color", ULTIMATE_BASE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
@@ -242,7 +242,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	desc_label.text = ultimate.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 11)
+	desc_label.add_theme_font_size_override("font_size", 13)
 	desc_label.add_theme_color_override("font_color", Color(0.9, 0.88, 0.8))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -255,7 +255,7 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	cooldown_label.name = "CooldownLabel"
 	cooldown_label.text = "Cooldown: " + str(int(ultimate.cooldown)) + "s"
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 10)
+	cooldown_label.add_theme_font_size_override("font_size", 12)
 	cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.4))
 	if pixel_font:
 		cooldown_label.add_theme_font_override("font", pixel_font)
@@ -319,7 +319,7 @@ func _create_ultimate_tag() -> CenterContainer:
 	label.name = "RarityLabel"
 	label.text = "ULTIMATE"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_font_size_override("font_size", 13)
 	label.add_theme_color_override("font_color", Color(0.1, 0.08, 0.02))
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)

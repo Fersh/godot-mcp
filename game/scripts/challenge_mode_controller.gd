@@ -323,7 +323,7 @@ func _show_victory_screen() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 64)
+	title.add_theme_font_size_override("font_size", 66)
 	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 	title.add_theme_color_override("font_shadow_color", Color(0.4, 0.3, 0.0, 1.0))
 	title.add_theme_constant_override("shadow_offset_x", 4)
@@ -337,7 +337,7 @@ func _show_victory_screen() -> void:
 	difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		difficulty_label.add_theme_font_override("font", pixel_font)
-	difficulty_label.add_theme_font_size_override("font_size", 24)
+	difficulty_label.add_theme_font_size_override("font_size", 26)
 	var diff_color = DifficultyManager.get_difficulty_color() if DifficultyManager else Color.WHITE
 	difficulty_label.add_theme_color_override("font_color", diff_color)
 	container.add_child(difficulty_label)
@@ -350,7 +350,7 @@ func _show_victory_screen() -> void:
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		time_label.add_theme_font_override("font", pixel_font)
-	time_label.add_theme_font_size_override("font_size", 18)
+	time_label.add_theme_font_size_override("font_size", 20)
 	time_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	container.add_child(time_label)
 
@@ -415,7 +415,7 @@ func _style_button(button: Button, color: Color) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 14)
+	button.add_theme_font_size_override("font_size", 16)
 
 func _on_play_again() -> void:
 	"""Restart the game at the same difficulty."""

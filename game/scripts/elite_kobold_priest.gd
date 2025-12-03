@@ -339,7 +339,7 @@ func _show_mass_heal_warning() -> void:
 	if mass_heal_warning_label == null:
 		mass_heal_warning_label = Label.new()
 		mass_heal_warning_label.text = "MASS HEAL!"
-		mass_heal_warning_label.add_theme_font_size_override("font_size", 14)
+		mass_heal_warning_label.add_theme_font_size_override("font_size", 16)
 		mass_heal_warning_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5, 1.0))
 		mass_heal_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		mass_heal_warning_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -406,7 +406,7 @@ func _show_divine_shield_warning() -> void:
 	if divine_shield_warning_label == null:
 		divine_shield_warning_label = Label.new()
 		divine_shield_warning_label.text = "SHIELD!"
-		divine_shield_warning_label.add_theme_font_size_override("font_size", 14)
+		divine_shield_warning_label.add_theme_font_size_override("font_size", 16)
 		divine_shield_warning_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3, 1.0))
 		divine_shield_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		divine_shield_warning_label.add_theme_constant_override("shadow_offset_x", 2)

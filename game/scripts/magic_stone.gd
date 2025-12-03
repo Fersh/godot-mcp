@@ -172,7 +172,7 @@ func _create_prompt_label() -> void:
 	prompt_label.visible = false
 
 	# Style
-	prompt_label.add_theme_font_size_override("font_size", 10)
+	prompt_label.add_theme_font_size_override("font_size", 12)
 	prompt_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.8))
 	prompt_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	prompt_label.add_theme_constant_override("shadow_offset_x", 1)

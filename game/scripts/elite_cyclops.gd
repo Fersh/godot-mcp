@@ -222,7 +222,7 @@ func _show_beam_warning() -> void:
 	if beam_warning_label == null:
 		beam_warning_label = Label.new()
 		beam_warning_label.text = "BEAM!"
-		beam_warning_label.add_theme_font_size_override("font_size", 16)
+		beam_warning_label.add_theme_font_size_override("font_size", 18)
 		beam_warning_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2, 1.0))
 		beam_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		beam_warning_label.add_theme_constant_override("shadow_offset_x", 2)

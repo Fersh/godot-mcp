@@ -666,7 +666,7 @@ func _create_champion_indicator() -> void:
 		var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 		champion_indicator.add_theme_font_override("font", pixel_font)
 
-	champion_indicator.add_theme_font_size_override("font_size", 6)
+	champion_indicator.add_theme_font_size_override("font_size", 8)
 	champion_indicator.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))  # Gold
 	champion_indicator.add_theme_color_override("font_shadow_color", Color(0.3, 0.1, 0.0, 0.8))
 	champion_indicator.add_theme_constant_override("shadow_offset_x", 1)

@@ -49,6 +49,7 @@ var current_tab: int = 0  # 0 = powerups, 1 = stats, 2 = options
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("pause_menu")
 
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
@@ -82,7 +83,7 @@ func _setup_style() -> void:
 	# Style title
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
-	title_label.add_theme_font_size_override("font_size", 28)
+	title_label.add_theme_font_size_override("font_size", 30)
 	title_label.add_theme_color_override("font_color", COLOR_TEXT)
 
 	# Style tab buttons
@@ -120,7 +121,7 @@ func _style_tab_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_color", COLOR_TAB_INACTIVE_TEXT)
 
 func _setup_difficulty_label() -> void:
@@ -139,7 +140,7 @@ func _setup_difficulty_label() -> void:
 	# Style
 	if pixel_font:
 		difficulty_label.add_theme_font_override("font", pixel_font)
-	difficulty_label.add_theme_font_size_override("font_size", 16)
+	difficulty_label.add_theme_font_size_override("font_size", 18)
 	difficulty_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	difficulty_label.add_theme_constant_override("shadow_offset_x", 2)
 	difficulty_label.add_theme_constant_override("shadow_offset_y", 2)
@@ -174,7 +175,7 @@ func _style_button(button: Button, base_color: Color) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 22)
 	button.add_theme_color_override("font_color", COLOR_TEXT)
 
 func _on_powerups_tab_pressed() -> void:
@@ -299,7 +300,7 @@ func _add_no_powerups_label() -> void:
 	label.text = "No abilities yet!"
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.4, 0.38, 0.35, 1.0))
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	powerups_container.add_child(label)
@@ -328,7 +329,7 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 		name_label.text = ability.name
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", rarity_color)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
@@ -340,7 +341,7 @@ func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 	desc_label.text = ability.description
 	if pixel_font:
 		desc_label.add_theme_font_override("font", pixel_font)
-	desc_label.add_theme_font_size_override("font_size", 9)
+	desc_label.add_theme_font_size_override("font_size", 11)
 	desc_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	container.add_child(desc_label)
@@ -382,7 +383,7 @@ func _add_no_stats_label() -> void:
 	label.text = "No stats available"
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_container.add_child(label)
@@ -396,7 +397,7 @@ func _add_stat_row(stat_name: String, value: String, format: String, color: Colo
 	name_label.text = stat_name
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
-	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", color)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
@@ -406,7 +407,7 @@ func _add_stat_row(stat_name: String, value: String, format: String, color: Colo
 	value_label.text = value
 	if pixel_font:
 		value_label.add_theme_font_override("font", pixel_font)
-	value_label.add_theme_font_size_override("font_size", 12)
+	value_label.add_theme_font_size_override("font_size", 14)
 	value_label.add_theme_color_override("font_color", color)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(value_label)
@@ -439,7 +440,7 @@ func _add_princess_problems_section(curse_count: int) -> void:
 	header.text = "Princess Problems"
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
-	header.add_theme_font_size_override("font_size", 12)
+	header.add_theme_font_size_override("font_size", 14)
 	header.add_theme_color_override("font_color", COLOR_STAT_CURSED)
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	stats_container.add_child(header)
@@ -472,7 +473,7 @@ func _add_princess_problems_section(curse_count: int) -> void:
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 			if pixel_font:
 				name_label.add_theme_font_override("font", pixel_font)
-			name_label.add_theme_font_size_override("font_size", 10)
+			name_label.add_theme_font_size_override("font_size", 12)
 			name_label.add_theme_color_override("font_color", Color(0.9, 0.6, 0.8))
 			name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 			name_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -487,7 +488,7 @@ func _add_princess_problems_section(curse_count: int) -> void:
 			desc_label.custom_minimum_size = Vector2(200, 0)  # Allow wrapping
 			if pixel_font:
 				desc_label.add_theme_font_override("font", pixel_font)
-			desc_label.add_theme_font_size_override("font_size", 8)
+			desc_label.add_theme_font_size_override("font_size", 10)
 			desc_label.add_theme_color_override("font_color", Color(0.6, 0.5, 0.55))
 			curse_entry.add_child(desc_label)
 
@@ -801,7 +802,7 @@ func _create_option_toggle(label_text: String, initial_value: bool, on_toggle: C
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", COLOR_TEXT)
 	hbox.add_child(label)
 

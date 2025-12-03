@@ -210,7 +210,7 @@ func _show_war_cry_warning() -> void:
 	if war_cry_warning_label == null:
 		war_cry_warning_label = Label.new()
 		war_cry_warning_label.text = "WAR CRY!"
-		war_cry_warning_label.add_theme_font_size_override("font_size", 14)
+		war_cry_warning_label.add_theme_font_size_override("font_size", 16)
 		war_cry_warning_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3, 1.0))
 		war_cry_warning_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 		war_cry_warning_label.add_theme_constant_override("shadow_offset_x", 2)

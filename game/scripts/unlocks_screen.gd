@@ -68,7 +68,7 @@ func _build_ui() -> void:
 	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
-	title_label.add_theme_font_size_override("font_size", 20)
+	title_label.add_theme_font_size_override("font_size", 22)
 	title_label.add_theme_color_override("font_color", Color.WHITE)
 	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	title_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -131,7 +131,7 @@ func _add_progress_categories_section() -> void:
 	overall_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		overall_label.add_theme_font_override("font", pixel_font)
-	overall_label.add_theme_font_size_override("font_size", 10)
+	overall_label.add_theme_font_size_override("font_size", 12)
 	overall_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	overall_hbox.add_child(overall_label)
 
@@ -145,7 +145,7 @@ func _add_progress_categories_section() -> void:
 	overall_percent.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if pixel_font:
 		overall_percent.add_theme_font_override("font", pixel_font)
-	overall_percent.add_theme_font_size_override("font_size", 9)
+	overall_percent.add_theme_font_size_override("font_size", 11)
 	overall_percent.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 	overall_right.add_child(overall_percent)
 
@@ -241,7 +241,7 @@ func _add_game_mode_stats_section() -> void:
 	challenge_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		challenge_header.add_theme_font_override("font", pixel_font)
-	challenge_header.add_theme_font_size_override("font_size", 9)
+	challenge_header.add_theme_font_size_override("font_size", 11)
 	challenge_header.add_theme_color_override("font_color", Color(1.0, 0.65, 0.35))
 	vbox.add_child(challenge_header)
 
@@ -261,7 +261,7 @@ func _add_game_mode_stats_section() -> void:
 	endless_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		endless_header.add_theme_font_override("font", pixel_font)
-	endless_header.add_theme_font_size_override("font_size", 9)
+	endless_header.add_theme_font_size_override("font_size", 11)
 	endless_header.add_theme_color_override("font_color", Color(0.5, 0.75, 1.0))
 	vbox.add_child(endless_header)
 
@@ -279,7 +279,7 @@ func _add_game_mode_stats_section() -> void:
 	general_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		general_header.add_theme_font_override("font", pixel_font)
-	general_header.add_theme_font_size_override("font_size", 9)
+	general_header.add_theme_font_size_override("font_size", 11)
 	general_header.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	vbox.add_child(general_header)
 
@@ -320,7 +320,7 @@ func _create_section_panel(title: String) -> PanelContainer:
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
-	title_label.add_theme_font_size_override("font_size", 14)
+	title_label.add_theme_font_size_override("font_size", 16)
 	title_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
 	title_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	title_label.add_theme_constant_override("shadow_offset_x", 2)
@@ -343,7 +343,7 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 	hbox.add_child(label)
 
@@ -358,7 +358,7 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if pixel_font:
 		count_label.add_theme_font_override("font", pixel_font)
-	count_label.add_theme_font_size_override("font_size", 9)
+	count_label.add_theme_font_size_override("font_size", 11)
 	count_label.add_theme_color_override("font_color", color)
 	right_container.add_child(count_label)
 
@@ -376,7 +376,7 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_font_size_override("font_size", 11)
 	label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 	hbox.add_child(label)
 
@@ -385,7 +385,7 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if pixel_font:
 		value.add_theme_font_override("font", pixel_font)
-	value.add_theme_font_size_override("font_size", 9)
+	value.add_theme_font_size_override("font_size", 11)
 	value.add_theme_color_override("font_color", Color(1, 1, 1))
 	hbox.add_child(value)
 
@@ -450,7 +450,7 @@ func _style_back_button(button: Button) -> void:
 
 	if pixel_font:
 		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 12)
+	button.add_theme_font_size_override("font_size", 14)
 	button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	button.add_theme_constant_override("shadow_offset_x", 2)
 	button.add_theme_constant_override("shadow_offset_y", 2)

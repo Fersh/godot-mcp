@@ -166,7 +166,7 @@ func _setup_preview_panel() -> void:
 	preview_name_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	preview_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	preview_name_label.add_theme_font_size_override("font_size", 18)
+	preview_name_label.add_theme_font_size_override("font_size", 20)
 	preview_name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.4, 1))
 	name_container.add_child(preview_name_label)
 
@@ -178,7 +178,7 @@ func _setup_preview_panel() -> void:
 	preview_class_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	preview_class_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_class_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	preview_class_label.add_theme_font_size_override("font_size", 14)
+	preview_class_label.add_theme_font_size_override("font_size", 16)
 	preview_class_label.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0, 1))
 	class_container.add_child(preview_class_label)
 
@@ -196,7 +196,7 @@ func _setup_preview_panel() -> void:
 	preview_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	preview_desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	preview_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	preview_desc_label.add_theme_font_size_override("font_size", 12)
+	preview_desc_label.add_theme_font_size_override("font_size", 14)
 	preview_desc_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 1))
 	desc_container.add_child(preview_desc_label)
 
@@ -359,7 +359,7 @@ func _create_placeholder_button() -> PanelContainer:
 	label.text = "?"
 	if pixelify_font:
 		label.add_theme_font_override("font", pixelify_font)
-	label.add_theme_font_size_override("font_size", 28)
+	label.add_theme_font_size_override("font_size", 30)
 	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.55, 0.8))
 	center.add_child(label)
 
@@ -400,7 +400,7 @@ func _create_locked_character_button(char_data: CharacterData, index: int) -> Pa
 	var lock_label = Label.new()
 	lock_label.text = "🔒"
 	lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lock_label.add_theme_font_size_override("font_size", 24)
+	lock_label.add_theme_font_size_override("font_size", 26)
 	vbox.add_child(lock_label)
 
 	# Character hint
@@ -409,7 +409,7 @@ func _create_locked_character_button(char_data: CharacterData, index: int) -> Pa
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixelify_font:
 		hint_label.add_theme_font_override("font", pixelify_font)
-	hint_label.add_theme_font_size_override("font_size", 10)
+	hint_label.add_theme_font_size_override("font_size", 12)
 	hint_label.add_theme_color_override("font_color", Color(0.6, 0.4, 0.4, 0.9))
 	vbox.add_child(hint_label)
 
@@ -561,7 +561,7 @@ func _update_preview() -> void:
 	passive_title.text = "Trait: " + char_data.passive_name
 	passive_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	passive_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	passive_title.add_theme_font_size_override("font_size", 12)
+	passive_title.add_theme_font_size_override("font_size", 14)
 	passive_title.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3, 1))
 	passive_title_container.add_child(passive_title)
 
@@ -573,7 +573,7 @@ func _update_preview() -> void:
 	passive_desc.text = char_data.passive_description
 	passive_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	passive_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	passive_desc.add_theme_font_size_override("font_size", 10)
+	passive_desc.add_theme_font_size_override("font_size", 12)
 	passive_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1))
 	passive_desc_container.add_child(passive_desc)
 
@@ -584,14 +584,14 @@ func _add_stat_row_to_container(container: VBoxContainer, stat_name: String, sta
 	var name_label = Label.new()
 	name_label.text = stat_name + ":"
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_font_size_override("font_size", 13)
 	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1))
 	hbox.add_child(name_label)
 
 	var value_label = Label.new()
 	value_label.text = stat_value
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.add_theme_font_size_override("font_size", 11)
+	value_label.add_theme_font_size_override("font_size", 13)
 	value_label.add_theme_color_override("font_color", color)
 	hbox.add_child(value_label)
 
@@ -726,7 +726,7 @@ func _show_locked_notification(char_data: CharacterData) -> void:
 
 	if pixelify_font:
 		label.add_theme_font_override("font", pixelify_font)
-	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_font_size_override("font_size", 18)
 	label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4, 1))
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	label.add_theme_constant_override("shadow_offset_x", 3)

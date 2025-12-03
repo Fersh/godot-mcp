@@ -188,7 +188,7 @@ func show_warning() -> void:
 	if warning_indicator == null:
 		warning_indicator = Label.new()
 		warning_indicator.text = "!"
-		warning_indicator.add_theme_font_size_override("font_size", 32)
+		warning_indicator.add_theme_font_size_override("font_size", 34)
 		warning_indicator.add_theme_color_override("font_color", Color.RED)
 		warning_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		warning_indicator.position = WARNING_OFFSET - Vector2(8, 16)
@@ -352,7 +352,7 @@ func _create_affix_indicator() -> void:
 			affix_color = Color(0.9, 0.5, 0.1)  # Orange
 
 	affix_indicator.text = affix_text
-	affix_indicator.add_theme_font_size_override("font_size", 12)
+	affix_indicator.add_theme_font_size_override("font_size", 14)
 	affix_indicator.add_theme_color_override("font_color", affix_color)
 	add_child(affix_indicator)
 

@@ -2181,7 +2181,7 @@ func _show_phoenix_revive_effect(player: Node2D) -> void:
 	var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 48)
+	label.add_theme_font_size_override("font_size", 50)
 	label.add_theme_color_override("font_color", Color(1.0, 0.6, 0.1, 1.0))  # Orange/gold phoenix color
 
 	# Shadow for visibility

@@ -162,7 +162,7 @@ func show_heal_text(amount: float) -> void:
 	var label = Label.new()
 	label.text = "+" + str(int(amount))
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 14)
 	label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.4, 1.0))  # Green
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	label.add_theme_constant_override("shadow_offset_x", 1)

@@ -149,7 +149,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
@@ -162,7 +162,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 12)
+	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -234,7 +234,7 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 	label.name = "RarityLabel"
 	label.text = AbilityData.get_rarity_name(rarity)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)

@@ -19,9 +19,9 @@ extends Node2D
 @export var golem_scene: PackedScene
 @export var shardsoul_slayer_scene: PackedScene
 
-@export var initial_spawn_interval: float = 2.75  # 30% fewer mobs (was 2.0)
+@export var initial_spawn_interval: float = 1.5  # Faster early game spawns
 @export var final_spawn_interval: float = 0.69  # 30% fewer mobs (was 0.5)
-@export var ramp_up_time: float = 90.0
+@export var ramp_up_time: float = 60.0  # Faster ramp up
 @export var min_spawn_distance: float = 200.0
 
 # Dynamic arena bounds (set by procedural map generator)

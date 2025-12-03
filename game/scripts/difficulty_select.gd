@@ -84,7 +84,7 @@ func _build_ui() -> void:
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 20)
+	title.add_theme_font_size_override("font_size", 22)
 	title.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	title.add_theme_constant_override("shadow_offset_x", 2)
@@ -132,7 +132,7 @@ func _build_ui() -> void:
 	diff_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		diff_title.add_theme_font_override("font", pixel_font)
-	diff_title.add_theme_font_size_override("font_size", 20)
+	diff_title.add_theme_font_size_override("font_size", 22)
 	diff_title.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	diff_title.name = "DifficultyTitle"
 	main_container.add_child(diff_title)
@@ -153,7 +153,7 @@ func _build_ui() -> void:
 	description_label.custom_minimum_size = Vector2(400, 50)
 	if pixel_font:
 		description_label.add_theme_font_override("font", pixel_font)
-	description_label.add_theme_font_size_override("font_size", 12)
+	description_label.add_theme_font_size_override("font_size", 14)
 	description_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	main_container.add_child(description_label)
 
@@ -177,7 +177,7 @@ func _create_mode_button(text: String, tooltip: String) -> Button:
 
 	if pixel_font:
 		btn.add_theme_font_override("font", pixel_font)
-	btn.add_theme_font_size_override("font_size", 16)
+	btn.add_theme_font_size_override("font_size", 18)
 
 	return btn
 
@@ -204,7 +204,7 @@ func _create_difficulty_buttons() -> void:
 
 		if pixel_font:
 			btn.add_theme_font_override("font", pixel_font)
-		btn.add_theme_font_size_override("font_size", 14)
+		btn.add_theme_font_size_override("font_size", 16)
 
 		# Create internal VBox for button content
 		var internal_vbox = VBoxContainer.new()
@@ -222,7 +222,7 @@ func _create_difficulty_buttons() -> void:
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
-		name_label.add_theme_font_size_override("font_size", 14)
+		name_label.add_theme_font_size_override("font_size", 16)
 		name_label.add_theme_color_override("font_color", Color.WHITE)
 		internal_vbox.add_child(name_label)
 
@@ -235,7 +235,7 @@ func _create_difficulty_buttons() -> void:
 		summary_label.visible = false  # Hidden by default
 		if pixel_font:
 			summary_label.add_theme_font_override("font", pixel_font)
-		summary_label.add_theme_font_size_override("font_size", 9)
+		summary_label.add_theme_font_size_override("font_size", 11)
 		summary_label.add_theme_color_override("font_color", Color.WHITE)
 		internal_vbox.add_child(summary_label)
 
@@ -304,7 +304,7 @@ func _style_button(btn: Button, color: Color) -> void:
 
 	if pixel_font:
 		btn.add_theme_font_override("font", pixel_font)
-	btn.add_theme_font_size_override("font_size", 14)
+	btn.add_theme_font_size_override("font_size", 16)
 
 func _style_back_button(btn: Button) -> void:
 	"""Style the back button like shop/princesses screens."""
@@ -348,7 +348,7 @@ func _style_back_button(btn: Button) -> void:
 
 	if pixel_font:
 		btn.add_theme_font_override("font", pixel_font)
-	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_font_size_override("font_size", 14)
 
 func _update_mode_buttons() -> void:
 	"""Update mode button styles based on selection."""

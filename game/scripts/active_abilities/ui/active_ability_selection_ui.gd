@@ -75,7 +75,7 @@ func _create_ui() -> void:
 	title_label.name = "TitleLabel"
 	title_label.text = "NEW ABILITY!"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 32)
+	title_label.add_theme_font_size_override("font_size", 34)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	if pixel_font:
 		title_label.add_theme_font_override("font", pixel_font)
@@ -88,7 +88,7 @@ func _create_ui() -> void:
 	var subtitle_prefix = Label.new()
 	subtitle_prefix.name = "SubtitlePrefix"
 	subtitle_prefix.text = "Choose your first "
-	subtitle_prefix.add_theme_font_size_override("font_size", 18)
+	subtitle_prefix.add_theme_font_size_override("font_size", 20)
 	subtitle_prefix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		subtitle_prefix.add_theme_font_override("font", pixel_font)
@@ -97,7 +97,7 @@ func _create_ui() -> void:
 
 	var subtitle_active = Label.new()
 	subtitle_active.text = "ACTIVE"
-	subtitle_active.add_theme_font_size_override("font_size", 18)
+	subtitle_active.add_theme_font_size_override("font_size", 20)
 	subtitle_active.add_theme_color_override("font_color", Color(1.0, 0.6, 0.2))  # Orange highlight
 	if pixel_font:
 		subtitle_active.add_theme_font_override("font", pixel_font)
@@ -105,7 +105,7 @@ func _create_ui() -> void:
 
 	var subtitle_suffix = Label.new()
 	subtitle_suffix.text = " ability"
-	subtitle_suffix.add_theme_font_size_override("font_size", 18)
+	subtitle_suffix.add_theme_font_size_override("font_size", 20)
 	subtitle_suffix.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		subtitle_suffix.add_theme_font_override("font", pixel_font)
@@ -142,7 +142,7 @@ func _create_ui() -> void:
 	reroll_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		reroll_button.add_theme_font_override("font", pixel_font)
-	reroll_button.add_theme_font_size_override("font_size", 11)
+	reroll_button.add_theme_font_size_override("font_size", 13)
 
 	# Style the reroll button - red background, white text
 	var reroll_style = StyleBoxFlat.new()
@@ -293,7 +293,7 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 16)
+	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.add_theme_color_override("font_color", Color.WHITE)
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
@@ -306,7 +306,7 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 12)
+	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -319,7 +319,7 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	cooldown_label.name = "CooldownLabel"
 	cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 10)
+	cooldown_label.add_theme_font_size_override("font_size", 12)
 	cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	if pixel_font:
 		cooldown_label.add_theme_font_override("font", pixel_font)
@@ -387,7 +387,7 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	label.name = "RarityLabel"
 	label.text = ActiveAbilityData.get_rarity_name(rarity)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_font_size_override("font_size", 12)
 	# Use black text for common (light background), white for others
 	var label_color = Color.BLACK if rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
 	label.add_theme_color_override("font_color", label_color)

@@ -983,6 +983,17 @@ func _physics_process(delta: float) -> void:
 
 	var direction := Vector2.ZERO
 
+	# Don't allow movement input when paused (except for item pickup proximity)
+	var can_move_while_paused = false
+	if get_tree().paused:
+		# Only allow movement if item pickup UI is visible (walking away from items)
+		var item_pickup_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+		if item_pickup_ui and item_pickup_ui.visible:
+			can_move_while_paused = true
+		if not can_move_while_paused:
+			velocity = Vector2.ZERO
+			return
+
 	# Joystick input for mobile
 	if joystick_direction.length() > 0:
 		direction = joystick_direction
