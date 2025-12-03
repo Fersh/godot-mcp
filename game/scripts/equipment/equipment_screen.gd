@@ -99,10 +99,10 @@ func _setup_ui_style() -> void:
 	_style_main_panel()
 	_style_panels()
 
-	# Limit inventory scroll height to force scrolling (increased by 10% more)
+	# Limit inventory scroll height to force scrolling
 	if inventory_scroll:
-		inventory_scroll.custom_minimum_size = Vector2(540, 412)  # 375 * 1.1 = ~412
-		inventory_scroll.set_deferred("size", Vector2(540, 412))
+		inventory_scroll.custom_minimum_size = Vector2(520, 412)
+		inventory_scroll.set_deferred("size", Vector2(520, 412))
 
 func _style_main_panel() -> void:
 	# Make the main panel transparent so background image shows through
@@ -699,8 +699,8 @@ func _refresh_inventory() -> void:
 	# Get sorted inventory items
 	var items = EquipmentManager.get_sorted_inventory(current_sort as EquipmentManager.SortBy)
 
-	# Create 96 slots (8 columns x 12 rows) - scrollable
-	var total_slots = 96
+	# Create 72 slots (6 columns x 12 rows) - scrollable
+	var total_slots = 72
 
 	for i in range(total_slots):
 		if i < items.size():
@@ -715,7 +715,7 @@ func _refresh_inventory() -> void:
 
 func _create_empty_slot() -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(60, 60)
+	button.custom_minimum_size = Vector2(80, 80)
 	button.disabled = true
 
 	# Style - dark empty slot
@@ -738,7 +738,7 @@ func _create_empty_slot() -> Button:
 
 func _create_inventory_card(item: ItemData) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(60, 60)
+	button.custom_minimum_size = Vector2(80, 80)
 	button.pressed.connect(_on_inventory_item_pressed.bind(item))
 
 	# Style
@@ -806,13 +806,13 @@ func _create_inventory_card(item: ItemData) -> Button:
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(38, 38)
+		icon.custom_minimum_size = Vector2(50, 50)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
 		var placeholder = ColorRect.new()
 		placeholder.color = item.get_rarity_color()
-		placeholder.custom_minimum_size = Vector2(36, 36)
+		placeholder.custom_minimum_size = Vector2(48, 48)
 		center.add_child(placeholder)
 
 	button.add_child(center)
@@ -844,7 +844,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 				check.add_theme_font_override("font", pixel_font)
 			check.add_theme_font_size_override("font_size", 18)
 			check.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
-			check.position = Vector2(40, 38)
+			check.position = Vector2(56, 54)
 			button.add_child(check)
 		# Only show count numbers when NO item is selected yet
 		elif not has_selection and is_combinable:
@@ -856,7 +856,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 					count_label.add_theme_font_override("font", pixel_font)
 				count_label.add_theme_font_size_override("font_size", 12)
 				count_label.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
-				count_label.position = Vector2(44, 2)
+				count_label.position = Vector2(60, 2)
 				button.add_child(count_label)
 
 	return button
