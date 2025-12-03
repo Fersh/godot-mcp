@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://painted_arena_map"]
+
+[ext_resource type="TileSet" path="res://resources/forest_tileset.tres" id="1_tileset"]
+[ext_resource type="Script" path="res://scripts/painted_arena.gd" id="2_script"]
+
+[node name="PaintedArena" type="Node2D"]
+script = ExtResource("2_script")
+
+[node name="GroundLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("1_tileset")
+z_index = -10
+
+[node name="WaterLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("1_tileset")
+z_index = -9
+
+[node name="DecorationLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("1_tileset")
+z_index = -8
+
+[node name="OverlayLayer" type="TileMapLayer" parent="."]
+tile_set = ExtResource("1_tileset")
+z_index = 0
+y_sort_enabled = true

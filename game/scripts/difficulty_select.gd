@@ -25,10 +25,27 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
+	# Set default difficulty to first non-beaten one
+	_set_default_difficulty()
+
 	layer = 10
 	_build_ui()
 	_update_difficulty_visibility()
 	_update_selection_display()
+
+func _set_default_difficulty() -> void:
+	"""Set the default selected difficulty to the first one not yet completed."""
+	if not DifficultyManager:
+		return
+
+	# Iterate through difficulties in order and find the first uncompleted one
+	for tier in DifficultyManager.get_all_difficulties():
+		if not DifficultyManager.is_difficulty_completed(tier):
+			selected_difficulty = tier
+			return
+
+	# If all are completed, default to the highest (Nightmare)
+	selected_difficulty = DifficultyManager.DifficultyTier.NIGHTMARE
 
 	# Keep menu music playing
 	if SoundManager:

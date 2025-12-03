@@ -1022,9 +1022,16 @@ func _physics_process(delta: float) -> void:
 		else:
 			toxic_trail_timer = 0.0  # Reset timer when standing still
 
-	# Keep player within dynamic arena bounds
-	position.x = clamp(position.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
-	position.y = clamp(position.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
+	# Apply recoil to actual position BEFORE clamping
+	if recoil_offset.length() > 0.1:
+		position += recoil_offset * delta * 60  # Apply as movement
+		recoil_offset = recoil_offset.lerp(Vector2.ZERO, recoil_recovery * delta)
+
+	# Keep player within dynamic arena bounds (AFTER all position changes)
+	# Validate arena_bounds before clamping
+	if arena_bounds.size.x > 0 and arena_bounds.size.y > 0:
+		position.x = clamp(position.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+		position.y = clamp(position.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
 
 	# Auto-attack (apply temp attack speed boost and flow bonus)
 	attack_timer += delta
@@ -1034,11 +1041,6 @@ func _physics_process(delta: float) -> void:
 		effective_cooldown /= get_flow_attack_speed_multiplier()
 	if attack_timer >= effective_cooldown:
 		try_attack()
-
-	# Apply recoil to actual position
-	if recoil_offset.length() > 0.1:
-		position += recoil_offset * delta * 60  # Apply as movement
-		recoil_offset = recoil_offset.lerp(Vector2.ZERO, recoil_recovery * delta)
 
 	# Update animation
 	update_animation(delta, direction)
