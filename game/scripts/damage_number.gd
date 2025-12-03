@@ -113,7 +113,9 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		_animate_bounce()
 
 func set_heal(amount: float) -> void:
-	label.text = "+" + str(int(amount))
+	# Always show at least +1 for healing
+	var display_amount = max(1, int(amount))
+	label.text = "+" + str(display_amount)
 	# Healing - green
 	label.add_theme_color_override("font_color", Color(0.2, 1.0, 0.3, 1))
 	label.add_theme_font_size_override("font_size", 30)

@@ -26,6 +26,11 @@ var locked_message_label: Label = null
 var missions_badge: Control = null
 var upgrade_badge: Control = null
 
+# Button animation state
+var animatable_buttons: Array[Button] = []
+var button_animation_timer: Timer = null
+var current_sweep_rect: ColorRect = null
+
 const VERSION = "1.0.0"
 const BUILD = 12
 
@@ -75,6 +80,96 @@ func _ready() -> void:
 	# Update notification badges
 	_update_missions_badge()
 	_update_upgrade_badge()
+
+	# Setup button animation system
+	_setup_button_animations()
+
+func _setup_button_animations() -> void:
+	"""Setup random button pulse and light sweep animations."""
+	# Build list of animatable buttons
+	animatable_buttons = [play_button, princesses_button, unlocks_button, missions_button, gear_button, shop_button]
+
+	# Create timer for random button animations
+	button_animation_timer = Timer.new()
+	button_animation_timer.wait_time = randf_range(2.5, 4.5)
+	button_animation_timer.one_shot = false
+	button_animation_timer.timeout.connect(_animate_random_button)
+	add_child(button_animation_timer)
+	button_animation_timer.start()
+
+	# Trigger first animation after a short delay
+	await get_tree().create_timer(1.0).timeout
+	_animate_random_button()
+
+func _animate_random_button() -> void:
+	"""Pick a random button and animate it with pulse and light sweep."""
+	if animatable_buttons.is_empty():
+		return
+
+	# Pick random button
+	var button = animatable_buttons[randi() % animatable_buttons.size()]
+
+	# Don't animate if button text is "LOCKED"
+	if button.text == "LOCKED":
+		# Try another button
+		var unlocked_buttons = animatable_buttons.filter(func(b): return b.text != "LOCKED")
+		if unlocked_buttons.is_empty():
+			return
+		button = unlocked_buttons[randi() % unlocked_buttons.size()]
+
+	# Randomize next animation time
+	button_animation_timer.wait_time = randf_range(2.5, 4.5)
+
+	# Run both animations
+	_pulse_button(button)
+	_sweep_light_on_button(button)
+
+func _pulse_button(button: Button) -> void:
+	"""Subtle pulse animation on a button."""
+	button.pivot_offset = button.size / 2
+	var tween = create_tween()
+	tween.tween_property(button, "scale", Vector2(1.03, 1.03), 0.15).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.15).set_ease(Tween.EASE_IN_OUT)
+
+func _sweep_light_on_button(button: Button) -> void:
+	"""Create a light sweep effect that moves from left to right across the button."""
+	# Remove existing sweep if any
+	if current_sweep_rect and is_instance_valid(current_sweep_rect):
+		current_sweep_rect.queue_free()
+
+	# Create sweep rect
+	var sweep = ColorRect.new()
+	sweep.color = Color(1.0, 1.0, 1.0, 0.25)
+	sweep.size = Vector2(40, button.size.y + 10)
+	sweep.position = Vector2(-50, -5)
+	sweep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sweep.z_index = 10
+
+	# Use a gradient for the sweep
+	var gradient_rect = ColorRect.new()
+	gradient_rect.size = sweep.size
+	gradient_rect.position = Vector2.ZERO
+	gradient_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Apply a shader or just use multiple color rects for gradient effect
+	# Simpler approach: use modulate for fade effect
+	sweep.modulate = Color(1, 1, 1, 0)
+
+	button.clip_contents = true
+	button.add_child(sweep)
+	current_sweep_rect = sweep
+
+	# Animate the sweep from left to right
+	var tween = create_tween()
+	tween.tween_property(sweep, "modulate:a", 0.3, 0.1)
+	tween.tween_property(sweep, "position:x", button.size.x + 20, 0.4).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(sweep, "modulate:a", 0.0, 0.2).set_delay(0.25)
+	tween.tween_callback(func():
+		if is_instance_valid(sweep):
+			sweep.queue_free()
+		if current_sweep_rect == sweep:
+			current_sweep_rect = null
+	)
 
 func _update_princess_button_state() -> void:
 	"""Lock/unlock princess button based on challenge progress."""
@@ -1032,7 +1127,7 @@ func _create_notification_badge(count: int) -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 	badge.add_child(panel)
 
-	# Add white number if count > 0
+	# Add white number if count > 0, or white dot if count == 0
 	if count > 0:
 		var label = Label.new()
 		label.text = str(count) if count < 100 else "99+"
@@ -1052,5 +1147,18 @@ func _create_notification_badge(count: int) -> Control:
 		if count >= 10:
 			badge.offset_left = -24
 			badge.offset_right = 24
+	else:
+		# Add small white circle inside the red dot
+		var inner_circle = PanelContainer.new()
+		inner_circle.set_anchors_preset(Control.PRESET_CENTER)
+		inner_circle.offset_left = -5
+		inner_circle.offset_right = 5
+		inner_circle.offset_top = -5
+		inner_circle.offset_bottom = 5
+		var inner_style = StyleBoxFlat.new()
+		inner_style.bg_color = Color(1.0, 1.0, 1.0, 0.9)
+		inner_style.set_corner_radius_all(5)  # Fully rounded
+		inner_circle.add_theme_stylebox_override("panel", inner_style)
+		badge.add_child(inner_circle)
 
 	return badge
