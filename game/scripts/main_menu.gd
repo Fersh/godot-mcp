@@ -64,7 +64,7 @@ func _update_princess_button_state() -> void:
 	else:
 		# Restore normal pink style
 		_style_pink_button(princesses_button)
-		princesses_button.text = "PRINCESS\nPROBLEMS"
+		princesses_button.text = "PRINCESSES"
 
 func _style_locked_button(button: Button) -> void:
 	"""Style a button as locked/disabled."""

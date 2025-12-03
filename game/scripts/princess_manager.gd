@@ -289,7 +289,13 @@ func unlock_random_princess_for_difficulty(difficulty_tier: int) -> String:
 
 func has_beaten_any_challenge() -> bool:
 	"""Check if player has beaten at least Juvenile difficulty."""
-	return highest_difficulty_beaten >= 0
+	# Check our own tracking first
+	if highest_difficulty_beaten >= 0:
+		return true
+	# Also check DifficultyManager for backwards compatibility
+	if DifficultyManager and not DifficultyManager.completed_difficulties.is_empty():
+		return true
+	return false
 
 func has_beaten_difficulty(tier: int) -> bool:
 	"""Check if player has beaten a specific difficulty tier."""
@@ -565,31 +571,53 @@ func save_progress() -> void:
 		file.close()
 
 func load_progress() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	if FileAccess.file_exists(SAVE_PATH):
+		var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+		if file:
+			var data = file.get_var()
+			file.close()
+
+			if data is Dictionary:
+				# Load unlocked princesses
+				unlocked_princesses.clear()
+				var saved_unlocked = data.get("unlocked", [])
+				for id in saved_unlocked:
+					if id is String and id in princess_definitions:
+						unlocked_princesses.append(id)
+
+				# Load enabled curses (only if unlocked)
+				enabled_curses.clear()
+				var saved_enabled = data.get("enabled", [])
+				for id in saved_enabled:
+					if id is String and id in unlocked_princesses:
+						enabled_curses.append(id)
+
+				# Load highest difficulty beaten
+				highest_difficulty_beaten = data.get("highest_difficulty_beaten", -1)
+
+	# Sync with DifficultyManager's completed difficulties for backwards compatibility
+	# This ensures players who beat difficulties before this update get credit
+	call_deferred("_sync_with_difficulty_manager")
+
+func _sync_with_difficulty_manager() -> void:
+	"""Sync highest_difficulty_beaten with DifficultyManager's completed_difficulties."""
+	if not DifficultyManager:
 		return
 
-	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if file:
-		var data = file.get_var()
-		file.close()
+	# Find the highest completed difficulty from DifficultyManager
+	var dominated_tiers = DifficultyManager.completed_difficulties
+	if dominated_tiers.is_empty():
+		return
 
-		if data is Dictionary:
-			# Load unlocked princesses
-			unlocked_princesses.clear()
-			var saved_unlocked = data.get("unlocked", [])
-			for id in saved_unlocked:
-				if id is String and id in princess_definitions:
-					unlocked_princesses.append(id)
+	var highest_from_dm = -1
+	for tier in dominated_tiers:
+		if tier > highest_from_dm:
+			highest_from_dm = tier
 
-			# Load enabled curses (only if unlocked)
-			enabled_curses.clear()
-			var saved_enabled = data.get("enabled", [])
-			for id in saved_enabled:
-				if id is String and id in unlocked_princesses:
-					enabled_curses.append(id)
-
-			# Load highest difficulty beaten
-			highest_difficulty_beaten = data.get("highest_difficulty_beaten", -1)
+	# Update if DifficultyManager has higher progress than our saved value
+	if highest_from_dm > highest_difficulty_beaten:
+		highest_difficulty_beaten = highest_from_dm
+		save_progress()
 
 # ============================================
 # RESET FUNCTIONS
