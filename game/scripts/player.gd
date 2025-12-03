@@ -195,6 +195,9 @@ signal health_changed(current_health: float, max_health: float)
 signal player_died()
 
 func _ready() -> void:
+	# Allow player to move while game is paused (for item pickup proximity)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	# Load character data from CharacterManager
 	_load_character_data()
 

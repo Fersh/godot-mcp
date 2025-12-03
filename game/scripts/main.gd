@@ -56,6 +56,9 @@ var use_painted_arena: bool = true  # Use painted arena for challenge mode inste
 func _ready() -> void:
 	add_to_group("main")
 
+	# Allow main to run while paused (for item proximity detection)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	# Connect player signals
 	if player:
 		player.level_up.connect(_on_player_level_up)
@@ -97,13 +100,15 @@ func _ready() -> void:
 	get_tree().create_timer(0.1).timeout.connect(_show_initial_ability_selection)
 
 func _process(delta: float) -> void:
-	game_time += delta
+	# Only update game time when not paused
+	if not get_tree().paused:
+		game_time += delta
 
-	# Update equipment manager with current game time
-	if EquipmentManager:
-		EquipmentManager.update_game_time(game_time)
+		# Update equipment manager with current game time
+		if EquipmentManager:
+			EquipmentManager.update_game_time(game_time)
 
-	# Check for nearby dropped items
+	# Always check for nearby dropped items (needs to run while paused for walk-away unpause)
 	_check_nearby_items()
 
 func _on_player_level_up(new_level: int) -> void:
@@ -258,14 +263,20 @@ func _check_nearby_items() -> void:
 	if not player or not is_instance_valid(player):
 		return
 
-	# Don't check if already showing UI
-	if item_pickup_ui and item_pickup_ui.visible:
-		return
+	# Constants for proximity detection
+	const UI_SHOW_RANGE: float = 80.0  # Range to show the UI
+	const PAUSE_RANGE: float = 50.0    # Range to pause game (smaller to prevent abuse)
 
-	# Find closest dropped item within range
+	# Reset nearby_item if it's no longer valid (was picked up or freed)
+	if nearby_item and not is_instance_valid(nearby_item):
+		nearby_item = null
+		if item_pickup_ui:
+			item_pickup_ui.hide_ui()
+
+	# Find closest dropped item within UI show range
 	var dropped_items = get_tree().get_nodes_in_group("dropped_items")
 	var closest_item: Node2D = null
-	var closest_distance: float = 80.0  # Pickup range
+	var closest_distance: float = UI_SHOW_RANGE
 
 	for item in dropped_items:
 		if is_instance_valid(item):
@@ -274,20 +285,57 @@ func _check_nearby_items() -> void:
 				closest_distance = distance
 				closest_item = item
 
-	# Show pickup UI if we found a nearby item
-	# Reset nearby_item if it's no longer valid (was picked up or freed)
-	if nearby_item and not is_instance_valid(nearby_item):
-		nearby_item = null
+	# Handle UI visibility and pause state
+	if closest_item:
+		# Show UI if we found a new nearby item
+		if closest_item != nearby_item:
+			nearby_item = closest_item
+			if item_pickup_ui and closest_item.has_method("get_item_data"):
+				var item_data = closest_item.get_item_data()
+				var character_id = CharacterManager.selected_character_id if CharacterManager else "archer"
+				var equipped = EquipmentManager.get_equipped_item(character_id, item_data.slot) if EquipmentManager else null
+				item_pickup_ui.show_item(closest_item, equipped != null)
 
-	if closest_item and closest_item != nearby_item:
-		nearby_item = closest_item
-		if item_pickup_ui and closest_item.has_method("get_item_data"):
-			var item_data = closest_item.get_item_data()
-			var character_id = CharacterManager.selected_character_id if CharacterManager else "archer"
-			var equipped = EquipmentManager.get_equipped_item(character_id, item_data.slot) if EquipmentManager else null
-			item_pickup_ui.show_item(closest_item, equipped != null)
-	elif not closest_item:
-		nearby_item = null
+		# Pause/unpause based on proximity to the item
+		if closest_distance <= PAUSE_RANGE:
+			if not get_tree().paused:
+				get_tree().paused = true
+		else:
+			# Player walked away from close range - unpause (if no other modals)
+			_safe_unpause()
+	else:
+		# No item nearby - hide UI and ensure unpaused
+		if nearby_item:
+			nearby_item = null
+			if item_pickup_ui:
+				item_pickup_ui.hide_ui()
+		_safe_unpause()
+
+func _safe_unpause() -> void:
+	"""Only unpause if no modal UI is open."""
+	if not get_tree().paused:
+		return
+
+	# Check if ability selection UI is visible
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+
+	# Check if active ability selection UI is visible
+	var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ability_ui and active_ability_ui.visible:
+		return
+
+	# Check if ultimate selection UI is visible
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
+
+	# Check if item pickup UI is still showing (player pressed escape)
+	if item_pickup_ui and item_pickup_ui.visible:
+		return
+
+	get_tree().paused = false
 
 # ============================================
 # VIRTUAL JOYSTICK
