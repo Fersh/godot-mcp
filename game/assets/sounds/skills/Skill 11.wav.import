@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cvlw1b2bp66wx"
+path="res://.godot/imported/Skill 11.wav-70643475a022393d50a556bcf0a0ab34.sample"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 11.wav"
+dest_files=["res://.godot/imported/Skill 11.wav-70643475a022393d50a556bcf0a0ab34.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

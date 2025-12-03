@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://boj2gsvrtfnyu"
+path="res://.godot/imported/Skill 22.mp3-5a8130598bd857cf7924890734375836.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 22.mp3"
+dest_files=["res://.godot/imported/Skill 22.mp3-5a8130598bd857cf7924890734375836.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dknt3qf4raijy"
+path="res://.godot/imported/Magic Spell Pack 6 - 16.mp3-320e464c7376c2cfab1b57bd3ab8339b.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/spells/MP3/Magic Spell Pack 6 - 16.mp3"
+dest_files=["res://.godot/imported/Magic Spell Pack 6 - 16.mp3-320e464c7376c2cfab1b57bd3ab8339b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

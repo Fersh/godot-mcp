@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b5jcgxfkgxs1i"
+path="res://.godot/imported/Skill 18.mp3-9997c55a299c93b75caadbbbd0ba9bad.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 18.mp3"
+dest_files=["res://.godot/imported/Skill 18.mp3-9997c55a299c93b75caadbbbd0ba9bad.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

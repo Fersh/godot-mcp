@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bkea25i2xw8h3"
+path="res://.godot/imported/Skill 9.wav-3e2c88ea9fbabde640dcf0bf40d82d71.sample"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 9.wav"
+dest_files=["res://.godot/imported/Skill 9.wav-3e2c88ea9fbabde640dcf0bf40d82d71.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bfahi3q4el0tw"
+path="res://.godot/imported/Skill 3.ogg-8a725c83508040b654b7f1886ab466ac.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 3.ogg"
+dest_files=["res://.godot/imported/Skill 3.ogg-8a725c83508040b654b7f1886ab466ac.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -469,6 +469,10 @@ func _setup_tile_background() -> void:
 		top_wall.collision_layer = 0
 		top_wall.collision_mask = 0
 
+	# Set arena bounds IMMEDIATELY before any gameplay can happen
+	# This prevents dodge/dash bugs from using wrong bounds
+	_set_tile_arena_bounds()
+
 	# Create tile background
 	tile_background = Node2D.new()
 	tile_background.set_script(tile_background_script)
@@ -476,8 +480,29 @@ func _setup_tile_background() -> void:
 	add_child(tile_background)
 	move_child(tile_background, 0)  # Move to back of scene
 
-	# Expand camera limits for the larger tile map (deferred to ensure tile_background is ready)
+	# Setup camera limits after tile background is created
 	call_deferred("_setup_tile_camera_bounds")
+
+func _set_tile_arena_bounds() -> void:
+	"""Set arena bounds immediately for player movement clamping."""
+	if not player:
+		return
+
+	# Calculate tile map dimensions (must match tile_background.gd settings)
+	var tile_size = 32 * 2.0  # TILE_SIZE * tile_scale
+	var width_tiles = 48
+	var height_tiles = 36
+	var offset_y = 100
+
+	var arena_width = width_tiles * tile_size
+	var arena_height = height_tiles * tile_size
+	var offset_x = (1536 - arena_width) / 2
+
+	# Set arena bounds on player immediately
+	var arena_bounds = Rect2(offset_x, offset_y, arena_width, arena_height)
+	if player.has_method("set_arena_bounds"):
+		# Pass empty camera bounds - will be set properly in deferred call
+		player.set_arena_bounds(arena_bounds, Rect2())
 
 func _setup_tile_camera_bounds() -> void:
 	"""Set up expanded camera bounds for the tile-based map."""

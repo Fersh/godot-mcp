@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://bokdsei21luhn"
+path="res://.godot/imported/Skill 20.ogg-acbff2298ecbea72f1f866e2e0a32ba5.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 20.ogg"
+dest_files=["res://.godot/imported/Skill 20.ogg-acbff2298ecbea72f1f866e2e0a32ba5.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

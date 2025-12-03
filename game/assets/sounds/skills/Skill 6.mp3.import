@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://ddixsc2dqefp6"
+path="res://.godot/imported/Skill 6.mp3-da2124dd6f65bfdba7cdc52ff79dfb7b.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/skills/Skill 6.mp3"
+dest_files=["res://.godot/imported/Skill 6.mp3-da2124dd6f65bfdba7cdc52ff79dfb7b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
