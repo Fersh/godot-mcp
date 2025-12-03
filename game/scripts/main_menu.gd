@@ -15,6 +15,10 @@ var pixel_font: Font = null
 var settings_panel: Control = null
 var confirmation_dialog: Control = null
 
+# Notification badges
+var missions_badge: Control = null
+var upgrade_badge: Control = null
+
 const VERSION = "1.0.0"
 const BUILD = 10
 
@@ -58,8 +62,9 @@ func _ready() -> void:
 	# Show daily login popup if reward available
 	_check_daily_login()
 
-	# Update missions button badge if rewards available
+	# Update notification badges
 	_update_missions_badge()
+	_update_upgrade_badge()
 
 func _update_princess_button_state() -> void:
 	"""Lock/unlock princess button based on challenge progress."""
@@ -312,6 +317,8 @@ func _on_shop_pressed() -> void:
 		SoundManager.play_click()
 	if HapticManager:
 		HapticManager.light()
+	# Mark that user has seen upgrades - clear the badge
+	_mark_upgrades_seen()
 	get_tree().change_scene_to_file("res://scenes/shop.tscn")
 
 func _on_princesses_pressed() -> void:
@@ -826,12 +833,106 @@ func _check_daily_login() -> void:
 			)
 
 func _update_missions_badge() -> void:
-	"""Update missions button to show notification if rewards available."""
+	"""Update missions button to show red circle badge if rewards available."""
+	# Remove existing badge
+	if missions_badge:
+		missions_badge.queue_free()
+		missions_badge = null
+
 	if not MissionsManager:
 		return
 
 	var unclaimed = MissionsManager.get_unclaimed_count()
 	if unclaimed > 0:
-		missions_button.text = "MISSIONS (%d)" % unclaimed
-	else:
-		missions_button.text = "MISSIONS"
+		missions_badge = _create_notification_badge(unclaimed)
+		missions_button.add_child(missions_badge)
+
+func _update_upgrade_badge() -> void:
+	"""Show red dot on upgrade button if user can afford new upgrades."""
+	# Remove existing badge
+	if upgrade_badge:
+		upgrade_badge.queue_free()
+		upgrade_badge = null
+
+	if not PermanentUpgrades or not StatsManager:
+		return
+
+	# Check if user should see the badge
+	if not _should_show_upgrade_badge():
+		return
+
+	# Check if any upgrade is affordable
+	var can_afford_any = false
+	for upgrade in PermanentUpgrades.get_all_upgrades():
+		if PermanentUpgrades.can_purchase(upgrade.id):
+			can_afford_any = true
+			break
+
+	if can_afford_any:
+		upgrade_badge = _create_notification_badge(0)  # 0 = just show dot, no number
+		shop_button.add_child(upgrade_badge)
+
+func _should_show_upgrade_badge() -> bool:
+	"""Check if upgrade badge should be shown (new coins earned since last shop visit)."""
+	if not GameSettings:
+		return false
+
+	var last_seen_coins = GameSettings.get_setting("last_shop_coins", -1)
+
+	# First time - don't show badge, just record current coins
+	if last_seen_coins == -1:
+		return false
+
+	# Show badge if we have more coins than when we last visited shop
+	return StatsManager.spendable_coins > last_seen_coins
+
+func _mark_upgrades_seen() -> void:
+	"""Mark that user has visited the shop - hide badge until new coins earned."""
+	if GameSettings and StatsManager:
+		GameSettings.set_setting("last_shop_coins", StatsManager.spendable_coins)
+
+func _create_notification_badge(count: int) -> Control:
+	"""Create a red circle notification badge with optional white number."""
+	var badge = Control.new()
+
+	# Position in top-right corner of button
+	badge.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	badge.offset_left = -12
+	badge.offset_right = 12
+	badge.offset_top = -8
+	badge.offset_bottom = 16
+
+	# Red circle background
+	var circle = ColorRect.new()
+	circle.set_anchors_preset(Control.PRESET_FULL_RECT)
+	circle.color = Color(0.9, 0.2, 0.2, 1.0)
+
+	# Make it circular using a shader or just use a small square with rounded corners
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.9, 0.2, 0.2, 1.0)
+	style.set_corner_radius_all(12)  # Fully rounded
+
+	var panel = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.add_theme_stylebox_override("panel", style)
+	badge.add_child(panel)
+
+	# Add white number if count > 0
+	if count > 0:
+		var label = Label.new()
+		label.text = str(count) if count < 100 else "99+"
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.set_anchors_preset(Control.PRESET_FULL_RECT)
+		if pixel_font:
+			label.add_theme_font_override("font", pixel_font)
+		label.add_theme_font_size_override("font_size", 10)
+		label.add_theme_color_override("font_color", Color.WHITE)
+		badge.add_child(label)
+
+		# Adjust badge size based on number width
+		if count >= 10:
+			badge.offset_left = -16
+			badge.offset_right = 16
+
+	return badge

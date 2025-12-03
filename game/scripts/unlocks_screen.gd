@@ -14,7 +14,7 @@ var pixel_font: Font = null
 var pixelify_font: Font = null
 
 const PROGRESS_BAR_WIDTH: float = 140.0
-const CONTAINER_WIDTH: float = 400.0
+const CONTAINER_WIDTH: float = 500.0
 
 func _ready() -> void:
 	# Load fonts
@@ -159,20 +159,25 @@ func _add_progress_categories_section() -> void:
 	spacer.custom_minimum_size = Vector2(0, 5)
 	vbox.add_child(spacer)
 
-	# Characters
+	# Missions Completed (new - above characters)
+	var missions_completed = MissionsManager.get_completed_count() if MissionsManager else 0
+	var missions_total = MissionsManager.get_total_permanent_count() if MissionsManager else 0
+	_add_progress_row(vbox, "Missions Completed", missions_completed, missions_total, Color(0.5, 0.9, 0.6))
+
+	# Characters Unlocked
 	var char_count = UnlocksManager._count_unlocked_characters() if UnlocksManager else 7
 	var char_total = 7
-	_add_progress_row(vbox, "Characters", char_count, char_total, Color(0.4, 0.7, 1.0))
+	_add_progress_row(vbox, "Characters Unlocked", char_count, char_total, Color(0.4, 0.7, 1.0))
 
-	# Difficulties
+	# Difficulties Beat
 	var diff_count = DifficultyManager.completed_difficulties.size() if DifficultyManager else 0
 	var diff_total = 7
-	_add_progress_row(vbox, "Difficulties", diff_count, diff_total, Color(0.9, 0.7, 0.2))
+	_add_progress_row(vbox, "Difficulties Beat", diff_count, diff_total, Color(0.9, 0.7, 0.2))
 
-	# Princesses
+	# Princesses Saved
 	var princess_count = PrincessManager.get_unlocked_count() if PrincessManager else 0
 	var princess_total = 21
-	_add_progress_row(vbox, "Princesses", princess_count, princess_total, Color(0.95, 0.5, 0.7))
+	_add_progress_row(vbox, "Princesses Saved", princess_count, princess_total, Color(0.95, 0.5, 0.7))
 
 	# Upgrades Maxed
 	var upgrades_maxed = UnlocksManager.get_maxed_upgrades_count() if UnlocksManager else 0
@@ -376,8 +381,8 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
-	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 	hbox.add_child(label)
 
 	var value = Label.new()
@@ -385,7 +390,7 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	if pixel_font:
 		value.add_theme_font_override("font", pixel_font)
-	value.add_theme_font_size_override("font_size", 11)
+	value.add_theme_font_size_override("font_size", 12)
 	value.add_theme_color_override("font_color", Color(1, 1, 1))
 	hbox.add_child(value)
 

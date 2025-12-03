@@ -46,88 +46,88 @@ func _ready() -> void:
 func _initialize_all_missions() -> void:
 	"""Create all mission definitions."""
 
-	# Kill missions (cumulative)
-	_add_mission(MissionData.create_kill_mission("kill_1", "First Blood", "Kill your first enemy", 1, 50))
-	_add_mission(MissionData.create_kill_mission("kill_50", "Getting Started", "Kill 50 enemies", 50, 100))
-	_add_mission(MissionData.create_kill_mission("kill_100", "Century Club", "Kill 100 enemies", 100, 150))
-	_add_mission(MissionData.create_kill_mission("kill_250", "Monster Hunter", "Kill 250 enemies", 250, 250))
-	_add_mission(MissionData.create_kill_mission("kill_500", "Slayer", "Kill 500 enemies", 500, 400))
-	_add_mission(MissionData.create_kill_mission("kill_1000", "Exterminator", "Kill 1,000 enemies", 1000, 600))
-	_add_mission(MissionData.create_kill_mission("kill_2500", "Mass Extinction", "Kill 2,500 enemies", 2500, 1000))
-	_add_mission(MissionData.create_kill_mission("kill_5000", "Genocide", "Kill 5,000 enemies", 5000, 1500))
-	_add_mission(MissionData.create_kill_mission("kill_10000", "Apocalypse Bringer", "Kill 10,000 enemies", 10000, 2500))
-	_add_mission(MissionData.create_kill_mission("kill_25000", "Death Incarnate", "Kill 25,000 enemies", 25000, 4000))
-	_add_mission(MissionData.create_kill_mission("kill_50000", "World Ender", "Kill 50,000 enemies", 50000, 6000))
-	_add_mission(MissionData.create_kill_mission("kill_100000", "Infinity Killer", "Kill 100,000 enemies", 100000, 10000))
+	# Kill missions (cumulative) - reduced rewards
+	_add_mission(MissionData.create_kill_mission("kill_1", "First Blood", "Kill your first enemy", 1, 5))
+	_add_mission(MissionData.create_kill_mission("kill_50", "Getting Started", "Kill 50 enemies", 50, 10))
+	_add_mission(MissionData.create_kill_mission("kill_100", "Century Club", "Kill 100 enemies", 100, 15))
+	_add_mission(MissionData.create_kill_mission("kill_250", "Monster Hunter", "Kill 250 enemies", 250, 25))
+	_add_mission(MissionData.create_kill_mission("kill_500", "Slayer", "Kill 500 enemies", 500, 40))
+	_add_mission(MissionData.create_kill_mission("kill_1000", "Exterminator", "Kill 1,000 enemies", 1000, 60))
+	_add_mission(MissionData.create_kill_mission("kill_2500", "Mass Extinction", "Kill 2,500 enemies", 2500, 100))
+	_add_mission(MissionData.create_kill_mission("kill_5000", "Genocide", "Kill 5,000 enemies", 5000, 150))
+	_add_mission(MissionData.create_kill_mission("kill_10000", "Apocalypse Bringer", "Kill 10,000 enemies", 10000, 250))
+	_add_mission(MissionData.create_kill_mission("kill_25000", "Death Incarnate", "Kill 25,000 enemies", 25000, 400))
+	_add_mission(MissionData.create_kill_mission("kill_50000", "World Ender", "Kill 50,000 enemies", 50000, 600))
+	_add_mission(MissionData.create_kill_mission("kill_100000", "Infinity Killer", "Kill 100,000 enemies", 100000, 1000))
 
-	# Kill missions (single run)
-	_add_mission(MissionData.create_kill_mission("run_kill_100", "Warm Up", "Kill 100 enemies in a single run", 100, 200, MissionData.TrackingMode.SINGLE_RUN))
-	_add_mission(MissionData.create_kill_mission("run_kill_250", "Hot Streak", "Kill 250 enemies in a single run", 250, 400, MissionData.TrackingMode.SINGLE_RUN))
-	_add_mission(MissionData.create_kill_mission("run_kill_500", "Rampage", "Kill 500 enemies in a single run", 500, 700, MissionData.TrackingMode.SINGLE_RUN))
-	_add_mission(MissionData.create_kill_mission("run_kill_1000", "Unstoppable", "Kill 1,000 enemies in a single run", 1000, 1200, MissionData.TrackingMode.SINGLE_RUN))
-	_add_mission(MissionData.create_kill_mission("run_kill_1500", "One Man Army", "Kill 1,500 enemies in a single run", 1500, 2000, MissionData.TrackingMode.SINGLE_RUN))
+	# Kill missions (single run) - reduced rewards
+	_add_mission(MissionData.create_kill_mission("run_kill_100", "Warm Up", "Kill 100 enemies in a single run", 100, 20, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_250", "Hot Streak", "Kill 250 enemies in a single run", 250, 40, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_500", "Rampage", "Kill 500 enemies in a single run", 500, 70, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_1000", "Unstoppable", "Kill 1,000 enemies in a single run", 1000, 120, MissionData.TrackingMode.SINGLE_RUN))
+	_add_mission(MissionData.create_kill_mission("run_kill_1500", "One Man Army", "Kill 1,500 enemies in a single run", 1500, 200, MissionData.TrackingMode.SINGLE_RUN))
 
-	# Elite kills
-	_add_mission(MissionData.create_elite_mission("elite_1", "Elite Hunter", "Kill your first elite enemy", 1, 100))
-	_add_mission(MissionData.create_elite_mission("elite_10", "Elite Slayer", "Kill 10 elite enemies", 10, 300))
-	_add_mission(MissionData.create_elite_mission("elite_50", "Elite Exterminator", "Kill 50 elite enemies", 50, 800))
-	_add_mission(MissionData.create_elite_mission("elite_100", "Elite Nightmare", "Kill 100 elite enemies", 100, 1500))
+	# Elite kills - reduced rewards
+	_add_mission(MissionData.create_elite_mission("elite_1", "Elite Hunter", "Kill your first elite enemy", 1, 10))
+	_add_mission(MissionData.create_elite_mission("elite_10", "Elite Slayer", "Kill 10 elite enemies", 10, 30))
+	_add_mission(MissionData.create_elite_mission("elite_50", "Elite Exterminator", "Kill 50 elite enemies", 50, 80))
+	_add_mission(MissionData.create_elite_mission("elite_100", "Elite Nightmare", "Kill 100 elite enemies", 100, 150))
 
-	# Boss kills
-	_add_mission(MissionData.create_boss_mission("boss_1", "Boss Killer", "Defeat the Minotaur", 1, 500))
-	_add_mission(MissionData.create_boss_mission("boss_5", "Boss Slayer", "Defeat 5 bosses", 5, 1000))
-	_add_mission(MissionData.create_boss_mission("boss_25", "Boss Hunter", "Defeat 25 bosses", 25, 2500))
-	_add_mission(MissionData.create_boss_mission("boss_100", "Boss Exterminator", "Defeat 100 bosses", 100, 5000))
+	# Boss kills - reduced rewards
+	_add_mission(MissionData.create_boss_mission("boss_1", "Boss Killer", "Defeat the Minotaur", 1, 50))
+	_add_mission(MissionData.create_boss_mission("boss_5", "Boss Slayer", "Defeat 5 bosses", 5, 100))
+	_add_mission(MissionData.create_boss_mission("boss_25", "Boss Hunter", "Defeat 25 bosses", 25, 250))
+	_add_mission(MissionData.create_boss_mission("boss_100", "Boss Exterminator", "Defeat 100 bosses", 100, 500))
 
-	# Specific enemy kills
-	_add_mission(MissionData.create_enemy_mission("kill_ratfolk_100", "Rat Catcher", "Kill 100 Ratfolk", "ratfolk", 100, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_skeleton_100", "Skeleton Smasher", "Kill 100 Skeletons", "skeleton", 100, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_slime_100", "Slime Splatter", "Kill 100 Slimes", "slime", 100, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_imp_50", "Imp Impaler", "Kill 50 Imps", "imp", 50, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_ghoul_50", "Ghoul Grinder", "Kill 50 Ghouls", "ghoul", 50, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_kobold_50", "Kobold Crusher", "Kill 50 Kobold Priests", "kobold_priest", 50, 250))
-	_add_mission(MissionData.create_enemy_mission("kill_eye_25", "Eye Spy", "Kill 25 Eye Monsters", "eye_monster", 25, 250))
-	_add_mission(MissionData.create_enemy_mission("kill_bat_50", "Bat Basher", "Kill 50 Bats", "bat", 50, 200))
-	_add_mission(MissionData.create_enemy_mission("kill_golem_25", "Golem Breaker", "Kill 25 Golems", "golem", 25, 300))
-	_add_mission(MissionData.create_enemy_mission("kill_ratfolk_500", "Vermin Exterminator", "Kill 500 Ratfolk", "ratfolk", 500, 600))
-	_add_mission(MissionData.create_enemy_mission("kill_skeleton_500", "Bone Collector", "Kill 500 Skeletons", "skeleton", 500, 600))
-	_add_mission(MissionData.create_enemy_mission("kill_slime_500", "Slime Time", "Kill 500 Slimes", "slime", 500, 600))
+	# Specific enemy kills - reduced rewards
+	_add_mission(MissionData.create_enemy_mission("kill_ratfolk_100", "Rat Catcher", "Kill 100 Ratfolk", "ratfolk", 100, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_skeleton_100", "Skeleton Smasher", "Kill 100 Skeletons", "skeleton", 100, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_slime_100", "Slime Splatter", "Kill 100 Slimes", "slime", 100, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_imp_50", "Imp Impaler", "Kill 50 Imps", "imp", 50, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_ghoul_50", "Ghoul Grinder", "Kill 50 Ghouls", "ghoul", 50, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_kobold_50", "Kobold Crusher", "Kill 50 Kobold Priests", "kobold_priest", 50, 25))
+	_add_mission(MissionData.create_enemy_mission("kill_eye_25", "Eye Spy", "Kill 25 Eye Monsters", "eye_monster", 25, 25))
+	_add_mission(MissionData.create_enemy_mission("kill_bat_50", "Bat Basher", "Kill 50 Bats", "bat", 50, 20))
+	_add_mission(MissionData.create_enemy_mission("kill_golem_25", "Golem Breaker", "Kill 25 Golems", "golem", 25, 30))
+	_add_mission(MissionData.create_enemy_mission("kill_ratfolk_500", "Vermin Exterminator", "Kill 500 Ratfolk", "ratfolk", 500, 60))
+	_add_mission(MissionData.create_enemy_mission("kill_skeleton_500", "Bone Collector", "Kill 500 Skeletons", "skeleton", 500, 60))
+	_add_mission(MissionData.create_enemy_mission("kill_slime_500", "Slime Time", "Kill 500 Slimes", "slime", 500, 60))
 
-	# Difficulty missions
-	_add_mission(MissionData.create_difficulty_mission("beat_pitiful", "Baby Steps", "Beat Pitiful difficulty", 0, 100))
-	_add_mission(MissionData.create_difficulty_mission("beat_easy", "Easy Peasy", "Beat Easy difficulty", 1, 300))
-	_add_mission(MissionData.create_difficulty_mission("beat_normal", "Normal Day", "Beat Normal difficulty", 2, 600))
-	_add_mission(MissionData.create_difficulty_mission("beat_nightmare", "Nightmare Fuel", "Beat Nightmare difficulty", 3, 1000))
-	_add_mission(MissionData.create_difficulty_mission("beat_hell", "Hell Raiser", "Beat Hell difficulty", 4, 2000))
-	_add_mission(MissionData.create_difficulty_mission("beat_inferno", "Inferno Walker", "Beat Inferno difficulty", 5, 3500))
-	_add_mission(MissionData.create_difficulty_mission("beat_thanksgiving", "Thanksgiving Champion", "Beat Thanksgiving Dinner difficulty", 6, 5000))
+	# Difficulty missions - reduced rewards
+	_add_mission(MissionData.create_difficulty_mission("beat_pitiful", "Baby Steps", "Beat Pitiful difficulty", 0, 10))
+	_add_mission(MissionData.create_difficulty_mission("beat_easy", "Easy Peasy", "Beat Easy difficulty", 1, 30))
+	_add_mission(MissionData.create_difficulty_mission("beat_normal", "Normal Day", "Beat Normal difficulty", 2, 60))
+	_add_mission(MissionData.create_difficulty_mission("beat_nightmare", "Nightmare Fuel", "Beat Nightmare difficulty", 3, 100))
+	_add_mission(MissionData.create_difficulty_mission("beat_hell", "Hell Raiser", "Beat Hell difficulty", 4, 200))
+	_add_mission(MissionData.create_difficulty_mission("beat_inferno", "Inferno Walker", "Beat Inferno difficulty", 5, 350))
+	_add_mission(MissionData.create_difficulty_mission("beat_thanksgiving", "Thanksgiving Champion", "Beat Thanksgiving Dinner difficulty", 6, 500))
 
-	# Character missions - Play as
-	_add_mission(MissionData.create_character_mission("play_archer", "Robin's Hood", "Complete a run as Archer", "archer", 150))
-	_add_mission(MissionData.create_character_mission("play_knight", "Knight's Honor", "Complete a run as Knight", "knight", 150))
-	_add_mission(MissionData.create_character_mission("play_beast", "Unleash the Beast", "Complete a run as Beast", "beast", 150))
-	_add_mission(MissionData.create_character_mission("play_mage", "Arcane Master", "Complete a run as Mage", "mage", 150))
-	_add_mission(MissionData.create_character_mission("play_monk", "Inner Peace", "Complete a run as Monk", "monk", 150))
-	_add_mission(MissionData.create_character_mission("play_barbarian", "Chad Energy", "Complete a run as Barbarian", "barbarian", 200))
-	_add_mission(MissionData.create_character_mission("play_assassin", "Shadow Walker", "Complete a run as Assassin", "assassin", 150))
+	# Character missions - Play as - reduced rewards
+	_add_mission(MissionData.create_character_mission("play_archer", "Robin's Hood", "Complete a run as Archer", "archer", 15))
+	_add_mission(MissionData.create_character_mission("play_knight", "Knight's Honor", "Complete a run as Knight", "knight", 15))
+	_add_mission(MissionData.create_character_mission("play_beast", "Unleash the Beast", "Complete a run as Beast", "beast", 15))
+	_add_mission(MissionData.create_character_mission("play_mage", "Arcane Master", "Complete a run as Mage", "mage", 15))
+	_add_mission(MissionData.create_character_mission("play_monk", "Inner Peace", "Complete a run as Monk", "monk", 15))
+	_add_mission(MissionData.create_character_mission("play_barbarian", "Chad Energy", "Complete a run as Barbarian", "barbarian", 20))
+	_add_mission(MissionData.create_character_mission("play_assassin", "Shadow Walker", "Complete a run as Assassin", "assassin", 15))
 
-	# Character missions - Win Challenge Mode
-	_add_mission(MissionData.create_character_mission("win_archer", "Archer Ace", "Win Challenge Mode with Archer", "archer", 500, true))
-	_add_mission(MissionData.create_character_mission("win_knight", "Knight Champion", "Win Challenge Mode with Knight", "knight", 500, true))
-	_add_mission(MissionData.create_character_mission("win_beast", "Beast Master", "Win Challenge Mode with Beast", "beast", 500, true))
-	_add_mission(MissionData.create_character_mission("win_mage", "Archmage", "Win Challenge Mode with Mage", "mage", 500, true))
-	_add_mission(MissionData.create_character_mission("win_monk", "Grandmaster Monk", "Win Challenge Mode with Monk", "monk", 500, true))
-	_add_mission(MissionData.create_character_mission("win_barbarian", "Barbarian King", "Win Challenge Mode with Barbarian", "barbarian", 600, true))
-	_add_mission(MissionData.create_character_mission("win_assassin", "Master Assassin", "Win Challenge Mode with Assassin", "assassin", 500, true))
+	# Character missions - Win Challenge Mode - reduced rewards
+	_add_mission(MissionData.create_character_mission("win_archer", "Archer Ace", "Win Challenge Mode with Archer", "archer", 50, true))
+	_add_mission(MissionData.create_character_mission("win_knight", "Knight Champion", "Win Challenge Mode with Knight", "knight", 50, true))
+	_add_mission(MissionData.create_character_mission("win_beast", "Beast Master", "Win Challenge Mode with Beast", "beast", 50, true))
+	_add_mission(MissionData.create_character_mission("win_mage", "Archmage", "Win Challenge Mode with Mage", "mage", 50, true))
+	_add_mission(MissionData.create_character_mission("win_monk", "Grandmaster Monk", "Win Challenge Mode with Monk", "monk", 50, true))
+	_add_mission(MissionData.create_character_mission("win_barbarian", "Barbarian King", "Win Challenge Mode with Barbarian", "barbarian", 60, true))
+	_add_mission(MissionData.create_character_mission("win_assassin", "Master Assassin", "Win Challenge Mode with Assassin", "assassin", 50, true))
 
-	# Survival missions (Endless)
-	_add_mission(MissionData.create_survival_mission("survive_5min", "Survivor", "Survive 5 minutes in Endless Mode", 300, 300, 0))
-	_add_mission(MissionData.create_survival_mission("survive_10min", "Endurance", "Survive 10 minutes in Endless Mode", 600, 600, 0))
-	_add_mission(MissionData.create_survival_mission("survive_15min", "Marathon", "Survive 15 minutes in Endless Mode", 900, 1000, 0))
-	_add_mission(MissionData.create_survival_mission("survive_20min", "Iron Will", "Survive 20 minutes in Endless Mode", 1200, 1500, 0))
-	_add_mission(MissionData.create_survival_mission("survive_30min", "Immortal", "Survive 30 minutes in Endless Mode", 1800, 3000, 0))
+	# Survival missions (Endless) - reduced rewards
+	_add_mission(MissionData.create_survival_mission("survive_5min", "Survivor", "Survive 5 minutes in Endless Mode", 300, 30, 0))
+	_add_mission(MissionData.create_survival_mission("survive_10min", "Endurance", "Survive 10 minutes in Endless Mode", 600, 60, 0))
+	_add_mission(MissionData.create_survival_mission("survive_15min", "Marathon", "Survive 15 minutes in Endless Mode", 900, 100, 0))
+	_add_mission(MissionData.create_survival_mission("survive_20min", "Iron Will", "Survive 20 minutes in Endless Mode", 1200, 150, 0))
+	_add_mission(MissionData.create_survival_mission("survive_30min", "Immortal", "Survive 30 minutes in Endless Mode", 1800, 300, 0))
 
-	# Wave missions (Endless)
+	# Wave missions (Endless) - reduced rewards
 	var wave_mission_5 = MissionData.new("wave_5")
 	wave_mission_5.title = "Wave 5"
 	wave_mission_5.description = "Reach Wave 5 in Endless Mode"
@@ -136,7 +136,7 @@ func _initialize_all_missions() -> void:
 	wave_mission_5.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
 	wave_mission_5.game_mode = 0
 	wave_mission_5.target_value = 5
-	wave_mission_5.reward_coins = 200
+	wave_mission_5.reward_coins = 20
 	_add_mission(wave_mission_5)
 
 	var wave_mission_10 = MissionData.new("wave_10")
@@ -147,7 +147,7 @@ func _initialize_all_missions() -> void:
 	wave_mission_10.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
 	wave_mission_10.game_mode = 0
 	wave_mission_10.target_value = 10
-	wave_mission_10.reward_coins = 400
+	wave_mission_10.reward_coins = 40
 	_add_mission(wave_mission_10)
 
 	var wave_mission_15 = MissionData.new("wave_15")
@@ -158,7 +158,7 @@ func _initialize_all_missions() -> void:
 	wave_mission_15.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
 	wave_mission_15.game_mode = 0
 	wave_mission_15.target_value = 15
-	wave_mission_15.reward_coins = 700
+	wave_mission_15.reward_coins = 70
 	_add_mission(wave_mission_15)
 
 	var wave_mission_20 = MissionData.new("wave_20")
@@ -169,10 +169,10 @@ func _initialize_all_missions() -> void:
 	wave_mission_20.tracking_mode = MissionData.TrackingMode.SINGLE_RUN
 	wave_mission_20.game_mode = 0
 	wave_mission_20.target_value = 20
-	wave_mission_20.reward_coins = 1200
+	wave_mission_20.reward_coins = 120
 	_add_mission(wave_mission_20)
 
-	# Economy missions
+	# Economy missions - reduced rewards
 	var econ_100 = MissionData.new("earn_100")
 	econ_100.title = "First Coins"
 	econ_100.description = "Earn 100 coins total"
@@ -180,7 +180,7 @@ func _initialize_all_missions() -> void:
 	econ_100.category = MissionData.MissionCategory.PERMANENT
 	econ_100.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	econ_100.target_value = 100
-	econ_100.reward_coins = 50
+	econ_100.reward_coins = 10
 	_add_mission(econ_100)
 
 	var econ_1000 = MissionData.new("earn_1000")
@@ -190,7 +190,7 @@ func _initialize_all_missions() -> void:
 	econ_1000.category = MissionData.MissionCategory.PERMANENT
 	econ_1000.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	econ_1000.target_value = 1000
-	econ_1000.reward_coins = 200
+	econ_1000.reward_coins = 25
 	_add_mission(econ_1000)
 
 	var econ_10000 = MissionData.new("earn_10000")
@@ -200,7 +200,7 @@ func _initialize_all_missions() -> void:
 	econ_10000.category = MissionData.MissionCategory.PERMANENT
 	econ_10000.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	econ_10000.target_value = 10000
-	econ_10000.reward_coins = 500
+	econ_10000.reward_coins = 50
 	_add_mission(econ_10000)
 
 	var econ_50000 = MissionData.new("earn_50000")
@@ -210,7 +210,7 @@ func _initialize_all_missions() -> void:
 	econ_50000.category = MissionData.MissionCategory.PERMANENT
 	econ_50000.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	econ_50000.target_value = 50000
-	econ_50000.reward_coins = 1500
+	econ_50000.reward_coins = 150
 	_add_mission(econ_50000)
 
 	var econ_100000 = MissionData.new("earn_100000")
@@ -220,10 +220,10 @@ func _initialize_all_missions() -> void:
 	econ_100000.category = MissionData.MissionCategory.PERMANENT
 	econ_100000.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	econ_100000.target_value = 100000
-	econ_100000.reward_coins = 3000
+	econ_100000.reward_coins = 300
 	_add_mission(econ_100000)
 
-	# Run count missions
+	# Run count missions - reduced rewards
 	var runs_1 = MissionData.new("runs_1")
 	runs_1.title = "First Run"
 	runs_1.description = "Complete your first run"
@@ -231,7 +231,7 @@ func _initialize_all_missions() -> void:
 	runs_1.category = MissionData.MissionCategory.PERMANENT
 	runs_1.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	runs_1.target_value = 1
-	runs_1.reward_coins = 50
+	runs_1.reward_coins = 10
 	_add_mission(runs_1)
 
 	var runs_10 = MissionData.new("runs_10")
@@ -241,7 +241,7 @@ func _initialize_all_missions() -> void:
 	runs_10.category = MissionData.MissionCategory.PERMANENT
 	runs_10.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	runs_10.target_value = 10
-	runs_10.reward_coins = 200
+	runs_10.reward_coins = 25
 	_add_mission(runs_10)
 
 	var runs_50 = MissionData.new("runs_50")
@@ -251,7 +251,7 @@ func _initialize_all_missions() -> void:
 	runs_50.category = MissionData.MissionCategory.PERMANENT
 	runs_50.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	runs_50.target_value = 50
-	runs_50.reward_coins = 500
+	runs_50.reward_coins = 50
 	_add_mission(runs_50)
 
 	var runs_100 = MissionData.new("runs_100")
@@ -261,20 +261,20 @@ func _initialize_all_missions() -> void:
 	runs_100.category = MissionData.MissionCategory.PERMANENT
 	runs_100.tracking_mode = MissionData.TrackingMode.CUMULATIVE
 	runs_100.target_value = 100
-	runs_100.reward_coins = 1000
+	runs_100.reward_coins = 100
 	_add_mission(runs_100)
 
-	# Social missions
-	_add_mission(MissionData.create_social_mission("twitter_follow", "Twitter Follower", "Follow @RogueArena on Twitter/X", 500))
-	_add_mission(MissionData.create_social_mission("discord_join", "Discord Member", "Join the Rogue Arena Discord server", 500))
-	_add_mission(MissionData.create_social_mission("rate_game", "Rate Us", "Rate the game on the app store", 750))
-	_add_mission(MissionData.create_social_mission("youtube_sub", "YouTube Subscriber", "Subscribe to our YouTube channel", 500))
+	# Social missions - reduced rewards
+	_add_mission(MissionData.create_social_mission("twitter_follow", "Follow us on Twitter/X", "Follow us on Twitter/X for updates", 50))
+	_add_mission(MissionData.create_social_mission("discord_join", "Join our Discord Server", "Join the community Discord server", 50))
+	_add_mission(MissionData.create_social_mission("rate_game", "Rate Us", "Rate the game on the app store", 75))
+	_add_mission(MissionData.create_social_mission("youtube_sub", "YouTube Subscriber", "Subscribe to our YouTube channel", 50))
 
-	# Secret missions
-	var secret_close_call = MissionData.create_secret_mission("secret_close_call", "Close Call", "Win with 1 HP remaining", MissionData.MissionType.SECRET, 1, 1000)
+	# Secret missions - reduced rewards
+	var secret_close_call = MissionData.create_secret_mission("secret_close_call", "Close Call", "Win with 1 HP remaining", MissionData.MissionType.SECRET, 1, 100)
 	_add_mission(secret_close_call)
 
-	var secret_speedster = MissionData.create_secret_mission("secret_speedster", "Speedster", "Kill 10 enemies in 5 seconds", MissionData.MissionType.SECRET, 1, 500)
+	var secret_speedster = MissionData.create_secret_mission("secret_speedster", "Speedster", "Kill 10 enemies in 5 seconds", MissionData.MissionType.SECRET, 1, 50)
 	_add_mission(secret_speedster)
 
 	# Categorize missions

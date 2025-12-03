@@ -21,7 +21,7 @@ var current_tab: int = 0  # 0=Daily, 1=Challenges, 2=Social
 var pixel_font: Font = null
 var pixelify_font: Font = null
 
-const CONTAINER_WIDTH: float = 420.0
+const CONTAINER_WIDTH: float = 500.0
 const PROGRESS_BAR_WIDTH: float = 200.0
 
 # Tab colors
@@ -145,13 +145,13 @@ func _build_ui() -> void:
 	tab_spacer.custom_minimum_size = Vector2(0, 10)
 	main_vbox.add_child(tab_spacer)
 
-	# Create tabs
+	# Create tabs (Social below Daily)
 	tab_daily = _create_tab_button("DAILY", 0)
-	tab_challenges = _create_tab_button("CHALLENGES", 1)
 	tab_social = _create_tab_button("SOCIAL", 2)
+	tab_challenges = _create_tab_button("CHALLENGES", 1)
 	tab_container.add_child(tab_daily)
-	tab_container.add_child(tab_challenges)
 	tab_container.add_child(tab_social)
+	tab_container.add_child(tab_challenges)
 
 	# Scrollable content area
 	scroll_container = ScrollContainer.new()
@@ -731,9 +731,9 @@ func _on_social_link_pressed(mission_id: String) -> void:
 	var url = ""
 	match mission_id:
 		"twitter_follow":
-			url = "https://twitter.com/RogueArena"  # Replace with actual URL
+			url = "https://x.com/markfersh"
 		"discord_join":
-			url = "https://discord.gg/RogueArena"  # Replace with actual URL
+			url = "https://discord.gg/xndmaVu6B8"
 		"rate_game":
 			url = "https://apps.apple.com/app/rogue-arena"  # Replace with actual URL
 		"youtube_sub":

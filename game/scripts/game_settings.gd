@@ -12,6 +12,9 @@ var screen_shake_enabled: bool = true
 var haptics_enabled: bool = true
 var master_volume: float = 1.0  # 0.0 to 1.0
 
+# Generic settings storage for misc values
+var misc_settings: Dictionary = {}
+
 signal settings_changed
 
 func _ready() -> void:
@@ -26,6 +29,10 @@ func load_settings() -> void:
 		screen_shake_enabled = config.get_value("visual", "screen_shake_enabled", true)
 		haptics_enabled = config.get_value("haptics", "haptics_enabled", true)
 		master_volume = config.get_value("audio", "master_volume", 1.0)
+		# Load misc settings
+		if config.has_section("misc"):
+			for key in config.get_section_keys("misc"):
+				misc_settings[key] = config.get_value("misc", key)
 	_apply_settings()
 
 func save_settings() -> void:
@@ -35,6 +42,9 @@ func save_settings() -> void:
 	config.set_value("visual", "screen_shake_enabled", screen_shake_enabled)
 	config.set_value("haptics", "haptics_enabled", haptics_enabled)
 	config.set_value("audio", "master_volume", master_volume)
+	# Save misc settings
+	for key in misc_settings:
+		config.set_value("misc", key, misc_settings[key])
 	config.save(SETTINGS_PATH)
 
 func _apply_settings() -> void:
@@ -88,3 +98,11 @@ func increase_volume() -> void:
 
 func decrease_volume() -> void:
 	set_master_volume(master_volume - 0.1)
+
+# Generic setting getter/setter for misc values
+func get_setting(key: String, default_value = null):
+	return misc_settings.get(key, default_value)
+
+func set_setting(key: String, value) -> void:
+	misc_settings[key] = value
+	save_settings()
