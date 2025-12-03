@@ -450,11 +450,8 @@ func _setup_kill_streak_ui() -> void:
 # ============================================
 
 func _setup_tile_background() -> void:
-	"""Initialize tile-based background if enabled (skipped in challenge mode)."""
-	# Skip if disabled or in challenge mode (challenge mode has its own background)
+	"""Initialize tile-based background if enabled."""
 	if not use_tile_background:
-		return
-	if DifficultyManager and DifficultyManager.is_challenge_mode():
 		return
 
 	# Hide the original static background
@@ -504,10 +501,11 @@ func _setup_challenge_mode() -> void:
 	if not DifficultyManager or not DifficultyManager.is_challenge_mode():
 		return
 
-	# Swap background texture for challenge mode
-	var background = get_node_or_null("Background")
-	if background and background is Sprite2D and challenge_bg_texture:
-		background.texture = challenge_bg_texture
+	# Swap background texture for challenge mode (only if not using tile background)
+	if not use_tile_background:
+		var background = get_node_or_null("Background")
+		if background and background is Sprite2D and challenge_bg_texture:
+			background.texture = challenge_bg_texture
 
 	# Find the spawners
 	var enemy_spawner = get_node_or_null("EnemySpawner")
