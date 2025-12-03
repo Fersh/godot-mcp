@@ -30,6 +30,8 @@ var speech_timer: float = 0.0
 var current_speech_index: int = 0
 var modal_shown: bool = false
 var waiting_for_player: bool = false  # Prevents multiple concurrent approach timers
+var idle_time: float = 0.0  # Time spent waiting for player approach
+const MAX_IDLE_TIME: float = 5.0  # Auto-show modal after 5 seconds of waiting
 var animation_frame: int = 0
 var animation_timer: float = 0.0
 var animation_fps: float = 8.0
@@ -42,6 +44,9 @@ var unlock_modal: CanvasLayer = null
 var pixel_font: Font = null
 
 func _ready() -> void:
+	# Ensure this node processes even when game is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
@@ -90,6 +95,11 @@ func _process(delta: float) -> void:
 	if walking:
 		_update_walking(delta)
 	else:
+		# Track idle time and auto-show modal after timeout
+		idle_time += delta
+		if idle_time >= MAX_IDLE_TIME:
+			_show_unlock_modal()
+			return
 		_check_player_approach()
 
 	# Update speech bubble

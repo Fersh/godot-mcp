@@ -58,6 +58,11 @@ func _on_ready() -> void:
 	# Remove player layer (1) from collision mask, keep walls layer (2)
 	collision_mask = 2
 	_setup_elite()
+
+	# Apply 25% health boost to all elites
+	max_health *= 1.25
+	current_health = max_health
+
 	_init_attack_cooldowns()
 
 	# Roll for elite affix (Easy+ difficulty)

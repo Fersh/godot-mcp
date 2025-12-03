@@ -12,7 +12,7 @@ extends CanvasLayer
 @onready var gear_button: Button = $LeftButtonContainer/BottomRow/GearButton
 @onready var shop_button: Button = $LeftButtonContainer/BottomRow/ShopButton
 
-@onready var coin_amount: Label = $CoinsDisplay/CoinAmount
+@onready var coin_amount: Label = $CoinsBackground/CoinsDisplay/CoinAmount
 @onready var settings_button: Button = $SettingsButton
 
 var curse_label: Label = null

@@ -3656,13 +3656,23 @@ func _execute_i_see_red(ability: ActiveAbilityData, player: Node2D) -> void:
 	if player.has_method("apply_damage_boost"):
 		player.apply_damage_boost(2.0, ability.duration)  # Double damage!
 
-	# Red visual tint
+	# Red visual tint on player
 	var player_sprite = player.get_node_or_null("Sprite2D")
 	if not player_sprite:
 		player_sprite = player.get_node_or_null("AnimatedSprite2D")
 
 	if player_sprite:
 		player_sprite.modulate = Color(1.5, 0.5, 0.5, 1.0)
+
+	# Red screen overlay
+	var red_overlay = CanvasLayer.new()
+	red_overlay.layer = 90
+	var red_rect = ColorRect.new()
+	red_rect.color = Color(1.0, 0.0, 0.0, 0.15)  # Transparent red
+	red_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	red_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	red_overlay.add_child(red_rect)
+	get_tree().root.add_child(red_overlay)
 
 	# Periodic damage around player (rage aura)
 	var tick_interval = 0.3
@@ -3682,6 +3692,8 @@ func _execute_i_see_red(ability: ActiveAbilityData, player: Node2D) -> void:
 	get_tree().create_timer(ability.duration).timeout.connect(func():
 		if is_instance_valid(player_sprite):
 			player_sprite.modulate = Color.WHITE
+		if is_instance_valid(red_overlay):
+			red_overlay.queue_free()
 	)
 
 	_spawn_effect("fire_cast", player.global_position)

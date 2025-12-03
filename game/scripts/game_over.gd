@@ -1148,7 +1148,7 @@ func _create_celebration_mission_row(mission, index: int) -> Control:
 
 	# Reward
 	var reward_label = Label.new()
-	reward_label.text = "+%d ●" % mission.coin_reward
+	reward_label.text = "+%d ●" % mission.reward_coins
 	if pixel_font:
 		reward_label.add_theme_font_override("font", pixel_font)
 	reward_label.add_theme_font_size_override("font_size", 14)

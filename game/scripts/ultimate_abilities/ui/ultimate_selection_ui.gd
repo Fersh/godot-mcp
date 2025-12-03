@@ -53,9 +53,9 @@ func _create_ui() -> void:
 	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	# Style with dark purple semi-transparent background (90% transparent)
+	# Style with dark purple semi-transparent background
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.04, 0.02, 0.08, 0.1)
+	panel_style.bg_color = Color(0.04, 0.02, 0.08, 0.92)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 

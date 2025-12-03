@@ -9,6 +9,17 @@
 atlas = ExtResource("5_icons")
 region = Rect2(0, 32, 32, 32)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_coins_bg"]
+bg_color = Color(0, 0, 0, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_main_menu")
 
@@ -42,46 +53,49 @@ offset_bottom = 220.0
 grow_horizontal = 2
 bbcode_enabled = true
 text = "[center][color=#4ce268]SAVE SOME[/color]
-
 [color=white]PRINCESS[/color][/center]"
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_offset_x = 6
 theme_override_constants/shadow_offset_y = 6
-theme_override_constants/line_separation = 10
+theme_override_constants/line_separation = -5
 theme_override_fonts/normal_font = ExtResource("2_font")
 theme_override_font_sizes/normal_font_size = 52
 
-[node name="CoinsDisplay" type="HBoxContainer" parent="."]
+[node name="CoinsBackground" type="PanelContainer" parent="."]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -180.0
-offset_top = 35.0
-offset_right = -90.0
-offset_bottom = 65.0
-alignment = 2
+offset_left = -175.0
+offset_top = 25.0
+offset_right = -65.0
+offset_bottom = 70.0
 grow_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_coins_bg")
+
+[node name="CoinsDisplay" type="HBoxContainer" parent="CoinsBackground"]
+layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 6
 
-[node name="CoinIcon" type="Label" parent="CoinsDisplay"]
+[node name="CoinIcon" type="Label" parent="CoinsBackground/CoinsDisplay"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 22
 text = "●"
 vertical_alignment = 1
 
-[node name="CoinAmount" type="Label" parent="CoinsDisplay"]
+[node name="CoinAmount" type="Label" parent="CoinsBackground/CoinsDisplay"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 text = "0"
 vertical_alignment = 1
 
@@ -99,7 +113,7 @@ grow_horizontal = 0
 grow_vertical = 0
 custom_minimum_size = Vector2(297, 108)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 34
 text = "PLAY"
 
 [node name="LeftButtonContainer" type="VBoxContainer" parent="."]

@@ -34,6 +34,9 @@ signal challenge_completed()
 signal spawning_halted()
 
 func _ready() -> void:
+	# Ensure this node processes even when game is paused (for victory sequence)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
@@ -116,6 +119,11 @@ func _check_victory_condition() -> void:
 func _trigger_victory() -> void:
 	"""Handle challenge completion."""
 	challenge_complete = true
+
+	# Unpause the game if it was paused (e.g., from ability selection during boss fight)
+	# This ensures the victory sequence can complete properly
+	if get_tree().paused:
+		get_tree().paused = false
 
 	# Get character and curse info for completion record
 	var class_id = ""

@@ -1,7 +1,7 @@
 extends Node2D
 
 @export var bar_width: float = 40.0
-@export var bar_height: float = 6.0
+@export var bar_height: float = 8.0
 @export var offset_y: float = -25.0
 
 var max_health: float = 100.0

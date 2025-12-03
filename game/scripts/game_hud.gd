@@ -4,7 +4,7 @@ extends CanvasLayer
 # Clicking pause button opens pause menu
 
 const PAUSE_BUTTON_SIZE := 32  # Simple pause button size (smaller)
-const PROGRESS_BAR_HEIGHT := 30  # XP bar height
+const PROGRESS_BAR_HEIGHT := 34  # XP bar height (increased by 4px)
 const MARGIN := 48  # Distance from edge of screen
 const SPACING := 11
 
@@ -142,7 +142,7 @@ func _create_ui() -> void:
 	xp_container.name = "XPContainer"
 	xp_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	xp_container.offset_top = MARGIN - 30  # Raised 30px (was 40px)
-	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT + 10  # Added 10px margin below
+	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT + 18  # Added 18px margin below (10 + 8)
 	add_child(xp_container)
 
 	# Progress bar background
@@ -409,7 +409,7 @@ func _create_missions_tracker() -> void:
 	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 45  # Below pause button + 20px margin
 	missions_container.offset_right = MARGIN + 220
 	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 220
-	missions_container.add_theme_constant_override("separation", 16)
+	missions_container.add_theme_constant_override("separation", 24)  # Increased by 8px
 	add_child(missions_container)
 
 	# Create 3 mission row slots with slight rotation (left side down)
@@ -424,7 +424,7 @@ func _create_missions_tracker() -> void:
 func _create_mission_row() -> Control:
 	"""Create a single mission row UI element - simplified with dropshadow."""
 	var container = Control.new()
-	container.custom_minimum_size = Vector2(200, 28)
+	container.custom_minimum_size = Vector2(200, 34)  # Increased height by 6px
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBox"
@@ -442,10 +442,12 @@ func _create_mission_row() -> Control:
 		title.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title)
 
-	# Progress bar background
+	# Progress bar background - fixed width regardless of text
 	var bar_bg = Panel.new()
 	bar_bg.name = "ProgressBG"
-	bar_bg.custom_minimum_size = Vector2(180, 12)
+	bar_bg.custom_minimum_size = Vector2(180, 18)  # Increased height by 6px
+	bar_bg.size = Vector2(180, 18)  # Fixed size
+	bar_bg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN  # Don't expand with text
 	var bar_bg_style = StyleBoxFlat.new()
 	bar_bg_style.bg_color = Color(0.1, 0.1, 0.12, 0.8)
 	bar_bg_style.set_corner_radius_all(3)
@@ -454,7 +456,7 @@ func _create_mission_row() -> Control:
 	# Progress bar fill
 	var bar_fill = Panel.new()
 	bar_fill.name = "ProgressFill"
-	bar_fill.size = Vector2(0, 12)
+	bar_fill.size = Vector2(0, 18)  # Increased height by 6px
 	bar_fill.position = Vector2(0, 0)
 	var bar_fill_style = StyleBoxFlat.new()
 	bar_fill_style.bg_color = Color(0.9, 0.7, 0.2, 1)
@@ -658,7 +660,7 @@ func _show_mission_notification(mission) -> void:
 
 	# Coin reward
 	var reward = Label.new()
-	reward.text = "+%d Coins" % mission.coin_reward
+	reward.text = "+%d Coins" % mission.reward_coins
 	reward.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	reward.add_theme_font_size_override("font_size", 11)
 	reward.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
