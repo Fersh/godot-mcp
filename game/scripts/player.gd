@@ -1701,30 +1701,52 @@ func spawn_assassin_dagger() -> void:
 	# Muzzle flash
 	spawn_muzzle_flash()
 
+	# Apply Shadow Dance stealth bonus (calculate once for all daggers)
+	if has_shadow_dance and is_stealthed:
+		_exit_stealth()
+
+	# Get ability modifiers for projectile count/spread (Barrage, etc.)
+	var extra_projectiles: int = 0
+	var spread_angle: float = 0.0
+	var has_rear_shot: bool = false
+
+	if AbilityManager:
+		extra_projectiles = AbilityManager.get_total_projectile_count()
+		spread_angle = AbilityManager.stat_modifiers.get("projectile_spread", 0.0)
+		has_rear_shot = AbilityManager.has_rear_shot
+
+	var total_projectiles = 1 + extra_projectiles
+
+	# Calculate spread for multiple projectiles
+	if total_projectiles > 1:
+		var base_spread = spread_angle if spread_angle > 0 else 0.2  # Default small spread
+		var start_angle = -base_spread * (total_projectiles - 1) / 2.0
+
+		for i in total_projectiles:
+			var angle_offset = start_angle + i * base_spread
+			var dir = attack_direction.rotated(angle_offset)
+			spawn_single_assassin_dagger(dir)
+	else:
+		spawn_single_assassin_dagger(attack_direction)
+
+	# Rear shot ability
+	if has_rear_shot:
+		spawn_single_assassin_dagger(-attack_direction)
+
+func spawn_single_assassin_dagger(direction: Vector2) -> void:
+	"""Spawn a single assassin dagger with all ability modifiers."""
+	var dagger = arrow_scene.instantiate()
+	dagger.global_position = global_position
+	dagger.direction = direction
+	dagger.is_assassin_dagger = true  # Flag for dagger visuals
+
 	# Calculate damage
 	var dagger_damage = 10.0 * base_damage
 
 	# Apply ability modifiers
 	if AbilityManager:
 		dagger_damage *= AbilityManager.get_damage_multiplier()
-
-	# Apply Shadow Dance stealth bonus
-	var from_stealth = false
-	if has_shadow_dance and is_stealthed:
-		dagger_damage *= (1.0 + shadow_dance_damage_bonus)  # +100% damage
-		from_stealth = true
-		_exit_stealth()
-
-	# Spawn the dagger (using arrow scene with modified visuals)
-	var dagger = arrow_scene.instantiate()
-	dagger.global_position = global_position
-	dagger.direction = attack_direction
-	dagger.damage = dagger_damage
-	dagger.is_assassin_dagger = true  # Flag for dagger visuals
-
-	# Apply ability modifiers to projectile
-	if AbilityManager:
-		dagger.pierce_count = AbilityManager.stat_modifiers["projectile_pierce"]
+		dagger.pierce_count = AbilityManager.stat_modifiers.get("projectile_pierce", 0)
 		dagger.can_bounce = AbilityManager.has_rubber_walls
 		dagger.has_sniper = AbilityManager.has_sniper_damage
 		dagger.sniper_bonus = AbilityManager.sniper_bonus
@@ -1735,6 +1757,13 @@ func spawn_assassin_dagger() -> void:
 		dagger.has_knockback = AbilityManager.has_knockback
 		dagger.knockback_force = AbilityManager.knockback_force
 		dagger.speed_multiplier = AbilityManager.get_projectile_speed_multiplier()
+		dagger.has_boomerang = AbilityManager.should_boomerang()
+
+	# Apply Shadow Dance stealth bonus
+	if has_shadow_dance and shadow_dance_hit_count >= shadow_dance_hits_required:
+		dagger_damage *= (1.0 + shadow_dance_damage_bonus)  # +100% damage from stealth
+
+	dagger.damage = dagger_damage
 
 	# Track Shadow Dance on hit
 	dagger.connect("enemy_hit", _on_shadow_dance_hit)

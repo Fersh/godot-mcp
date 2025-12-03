@@ -551,7 +551,7 @@ static func get_ranged_abilities() -> Array[AbilityData]:
 			"barrage",
 			"Barrage",
 			"+3 Projectiles, +Spread, -20% Damage",
-			AbilityData.Rarity.EPIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.RANGED_ONLY,
 			[
 				{effect_type = AbilityData.EffectType.PROJECTILE_COUNT, value = 3.0},

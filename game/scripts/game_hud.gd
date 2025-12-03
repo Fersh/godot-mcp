@@ -433,7 +433,7 @@ func _create_mission_row() -> Control:
 	# Mission description label (with dropshadow)
 	var title = Label.new()
 	title.name = "Title"
-	title.add_theme_font_size_override("font_size", 9)
+	title.add_theme_font_size_override("font_size", 14)
 	title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	title.add_theme_constant_override("shadow_offset_x", 1)
@@ -468,7 +468,7 @@ func _create_mission_row() -> Control:
 	percent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	percent_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	percent_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	percent_label.add_theme_font_size_override("font_size", 8)
+	percent_label.add_theme_font_size_override("font_size", 12)
 	percent_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	percent_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	percent_label.add_theme_constant_override("shadow_offset_x", 1)
