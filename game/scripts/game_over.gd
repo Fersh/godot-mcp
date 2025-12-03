@@ -752,7 +752,7 @@ func _show_difficulty_info() -> void:
 	# Create difficulty info label below the title
 	var diff_info = Label.new()
 	var diff_name = DifficultyManager.get_difficulty_name()
-	diff_info.text = "Challenge Mode: %s" % diff_name
+	diff_info.text = "Difficulty: %s" % diff_name
 	diff_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	if pixel_font:

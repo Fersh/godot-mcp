@@ -21,7 +21,7 @@ extends Node2D
 
 @export var initial_spawn_interval: float = 1.5  # Faster early game spawns
 @export var final_spawn_interval: float = 0.69  # 30% fewer mobs (was 0.5)
-@export var ramp_up_time: float = 60.0  # Faster ramp up
+@export var ramp_up_time: float = 90.0  # Ramp up time
 @export var min_spawn_distance: float = 200.0
 
 # Dynamic arena bounds (set by procedural map generator)
@@ -45,6 +45,12 @@ var game_time: float = 0.0
 
 # Spawning control (for challenge mode)
 var is_spawning_enabled: bool = true
+
+# Early game boost - spawn extra mobs in first 15 seconds
+const EARLY_BOOST_DURATION: float = 15.0
+const EARLY_BOOST_EXTRA_MOBS: int = 10
+var early_boost_spawned: int = 0
+var early_boost_timer: float = 0.0
 
 # =============================================================================
 # ENDLESS MODE - 20 minute progression (enemies ordered weakest to strongest)
@@ -223,6 +229,15 @@ func _process(delta: float) -> void:
 	if spawn_timer >= current_interval:
 		spawn_timer = 0.0
 		spawn_enemy()
+
+	# Early game boost - spawn extra mobs in first 15 seconds
+	if game_time <= EARLY_BOOST_DURATION and early_boost_spawned < EARLY_BOOST_EXTRA_MOBS:
+		early_boost_timer += delta
+		var boost_interval = EARLY_BOOST_DURATION / EARLY_BOOST_EXTRA_MOBS  # ~1.5 seconds per extra mob
+		if early_boost_timer >= boost_interval:
+			early_boost_timer = 0.0
+			early_boost_spawned += 1
+			spawn_enemy()
 
 func spawn_enemy() -> void:
 	var enemy_type = select_enemy_type()
