@@ -349,18 +349,36 @@ func get_overall_unlock_progress() -> float:
 	var total_difficulties = 7
 	var total_characters = 7
 	var total_locked_abilities = get_total_locked_passives() + get_total_locked_actives() + get_total_locked_ultimates()
+	var total_upgrades = get_total_upgrades()
 
-	var unlocked_princesses = PrincessManager.get_unlocked_princess_count() if PrincessManager else 0
+	var unlocked_princesses = PrincessManager.get_unlocked_count() if PrincessManager else 0
 	var unlocked_difficulties = DifficultyManager.completed_difficulties.size() if DifficultyManager else 0
 	var unlocked_characters = _count_unlocked_characters()
 	var unlocked_abilities = unlocked_passives.size() + unlocked_actives.size() + unlocked_ultimates.size()
+	var maxed_upgrades = get_maxed_upgrades_count()
 
-	var total = total_princesses + total_difficulties + total_characters + total_locked_abilities
-	var unlocked = unlocked_princesses + unlocked_difficulties + unlocked_characters + unlocked_abilities
+	var total = total_princesses + total_difficulties + total_characters + total_locked_abilities + total_upgrades
+	var unlocked = unlocked_princesses + unlocked_difficulties + unlocked_characters + unlocked_abilities + maxed_upgrades
 
 	if total == 0:
 		return 1.0
 	return float(unlocked) / float(total)
+
+func get_maxed_upgrades_count() -> int:
+	"""Returns number of upgrades at max rank."""
+	if not PermanentUpgrades:
+		return 0
+	var count = 0
+	for upgrade in PermanentUpgrades.get_all_upgrades():
+		if PermanentUpgrades.get_rank(upgrade.id) >= upgrade.max_rank:
+			count += 1
+	return count
+
+func get_total_upgrades() -> int:
+	"""Returns total number of upgrades available."""
+	if not PermanentUpgrades:
+		return 0
+	return PermanentUpgrades.get_all_upgrades().size()
 
 func _count_unlocked_characters() -> int:
 	var count = 0

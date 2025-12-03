@@ -13,6 +13,9 @@ var content_vbox: VBoxContainer
 var pixel_font: Font = null
 var pixelify_font: Font = null
 
+const PROGRESS_BAR_WIDTH: float = 140.0
+const CONTAINER_WIDTH: float = 350.0
+
 func _ready() -> void:
 	# Load fonts
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
@@ -27,18 +30,27 @@ func _ready() -> void:
 		SoundManager.play_menu_music()
 
 func _build_ui() -> void:
-	# Background - dark gradient
-	var background = ColorRect.new()
+	# Background image
+	var background = TextureRect.new()
 	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.color = Color(0.05, 0.05, 0.08, 1.0)
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	if ResourceLoader.exists("res://assets/menu6.png"):
+		background.texture = load("res://assets/menu6.png")
 	add_child(background)
+
+	# Dark overlay
+	var overlay = ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0, 0, 0, 0.6)
+	add_child(overlay)
 
 	# Main VBox container
 	var main_vbox = VBoxContainer.new()
 	main_vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(main_vbox)
 
-	# Header panel
+	# Header panel (like princesses screen)
 	header = PanelContainer.new()
 	header.custom_minimum_size = Vector2(0, 95)
 	_style_header()
@@ -63,18 +75,16 @@ func _build_ui() -> void:
 	title_label.add_theme_constant_override("shadow_offset_y", 2)
 	header.add_child(title_label)
 
-	# Back button
+	# Back button (positioned like princesses screen - outside header)
 	back_button = Button.new()
 	back_button.text = "< BACK"
-	back_button.custom_minimum_size = Vector2(100, 40)
-	back_button.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	back_button.offset_left = 60
-	back_button.offset_top = 50
-	back_button.offset_right = 160
-	back_button.offset_bottom = 90
+	back_button.offset_left = 100
+	back_button.offset_top = 25
+	back_button.offset_right = 190
+	back_button.offset_bottom = 70
 	back_button.pressed.connect(_on_back_pressed)
 	_style_back_button(back_button)
-	header.add_child(back_button)
+	add_child(back_button)
 
 	# Scrollable content area
 	scroll_container = ScrollContainer.new()
@@ -93,17 +103,11 @@ func _build_ui() -> void:
 	top_pad.custom_minimum_size = Vector2(0, 20)
 	content_vbox.add_child(top_pad)
 
-	# Overall Progress Section
-	_add_overall_progress_section()
-
-	# Progress Categories Section
+	# Progress Categories Section (includes overall progress)
 	_add_progress_categories_section()
 
-	# Combat Stats Section
+	# Combat Stats Section (includes achievements)
 	_add_combat_stats_section()
-
-	# Achievement Stats Section
-	_add_achievement_stats_section()
 
 	# Game Mode Stats Section
 	_add_game_mode_stats_section()
@@ -113,62 +117,87 @@ func _build_ui() -> void:
 	bottom_pad.custom_minimum_size = Vector2(0, 40)
 	content_vbox.add_child(bottom_pad)
 
-func _add_overall_progress_section() -> void:
-	var section = _create_section_panel("OVERALL PROGRESS")
-
-	var progress = UnlocksManager.get_overall_unlock_progress() if UnlocksManager else 0.0
-	var progress_bar = _create_progress_bar(progress, Color(0.4, 0.8, 0.4))
-
-	var progress_label = Label.new()
-	progress_label.text = "%d%% Complete" % int(progress * 100)
-	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		progress_label.add_theme_font_override("font", pixel_font)
-	progress_label.add_theme_font_size_override("font_size", 14)
-	progress_label.add_theme_color_override("font_color", Color(0.4, 0.8, 0.4))
-
-	section.get_child(0).add_child(progress_bar)
-	section.get_child(0).add_child(progress_label)
-	content_vbox.add_child(section)
-
 func _add_progress_categories_section() -> void:
-	var section = _create_section_panel("UNLOCK PROGRESS")
+	var section = _create_section_panel("PROGRESS")
 	var vbox = section.get_child(0)
 
-	# Princesses
-	var princess_count = PrincessManager.get_unlocked_princess_count() if PrincessManager else 0
-	var princess_total = 21
-	_add_progress_row(vbox, "Princesses", princess_count, princess_total, Color(0.95, 0.6, 0.8))
+	# Overall progress bar at the top
+	var progress = UnlocksManager.get_overall_unlock_progress() if UnlocksManager else 0.0
+	var overall_hbox = HBoxContainer.new()
+	overall_hbox.add_theme_constant_override("separation", 10)
 
-	# Difficulties
-	var diff_count = DifficultyManager.completed_difficulties.size() if DifficultyManager else 0
-	var diff_total = 7
-	_add_progress_row(vbox, "Difficulties", diff_count, diff_total, Color(0.8, 0.6, 0.2))
+	var overall_label = Label.new()
+	overall_label.text = "Overall"
+	overall_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if pixel_font:
+		overall_label.add_theme_font_override("font", pixel_font)
+	overall_label.add_theme_font_size_override("font_size", 10)
+	overall_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	overall_hbox.add_child(overall_label)
+
+	var overall_right = HBoxContainer.new()
+	overall_right.add_theme_constant_override("separation", 8)
+	overall_hbox.add_child(overall_right)
+
+	var overall_percent = Label.new()
+	overall_percent.text = "%d%%" % int(progress * 100)
+	overall_percent.custom_minimum_size = Vector2(60, 0)
+	overall_percent.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if pixel_font:
+		overall_percent.add_theme_font_override("font", pixel_font)
+	overall_percent.add_theme_font_size_override("font_size", 9)
+	overall_percent.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	overall_right.add_child(overall_percent)
+
+	var overall_bar = _create_xp_style_progress_bar(progress, Color(0.4, 0.9, 0.5), PROGRESS_BAR_WIDTH)
+	overall_right.add_child(overall_bar)
+
+	vbox.add_child(overall_hbox)
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 5)
+	vbox.add_child(spacer)
 
 	# Characters
 	var char_count = UnlocksManager._count_unlocked_characters() if UnlocksManager else 7
 	var char_total = 7
-	_add_progress_row(vbox, "Characters", char_count, char_total, Color(0.6, 0.8, 1.0))
+	_add_progress_row(vbox, "Characters", char_count, char_total, Color(0.4, 0.7, 1.0))
+
+	# Difficulties
+	var diff_count = DifficultyManager.completed_difficulties.size() if DifficultyManager else 0
+	var diff_total = 7
+	_add_progress_row(vbox, "Difficulties", diff_count, diff_total, Color(0.9, 0.7, 0.2))
+
+	# Princesses
+	var princess_count = PrincessManager.get_unlocked_count() if PrincessManager else 0
+	var princess_total = 21
+	_add_progress_row(vbox, "Princesses", princess_count, princess_total, Color(0.95, 0.5, 0.7))
+
+	# Upgrades Maxed
+	var upgrades_maxed = UnlocksManager.get_maxed_upgrades_count() if UnlocksManager else 0
+	var upgrades_total = UnlocksManager.get_total_upgrades() if UnlocksManager else 0
+	_add_progress_row(vbox, "Upgrades Maxed", upgrades_maxed, upgrades_total, Color(0.3, 0.85, 0.85))
 
 	# Passive Abilities
 	var passive_count = UnlocksManager.get_unlocked_passive_count() if UnlocksManager else 0
 	var passive_total = UnlocksManager.get_total_locked_passives() if UnlocksManager else 24
-	_add_progress_row(vbox, "Passive Abilities", passive_count, passive_total, Color(0.6, 1.0, 0.6))
+	_add_progress_row(vbox, "Passive Abilities", passive_count, passive_total, Color(0.4, 0.9, 0.5))
 
 	# Active Abilities
 	var active_count = UnlocksManager.get_unlocked_active_count() if UnlocksManager else 0
 	var active_total = UnlocksManager.get_total_locked_actives() if UnlocksManager else 12
-	_add_progress_row(vbox, "Active Abilities", active_count, active_total, Color(0.8, 0.6, 1.0))
+	_add_progress_row(vbox, "Active Abilities", active_count, active_total, Color(0.7, 0.5, 1.0))
 
 	# Ultimate Abilities
 	var ult_count = UnlocksManager.get_unlocked_ultimate_count() if UnlocksManager else 0
 	var ult_total = UnlocksManager.get_total_locked_ultimates() if UnlocksManager else 6
-	_add_progress_row(vbox, "Ultimate Abilities", ult_count, ult_total, Color(1.0, 0.8, 0.4))
+	_add_progress_row(vbox, "Ultimate Abilities", ult_count, ult_total, Color(1.0, 0.7, 0.3))
 
 	content_vbox.add_child(section)
 
 func _add_combat_stats_section() -> void:
-	var section = _create_section_panel("COMBAT STATS")
+	var section = _create_section_panel("COMBAT")
 	var vbox = section.get_child(0)
 
 	var stats = UnlocksManager.get_stats_dictionary() if UnlocksManager else {}
@@ -178,13 +207,10 @@ func _add_combat_stats_section() -> void:
 	_add_stat_row(vbox, "Bosses Killed", _format_number(stats.get("total_bosses_killed", 0)))
 	_add_stat_row(vbox, "Games Completed", _format_number(stats.get("games_completed", 0)))
 
-	content_vbox.add_child(section)
-
-func _add_achievement_stats_section() -> void:
-	var section = _create_section_panel("ACHIEVEMENTS")
-	var vbox = section.get_child(0)
-
-	var stats = UnlocksManager.get_stats_dictionary() if UnlocksManager else {}
+	# Spacer before achievements
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(spacer)
 
 	# Hardest difficulty beaten
 	var hardest = stats.get("hardest_difficulty_beaten", -1)
@@ -204,44 +230,44 @@ func _add_achievement_stats_section() -> void:
 	content_vbox.add_child(section)
 
 func _add_game_mode_stats_section() -> void:
-	var section = _create_section_panel("GAME MODE RECORDS")
+	var section = _create_section_panel("RECORDS")
 	var vbox = section.get_child(0)
 
 	var stats = UnlocksManager.get_stats_dictionary() if UnlocksManager else {}
 
-	# Endless mode stats
-	var endless_header = Label.new()
-	endless_header.text = "ENDLESS MODE"
-	endless_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		endless_header.add_theme_font_override("font", pixel_font)
-	endless_header.add_theme_font_size_override("font_size", 12)
-	endless_header.add_theme_color_override("font_color", Color(0.6, 0.8, 1.0))
-	vbox.add_child(endless_header)
-
-	_add_stat_row(vbox, "Longest Survival", _format_time(stats.get("longest_endless_time", 0.0)))
-	_add_stat_row(vbox, "Highest Wave", str(stats.get("highest_endless_wave", 0)))
-	_add_stat_row(vbox, "Best Points", _format_number(stats.get("highest_endless_points", 0)))
-
-	# Spacer
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 10)
-	vbox.add_child(spacer)
-
-	# Challenge mode stats
+	# Challenge mode stats (first)
 	var challenge_header = Label.new()
 	challenge_header.text = "CHALLENGE MODE"
 	challenge_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		challenge_header.add_theme_font_override("font", pixel_font)
-	challenge_header.add_theme_font_size_override("font_size", 12)
-	challenge_header.add_theme_color_override("font_color", Color(1.0, 0.7, 0.4))
+	challenge_header.add_theme_font_size_override("font_size", 9)
+	challenge_header.add_theme_color_override("font_color", Color(1.0, 0.65, 0.35))
 	vbox.add_child(challenge_header)
 
 	var fastest = stats.get("fastest_challenge_time", 999999.0)
 	var fastest_str = _format_time(fastest) if fastest < 999999.0 else "--:--"
 	_add_stat_row(vbox, "Fastest Clear", fastest_str)
 	_add_stat_row(vbox, "Best Points", _format_number(stats.get("highest_challenge_points", 0)))
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(spacer)
+
+	# Endless mode stats (second)
+	var endless_header = Label.new()
+	endless_header.text = "ENDLESS MODE"
+	endless_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		endless_header.add_theme_font_override("font", pixel_font)
+	endless_header.add_theme_font_size_override("font_size", 9)
+	endless_header.add_theme_color_override("font_color", Color(0.5, 0.75, 1.0))
+	vbox.add_child(endless_header)
+
+	_add_stat_row(vbox, "Longest Survival", _format_time(stats.get("longest_endless_time", 0.0)))
+	_add_stat_row(vbox, "Highest Wave", str(stats.get("highest_endless_wave", 0)))
+	_add_stat_row(vbox, "Best Points", _format_number(stats.get("highest_endless_points", 0)))
 
 	# General stats from StatsManager
 	var spacer2 = Control.new()
@@ -253,8 +279,8 @@ func _add_game_mode_stats_section() -> void:
 	general_header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixel_font:
 		general_header.add_theme_font_override("font", pixel_font)
-	general_header.add_theme_font_size_override("font_size", 12)
-	general_header.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	general_header.add_theme_font_size_override("font_size", 9)
+	general_header.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 	vbox.add_child(general_header)
 
 	if StatsManager:
@@ -282,7 +308,7 @@ func _create_section_panel(title: String) -> PanelContainer:
 	panel.add_theme_stylebox_override("panel", style)
 
 	var vbox = VBoxContainer.new()
-	vbox.custom_minimum_size = Vector2(350, 0)
+	vbox.custom_minimum_size = Vector2(CONTAINER_WIDTH, 0)
 	vbox.add_theme_constant_override("separation", 8)
 	panel.add_child(vbox)
 
@@ -313,20 +339,30 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	var label = Label.new()
 	label.text = label_text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("font_size", 12)
-	label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 10)
+	label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
 	hbox.add_child(label)
 
-	var progress = float(current) / float(total) if total > 0 else 0.0
-	var bar = _create_progress_bar(progress, color)
-	bar.custom_minimum_size = Vector2(100, 16)
-	hbox.add_child(bar)
+	# Right side container for count and bar (count first, then bar)
+	var right_container = HBoxContainer.new()
+	right_container.add_theme_constant_override("separation", 8)
+	hbox.add_child(right_container)
 
 	var count_label = Label.new()
 	count_label.text = "%d/%d" % [current, total]
-	count_label.add_theme_font_size_override("font_size", 12)
+	count_label.custom_minimum_size = Vector2(60, 0)
+	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	if pixel_font:
+		count_label.add_theme_font_override("font", pixel_font)
+	count_label.add_theme_font_size_override("font_size", 9)
 	count_label.add_theme_color_override("font_color", color)
-	hbox.add_child(count_label)
+	right_container.add_child(count_label)
+
+	var progress = float(current) / float(total) if total > 0 else 0.0
+	var bar = _create_xp_style_progress_bar(progress, color, PROGRESS_BAR_WIDTH)
+	right_container.add_child(bar)
 
 	container.add_child(hbox)
 
@@ -336,57 +372,52 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	var label = Label.new()
 	label.text = label_text + ":"
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("font_size", 12)
-	label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 	hbox.add_child(label)
 
 	var value = Label.new()
 	value.text = value_text
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value.add_theme_font_size_override("font_size", 12)
+	if pixel_font:
+		value.add_theme_font_override("font", pixel_font)
+	value.add_theme_font_size_override("font_size", 9)
 	value.add_theme_color_override("font_color", Color(1, 1, 1))
 	hbox.add_child(value)
 
 	container.add_child(hbox)
 
-func _create_progress_bar(progress: float, color: Color) -> Control:
-	var container = Control.new()
-	container.custom_minimum_size = Vector2(200, 20)
+func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: float) -> Control:
+	"""Create a progress bar styled like the XP bar with rounded corners and borders."""
+	var bar = ProgressBar.new()
+	bar.custom_minimum_size = Vector2(width, 20)
+	bar.max_value = 1.0
+	bar.value = progress
+	bar.show_percentage = false
 
-	# Background
-	var bg = ColorRect.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.15, 0.15, 0.2, 1)
-	container.add_child(bg)
+	# Background style (dark with border)
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
+	bg_style.border_color = fill_color.darkened(0.5)
+	bg_style.set_border_width_all(2)
+	bg_style.set_corner_radius_all(6)
+	bar.add_theme_stylebox_override("background", bg_style)
 
-	# Fill
-	var fill = ColorRect.new()
-	fill.anchor_left = 0
-	fill.anchor_top = 0
-	fill.anchor_right = progress
-	fill.anchor_bottom = 1
-	fill.offset_left = 2
-	fill.offset_top = 2
-	fill.offset_right = -2
-	fill.offset_bottom = -2
-	fill.color = color
-	container.add_child(fill)
+	# Fill style (colored with border)
+	var fill_style = StyleBoxFlat.new()
+	fill_style.bg_color = fill_color
+	fill_style.border_color = fill_color.darkened(0.3)
+	fill_style.set_border_width_all(2)
+	fill_style.set_corner_radius_all(6)
+	bar.add_theme_stylebox_override("fill", fill_style)
 
-	# Border
-	var border = ReferenceRect.new()
-	border.set_anchors_preset(Control.PRESET_FULL_RECT)
-	border.border_color = color.darkened(0.3)
-	border.border_width = 2
-	border.editor_only = false
-	container.add_child(border)
-
-	return container
+	return bar
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.055, 0.09, 0.95)
-	style.border_width_bottom = 2
-	style.border_color = Color(0.15, 0.14, 0.2, 1)
+	style.bg_color = Color(0, 0, 0, 0)  # Transparent
 	style.content_margin_left = 60
 	style.content_margin_right = 60
 	header.add_theme_stylebox_override("panel", style)
