@@ -209,6 +209,10 @@ func die() -> void:
 	# Emit elite died signal for UI
 	elite_died.emit(self)
 
+	# Track elite kill in UnlocksManager
+	if enemy_rarity == "elite" and UnlocksManager:
+		UnlocksManager.add_elite_kill()
+
 	# End elite music (only if this is an elite, not a boss)
 	if enemy_rarity == "elite" and SoundManager:
 		SoundManager.on_elite_died()

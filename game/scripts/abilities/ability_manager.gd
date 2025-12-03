@@ -1005,6 +1005,10 @@ func get_available_abilities() -> Array[AbilityData]:
 	var available: Array[AbilityData] = []
 
 	for ability in all_abilities:
+		# Skip locked abilities (must be unlocked via game completions)
+		if UnlocksManager and not UnlocksManager.is_passive_unlocked(ability.id):
+			continue
+
 		# Skip melee abilities for ranged characters
 		if ability.type == AbilityData.Type.MELEE_ONLY and is_ranged_character:
 			continue

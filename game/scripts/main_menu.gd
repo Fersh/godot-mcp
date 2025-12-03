@@ -4,6 +4,7 @@ extends CanvasLayer
 @onready var gear_button: Button = $ButtonContainer/GearButton
 @onready var shop_button: Button = $ButtonContainer/ShopButton
 @onready var princesses_button: Button = $ButtonContainer/PrincessesButton
+@onready var unlocks_button: Button = $ButtonContainer/UnlocksButton
 @onready var coin_amount: Label = $CoinsDisplay/CoinAmount
 @onready var settings_button: Button = $SettingsButton
 
@@ -26,6 +27,7 @@ func _ready() -> void:
 	gear_button.pressed.connect(_on_gear_pressed)
 	shop_button.pressed.connect(_on_shop_pressed)
 	princesses_button.pressed.connect(_on_princesses_pressed)
+	unlocks_button.pressed.connect(_on_unlocks_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 
 	# Style settings button like home button with gear icon
@@ -36,6 +38,7 @@ func _ready() -> void:
 	_style_blue_button(gear_button)    # Blue for Gear
 	_style_purple_button(shop_button)  # Purple for Upgrade
 	_style_pink_button(princesses_button)  # Pink for Princesses
+	_style_teal_button(unlocks_button)  # Teal for Unlocks
 
 	# Check if princess button should be locked
 	_update_princess_button_state()
@@ -308,6 +311,59 @@ func _on_princesses_pressed() -> void:
 	if HapticManager:
 		HapticManager.light()
 	get_tree().change_scene_to_file("res://scenes/princesses.tscn")
+
+func _on_unlocks_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+	get_tree().change_scene_to_file("res://scenes/unlocks.tscn")
+
+func _style_teal_button(button: Button) -> void:
+	# Teal/green button for Unlocks
+	var style_normal = StyleBoxFlat.new()
+	style_normal.bg_color = Color(0.2, 0.6, 0.55, 1)  # Teal
+	style_normal.border_width_left = 3
+	style_normal.border_width_right = 3
+	style_normal.border_width_top = 3
+	style_normal.border_width_bottom = 8
+	style_normal.border_color = Color(0.1, 0.3, 0.28, 1)  # Dark teal
+	style_normal.corner_radius_top_left = 6
+	style_normal.corner_radius_top_right = 6
+	style_normal.corner_radius_bottom_left = 6
+	style_normal.corner_radius_bottom_right = 6
+
+	var style_hover = StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.3, 0.7, 0.65, 1)  # Brighter teal
+	style_hover.border_width_left = 3
+	style_hover.border_width_right = 3
+	style_hover.border_width_top = 3
+	style_hover.border_width_bottom = 8
+	style_hover.border_color = Color(0.15, 0.35, 0.33, 1)
+	style_hover.corner_radius_top_left = 6
+	style_hover.corner_radius_top_right = 6
+	style_hover.corner_radius_bottom_left = 6
+	style_hover.corner_radius_bottom_right = 6
+
+	var style_pressed = StyleBoxFlat.new()
+	style_pressed.bg_color = Color(0.15, 0.5, 0.45, 1)  # Darker teal
+	style_pressed.border_width_left = 3
+	style_pressed.border_width_right = 3
+	style_pressed.border_width_top = 6
+	style_pressed.border_width_bottom = 5
+	style_pressed.border_color = Color(0.08, 0.25, 0.22, 1)
+	style_pressed.corner_radius_top_left = 6
+	style_pressed.corner_radius_top_right = 6
+	style_pressed.corner_radius_bottom_left = 6
+	style_pressed.corner_radius_bottom_right = 6
+
+	button.add_theme_stylebox_override("normal", style_normal)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style_normal)
+	button.add_theme_color_override("font_color", Color(0.95, 1, 0.95, 1))
+	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	button.add_theme_color_override("font_pressed_color", Color(0.85, 0.95, 0.9, 1))
 
 func _style_pink_button(button: Button) -> void:
 	# Pink button for Princesses
@@ -673,6 +729,9 @@ func _confirm_reset_progress() -> void:
 
 	if PrincessManager:
 		PrincessManager.reset_all_princesses()
+
+	if UnlocksManager:
+		UnlocksManager.reset_all_unlocks()
 
 	# Hide dialogs and refresh display
 	_hide_confirmation_dialog()

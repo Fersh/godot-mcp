@@ -133,6 +133,16 @@ func _trigger_victory() -> void:
 			var next = DifficultyManager.get_next_difficulty(DifficultyManager.current_difficulty)
 			_show_unlock_notification(DifficultyManager.get_difficulty_name(next))
 
+	# Update unlock stats
+	if UnlocksManager and DifficultyManager and StatsManager:
+		var run_stats = StatsManager.get_run_stats()
+		UnlocksManager.update_challenge_stats(
+			game_time,
+			run_stats.points,
+			DifficultyManager.current_difficulty,
+			curse_count
+		)
+
 	challenge_completed.emit()
 
 	# Try to unlock a princess and show celebration
@@ -148,7 +158,62 @@ func _trigger_victory() -> void:
 		# No princess to unlock, just wait a moment
 		await get_tree().create_timer(1.0).timeout
 
+	# Unlock random abilities from game completion
+	await _award_ability_unlocks()
+
 	_show_victory_screen()
+
+func _award_ability_unlocks() -> void:
+	"""Award random ability unlocks on game completion."""
+	if not UnlocksManager:
+		return
+
+	# Connect to signal temporarily to show notifications
+	var unlocked_passives: Array = []
+	var unlocked_actives: Array = []
+	var unlocked_ultimates: Array = []
+
+	# Call on_game_completed which returns unlocks via signal
+	UnlocksManager.abilities_unlocked.connect(func(passives, actives, ultimates):
+		unlocked_passives = passives
+		unlocked_actives = actives
+		unlocked_ultimates = ultimates
+	, CONNECT_ONE_SHOT)
+
+	UnlocksManager.on_game_completed()
+
+	# Small delay to ensure signal fired
+	await get_tree().create_timer(0.1).timeout
+
+	# Show unlock notifications
+	if unlocked_passives.size() > 0 or unlocked_actives.size() > 0 or unlocked_ultimates.size() > 0:
+		await _show_ability_unlock_celebration(unlocked_passives, unlocked_actives, unlocked_ultimates)
+
+func _show_ability_unlock_celebration(passives: Array, actives: Array, ultimates: Array) -> void:
+	"""Show celebration for unlocked abilities."""
+	var total = passives.size() + actives.size() + ultimates.size()
+	if total == 0:
+		return
+
+	# Build unlock message
+	var messages: Array = []
+	if passives.size() > 0:
+		messages.append("%d Passive%s" % [passives.size(), "s" if passives.size() > 1 else ""])
+	if actives.size() > 0:
+		messages.append("%d Active%s" % [actives.size(), "s" if actives.size() > 1 else ""])
+	if ultimates.size() > 0:
+		messages.append("%d Ultimate%s" % [ultimates.size(), "s" if ultimates.size() > 1 else ""])
+
+	var message = "NEW ABILITIES UNLOCKED!\n" + " + ".join(messages)
+
+	_create_notification(message, Color(0.4, 1.0, 0.6), 24)
+
+	if JuiceManager:
+		JuiceManager.shake_medium()
+	if HapticManager:
+		HapticManager.medium()
+
+	await get_tree().create_timer(2.5).timeout
 
 func _show_princess_celebration(princess_id: String) -> void:
 	"""Show the princess celebration sequence."""

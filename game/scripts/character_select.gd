@@ -240,10 +240,20 @@ func _create_selector_buttons() -> void:
 	selector_sprites = []  # Reset sprites array
 	for i in characters_list.size():
 		var char_data: CharacterData = characters_list[i]
-		var result = _create_selector_button(char_data, i)
-		selector_container.add_child(result.panel)
-		selector_buttons.append(result.panel)
-		selector_sprites.append(result.sprite)
+
+		# Check if character is locked (Chad/Barbarian requires beating Hell)
+		var is_locked = UnlocksManager and not UnlocksManager.is_character_unlocked(char_data.id)
+
+		if is_locked:
+			var locked_panel = _create_locked_character_button(char_data, i)
+			selector_container.add_child(locked_panel)
+			selector_buttons.append(locked_panel)
+			selector_sprites.append(null)  # No sprite for locked characters
+		else:
+			var result = _create_selector_button(char_data, i)
+			selector_container.add_child(result.panel)
+			selector_buttons.append(result.panel)
+			selector_sprites.append(result.sprite)
 
 	# Add 5 locked placeholder slots (reduced from 7 since we added 2 new characters)
 	for i in 5:
@@ -352,6 +362,73 @@ func _create_placeholder_button() -> PanelContainer:
 	center.add_child(label)
 
 	return panel
+
+func _create_locked_character_button(char_data: CharacterData, index: int) -> PanelContainer:
+	"""Create a locked character button with a lock icon and requirement text."""
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(80, 80)
+	panel.set_meta("index", index)
+	panel.set_meta("locked", true)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.06, 0.1, 0.95)
+	style.border_width_left = 3
+	style.border_width_right = 3
+	style.border_width_top = 3
+	style.border_width_bottom = 3
+	style.border_color = Color(0.4, 0.2, 0.2, 0.8)  # Reddish border for locked
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	panel.add_theme_stylebox_override("panel", style)
+
+	# VBox for lock icon and text
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 4)
+
+	var center = CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center.add_child(vbox)
+	panel.add_child(center)
+
+	# Lock icon (using text for now)
+	var lock_label = Label.new()
+	lock_label.text = "🔒"
+	lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lock_label.add_theme_font_size_override("font_size", 24)
+	vbox.add_child(lock_label)
+
+	# Character hint
+	var hint_label = Label.new()
+	hint_label.text = "Hell"
+	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixelify_font:
+		hint_label.add_theme_font_override("font", pixelify_font)
+	hint_label.add_theme_font_size_override("font_size", 10)
+	hint_label.add_theme_color_override("font_color", Color(0.6, 0.4, 0.4, 0.9))
+	vbox.add_child(hint_label)
+
+	# Clickable button overlay (shows locked message)
+	var button = Button.new()
+	button.flat = true
+	button.anchors_preset = Control.PRESET_FULL_RECT
+	button.pressed.connect(_on_locked_character_pressed.bind(char_data))
+	panel.add_child(button)
+
+	return panel
+
+func _on_locked_character_pressed(char_data: CharacterData) -> void:
+	"""Show a message when clicking a locked character."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	# Show locked notification
+	_show_locked_notification(char_data)
 
 func _select_current_character() -> void:
 	var current = CharacterManager.get_selected_character()
@@ -626,3 +703,35 @@ func _style_back_button(button: Button) -> void:
 	button.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
 	button.add_theme_constant_override("shadow_offset_x", 2)
 	button.add_theme_constant_override("shadow_offset_y", 2)
+
+func _show_locked_notification(char_data: CharacterData) -> void:
+	"""Show a notification explaining how to unlock this character."""
+	var notification = CanvasLayer.new()
+	notification.layer = 100
+	add_child(notification)
+
+	var label = Label.new()
+	label.text = "Beat Hell difficulty to unlock %s!" % char_data.display_name
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	label.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+	if pixelify_font:
+		label.add_theme_font_override("font", pixelify_font)
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4, 1))
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	label.add_theme_constant_override("shadow_offset_x", 3)
+	label.add_theme_constant_override("shadow_offset_y", 3)
+
+	notification.add_child(label)
+
+	# Animate in and fade out
+	label.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(label, "modulate:a", 1.0, 0.2)
+	tween.tween_interval(1.5)
+	tween.tween_property(label, "modulate:a", 0.0, 0.5)
+	tween.tween_callback(func(): notification.queue_free())

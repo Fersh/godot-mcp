@@ -37,6 +37,7 @@ BloodSplatter="*res://scenes/effects/blood_screen_splatter.tscn"
 DifficultyManager="*res://scripts/difficulty_manager.gd"
 PrincessManager="*res://scripts/princess_manager.gd"
 CurseEffects="*res://scripts/curse_effects_handler.gd"
+UnlocksManager="*res://scripts/unlocks_manager.gd"
 
 [display]
 

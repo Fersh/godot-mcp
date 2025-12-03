@@ -152,6 +152,10 @@ func die() -> void:
 	emit_signal("boss_died", self)
 	emit_signal("boss_health_changed", 0, max_health)
 
+	# Track boss kill in UnlocksManager
+	if UnlocksManager:
+		UnlocksManager.add_boss_kill()
+
 	# End boss music
 	if SoundManager:
 		SoundManager.on_boss_died()

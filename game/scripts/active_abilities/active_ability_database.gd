@@ -23,7 +23,19 @@ static func get_abilities_for_class(is_melee: bool) -> Array[ActiveAbilityData]:
 	var result: Array[ActiveAbilityData] = []
 	var allowed_class = ActiveAbilityData.ClassType.MELEE if is_melee else ActiveAbilityData.ClassType.RANGED
 
+	# Get UnlocksManager singleton
+	var unlocks_manager = Engine.get_singleton("UnlocksManager") if Engine.has_singleton("UnlocksManager") else null
+	if unlocks_manager == null:
+		# Try to get from scene tree (autoload)
+		var tree = Engine.get_main_loop()
+		if tree and tree.root:
+			unlocks_manager = tree.root.get_node_or_null("UnlocksManager")
+
 	for ability in _abilities.values():
+		# Skip locked abilities
+		if unlocks_manager and not unlocks_manager.is_active_unlocked(ability.id):
+			continue
+
 		if ability.class_type == ActiveAbilityData.ClassType.GLOBAL or ability.class_type == allowed_class:
 			result.append(ability)
 

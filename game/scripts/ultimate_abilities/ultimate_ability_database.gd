@@ -29,19 +29,38 @@ static func initialize() -> void:
 static func get_ultimates_for_class(character_class: UltimateAbilityData.CharacterClass) -> Array:
 	if not _initialized:
 		initialize()
-	return _ultimates_by_class.get(character_class, [])
+
+	var all_ultimates = _ultimates_by_class.get(character_class, [])
+	return _filter_unlocked_ultimates(all_ultimates)
 
 static func get_random_ultimates_for_class(character_class: UltimateAbilityData.CharacterClass, count: int = 3) -> Array:
 	if not _initialized:
 		initialize()
 
-	var class_ultimates = _ultimates_by_class.get(character_class, []).duplicate()
+	var class_ultimates = _filter_unlocked_ultimates(_ultimates_by_class.get(character_class, []))
 	class_ultimates.shuffle()
 
 	var result: Array = []
 	for i in range(min(count, class_ultimates.size())):
 		result.append(class_ultimates[i])
 	return result
+
+static func _filter_unlocked_ultimates(ultimates: Array) -> Array:
+	"""Filter out locked ultimate abilities."""
+	# Get UnlocksManager singleton
+	var unlocks_manager = null
+	var tree = Engine.get_main_loop()
+	if tree and tree.root:
+		unlocks_manager = tree.root.get_node_or_null("UnlocksManager")
+
+	if unlocks_manager == null:
+		return ultimates.duplicate()
+
+	var filtered: Array = []
+	for ultimate in ultimates:
+		if unlocks_manager.is_ultimate_unlocked(ultimate.id):
+			filtered.append(ultimate)
+	return filtered
 
 static func get_ultimate_by_id(id: String) -> UltimateAbilityData:
 	if not _initialized:

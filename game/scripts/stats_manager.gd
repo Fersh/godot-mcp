@@ -60,6 +60,15 @@ func end_run() -> void:
 	total_coins += run_coins
 	total_time_played += run_time
 
+	# Sync monster kills to UnlocksManager
+	if UnlocksManager:
+		UnlocksManager.add_monster_kills(run_kills)
+		UnlocksManager.reset_run_kills()
+
+		# Update endless stats if in endless mode
+		if run_game_mode == 0:  # Endless mode
+			UnlocksManager.update_endless_stats(run_time, run_wave, run_points)
+
 	# Add coins earned this run to spendable currency
 	# Apply coin gain bonus from permanent upgrades
 	var coin_bonus = 1.0
