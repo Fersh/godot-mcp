@@ -602,8 +602,8 @@ func try_drop_item() -> void:
 	var item = EquipmentManager.generate_item(enemy_rarity)
 	var dropped = dropped_item_scene.instantiate()
 	dropped.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+	get_parent().add_child(dropped)  # Must add to tree BEFORE setup() so @onready vars are initialized
 	dropped.setup(item)
-	get_parent().add_child(dropped)
 
 func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 	if not sprite:

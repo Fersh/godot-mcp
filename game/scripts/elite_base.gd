@@ -289,8 +289,8 @@ func _drop_guaranteed_item() -> void:
 	var item = EquipmentManager.generate_item("elite")
 	var dropped = dropped_item_scene.instantiate()
 	dropped.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
+	get_parent().add_child(dropped)  # Must add to tree BEFORE setup() so @onready vars are initialized
 	dropped.setup(item)
-	get_parent().add_child(dropped)
 
 # Override take_damage to emit health changed signal and handle shield
 func take_damage(amount: float, is_critical: bool = false) -> void:

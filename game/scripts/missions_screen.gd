@@ -160,15 +160,6 @@ func _build_ui() -> void:
 	tab_container.add_child(tab_daily)
 	tab_container.add_child(tab_challenges)
 
-	# Claim All button if there are unclaimed rewards
-	if MissionsManager and MissionsManager.get_unclaimed_count() > 0:
-		var claim_all_btn = Button.new()
-		claim_all_btn.text = "CLAIM ALL"
-		claim_all_btn.custom_minimum_size = Vector2(120, 45)
-		_style_green_button(claim_all_btn)
-		claim_all_btn.pressed.connect(_on_claim_all_pressed)
-		tab_container.add_child(claim_all_btn)
-
 	# Scrollable content area
 	scroll_container = ScrollContainer.new()
 	scroll_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -269,6 +260,24 @@ func _show_daily_missions() -> void:
 		if claimable.size() > 0:
 			var claim_header = _create_section_header("READY TO CLAIM (%d)" % claimable.size(), Color(0.3, 0.9, 0.4))
 			content_vbox.add_child(claim_header)
+
+			# Claim All button for daily tab
+			if claimable.size() > 1:
+				var claim_all_container = HBoxContainer.new()
+				claim_all_container.alignment = BoxContainer.ALIGNMENT_CENTER
+				content_vbox.add_child(claim_all_container)
+
+				var claim_all_btn = Button.new()
+				claim_all_btn.text = "CLAIM ALL"
+				claim_all_btn.custom_minimum_size = Vector2(150, 45)
+				_style_green_button(claim_all_btn)
+				claim_all_btn.pressed.connect(_on_claim_all_pressed)
+				claim_all_container.add_child(claim_all_btn)
+
+				var sep_btn = Control.new()
+				sep_btn.custom_minimum_size = Vector2(0, 10)
+				content_vbox.add_child(sep_btn)
+
 			for mission in claimable:
 				_add_mission_card(mission)
 			var sep0 = Control.new()
@@ -438,6 +447,23 @@ func _show_challenge_missions() -> void:
 	if claimable_missions.size() > 0:
 		var claim_header = _create_section_header("READY TO CLAIM (%d)" % claimable_missions.size(), Color(0.3, 0.9, 0.4))
 		content_vbox.add_child(claim_header)
+
+		# Claim All button for achievements tab
+		if claimable_missions.size() > 1:
+			var claim_all_container = HBoxContainer.new()
+			claim_all_container.alignment = BoxContainer.ALIGNMENT_CENTER
+			content_vbox.add_child(claim_all_container)
+
+			var claim_all_btn = Button.new()
+			claim_all_btn.text = "CLAIM ALL"
+			claim_all_btn.custom_minimum_size = Vector2(150, 45)
+			_style_green_button(claim_all_btn)
+			claim_all_btn.pressed.connect(_on_claim_all_pressed)
+			claim_all_container.add_child(claim_all_btn)
+
+			var sep_btn = Control.new()
+			sep_btn.custom_minimum_size = Vector2(0, 10)
+			content_vbox.add_child(sep_btn)
 
 		for mission in claimable_missions:
 			_add_mission_card(mission)

@@ -185,21 +185,21 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.05},
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon1.png"
 	},
 	"axe_basic": {
 		"display_name": "Axe",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08},
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon5.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon5.png"
 	},
 	"mace_basic": {
 		"display_name": "Mace",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08, "knockback": 20.0},
-		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon1.png"
 	},
 	# DAGGERS - Assassin weapon (1-48 scaling, 1=common, 48=mythic)
 	"dagger_basic": {
@@ -236,7 +236,7 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.04, "melee_range": 0.15},
-		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon1.png"
 	},
 	# BOOKS - Mage weapon (1-48 scaling, 1=common, 48=mythic)
 	"book_basic": {
@@ -244,28 +244,28 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.05, "crit_chance": 0.03},
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon1.png"
 	},
 	"grimoire_basic": {
 		"display_name": "Grimoire",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.06, "attack_speed": 0.05},
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon5.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon5.png"
 	},
 	"spellbook_basic": {
 		"display_name": "Spellbook",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.04, "xp_gain": 0.05},
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon10.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon10.png"
 	},
 	"codex_basic": {
 		"display_name": "Codex",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.07},
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon15.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon15.png"
 	},
 
 	# WEAPONS - Ranged (using Bow folder)
@@ -459,7 +459,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.15, "knockback": 50.0},
 		"grants_ability": "concussive_hit",
-		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon20.png"
 	},
 	"vampire_fang": {
 		"display_name": "Vampire's Toothpick",
@@ -477,7 +477,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.20},
 		"grants_ability": "thorns",
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon20.png"
 	},
 	"rubber_mallet": {
 		"display_name": "Squeaky Hammer",
@@ -485,7 +485,7 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.20},
-		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon25.png"
 	},
 	"cheese_knife": {
 		"display_name": "Le Fromage Slicer",
@@ -533,7 +533,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.12, "attack_speed": 0.12},
 		"grants_ability": "deflect",
-		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon20.png"
 	},
 	"beast_claw": {
 		"display_name": "Beast's Claw Spear",
@@ -542,7 +542,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.15, "melee_range": 0.20},
 		"grants_ability": "frenzy",
-		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon25.png"
 	},
 
 	# Weapons - Books (Mage)
@@ -553,7 +553,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.15, "crit_chance": 0.10},
 		"grants_ability": "lightning_strike",
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon20.png"
 	},
 	"necronomicon": {
 		"display_name": "Necronomicon Jr.",
@@ -562,7 +562,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.12, "max_hp": 0.10},
 		"grants_ability": "death_explosion",
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon25.png"
 	},
 
 	# Weapons - Ranged (using Bow folder - unique icons 31-40)
@@ -743,7 +743,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15, "attack_speed": 0.10},
 		"grants_equipment_ability": "holy_smite",
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon40.png"
 	},
 	"ban_hammer": {
 		"display_name": "The Ban Hammer",
@@ -752,7 +752,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.25, "knockback": 100.0},
 		"grants_equipment_ability": "permaban",
-		"icon_path": "res://assets/sprites/items/mace/png/transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon40.png"
 	},
 	"infinity_blade": {
 		"display_name": "Infinity Blade +1",
@@ -761,7 +761,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.20, "attack_speed": 0.20, "crit_chance": 0.10},
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon45.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon45.png"
 	},
 	"spaghetti_sword": {
 		"display_name": "Mom's Spaghetti Sword",
@@ -770,7 +770,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.18, "max_hp": 0.15},
 		"grants_equipment_ability": "comfort_food",
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon42.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon42.png"
 	},
 	"nerf_sword": {
 		"display_name": "Nerf Sword (Pre-Nerf)",
@@ -779,7 +779,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.35, "attack_speed": 0.15},
 		"grants_equipment_ability": "overtuned",
-		"icon_path": "res://assets/sprites/items/swords/png/transperent/Icon48.png"
+		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon48.png"
 	},
 
 	# Weapons - Daggers (Assassin) - Legendary
@@ -819,7 +819,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.25, "attack_speed": 0.20, "melee_range": 0.25},
 		"grants_equipment_ability": "holy_smite",
-		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon40.png"
 	},
 	"primal_rage": {
 		"display_name": "Primal Rage Spear",
@@ -828,7 +828,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MELEE,
 		"base_stats": {"damage": 0.30, "melee_range": 0.30, "crit_chance": 0.15},
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/spear/png/transperent/Icon48.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon48.png"
 	},
 
 	# Weapons - Books (Mage) - Legendary
@@ -839,7 +839,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.25, "crit_chance": 0.20, "attack_speed": 0.10},
 		"grants_equipment_ability": "random_effects",
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon40.png"
 	},
 	"book_of_infinite_pages": {
 		"display_name": "Book of Infinite Pages",
@@ -848,7 +848,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.20, "max_hp": 0.20, "xp_gain": 0.15},
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon45.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon45.png"
 	},
 	"tome_of_chaos": {
 		"display_name": "Tome of Pure Chaos",
@@ -857,7 +857,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.MAGIC,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15},
 		"grants_equipment_ability": "random_effects",
-		"icon_path": "res://assets/sprites/items/books/png/transperent/Icon48.png"
+		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon48.png"
 	},
 
 	# Weapons - Ranged

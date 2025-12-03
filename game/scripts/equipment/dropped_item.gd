@@ -54,15 +54,23 @@ func setup(data: ItemData) -> void:
 		shine.visible = false
 	if shadow:
 		shadow.visible = false
+	# Always show item name label above the item with rarity color
 	if rarity_label:
-		rarity_label.visible = false  # Hide rarity label when showing icon
+		rarity_label.visible = true
+		rarity_label.text = data.get_full_name()
+		rarity_label.add_theme_color_override("font_color", rarity_color)
+		rarity_label.add_theme_font_size_override("font_size", 10)
+		# Load pixel font
+		if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
+			var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+			rarity_label.add_theme_font_override("font", pixel_font)
 
 	# Load icon if available
 	if data.icon_path != "" and ResourceLoader.exists(data.icon_path):
 		var texture = load(data.icon_path)
 		if texture and sprite:
 			sprite.texture = texture
-			sprite.scale = Vector2(2.0, 2.0)  # Slightly larger for visibility
+			sprite.scale = Vector2(0.7, 0.7)  # 35% of original size
 			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			sprite.visible = true
 	else:
@@ -91,17 +99,9 @@ func setup(data: ItemData) -> void:
 				0.7 + rarity_color.b * 0.3,
 				0.7
 			)
-		# Show rarity label for fallback
-		if rarity_label:
-			rarity_label.visible = true
-			rarity_label.text = data.get_rarity_name()
-			rarity_label.add_theme_color_override("font_color", rarity_color)
-			rarity_label.add_theme_font_size_override("font_size", 14)
 
 func _process(delta: float) -> void:
-	# Bobbing animation
-	bob_time += delta * bob_speed
-	global_position.y = base_y + sin(bob_time) * bob_height
+	# No bobbing - items stay on the floor
 
 	# Glow pulsing
 	glow_time += delta * glow_pulse_speed

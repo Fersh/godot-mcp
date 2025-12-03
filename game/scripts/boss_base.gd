@@ -199,5 +199,5 @@ func _drop_boss_item() -> void:
 	var item = EquipmentManager.generate_item("boss")
 	var dropped = dropped_item_scene.instantiate()
 	dropped.global_position = global_position
+	get_parent().add_child(dropped)  # Must add to tree BEFORE setup() so @onready vars are initialized
 	dropped.setup(item)
-	get_parent().add_child(dropped)

@@ -232,7 +232,7 @@ static func get_common_abilities() -> Array[AbilityData]:
 			"Moving increases next hit damage",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.MOMENTUM, value = 0.5}]  # +50% max bonus
+			[{effect_type = AbilityData.EffectType.MOMENTUM, value = 0.25}]  # +25% max bonus
 		),
 	]
 
