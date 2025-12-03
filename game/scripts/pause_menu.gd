@@ -831,6 +831,9 @@ func _populate_options() -> void:
 	# Screen shake toggle
 	_create_option_toggle("Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
+	# Track missions toggle
+	_create_option_toggle("Track Missions", GameSettings.track_missions_enabled, func(toggled): GameSettings.set_track_missions_enabled(toggled))
+
 func _create_option_toggle(label_text: String, initial_value: bool, on_toggle: Callable) -> void:
 	var hbox = HBoxContainer.new()
 	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL

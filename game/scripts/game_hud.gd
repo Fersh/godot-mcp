@@ -20,6 +20,13 @@ var progress_bar_bg: Panel = null
 var progress_bar_fill: Panel = null
 var level_label: Label = null
 
+# Missions tracker UI
+var missions_container: VBoxContainer = null
+var mission_rows: Array = []  # Array of HBoxContainers for each mission
+
+# Mission completion notification
+var notification_container: Control = null
+
 # State
 var displayed_xp: float = 0.0
 var previous_xp: float = 0.0
@@ -50,6 +57,18 @@ func _ready() -> void:
 		displayed_xp = player.current_xp
 		_update_progress_bar(player.current_xp, player.xp_to_next_level)
 		_update_level_label(player.current_level)
+
+	# Connect to missions manager signals
+	if MissionsManager:
+		MissionsManager.mission_completed.connect(_on_mission_completed)
+		MissionsManager.mission_progress_updated.connect(_on_mission_progress_updated)
+		MissionsManager.clear_run_completed_missions()  # Clear at run start
+		_update_missions_display()
+
+	# Connect to settings changes to toggle missions tracker
+	if GameSettings:
+		GameSettings.settings_changed.connect(_on_settings_changed)
+		_update_missions_tracker_visibility()
 
 func _create_ui() -> void:
 	# Get viewport size for positioning
@@ -93,6 +112,9 @@ func _create_ui() -> void:
 	pause_button.add_theme_stylebox_override("pressed", pause_pressed_style)
 
 	pause_container.add_child(pause_button)
+
+	# === MISSIONS TRACKER (below pause button) ===
+	_create_missions_tracker()
 
 	# Pause icon (|| symbol)
 	pause_icon = Label.new()
@@ -373,3 +395,262 @@ func _animate_bar_fill_shake(fill_bar: Control) -> void:
 
 	# Return scale to normal
 	tween.tween_property(fill_bar, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_OUT)
+
+# ============================================
+# MISSIONS TRACKER
+# ============================================
+
+func _create_missions_tracker() -> void:
+	"""Create the missions tracker UI below the pause button."""
+	missions_container = VBoxContainer.new()
+	missions_container.name = "MissionsTracker"
+	missions_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	missions_container.offset_left = MARGIN
+	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 25  # Below pause button
+	missions_container.offset_right = MARGIN + 220
+	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 200
+	missions_container.add_theme_constant_override("separation", 6)
+	add_child(missions_container)
+
+	# Create 3 mission row slots
+	for i in range(3):
+		var row = _create_mission_row()
+		row.visible = false
+		missions_container.add_child(row)
+		mission_rows.append(row)
+
+func _create_mission_row() -> PanelContainer:
+	"""Create a single mission row UI element."""
+	var panel = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(200, 36)
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.05, 0.08, 0.85)
+	style.border_color = Color(0.3, 0.3, 0.35, 0.6)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	panel.add_theme_stylebox_override("panel", style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 2)
+
+	# Mission title
+	var title = Label.new()
+	title.name = "Title"
+	title.add_theme_font_size_override("font_size", 9)
+	title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
+	vbox.add_child(title)
+
+	# Progress bar container
+	var progress_container = HBoxContainer.new()
+	progress_container.add_theme_constant_override("separation", 6)
+
+	# Progress bar background
+	var bar_bg = Panel.new()
+	bar_bg.name = "ProgressBG"
+	bar_bg.custom_minimum_size = Vector2(120, 8)
+	var bar_bg_style = StyleBoxFlat.new()
+	bar_bg_style.bg_color = Color(0.15, 0.15, 0.18, 1)
+	bar_bg_style.set_corner_radius_all(2)
+	bar_bg.add_theme_stylebox_override("panel", bar_bg_style)
+
+	# Progress bar fill
+	var bar_fill = Panel.new()
+	bar_fill.name = "ProgressFill"
+	bar_fill.size = Vector2(0, 8)
+	bar_fill.position = Vector2(0, 0)
+	var bar_fill_style = StyleBoxFlat.new()
+	bar_fill_style.bg_color = Color(0.9, 0.7, 0.2, 1)
+	bar_fill_style.set_corner_radius_all(2)
+	bar_fill.add_theme_stylebox_override("panel", bar_fill_style)
+	bar_bg.add_child(bar_fill)
+
+	progress_container.add_child(bar_bg)
+
+	# Progress text
+	var progress_text = Label.new()
+	progress_text.name = "ProgressText"
+	progress_text.add_theme_font_size_override("font_size", 8)
+	progress_text.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	if pixel_font:
+		progress_text.add_theme_font_override("font", pixel_font)
+	progress_container.add_child(progress_text)
+
+	vbox.add_child(progress_container)
+	panel.add_child(vbox)
+
+	return panel
+
+func _update_missions_display() -> void:
+	"""Update the missions tracker with current mission data."""
+	if not MissionsManager:
+		return
+
+	var missions = MissionsManager.get_in_progress_missions(3)
+
+	for i in range(mission_rows.size()):
+		var row = mission_rows[i]
+		if i < missions.size():
+			var mission = missions[i]
+			row.visible = true
+			_update_mission_row(row, mission)
+		else:
+			row.visible = false
+
+func _update_mission_row(row: PanelContainer, mission) -> void:
+	"""Update a single mission row with mission data."""
+	var vbox = row.get_child(0)
+	var title = vbox.get_node("Title")
+	var progress_container = vbox.get_child(1)
+	var bar_bg = progress_container.get_node("ProgressBG")
+	var bar_fill = bar_bg.get_node("ProgressFill")
+	var progress_text = progress_container.get_node("ProgressText")
+
+	# Truncate title if too long
+	var display_title = mission.title
+	if display_title.length() > 20:
+		display_title = display_title.substr(0, 18) + ".."
+	title.text = display_title
+
+	# Update progress bar
+	var progress_ratio = float(mission.current_progress) / float(mission.target_progress) if mission.target_progress > 0 else 0
+	progress_ratio = clamp(progress_ratio, 0.0, 1.0)
+	bar_fill.size.x = 120 * progress_ratio
+
+	# Update progress text
+	progress_text.text = "%d/%d" % [mission.current_progress, mission.target_progress]
+
+	# Change color if complete
+	if mission.is_completed:
+		var fill_style = bar_fill.get_theme_stylebox("panel").duplicate()
+		fill_style.bg_color = Color(0.3, 0.9, 0.4, 1)  # Green when complete
+		bar_fill.add_theme_stylebox_override("panel", fill_style)
+
+func _on_mission_completed(mission) -> void:
+	"""Handle mission completion - show notification."""
+	_show_mission_notification(mission)
+	_update_missions_display()
+
+func _on_mission_progress_updated(mission) -> void:
+	"""Handle mission progress update."""
+	_update_missions_display()
+
+func _show_mission_notification(mission) -> void:
+	"""Show a juicy notification when a mission is completed."""
+	# Play sound and haptic
+	if SoundManager:
+		SoundManager.play_player_join()
+	if HapticManager:
+		HapticManager.medium()
+
+	# Create notification container if needed
+	if notification_container:
+		notification_container.queue_free()
+
+	notification_container = Control.new()
+	notification_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	notification_container.offset_top = 80
+	notification_container.offset_bottom = 160
+	add_child(notification_container)
+
+	# Create notification panel
+	var panel = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	panel.offset_left = -150
+	panel.offset_right = 150
+	panel.offset_top = 0
+	panel.offset_bottom = 70
+
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.08, 0.15, 0.95)
+	style.border_color = Color(1.0, 0.85, 0.3, 1)
+	style.set_border_width_all(3)
+	style.set_corner_radius_all(8)
+	style.shadow_color = Color(1.0, 0.8, 0.2, 0.3)
+	style.shadow_size = 10
+	panel.add_theme_stylebox_override("panel", style)
+
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 4)
+
+	# "MISSION COMPLETE!" text
+	var header = Label.new()
+	header.text = "MISSION COMPLETE!"
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_theme_font_size_override("font_size", 12)
+	header.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	if pixel_font:
+		header.add_theme_font_override("font", pixel_font)
+	vbox.add_child(header)
+
+	# Mission title
+	var title = Label.new()
+	title.text = mission.title
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 10)
+	title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
+	vbox.add_child(title)
+
+	# Coin reward
+	var reward = Label.new()
+	reward.text = "+%d Coins" % mission.coin_reward
+	reward.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reward.add_theme_font_size_override("font_size", 11)
+	reward.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
+	if pixel_font:
+		reward.add_theme_font_override("font", pixel_font)
+	vbox.add_child(reward)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_child(vbox)
+	panel.add_child(margin)
+
+	notification_container.add_child(panel)
+
+	# Animate in
+	panel.scale = Vector2(0.5, 0.5)
+	panel.pivot_offset = panel.size / 2
+	panel.modulate.a = 0
+
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.2)
+
+	tween.set_parallel(false)
+	tween.tween_interval(2.5)  # Show for 2.5 seconds
+
+	# Animate out
+	tween.tween_property(panel, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(func():
+		if notification_container:
+			notification_container.queue_free()
+			notification_container = null
+	)
+
+# ============================================
+# SETTINGS
+# ============================================
+
+func _on_settings_changed() -> void:
+	"""Handle settings changes."""
+	_update_missions_tracker_visibility()
+
+func _update_missions_tracker_visibility() -> void:
+	"""Show/hide missions tracker based on settings."""
+	if missions_container:
+		var should_show = GameSettings.track_missions_enabled if GameSettings else true
+		missions_container.visible = should_show

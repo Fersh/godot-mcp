@@ -688,6 +688,8 @@ func _animate_stats_reveal() -> void:
 		btn_tween.tween_interval(delay + 0.5)
 		btn_tween.tween_property(play_again_button, "modulate:a", 1.0, 0.2)
 		btn_tween.parallel().tween_property(play_again_button, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+		# Check for mission celebrations after all animations complete
+		btn_tween.tween_callback(_check_and_show_mission_celebration)
 
 func _check_if_personal_best(stat_index: int) -> bool:
 	"""Check if this stat is a personal best."""
@@ -851,6 +853,10 @@ func _create_curse_icon_button(princess) -> Button:
 
 var active_curse_tooltip: PanelContainer = null
 
+# Mission celebration modal
+var mission_celebration_modal: Control = null
+var celebration_particle_timer: Timer = null
+
 func _show_curse_tooltip(princess, btn: Button) -> void:
 	"""Show a tooltip panel for the curse."""
 	if SoundManager:
@@ -927,3 +933,342 @@ func _show_curse_tooltip(princess, btn: Button) -> void:
 		btn_global.x + (btn.size.x / 2) - (tooltip_size.x / 2),
 		btn_global.y - tooltip_size.y - 10
 	)
+
+# ============================================
+# MISSION CELEBRATION MODAL
+# ============================================
+
+func _check_and_show_mission_celebration() -> void:
+	"""Check if any missions were completed this run and show celebration."""
+	if not MissionsManager:
+		return
+
+	var completed_missions = MissionsManager.get_run_completed_missions()
+	if completed_missions.is_empty():
+		return
+
+	# Wait a moment for the stats to settle
+	await get_tree().create_timer(0.3).timeout
+
+	# Show the celebration modal
+	_show_mission_celebration_modal(completed_missions)
+
+func _show_mission_celebration_modal(completed_missions: Array) -> void:
+	"""Display a celebratory modal for completed missions."""
+	# Create fullscreen overlay
+	mission_celebration_modal = Control.new()
+	mission_celebration_modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	mission_celebration_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(mission_celebration_modal)
+
+	# Dark background overlay
+	var bg_overlay = ColorRect.new()
+	bg_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_overlay.color = Color(0, 0, 0, 0)
+	bg_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	mission_celebration_modal.add_child(bg_overlay)
+
+	# Animate background fade in
+	var bg_tween = create_tween()
+	bg_tween.tween_property(bg_overlay, "color", Color(0, 0, 0, 0.85), 0.3)
+
+	# Create central panel
+	var panel = PanelContainer.new()
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.06, 0.12, 0.98)
+	panel_style.border_color = Color(1.0, 0.85, 0.2, 1.0)
+	panel_style.set_border_width_all(4)
+	panel_style.set_corner_radius_all(16)
+	panel_style.shadow_color = Color(1.0, 0.85, 0.2, 0.4)
+	panel_style.shadow_size = 15
+	panel.add_theme_stylebox_override("panel", panel_style)
+
+	# Center the panel
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.add_child(panel)
+	mission_celebration_modal.add_child(center)
+
+	# Panel content
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_theme_constant_override("margin_top", 25)
+	margin.add_theme_constant_override("margin_bottom", 25)
+
+	var vbox = VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 15)
+
+	# Celebration title
+	var title = Label.new()
+	title.text = "MISSION COMPLETE!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		title.add_theme_font_override("font", pixel_font)
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	title.add_theme_color_override("font_shadow_color", Color(0.5, 0.35, 0, 0.8))
+	title.add_theme_constant_override("shadow_offset_x", 3)
+	title.add_theme_constant_override("shadow_offset_y", 3)
+	vbox.add_child(title)
+
+	# Mission count subtitle
+	var count_text = "%d Mission%s Completed!" % [completed_missions.size(), "s" if completed_missions.size() > 1 else ""]
+	var subtitle = Label.new()
+	subtitle.text = count_text
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		subtitle.add_theme_font_override("font", pixel_font)
+	subtitle.add_theme_font_size_override("font_size", 14)
+	subtitle.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	vbox.add_child(subtitle)
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(spacer)
+
+	# Mission list container
+	var missions_vbox = VBoxContainer.new()
+	missions_vbox.add_theme_constant_override("separation", 12)
+
+	for i in range(completed_missions.size()):
+		var mission = completed_missions[i]
+		var mission_row = _create_celebration_mission_row(mission, i)
+		missions_vbox.add_child(mission_row)
+
+	vbox.add_child(missions_vbox)
+
+	# Spacer before button
+	var spacer2 = Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 15)
+	vbox.add_child(spacer2)
+
+	# Continue button
+	var continue_btn = Button.new()
+	continue_btn.text = "AWESOME!"
+	continue_btn.custom_minimum_size = Vector2(200, 50)
+	if pixel_font:
+		continue_btn.add_theme_font_override("font", pixel_font)
+	continue_btn.add_theme_font_size_override("font_size", 18)
+
+	# Style the button gold/celebration
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.9, 0.7, 0.1, 1.0)
+	btn_style.border_width_left = 3
+	btn_style.border_width_right = 3
+	btn_style.border_width_top = 3
+	btn_style.border_width_bottom = 6
+	btn_style.border_color = Color(0.6, 0.45, 0.05, 1)
+	btn_style.set_corner_radius_all(8)
+	continue_btn.add_theme_stylebox_override("normal", btn_style)
+
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = Color(1.0, 0.8, 0.2, 1.0)
+	continue_btn.add_theme_stylebox_override("hover", btn_hover)
+
+	continue_btn.add_theme_color_override("font_color", Color(0.1, 0.08, 0.02))
+	continue_btn.pressed.connect(_close_mission_celebration)
+
+	var btn_center = CenterContainer.new()
+	btn_center.add_child(continue_btn)
+	vbox.add_child(btn_center)
+
+	margin.add_child(vbox)
+	panel.add_child(margin)
+
+	# Start with panel invisible and scaled down
+	panel.modulate.a = 0.0
+	panel.scale = Vector2(0.5, 0.5)
+	panel.pivot_offset = Vector2(200, 150)  # Approximate center
+
+	# Animate panel entrance
+	var panel_tween = create_tween()
+	panel_tween.tween_property(panel, "modulate:a", 1.0, 0.3)
+	panel_tween.parallel().tween_property(panel, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+	# Trigger celebration effects
+	panel_tween.tween_callback(_trigger_celebration_effects)
+
+	# Start particle spawning
+	_start_celebration_particles()
+
+func _create_celebration_mission_row(mission, index: int) -> Control:
+	"""Create a row for a completed mission in the celebration modal."""
+	var row = PanelContainer.new()
+
+	var row_style = StyleBoxFlat.new()
+	row_style.bg_color = Color(0.15, 0.12, 0.2, 0.9)
+	row_style.border_color = Color(0.4, 0.8, 0.3, 0.8)
+	row_style.set_border_width_all(2)
+	row_style.set_corner_radius_all(8)
+	row.add_theme_stylebox_override("panel", row_style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 12)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	# Checkmark icon
+	var check = Label.new()
+	check.text = "✓"
+	check.add_theme_font_size_override("font_size", 24)
+	check.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
+	hbox.add_child(check)
+
+	# Mission info
+	var info_vbox = VBoxContainer.new()
+	info_vbox.add_theme_constant_override("separation", 4)
+
+	var mission_title = Label.new()
+	mission_title.text = mission.title
+	if pixel_font:
+		mission_title.add_theme_font_override("font", pixel_font)
+	mission_title.add_theme_font_size_override("font_size", 14)
+	mission_title.add_theme_color_override("font_color", Color(1, 1, 1))
+	info_vbox.add_child(mission_title)
+
+	var mission_desc = Label.new()
+	mission_desc.text = mission.description
+	if pixel_font:
+		mission_desc.add_theme_font_override("font", pixel_font)
+	mission_desc.add_theme_font_size_override("font_size", 10)
+	mission_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	mission_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	mission_desc.custom_minimum_size = Vector2(200, 0)
+	info_vbox.add_child(mission_desc)
+
+	hbox.add_child(info_vbox)
+
+	# Reward
+	var reward_label = Label.new()
+	reward_label.text = "+%d ●" % mission.coin_reward
+	if pixel_font:
+		reward_label.add_theme_font_override("font", pixel_font)
+	reward_label.add_theme_font_size_override("font_size", 14)
+	reward_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	hbox.add_child(reward_label)
+
+	margin.add_child(hbox)
+	row.add_child(margin)
+
+	# Start invisible for staggered animation
+	row.modulate.a = 0.0
+	row.position.x = -50
+
+	# Animate row entrance with stagger
+	var delay = 0.2 + (index * 0.15)
+	var row_tween = create_tween()
+	row_tween.tween_interval(delay)
+	row_tween.tween_property(row, "modulate:a", 1.0, 0.25)
+	row_tween.parallel().tween_property(row, "position:x", 0, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+	# Add checkmark bounce effect
+	row_tween.tween_callback(func():
+		if SoundManager:
+			SoundManager.play_click()
+		if HapticManager:
+			HapticManager.light()
+		# Bounce the check
+		var check_tween = create_tween()
+		check_tween.tween_property(check, "scale", Vector2(1.3, 1.3), 0.1)
+		check_tween.tween_property(check, "scale", Vector2(1.0, 1.0), 0.1)
+	)
+
+	return row
+
+func _trigger_celebration_effects() -> void:
+	"""Trigger sound and haptic celebration effects."""
+	# Play celebration sound
+	if SoundManager:
+		SoundManager.play_player_join()
+
+	# Strong haptic
+	if HapticManager:
+		HapticManager.heavy()
+
+	# Screen shake
+	if JuiceManager:
+		JuiceManager.shake_medium()
+
+func _start_celebration_particles() -> void:
+	"""Start spawning celebration particles (confetti-like effect)."""
+	celebration_particle_timer = Timer.new()
+	celebration_particle_timer.wait_time = 0.1
+	celebration_particle_timer.timeout.connect(_spawn_celebration_particle)
+	add_child(celebration_particle_timer)
+	celebration_particle_timer.start()
+
+	# Stop after 2 seconds
+	await get_tree().create_timer(2.0).timeout
+	if celebration_particle_timer:
+		celebration_particle_timer.stop()
+		celebration_particle_timer.queue_free()
+		celebration_particle_timer = null
+
+func _spawn_celebration_particle() -> void:
+	"""Spawn a single celebration particle."""
+	if not mission_celebration_modal:
+		return
+
+	var viewport_size = get_viewport().get_visible_rect().size
+
+	# Create particle (simple colored rect)
+	var particle = ColorRect.new()
+	particle.size = Vector2(randf_range(8, 16), randf_range(8, 16))
+
+	# Random celebration colors
+	var colors = [
+		Color(1.0, 0.85, 0.2),   # Gold
+		Color(1.0, 0.4, 0.4),    # Red
+		Color(0.4, 1.0, 0.4),    # Green
+		Color(0.4, 0.6, 1.0),    # Blue
+		Color(1.0, 0.6, 0.9),    # Pink
+		Color(0.9, 0.5, 0.1),    # Orange
+	]
+	particle.color = colors[randi() % colors.size()]
+
+	# Start position at top of screen
+	particle.position = Vector2(randf_range(50, viewport_size.x - 50), -20)
+
+	mission_celebration_modal.add_child(particle)
+
+	# Animate falling with rotation
+	var fall_tween = create_tween()
+	var end_y = viewport_size.y + 50
+	var sway_x = randf_range(-100, 100)
+	fall_tween.tween_property(particle, "position", Vector2(particle.position.x + sway_x, end_y), randf_range(1.5, 3.0))
+	fall_tween.parallel().tween_property(particle, "rotation", randf_range(-4, 4), randf_range(1.5, 3.0))
+	fall_tween.tween_callback(particle.queue_free)
+
+func _close_mission_celebration() -> void:
+	"""Close the mission celebration modal."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	# Stop particle spawning
+	if celebration_particle_timer:
+		celebration_particle_timer.stop()
+		celebration_particle_timer.queue_free()
+		celebration_particle_timer = null
+
+	if mission_celebration_modal:
+		# Animate out
+		var tween = create_tween()
+		tween.tween_property(mission_celebration_modal, "modulate:a", 0.0, 0.25)
+		tween.tween_callback(func():
+			mission_celebration_modal.queue_free()
+			mission_celebration_modal = null
+		)
+
+	# Clear completed missions for this run
+	if MissionsManager:
+		MissionsManager.clear_run_completed_missions()

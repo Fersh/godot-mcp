@@ -645,7 +645,7 @@ static func _create_totem_of_frost() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.SELF,
 		20.0
-	).with_damage(28.0, 1.0).with_aoe(180.0).with_slow(0.7, 2.0).with_duration(10.0).with_icon("res://assets/icons/abilities/totem_of_frost.png")
+	).with_damage(28.0, 1.0).with_aoe(144.0).with_slow(0.45, 2.0).with_duration(10.0).with_icon("res://assets/icons/abilities/totem_of_frost.png")
 
 static func _create_shadowstep() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

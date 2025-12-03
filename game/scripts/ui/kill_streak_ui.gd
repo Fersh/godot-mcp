@@ -133,8 +133,8 @@ func _process(delta: float) -> void:
 		if display_timer <= 0:
 			_on_fade_complete()
 
-	# Rainbow effect for max tier (color only, no pulsing)
-	if current_tier >= 6 and is_visible_state:
+	# Rainbow effect for max tier only (tier 15 = "LOL WTF!?" at 500 kills)
+	if current_tier == 15 and is_visible_state:
 		rainbow_time += delta * 2.0
 		var hue = fmod(rainbow_time, 1.0)
 		var rainbow_color = Color.from_hsv(hue, 0.8, 1.0)

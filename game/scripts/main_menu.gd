@@ -580,6 +580,9 @@ func _show_settings_panel() -> void:
 	# Screen shake toggle
 	_create_toggle_option(options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
+	# Track missions toggle
+	_create_toggle_option(options_container, "Track Missions", GameSettings.track_missions_enabled, func(toggled): GameSettings.set_track_missions_enabled(toggled))
+
 	# Spacer
 	var spacer = Control.new()
 	spacer.custom_minimum_size = Vector2(0, 20)

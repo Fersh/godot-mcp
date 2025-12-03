@@ -33,7 +33,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
-		"spawn_rate_mult": 1.25,
+		"spawn_rate_mult": 1.375,  # +10% (was 1.25)
 		"points_mult": 1.0,
 		"starting_hp": 1.0,
 		"healing_mult": 1.0,
@@ -44,10 +44,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.VERY_EASY: {
 		"name": "Easy",
 		"description": "Enemies apply Slow on hit.\n2x Points.",
-		"health_mult": 3.52,  # +10%
+		"health_mult": 3.52,
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
-		"spawn_rate_mult": 3.0,
+		"spawn_rate_mult": 3.3,  # +10% (was 3.0)
 		"points_mult": 2.0,
 		"starting_hp": 1.0,
 		"healing_mult": 1.0,
@@ -58,10 +58,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.EASY: {
 		"name": "Normal",
 		"description": "+ Elites gain affixes. 5% champions.\n3x Points.",
-		"health_mult": 5.28,  # +10%
+		"health_mult": 5.28,
 		"damage_mult": 3.3,
 		"speed_mult": 1.44,
-		"spawn_rate_mult": 3.85,  # +10%
+		"spawn_rate_mult": 4.235,  # +10% (was 3.85)
 		"points_mult": 3.0,
 		"starting_hp": 0.85,
 		"healing_mult": 0.85,
@@ -72,10 +72,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.NORMAL: {
 		"name": "Nightmare",
 		"description": "+ 70% HP/Healing. Boss enrages faster.\n4x Points.",
-		"health_mult": 8.36,  # +10%
+		"health_mult": 8.36,
 		"damage_mult": 4.2,
 		"speed_mult": 1.64,
-		"spawn_rate_mult": 4.4,  # +10%
+		"spawn_rate_mult": 4.84,  # +10% (was 4.4)
 		"points_mult": 4.0,
 		"starting_hp": 0.70,
 		"healing_mult": 0.70,
@@ -86,10 +86,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.NIGHTMARE: {
 		"name": "Hell",
 		"description": "+ 55% HP, 50% Healing. 12% champions.\n5x Points.",
-		"health_mult": 12.1,  # +10%
+		"health_mult": 12.1,
 		"damage_mult": 5.5,
 		"speed_mult": 1.9,
-		"spawn_rate_mult": 5.09,  # +10%
+		"spawn_rate_mult": 5.6,  # +10% (was 5.09)
 		"points_mult": 5.0,
 		"starting_hp": 0.55,
 		"healing_mult": 0.50,
@@ -100,10 +100,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.INFERNO: {
 		"name": "Inferno",
 		"description": "+ 40% HP, 35% Healing. 25% champions.\n6x Points.",
-		"health_mult": 18.15,  # +10%
+		"health_mult": 18.15,
 		"damage_mult": 7.5,
 		"speed_mult": 2.4,
-		"spawn_rate_mult": 6.05,  # +10%
+		"spawn_rate_mult": 6.655,  # +10% (was 6.05)
 		"points_mult": 6.0,
 		"starting_hp": 0.40,
 		"healing_mult": 0.35,
@@ -114,10 +114,10 @@ const DIFFICULTY_DATA = {
 	DifficultyTier.THANKSGIVING_DINNER: {
 		"name": "Thanksgiving",
 		"description": "+ 25% HP/Healing. 35% champions.\n10x Points.",
-		"health_mult": 27.5,  # +10%
+		"health_mult": 27.5,
 		"damage_mult": 10.0,
 		"speed_mult": 3.0,
-		"spawn_rate_mult": 7.7,  # +10%
+		"spawn_rate_mult": 8.47,  # +10% (was 7.7)
 		"points_mult": 10.0,
 		"starting_hp": 0.25,
 		"healing_mult": 0.25,

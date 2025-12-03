@@ -11,6 +11,7 @@ var sfx_enabled: bool = true
 var screen_shake_enabled: bool = true
 var haptics_enabled: bool = true
 var master_volume: float = 1.0  # 0.0 to 1.0
+var track_missions_enabled: bool = true  # Show mission tracker in game HUD
 
 # Generic settings storage for misc values
 var misc_settings: Dictionary = {}
@@ -29,6 +30,7 @@ func load_settings() -> void:
 		screen_shake_enabled = config.get_value("visual", "screen_shake_enabled", true)
 		haptics_enabled = config.get_value("haptics", "haptics_enabled", true)
 		master_volume = config.get_value("audio", "master_volume", 1.0)
+		track_missions_enabled = config.get_value("gameplay", "track_missions_enabled", true)
 		# Load misc settings
 		if config.has_section("misc"):
 			for key in config.get_section_keys("misc"):
@@ -42,6 +44,7 @@ func save_settings() -> void:
 	config.set_value("visual", "screen_shake_enabled", screen_shake_enabled)
 	config.set_value("haptics", "haptics_enabled", haptics_enabled)
 	config.set_value("audio", "master_volume", master_volume)
+	config.set_value("gameplay", "track_missions_enabled", track_missions_enabled)
 	# Save misc settings
 	for key in misc_settings:
 		config.set_value("misc", key, misc_settings[key])
@@ -83,6 +86,11 @@ func set_screen_shake_enabled(enabled: bool) -> void:
 
 func set_haptics_enabled(enabled: bool) -> void:
 	haptics_enabled = enabled
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_track_missions_enabled(enabled: bool) -> void:
+	track_missions_enabled = enabled
 	save_settings()
 	emit_signal("settings_changed")
 
