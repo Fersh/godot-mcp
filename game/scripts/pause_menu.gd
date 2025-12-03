@@ -29,19 +29,22 @@ const COLOR_TAB_INACTIVE_TEXT = Color(0.5, 0.45, 0.40, 1.0)
 # Tab buttons
 @onready var powerups_tab: Button = $Panel/VBoxContainer/TabContainer/PowerupsTab
 @onready var stats_tab: Button = $Panel/VBoxContainer/TabContainer/StatsTab
+@onready var options_tab: Button = $Panel/VBoxContainer/TabContainer/OptionsTab
 
 # Content containers
 @onready var powerups_content: VBoxContainer = $Panel/VBoxContainer/ContentContainer/PowerupsContent
 @onready var stats_content: VBoxContainer = $Panel/VBoxContainer/ContentContainer/StatsContent
-@onready var powerups_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll/PowerupsContainer
-@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll/StatsContainer
+@onready var options_content: VBoxContainer = $Panel/VBoxContainer/ContentContainer/OptionsContent
+@onready var powerups_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll/PowerupsMargin/PowerupsContainer
+@onready var stats_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll/StatsMargin/StatsContainer
+@onready var options_container: VBoxContainer = $Panel/VBoxContainer/ContentContainer/OptionsContent/OptionsScroll/OptionsMargin/OptionsContainer
 
 # Action buttons
 @onready var resume_button: Button = $Panel/VBoxContainer/ButtonContainer/ResumeButton
 @onready var give_up_button: Button = $Panel/VBoxContainer/ButtonContainer/GiveUpButton
 
 var difficulty_label: Label = null
-var current_tab: int = 0  # 0 = powerups, 1 = stats
+var current_tab: int = 0  # 0 = powerups, 1 = stats, 2 = options
 
 func _ready() -> void:
 	visible = false
@@ -53,6 +56,7 @@ func _ready() -> void:
 	give_up_button.pressed.connect(_on_give_up_pressed)
 	powerups_tab.pressed.connect(_on_powerups_tab_pressed)
 	stats_tab.pressed.connect(_on_stats_tab_pressed)
+	options_tab.pressed.connect(_on_options_tab_pressed)
 
 	_setup_style()
 	_setup_difficulty_label()
@@ -84,6 +88,7 @@ func _setup_style() -> void:
 	# Style tab buttons
 	_style_tab_button(powerups_tab)
 	_style_tab_button(stats_tab)
+	_style_tab_button(options_tab)
 
 	# Style action buttons
 	_style_button(resume_button, Color(0.2, 0.5, 0.3))
@@ -185,14 +190,23 @@ func _on_stats_tab_pressed() -> void:
 	_update_tab_visuals()
 	_populate_stats()
 
+func _on_options_tab_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	current_tab = 2
+	_update_tab_visuals()
+	_populate_options()
+
 func _update_tab_visuals() -> void:
 	# Update content visibility
 	powerups_content.visible = current_tab == 0
 	stats_content.visible = current_tab == 1
+	options_content.visible = current_tab == 2
 
 	# Update tab button styles
 	_update_tab_style(powerups_tab, current_tab == 0)
 	_update_tab_style(stats_tab, current_tab == 1)
+	_update_tab_style(options_tab, current_tab == 2)
 
 func _update_tab_style(button: Button, is_active: bool) -> void:
 	var style = button.get_theme_stylebox("normal").duplicate() as StyleBoxFlat
@@ -755,6 +769,46 @@ func _on_give_up_pressed() -> void:
 		HapticManager.light()
 	hide_menu()
 	emit_signal("gave_up")
+
+# ============================================
+# OPTIONS TAB
+# ============================================
+
+func _populate_options() -> void:
+	# Clear existing
+	for child in options_container.get_children():
+		child.queue_free()
+
+	# Music toggle
+	_create_option_toggle("Music", GameSettings.music_enabled, func(toggled): GameSettings.set_music_enabled(toggled))
+
+	# SFX toggle
+	_create_option_toggle("Sound Effects", GameSettings.sfx_enabled, func(toggled): GameSettings.set_sfx_enabled(toggled))
+
+	# Haptics toggle
+	_create_option_toggle("Haptics", GameSettings.haptics_enabled, func(toggled): GameSettings.set_haptics_enabled(toggled))
+
+	# Screen shake toggle
+	_create_option_toggle("Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
+
+func _create_option_toggle(label_text: String, initial_value: bool, on_toggle: Callable) -> void:
+	var hbox = HBoxContainer.new()
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	options_container.add_child(hbox)
+
+	var label = Label.new()
+	label.text = label_text
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", COLOR_TEXT)
+	hbox.add_child(label)
+
+	var toggle = CheckButton.new()
+	toggle.button_pressed = initial_value
+	toggle.toggled.connect(on_toggle)
+	hbox.add_child(toggle)
 
 func _input(event: InputEvent) -> void:
 	if not visible:

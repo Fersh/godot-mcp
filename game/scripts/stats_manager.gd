@@ -187,3 +187,19 @@ func format_time(seconds: float) -> String:
 	var mins = int(seconds) / 60
 	var secs = int(seconds) % 60
 	return "%02d:%02d" % [mins, secs]
+
+# Reset all progress (for settings reset)
+func reset_all_progress() -> void:
+	total_kills = 0
+	total_coins = 0
+	total_runs = 0
+	total_time_played = 0.0
+	best_time = 0.0
+	best_kills = 0
+	best_level = 0
+	best_wave = 0
+	best_coins = 0
+	best_points = 0
+	spendable_coins = 0
+	reset_run()
+	save_stats()

@@ -489,7 +489,9 @@ func _select_princess(index: int) -> void:
 	preview_curse_name_label.text = "Problem: %s" % princess.curse_name
 	preview_curse_desc_label.text = princess.curse_description
 
-	preview_bonus_label.text = "+.5x More Points & Coins"
+	# Show individual curse bonus percentage
+	var bonus_percent = int(princess.bonus_multiplier * 100)
+	preview_bonus_label.text = "+%d%% More Points & Coins" % bonus_percent
 
 	_update_toggle_button()
 	_update_selector_visuals()
@@ -574,9 +576,8 @@ func _update_multiplier_display() -> void:
 		multiplier_label.text = "No curses active"
 		multiplier_label.add_theme_color_override("font_color", Color.WHITE)
 	else:
-		var total_mult = PrincessManager.get_total_bonus_multiplier()
-		var mult_str = "+%.1fx" % total_mult if fmod(total_mult, 1.0) != 0 else "+%dx" % int(total_mult)
-		multiplier_label.text = "%d curse%s active: %s More Points & Coins" % [count, "s" if count > 1 else "", mult_str]
+		var bonus_percent = PrincessManager.get_total_bonus_percent()
+		multiplier_label.text = "%d curse%s active: +%d%% More Points & Coins" % [count, "s" if count > 1 else "", bonus_percent]
 		multiplier_label.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
 
 func _on_princess_selected(index: int) -> void:

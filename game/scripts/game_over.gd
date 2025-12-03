@@ -592,6 +592,12 @@ func _input(event: InputEvent) -> void:
 				active_tooltip.queue_free()
 				active_tooltip = null
 
+	# Close curse tooltip when clicking outside of it
+	if active_curse_tooltip and event is InputEventMouseButton and event.pressed:
+		if not active_curse_tooltip.get_global_rect().has_point(event.position):
+			active_curse_tooltip.queue_free()
+			active_curse_tooltip = null
+
 # ============================================
 # POLISHED DEATH SCREEN ANIMATIONS (#24)
 # ============================================
@@ -756,10 +762,167 @@ func _show_difficulty_info() -> void:
 	diff_info.add_theme_constant_override("shadow_offset_x", 2)
 	diff_info.add_theme_constant_override("shadow_offset_y", 2)
 
-	# Position below title
+	# Position below title with 10px margin
 	if title_label:
 		var parent = title_label.get_parent()
 		if parent:
 			var title_idx = title_label.get_index()
+
+			# Add spacer for 10px margin-top
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 10)
+			parent.add_child(spacer)
+			parent.move_child(spacer, title_idx + 1)
+
 			parent.add_child(diff_info)
-			parent.move_child(diff_info, title_idx + 1)
+			parent.move_child(diff_info, title_idx + 2)
+
+			# Add princess curse icons below difficulty info
+			_add_curse_icons(parent, title_idx + 3)
+
+func _add_curse_icons(parent: Control, insert_index: int) -> void:
+	"""Add horizontally aligned princess curse icons with tooltips."""
+	if not PrincessManager:
+		return
+
+	var enabled_curses = PrincessManager.get_enabled_curses()
+	if enabled_curses.is_empty():
+		return
+
+	# Add 10px spacer above curse icons
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 10)
+	parent.add_child(spacer)
+	parent.move_child(spacer, insert_index)
+
+	# Create container for curse icons
+	var curse_container = HBoxContainer.new()
+	curse_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	curse_container.add_theme_constant_override("separation", 6)
+
+	for curse_id in enabled_curses:
+		var princess = PrincessManager.get_princess(curse_id)
+		if princess == null:
+			continue
+
+		var icon_btn = _create_curse_icon_button(princess)
+		curse_container.add_child(icon_btn)
+
+	parent.add_child(curse_container)
+	parent.move_child(curse_container, insert_index + 1)
+
+func _create_curse_icon_button(princess) -> Button:
+	"""Create a button with first letter of curse name and tooltip on press."""
+	var btn = Button.new()
+	btn.custom_minimum_size = Vector2(32, 32)
+
+	# Create label with first letter of curse name
+	var letter_label = Label.new()
+	letter_label.text = princess.curse_name.substr(0, 1).to_upper()
+	letter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	letter_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if pixel_font:
+		letter_label.add_theme_font_override("font", pixel_font)
+	letter_label.add_theme_font_size_override("font_size", 14)
+	letter_label.add_theme_color_override("font_color", Color(0.95, 0.7, 0.85))
+
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.add_child(letter_label)
+	btn.add_child(center)
+
+	# Style the button with pink/curse theme
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.35, 0.15, 0.25, 0.9)
+	style.border_color = Color(0.9, 0.4, 0.6, 0.9)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	btn.add_theme_stylebox_override("normal", style)
+
+	var style_hover = style.duplicate()
+	style_hover.bg_color = Color(0.45, 0.20, 0.35, 0.95)
+	btn.add_theme_stylebox_override("hover", style_hover)
+
+	# Connect to show tooltip
+	btn.pressed.connect(_show_curse_tooltip.bind(princess, btn))
+
+	return btn
+
+var active_curse_tooltip: PanelContainer = null
+
+func _show_curse_tooltip(princess, btn: Button) -> void:
+	"""Show a tooltip panel for the curse."""
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	# Remove existing tooltip
+	if active_curse_tooltip:
+		active_curse_tooltip.queue_free()
+		active_curse_tooltip = null
+
+	# Create tooltip panel
+	active_curse_tooltip = PanelContainer.new()
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.12, 0.08, 0.10, 0.98)
+	panel_style.border_color = Color(0.9, 0.4, 0.6, 1)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(6)
+	active_curse_tooltip.add_theme_stylebox_override("panel", panel_style)
+
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 12)
+	margin.add_theme_constant_override("margin_right", 12)
+	margin.add_theme_constant_override("margin_top", 8)
+	margin.add_theme_constant_override("margin_bottom", 8)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+
+	# Curse name
+	var name_label = Label.new()
+	name_label.text = princess.curse_name
+	name_label.add_theme_font_size_override("font_size", 12)
+	name_label.add_theme_color_override("font_color", Color(0.95, 0.6, 0.8))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		name_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(name_label)
+
+	# Princess name
+	var princess_label = Label.new()
+	princess_label.text = princess.name
+	princess_label.add_theme_font_size_override("font_size", 9)
+	princess_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	princess_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		princess_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(princess_label)
+
+	# Description
+	var desc_label = Label.new()
+	desc_label.text = princess.curse_description
+	desc_label.add_theme_font_size_override("font_size", 10)
+	desc_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.85))
+	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_label.custom_minimum_size = Vector2(180, 0)
+	if pixel_font:
+		desc_label.add_theme_font_override("font", pixel_font)
+	vbox.add_child(desc_label)
+
+	margin.add_child(vbox)
+	active_curse_tooltip.add_child(margin)
+
+	# Position above the button
+	add_child(active_curse_tooltip)
+	await get_tree().process_frame  # Wait for size calculation
+
+	var btn_global = btn.global_position
+	var tooltip_size = active_curse_tooltip.size
+	active_curse_tooltip.global_position = Vector2(
+		btn_global.x + (btn.size.x / 2) - (tooltip_size.x / 2),
+		btn_global.y - tooltip_size.y - 10
+	)

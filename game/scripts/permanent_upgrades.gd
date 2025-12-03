@@ -351,6 +351,13 @@ func save_upgrades() -> void:
 		file.store_var(save_data)
 		file.close()
 
+# Reset all upgrades (for settings reset)
+func reset_all_upgrades() -> void:
+	for id in upgrade_ranks:
+		upgrade_ranks[id] = 0
+	total_coins_spent = 0
+	save_upgrades()
+
 # Load upgrades from file
 func load_upgrades() -> void:
 	if not FileAccess.file_exists("user://upgrades.save"):

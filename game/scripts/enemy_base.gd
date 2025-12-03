@@ -621,11 +621,11 @@ func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
 # ============================================
 
 func make_champion() -> void:
-	"""Transform this enemy into a champion with 3x HP, 2x damage, 1.25x speed, and visual indicator."""
+	"""Transform this enemy into a champion with 9x HP, 2x damage, 1.25x speed, and visual indicator."""
 	is_champion = true
 
 	# Apply champion buffs
-	max_health *= 3.0
+	max_health *= 9.0
 	current_health = max_health
 	attack_damage *= 2.0
 	speed *= 1.25

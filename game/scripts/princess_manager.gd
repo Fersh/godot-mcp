@@ -74,127 +74,132 @@ var unlocked_princesses: Array[String] = []
 # Currently enabled curse IDs (persisted)
 var enabled_curses: Array[String] = []
 
+# Beaten difficulty tiers (persisted) - stores the highest tier beaten
+var highest_difficulty_beaten: int = -1  # -1 means no challenge difficulty beaten yet
+
 func _ready() -> void:
 	_init_princess_definitions()
 	load_progress()
 
-	# TESTING: Unlock all princesses (but keep them disabled by default)
-	debug_unlock_all()
-
 func _init_princess_definitions() -> void:
 	# ============================================
-	# TIER 1 - Core Curses (8 total)
-	# Unlocked from lower difficulties
+	# JUVENILE POOL (2 curses) - 20% total
+	# Easiest curses, unlocked first
 	# ============================================
-
-	# Juvenile pool (2 princesses)
-	_add_princess("bloodprice", "Princess Crimson", "Bloodprice",
-		"Lose 1 HP when collecting coins",
-		0, 1, 0, 1.15,  # sprite_char=0, tier=1, diff=JUVENILE
-		{"type": "bloodprice", "hp_loss": 1})
-
-	_add_princess("fragile", "Princess Glass", "Fragile",
-		"Take +50% damage from all sources",
-		1, 1, 0, 1.20,
-		{"type": "damage_taken_mult", "value": 1.5})
-
-	# Very Easy pool (3 princesses)
-	_add_princess("famine", "Princess Hollow", "Famine",
-		"All healing reduced by 50%",
-		2, 1, 1, 1.15,
-		{"type": "healing_mult", "value": 0.5})
-
-	_add_princess("chaos_spawn", "Princess Chaos", "Chaos Spawn",
-		"Elite enemies spawn 50% more often",
-		3, 1, 1, 1.18,
-		{"type": "elite_spawn_mult", "value": 0.5})
-
-	_add_princess("temporal_pressure", "Princess Haste", "Temporal Pressure",
-		"Game speed increases 5% per minute (max +25%)",
-		4, 1, 1, 1.20,
-		{"type": "time_scale_increase", "per_minute": 0.05, "max": 0.25})
-
-	# Easy pool (3 princesses)
-	_add_princess("glass_cannon", "Princess Fury", "Glass Cannon",
-		"+40% damage dealt, -25% max HP",
-		5, 1, 2, 1.12,
-		{"type": "glass_cannon", "damage_bonus": 0.4, "hp_reduction": 0.25})
-
-	_add_princess("horde_mode", "Princess Swarm", "Horde Mode",
-		"+40% enemy spawn rate",
-		0, 1, 2, 1.18,
-		{"type": "spawn_rate_mult", "value": 1.4})
+	_add_princess("shrouded", "Princess Shadow", "Shrouded",
+		"Reduced visibility radius by 30%",
+		0, 1, 0, 0.10,  # sprite_char=0, tier=1, diff=JUVENILE, 10%
+		{"type": "visibility_mult", "value": 0.7})
 
 	_add_princess("sealed_fate", "Princess Silence", "Sealed Fate",
 		"Only 2 ability choices when leveling (instead of 3)",
-		1, 1, 2, 1.15,
+		1, 1, 0, 0.10,
 		{"type": "ability_choices", "value": 2})
 
 	# ============================================
-	# TIER 2 - Advanced Curses (12 total)
-	# Unlocked from higher difficulties
+	# VERY EASY POOL (3 curses) - 45% total
 	# ============================================
-
-	# Normal pool (6 princesses)
 	_add_princess("cursed_gold", "Princess Greed", "Cursed Gold",
 		"Enemies drop 40% less gold",
-		2, 2, 3, 1.10,
+		2, 1, 1, 0.15,
 		{"type": "gold_drop_mult", "value": 0.6})
-
-	_add_princess("brittle_armor", "Princess Rust", "Brittle Armor",
-		"Equipment bonuses reduced by 25%",
-		3, 2, 3, 1.12,
-		{"type": "equipment_mult", "value": 0.75})
-
-	_add_princess("champions_gauntlet", "Princess Crown", "Champion's Gauntlet",
-		"20% of enemies spawn as champions",
-		4, 2, 3, 1.20,
-		{"type": "champion_chance", "value": 0.2})
 
 	_add_princess("weakened", "Princess Frail", "Weakened",
 		"Start each run at 70% HP",
-		5, 2, 3, 1.10,
+		3, 1, 1, 0.15,
 		{"type": "starting_hp", "value": 0.7})
-
-	_add_princess("shrouded", "Princess Shadow", "Shrouded",
-		"Reduced visibility radius by 30%",
-		0, 2, 3, 1.08,
-		{"type": "visibility_mult", "value": 0.7})
-
-	_add_princess("berserk_enemies", "Princess Rage", "Berserk Enemies",
-		"Enemies move 20% faster",
-		1, 2, 3, 1.12,
-		{"type": "enemy_speed_mult", "value": 1.2})
-
-	# Nightmare pool (6 princesses)
-	_add_princess("exhaustion", "Princess Weary", "Exhaustion",
-		"Base move speed reduced by 15%",
-		2, 2, 4, 1.12,
-		{"type": "player_speed_mult", "value": 0.85})
-
-	_add_princess("corrupted_xp", "Princess Void", "Corrupted XP",
-		"Level ups require 25% more XP",
-		3, 2, 4, 1.15,
-		{"type": "xp_requirement_mult", "value": 1.25})
-
-	_add_princess("unstable_ground", "Princess Quake", "Unstable Ground",
-		"Damaging hazard zones appear randomly",
-		4, 2, 4, 1.15,
-		{"type": "hazard_zones", "interval": 10.0, "damage": 5})
-
-	_add_princess("blood_moon", "Princess Eclipse", "Blood Moon",
-		"Bosses have +30% HP and enrage at 40%",
-		5, 2, 4, 1.18,
-		{"type": "boss_buff", "hp_mult": 1.3, "enrage_threshold": 0.4})
 
 	_add_princess("jinxed", "Princess Hex", "Jinxed",
 		"-50% luck stat for drops and crits",
-		0, 2, 4, 1.10,
+		4, 1, 1, 0.15,
 		{"type": "luck_mult", "value": 0.5})
+
+	# ============================================
+	# EASY POOL (3 curses) - 55% total
+	# ============================================
+	_add_princess("brittle_armor", "Princess Rust", "Brittle Armor",
+		"Equipment bonuses reduced by 25%",
+		5, 1, 2, 0.15,
+		{"type": "equipment_mult", "value": 0.75})
+
+	_add_princess("corrupted_xp", "Princess Void", "Corrupted XP",
+		"Level ups require 25% more XP",
+		0, 1, 2, 0.20,
+		{"type": "xp_requirement_mult", "value": 1.25})
+
+	_add_princess("glass_cannon", "Princess Fury", "Glass Cannon",
+		"+40% damage dealt, -25% max HP",
+		1, 1, 2, 0.20,
+		{"type": "glass_cannon", "damage_bonus": 0.4, "hp_reduction": 0.25})
+
+	# ============================================
+	# NORMAL POOL (3 curses) - 70% total
+	# ============================================
+	_add_princess("bloodprice", "Princess Crimson", "Bloodprice",
+		"Lose 1 HP when collecting coins",
+		2, 2, 3, 0.20,
+		{"type": "bloodprice", "hp_loss": 1})
+
+	_add_princess("famine", "Princess Hollow", "Famine",
+		"All healing reduced by 50%",
+		3, 2, 3, 0.25,
+		{"type": "healing_mult", "value": 0.5})
+
+	_add_princess("berserk_enemies", "Princess Rage", "Berserk Enemies",
+		"Enemies move 20% faster",
+		4, 2, 3, 0.25,
+		{"type": "enemy_speed_mult", "value": 1.2})
+
+	# ============================================
+	# NIGHTMARE POOL (4 curses) - 115% total
+	# ============================================
+	_add_princess("blood_moon", "Princess Eclipse", "Blood Moon",
+		"Bosses have +30% HP and enrage at 40%",
+		5, 2, 4, 0.25,
+		{"type": "boss_buff", "hp_mult": 1.3, "enrage_threshold": 0.4})
+
+	_add_princess("chaos_spawn", "Princess Chaos", "Chaos Spawn",
+		"Elite enemies spawn 50% more often",
+		0, 2, 4, 0.30,
+		{"type": "elite_spawn_mult", "value": 0.5})
+
+	_add_princess("unstable_ground", "Princess Quake", "Unstable Ground",
+		"Damaging hazard zones appear randomly",
+		1, 2, 4, 0.30,
+		{"type": "hazard_zones", "interval": 10.0, "damage": 5})
+
+	_add_princess("temporal_pressure", "Princess Haste", "Temporal Pressure",
+		"Game speed increases 5% per minute (max +25%)",
+		2, 2, 4, 0.30,
+		{"type": "time_scale_increase", "per_minute": 0.05, "max": 0.25})
+
+	# ============================================
+	# HELL POOL (5 curses) - 195% total
+	# Hardest curses, biggest rewards
+	# ============================================
+	_add_princess("exhaustion", "Princess Weary", "Exhaustion",
+		"Base move speed reduced by 15%",
+		3, 2, 5, 0.35,
+		{"type": "player_speed_mult", "value": 0.85})
+
+	_add_princess("horde_mode", "Princess Swarm", "Horde Mode",
+		"+50% enemy health",
+		4, 2, 5, 0.35,
+		{"type": "enemy_health_mult", "value": 1.5})
+
+	_add_princess("fragile", "Princess Glass", "Fragile",
+		"Take +50% damage from all sources",
+		5, 2, 5, 0.40,
+		{"type": "damage_taken_mult", "value": 1.5})
+
+	_add_princess("champions_gauntlet", "Princess Crown", "Champion's Gauntlet",
+		"20% of enemies spawn as champions",
+		0, 2, 5, 0.45,
+		{"type": "champion_chance", "value": 0.2})
 
 	_add_princess("marked_for_death", "Princess Doom", "Marked for Death",
 		"Every 30s enemies gain +15% damage (stacks)",
-		1, 2, 4, 1.20,
+		1, 2, 5, 0.40,
 		{"type": "enemy_damage_scaling", "interval": 30.0, "increment": 0.15})
 
 func _add_princess(id: String, name: String, curse_name: String, curse_desc: String,
@@ -247,19 +252,21 @@ func unlock_princess(id: String) -> void:
 		princess_unlocked.emit(id)
 		save_progress()
 
-func unlock_random_princess(difficulty_tier: int) -> String:
-	"""Unlock a random princess from the pool for this difficulty tier.
+func unlock_random_princess_for_difficulty(difficulty_tier: int) -> String:
+	"""Unlock a random princess from the pool for this difficulty tier or lower.
 	Returns the ID of the unlocked princess, or empty string if none available."""
 
-	# Get all princesses in this difficulty pool that aren't unlocked yet
+	# Get all princesses in this difficulty pool or lower that aren't unlocked yet
 	var available: Array = []
+
+	# First try current tier
 	for id in princess_definitions:
 		var princess = princess_definitions[id]
 		if princess.difficulty_pool == difficulty_tier and id not in unlocked_princesses:
 			available.append(id)
 
+	# If none available in current tier, try lower pools
 	if available.is_empty():
-		# No princesses available in this pool, try lower pools
 		for lower_tier in range(difficulty_tier - 1, -1, -1):
 			for id in princess_definitions:
 				var princess = princess_definitions[id]
@@ -275,6 +282,36 @@ func unlock_random_princess(difficulty_tier: int) -> String:
 	var chosen_id = available[randi() % available.size()]
 	unlock_princess(chosen_id)
 	return chosen_id
+
+# ============================================
+# DIFFICULTY COMPLETION TRACKING
+# ============================================
+
+func has_beaten_any_challenge() -> bool:
+	"""Check if player has beaten at least Juvenile difficulty."""
+	return highest_difficulty_beaten >= 0
+
+func has_beaten_difficulty(tier: int) -> bool:
+	"""Check if player has beaten a specific difficulty tier."""
+	return highest_difficulty_beaten >= tier
+
+func get_highest_difficulty_beaten() -> int:
+	"""Get the highest difficulty tier beaten (-1 if none)."""
+	return highest_difficulty_beaten
+
+func on_difficulty_beaten(tier: int) -> String:
+	"""Called when player beats a difficulty. Unlocks a random princess.
+	Returns the ID of the newly unlocked princess, or empty string if none."""
+
+	# Update highest beaten if this is higher
+	if tier > highest_difficulty_beaten:
+		highest_difficulty_beaten = tier
+
+	# Unlock a random princess from this tier or lower
+	var unlocked_id = unlock_random_princess_for_difficulty(tier)
+
+	save_progress()
+	return unlocked_id
 
 # ============================================
 # CURSE SYSTEM
@@ -322,17 +359,22 @@ func get_enabled_curse_count() -> int:
 
 func get_total_multiplier() -> float:
 	"""Get the stacking multiplier from all enabled curses.
-	Base is 1.0x, each curse adds +0.25x on top, so 1 curse = 1.25x, 4 curses = 2x.
+	Each curse has its own bonus_multiplier (e.g., 0.10 = +10%, 0.45 = +45%).
 	Returns 1.0 if no curses (base game)."""
-	return 1.0 + float(enabled_curses.size()) * 0.25
+	var total = 1.0
+	for id in enabled_curses:
+		var princess = get_princess(id)
+		if princess:
+			total += princess.bonus_multiplier
+	return total
 
 func get_total_bonus_multiplier() -> float:
-	"""Get just the bonus portion from curses (e.g., 1.0 for +1x with 4 curses)."""
-	return float(enabled_curses.size()) * 0.25
+	"""Get just the bonus portion from curses (e.g., 0.5 for +50%)."""
+	return get_total_multiplier() - 1.0
 
 func get_total_bonus_percent() -> int:
-	"""Get the total bonus as a percentage (e.g., 45 for +45%). Legacy support."""
-	return int((get_total_multiplier() - 1.0) * 100)
+	"""Get the total bonus as a percentage (e.g., 45 for +45%)."""
+	return int(get_total_bonus_multiplier() * 100)
 
 func get_active_curse_effects() -> Dictionary:
 	"""Get a dictionary of all active curse effects for gameplay application."""
@@ -349,11 +391,12 @@ func get_active_curse_effects() -> Dictionary:
 		"damage_dealt_bonus": 0.0,
 		"max_hp_reduction": 0.0,
 
-		# Spawning
+		# Spawning/enemies
 		"elite_spawn_mult": 1.0,
 		"spawn_rate_mult": 1.0,
 		"champion_chance": 0.0,
 		"enemy_speed_mult": 1.0,
+		"enemy_health_mult": 1.0,
 
 		# Economy/progression
 		"gold_drop_mult": 1.0,
@@ -425,6 +468,9 @@ func get_active_curse_effects() -> Dictionary:
 
 			"enemy_speed_mult":
 				effects["enemy_speed_mult"] *= effect.get("value", 1.0)
+
+			"enemy_health_mult":
+				effects["enemy_health_mult"] *= effect.get("value", 1.0)
 
 			"player_speed_mult":
 				effects["player_speed_mult"] *= effect.get("value", 1.0)
@@ -509,7 +555,8 @@ func save_progress() -> void:
 	var save_data = {
 		"unlocked": unlocked_princesses.duplicate(),
 		"enabled": enabled_curses.duplicate(),
-		"version": 1,
+		"highest_difficulty_beaten": highest_difficulty_beaten,
+		"version": 2,
 	}
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -540,6 +587,20 @@ func load_progress() -> void:
 			for id in saved_enabled:
 				if id is String and id in unlocked_princesses:
 					enabled_curses.append(id)
+
+			# Load highest difficulty beaten
+			highest_difficulty_beaten = data.get("highest_difficulty_beaten", -1)
+
+# ============================================
+# RESET FUNCTIONS
+# ============================================
+
+func reset_all_princesses() -> void:
+	"""Reset all princess unlocks, enabled curses, and difficulty progress."""
+	unlocked_princesses.clear()
+	enabled_curses.clear()
+	highest_difficulty_beaten = -1
+	save_progress()
 
 # ============================================
 # DEBUG FUNCTIONS

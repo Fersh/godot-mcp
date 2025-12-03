@@ -137,8 +137,8 @@ func _trigger_victory() -> void:
 
 	# Try to unlock a princess and show celebration
 	var princess_unlocked_id = ""
-	if PrincessManager:
-		princess_unlocked_id = PrincessManager.unlock_random_princess(DifficultyManager.current_difficulty)
+	if PrincessManager and DifficultyManager:
+		princess_unlocked_id = PrincessManager.on_difficulty_beaten(DifficultyManager.current_difficulty)
 
 	if princess_unlocked_id != "":
 		# Show princess celebration before victory screen

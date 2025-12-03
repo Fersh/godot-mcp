@@ -9,7 +9,7 @@ const SAVE_PATH = "user://difficulty.save"
 enum GameMode { ENDLESS, CHALLENGE }
 
 # Difficulty tiers
-enum DifficultyTier { JUVENILE, VERY_EASY, EASY, NORMAL, NIGHTMARE }
+enum DifficultyTier { JUVENILE, VERY_EASY, EASY, NORMAL, NIGHTMARE, INFERNO, THANKSGIVING_DINNER }
 
 # Current selection
 var current_mode: GameMode = GameMode.ENDLESS
@@ -33,54 +33,97 @@ const DIFFICULTY_DATA = {
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
-		"spawn_rate_mult": 1.25,  # +25% spawns for challenge mode
+		"spawn_rate_mult": 1.25,
 		"points_mult": 1.0,
+		"starting_hp": 1.0,
+		"healing_mult": 1.0,
+		"champion_chance": 0.0,
 		"color": Color(0.5, 0.8, 0.5),  # Soft green
 		"modifiers": [],
 	},
 	DifficultyTier.VERY_EASY: {
 		"name": "Easy",
 		"description": "Enemies apply Slow on hit.\n2x Points.",
-		"health_mult": 3.2,
+		"health_mult": 3.52,  # +10%
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
-		"spawn_rate_mult": 3.0,  # +25% spawns (was 2.4)
+		"spawn_rate_mult": 3.0,
 		"points_mult": 2.0,
+		"starting_hp": 1.0,
+		"healing_mult": 1.0,
+		"champion_chance": 0.0,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Normal",
-		"description": "+ Elites gain random affixes.\n3x Points.",
-		"health_mult": 4.8,
+		"description": "+ Elites gain affixes. 5% champions.\n3x Points.",
+		"health_mult": 5.28,  # +10%
 		"damage_mult": 3.3,
 		"speed_mult": 1.44,
-		"spawn_rate_mult": 3.5,  # +25% spawns (was 2.8)
+		"spawn_rate_mult": 3.85,  # +10%
 		"points_mult": 3.0,
+		"starting_hp": 0.85,
+		"healing_mult": 0.85,
+		"champion_chance": 0.05,
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Nightmare",
-		"description": "+ Start at 75% HP. Boss enrages faster.\n4x Points.",
-		"health_mult": 7.6,
+		"description": "+ 70% HP/Healing. Boss enrages faster.\n4x Points.",
+		"health_mult": 8.36,  # +10%
 		"damage_mult": 4.2,
 		"speed_mult": 1.64,
-		"spawn_rate_mult": 4.0,  # +25% spawns (was 3.2)
+		"spawn_rate_mult": 4.4,  # +10%
 		"points_mult": 4.0,
+		"starting_hp": 0.70,
+		"healing_mult": 0.70,
+		"champion_chance": 0.08,
 		"color": Color(0.9, 0.6, 0.3),  # Orange
-		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage"],
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Hell",
-		"description": "+ Healing reduced 50%. Champion enemies.\n5x Points.",
-		"health_mult": 11.0,
+		"description": "+ 55% HP, 50% Healing. 12% champions.\n5x Points.",
+		"health_mult": 12.1,  # +10%
 		"damage_mult": 5.5,
 		"speed_mult": 1.9,
-		"spawn_rate_mult": 4.625,  # +25% spawns (was 3.7)
+		"spawn_rate_mult": 5.09,  # +10%
 		"points_mult": 5.0,
+		"starting_hp": 0.55,
+		"healing_mult": 0.50,
+		"champion_chance": 0.12,
 		"color": Color(0.9, 0.2, 0.2),  # Red
-		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "reduced_starting_hp", "faster_enrage", "reduced_healing", "champion_enemies"],
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
+	},
+	DifficultyTier.INFERNO: {
+		"name": "Inferno",
+		"description": "+ 40% HP, 35% Healing. 25% champions.\n6x Points.",
+		"health_mult": 18.15,  # +10%
+		"damage_mult": 7.5,
+		"speed_mult": 2.4,
+		"spawn_rate_mult": 6.05,  # +10%
+		"points_mult": 6.0,
+		"starting_hp": 0.40,
+		"healing_mult": 0.35,
+		"champion_chance": 0.25,
+		"color": Color(1.0, 0.4, 0.0),  # Bright orange/fire
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
+	},
+	DifficultyTier.THANKSGIVING_DINNER: {
+		"name": "Thanksgiving",
+		"description": "+ 25% HP/Healing. 35% champions.\n10x Points.",
+		"health_mult": 27.5,  # +10%
+		"damage_mult": 10.0,
+		"speed_mult": 3.0,
+		"spawn_rate_mult": 7.7,  # +10%
+		"points_mult": 10.0,
+		"starting_hp": 0.25,
+		"healing_mult": 0.25,
+		"champion_chance": 0.35,
+		"color": Color(0.8, 0.5, 0.2),  # Turkey brown/orange
+		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
 }
 
@@ -123,7 +166,25 @@ const MODIFIER_DATA = {
 	# Nightmare+: Champion (buffed) normal enemies can spawn
 	"champion_enemies": {
 		"name": "Champions Rise",
-		"description": "Rare champion enemies spawn with 2x HP and random effects",
+		"description": "Rare champion enemies spawn with 9x HP and random effects",
+		"icon": "crown",
+	},
+	# Inferno+: Start at 50% HP instead of 75%
+	"severely_reduced_starting_hp": {
+		"name": "Near Death",
+		"description": "Start each run at 50% HP",
+		"icon": "skull",
+	},
+	# Thanksgiving Dinner: Healing reduced by 75%
+	"severely_reduced_healing": {
+		"name": "Feast Denied",
+		"description": "All healing reduced by 75%",
+		"icon": "skull",
+	},
+	# Thanksgiving Dinner: Double champion spawn rate
+	"double_champions": {
+		"name": "Champion Horde",
+		"description": "Champions spawn twice as often",
 		"icon": "crown",
 	},
 }
@@ -228,10 +289,10 @@ func has_reduced_starting_hp() -> bool:
 	return has_modifier("reduced_starting_hp")
 
 func get_starting_hp_percent() -> float:
-	"""Get starting HP percentage (1.0 = full, 0.75 = 75%)."""
-	if has_reduced_starting_hp():
-		return 0.75
-	return 1.0
+	"""Get starting HP percentage from difficulty data."""
+	if current_mode == GameMode.ENDLESS:
+		return 1.0
+	return DIFFICULTY_DATA[current_difficulty].get("starting_hp", 1.0)
 
 func has_faster_enrage() -> bool:
 	return has_modifier("faster_enrage")
@@ -246,13 +307,19 @@ func has_reduced_healing() -> bool:
 	return has_modifier("reduced_healing")
 
 func get_healing_multiplier() -> float:
-	"""Get healing effectiveness multiplier (1.0 = full, 0.5 = 50%)."""
-	if has_reduced_healing():
-		return 0.5
-	return 1.0
+	"""Get healing effectiveness multiplier from difficulty data."""
+	if current_mode == GameMode.ENDLESS:
+		return 1.0
+	return DIFFICULTY_DATA[current_difficulty].get("healing_mult", 1.0)
 
 func has_champion_enemies() -> bool:
-	return has_modifier("champion_enemies")
+	return get_champion_chance() > 0.0
+
+func get_champion_chance() -> float:
+	"""Get champion spawn chance from difficulty data."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("champion_chance", 0.0)
 
 # ============================================
 # MODE & DIFFICULTY SETTERS
@@ -355,6 +422,10 @@ func get_unlock_requirement(tier: DifficultyTier) -> DifficultyTier:
 			return DifficultyTier.EASY
 		DifficultyTier.NIGHTMARE:
 			return DifficultyTier.NORMAL
+		DifficultyTier.INFERNO:
+			return DifficultyTier.NIGHTMARE
+		DifficultyTier.THANKSGIVING_DINNER:
+			return DifficultyTier.INFERNO
 		_:
 			return DifficultyTier.JUVENILE
 
@@ -384,7 +455,11 @@ func get_next_difficulty(tier: DifficultyTier) -> DifficultyTier:
 		DifficultyTier.NORMAL:
 			return DifficultyTier.NIGHTMARE
 		DifficultyTier.NIGHTMARE:
-			return DifficultyTier.NIGHTMARE  # Max tier
+			return DifficultyTier.INFERNO
+		DifficultyTier.INFERNO:
+			return DifficultyTier.THANKSGIVING_DINNER
+		DifficultyTier.THANKSGIVING_DINNER:
+			return DifficultyTier.THANKSGIVING_DINNER  # Max tier
 		_:
 			return DifficultyTier.JUVENILE
 
@@ -395,6 +470,8 @@ func get_all_difficulties() -> Array[DifficultyTier]:
 		DifficultyTier.EASY,
 		DifficultyTier.NORMAL,
 		DifficultyTier.NIGHTMARE,
+		DifficultyTier.INFERNO,
+		DifficultyTier.THANKSGIVING_DINNER,
 	]
 
 # ============================================

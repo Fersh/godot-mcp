@@ -55,9 +55,14 @@ layout_mode = 2
 text = "ABILITIES"
 
 [node name="StatsTab" type="Button" parent="Panel/VBoxContainer/TabContainer"]
-custom_minimum_size = Vector2(140, 32)
+custom_minimum_size = Vector2(120, 32)
 layout_mode = 2
 text = "STATS"
+
+[node name="OptionsTab" type="Button" parent="Panel/VBoxContainer/TabContainer"]
+custom_minimum_size = Vector2(120, 32)
+layout_mode = 2
+text = "OPTIONS"
 
 [node name="TabSpacer" type="Control" parent="Panel/VBoxContainer"]
 layout_mode = 2
@@ -68,7 +73,7 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 30
+theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
 [node name="PowerupsContent" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer"]
@@ -81,7 +86,13 @@ layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="PowerupsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll"]
+[node name="PowerupsMargin" type="MarginContainer" parent="Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="PowerupsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/PowerupsContent/PowerupsScroll/PowerupsMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 12
@@ -97,10 +108,38 @@ layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="StatsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll"]
+[node name="StatsMargin" type="MarginContainer" parent="Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="StatsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/StatsContent/StatsScroll/StatsMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
+
+[node name="OptionsContent" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="OptionsScroll" type="ScrollContainer" parent="Panel/VBoxContainer/ContentContainer/OptionsContent"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="OptionsMargin" type="MarginContainer" parent="Panel/VBoxContainer/ContentContainer/OptionsContent/OptionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+
+[node name="OptionsContainer" type="VBoxContainer" parent="Panel/VBoxContainer/ContentContainer/OptionsContent/OptionsScroll/OptionsMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
 
 [node name="ButtonContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2

@@ -590,6 +590,23 @@ func save_data() -> void:
 		file.store_var(save_data)
 		file.close()
 
+# Reset all equipment (for settings reset)
+func reset_all_equipment() -> void:
+	inventory.clear()
+	pending_items.clear()
+	equipped_items = {
+		"archer": {},
+		"knight": {},
+		"mage": {},
+		"monk": {},
+		"beast": {},
+		"barbarian": {},
+		"assassin": {}
+	}
+	next_item_id = 1
+	save_data()
+	inventory_changed.emit()
+
 # Load equipment data
 func load_data() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):

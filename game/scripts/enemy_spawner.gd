@@ -581,13 +581,12 @@ func get_game_time() -> float:
 # CHAMPION ENEMIES (Nightmare+ Difficulty)
 # ============================================
 
-const CHAMPION_SPAWN_CHANCE: float = 0.08  # 8% chance per enemy
-
 func _should_spawn_champion() -> bool:
 	"""Check if this enemy should be a champion."""
-	# Check difficulty-based champions
+	# Check difficulty-based champions (uses tier-specific chance from difficulty data)
 	if DifficultyManager and DifficultyManager.has_champion_enemies():
-		if randf() < CHAMPION_SPAWN_CHANCE:
+		var chance = DifficultyManager.get_champion_chance()
+		if randf() < chance:
 			return true
 
 	# Check Champion's Gauntlet curse

@@ -149,6 +149,10 @@ func get_enemy_speed_multiplier() -> float:
 	"""Get enemy speed multiplier (Berserk Enemies curse)."""
 	return get_effects().get("enemy_speed_mult", 1.0)
 
+func get_enemy_health_multiplier() -> float:
+	"""Get enemy health multiplier (Horde Mode curse)."""
+	return get_effects().get("enemy_health_mult", 1.0)
+
 func get_enemy_damage_multiplier() -> float:
 	"""Get enemy damage multiplier including Marked for Death stacks."""
 	var base = 1.0
@@ -287,6 +291,13 @@ func modify_damage_dealt(base_damage: float) -> float:
 
 func modify_enemy_stats(enemy: Node) -> void:
 	"""Apply curse effects to enemy stats when spawned."""
+	# Horde Mode: Increase health
+	var health_mult = get_enemy_health_multiplier()
+	if health_mult > 1.0 and "max_health" in enemy:
+		enemy.max_health = enemy.max_health * health_mult
+		if "current_health" in enemy:
+			enemy.current_health = enemy.max_health
+
 	# Berserk Enemies: Increase speed
 	var speed_mult = get_enemy_speed_multiplier()
 	if speed_mult > 1.0 and "speed" in enemy:
