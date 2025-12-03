@@ -459,12 +459,60 @@ func _setup_tile_background() -> void:
 	if background:
 		background.visible = false
 
+	# Hide the top wall (temporary - for larger tile map)
+	var top_wall = get_node_or_null("TopWall")
+	if top_wall:
+		top_wall.visible = false
+		top_wall.set_deferred("monitoring", false)
+		top_wall.set_deferred("monitorable", false)
+		# Disable collision
+		top_wall.collision_layer = 0
+		top_wall.collision_mask = 0
+
 	# Create tile background
 	tile_background = Node2D.new()
 	tile_background.set_script(tile_background_script)
 	tile_background.name = "TileBackground"
 	add_child(tile_background)
 	move_child(tile_background, 0)  # Move to back of scene
+
+	# Expand camera limits for the larger tile map (deferred to ensure tile_background is ready)
+	call_deferred("_setup_tile_camera_bounds")
+
+func _setup_tile_camera_bounds() -> void:
+	"""Set up expanded camera bounds for the tile-based map."""
+	if not player or not tile_background:
+		return
+
+	# Get tile background dimensions (48x36 tiles at 64px = 3072x2304)
+	var tile_size = 32 * 2.0  # TILE_SIZE * tile_scale
+	var width_tiles = 48
+	var height_tiles = 36
+	var offset_y = 100
+
+	var arena_width = width_tiles * tile_size
+	var arena_height = height_tiles * tile_size
+	var offset_x = (1536 - arena_width) / 2
+
+	# Calculate bounds
+	var arena_bounds = Rect2(
+		offset_x,
+		offset_y,
+		arena_width,
+		arena_height
+	)
+
+	# Camera bounds with margin for smooth scrolling
+	var camera_bounds = Rect2(
+		offset_x - 200,
+		offset_y - 200,
+		arena_width + 400,
+		arena_height + 400
+	)
+
+	# Set bounds on player
+	if player.has_method("set_arena_bounds"):
+		player.set_arena_bounds(arena_bounds, camera_bounds)
 
 func toggle_tile_background(enabled: bool) -> void:
 	"""Toggle between tile-based and static background at runtime."""
