@@ -557,12 +557,14 @@ func get_sprite_region(sprite_char: int, anim_name: String, frame: int) -> Rect2
 # PERSISTENCE
 # ============================================
 
+const SAVE_VERSION = 3  # Increment when save format changes
+
 func save_progress() -> void:
 	var save_data = {
 		"unlocked": unlocked_princesses.duplicate(),
 		"enabled": enabled_curses.duplicate(),
 		"highest_difficulty_beaten": highest_difficulty_beaten,
-		"version": 2,
+		"version": SAVE_VERSION,
 	}
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -600,23 +602,33 @@ func load_progress() -> void:
 	call_deferred("_sync_with_difficulty_manager")
 
 func _sync_with_difficulty_manager() -> void:
-	"""Sync highest_difficulty_beaten with DifficultyManager's completed_difficulties."""
+	"""Sync with DifficultyManager's completed_difficulties for backwards compatibility.
+	Unlocks one princess per completed difficulty that we haven't already given credit for."""
 	if not DifficultyManager:
 		return
 
-	# Find the highest completed difficulty from DifficultyManager
 	var dominated_tiers = DifficultyManager.completed_difficulties
 	if dominated_tiers.is_empty():
 		return
 
-	var highest_from_dm = -1
-	for tier in dominated_tiers:
-		if tier > highest_from_dm:
-			highest_from_dm = tier
+	# Sort tiers so we unlock in order (lowest first)
+	var sorted_tiers = dominated_tiers.duplicate()
+	sorted_tiers.sort()
 
-	# Update if DifficultyManager has higher progress than our saved value
-	if highest_from_dm > highest_difficulty_beaten:
-		highest_difficulty_beaten = highest_from_dm
+	var changed = false
+
+	# For each completed difficulty, check if we need to give retroactive unlock
+	for tier in sorted_tiers:
+		# If this tier is higher than what we've tracked, player deserves an unlock
+		if tier > highest_difficulty_beaten:
+			# Unlock a princess for this tier
+			var unlocked_id = unlock_random_princess_for_difficulty(tier)
+			if unlocked_id != "":
+				print("Retroactively unlocked princess: ", unlocked_id, " for tier ", tier)
+			highest_difficulty_beaten = tier
+			changed = true
+
+	if changed:
 		save_progress()
 
 # ============================================

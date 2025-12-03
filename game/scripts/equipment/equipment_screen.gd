@@ -832,29 +832,32 @@ func _create_inventory_card(item: ItemData) -> Button:
 		indicator.position = Vector2(2, 1)
 		button.add_child(indicator)
 
-	# Combine selection indicator (checkmark in bottom-right)
-	if is_selected_for_combine:
-		var check = Label.new()
-		check.text = "✓"
-		if pixel_font:
-			check.add_theme_font_override("font", pixel_font)
-		check.add_theme_font_size_override("font_size", 18)
-		check.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
-		check.position = Vector2(40, 38)
-		button.add_child(check)
+	# Combine mode indicators
+	if combine_mode:
+		var has_selection = combine_selection.size() > 0
 
-	# Combinable count indicator (shows how many of same type)
-	if combine_mode and is_combinable and not is_selected_for_combine:
-		var count = EquipmentManager.get_combinable_count(item)
-		if count >= 3:
-			var count_label = Label.new()
-			count_label.text = "%d" % count
+		# Show checkmark if: selected OR (has selection and is same group as selected)
+		if is_selected_for_combine or (has_selection and is_same_group):
+			var check = Label.new()
+			check.text = "✓"
 			if pixel_font:
-				count_label.add_theme_font_override("font", pixel_font)
-			count_label.add_theme_font_size_override("font_size", 12)
-			count_label.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
-			count_label.position = Vector2(44, 2)
-			button.add_child(count_label)
+				check.add_theme_font_override("font", pixel_font)
+			check.add_theme_font_size_override("font_size", 18)
+			check.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
+			check.position = Vector2(40, 38)
+			button.add_child(check)
+		# Only show count numbers when NO item is selected yet
+		elif not has_selection and is_combinable:
+			var count = EquipmentManager.get_combinable_count(item)
+			if count >= 3:
+				var count_label = Label.new()
+				count_label.text = "%d" % count
+				if pixel_font:
+					count_label.add_theme_font_override("font", pixel_font)
+				count_label.add_theme_font_size_override("font_size", 12)
+				count_label.add_theme_color_override("font_color", Color(0.7, 0.5, 1.0))
+				count_label.position = Vector2(44, 2)
+				button.add_child(count_label)
 
 	return button
 

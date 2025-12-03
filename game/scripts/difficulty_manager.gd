@@ -550,7 +550,9 @@ func debug_unlock_all() -> void:
 	save_progress()
 
 func debug_reset_progress() -> void:
-	"""Debug function to reset all progress."""
+	"""Reset all difficulty progress."""
 	unlocked_difficulties.clear()
 	unlocked_difficulties.append(DifficultyTier.JUVENILE)
+	completed_difficulties.clear()
+	completion_records.clear()
 	save_progress()

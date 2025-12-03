@@ -678,3 +678,5 @@ func _confirm_reset_progress() -> void:
 	_hide_confirmation_dialog()
 	_hide_settings_panel()
 	_update_coin_display()
+	_update_princess_button_state()
+	_update_curse_display()
