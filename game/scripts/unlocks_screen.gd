@@ -295,6 +295,7 @@ func _add_game_mode_stats_section() -> void:
 func _create_section_panel(title: String) -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.custom_minimum_size = Vector2(CONTAINER_WIDTH + 40, 0)  # +40 for margins
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.08, 0.08, 0.12, 0.95)
@@ -309,6 +310,7 @@ func _create_section_panel(title: String) -> PanelContainer:
 
 	var vbox = VBoxContainer.new()
 	vbox.custom_minimum_size = Vector2(CONTAINER_WIDTH, 0)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 8)
 	panel.add_child(vbox)
 
