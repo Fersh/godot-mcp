@@ -102,6 +102,8 @@ func _process(delta: float) -> void:
 		if i < characters_list.size():
 			var char_data: CharacterData = characters_list[i]
 			var sprite: Sprite2D = selector_sprites[i]
+			if not sprite:
+				continue
 			var frame_count = char_data.frames_idle
 			var current_frame = int(selector_anim_timer) % frame_count
 			sprite.frame = char_data.row_idle * char_data.hframes + current_frame
@@ -465,11 +467,14 @@ func _set_selected(index: int) -> void:
 func _update_preview() -> void:
 	if selected_index >= characters_list.size():
 		return
+	if not preview_sprite:
+		return
 
 	var char_data: CharacterData = characters_list[selected_index]
 
 	# Update name
-	preview_name_label.text = char_data.display_name
+	if preview_name_label:
+		preview_name_label.text = char_data.display_name
 
 	# Update class label
 	var class_type_text = "Ranger"
@@ -488,7 +493,8 @@ func _update_preview() -> void:
 			class_type_text = "Barbarian"
 		"assassin":
 			class_type_text = "Assassin"
-	preview_class_label.text = class_type_text
+	if preview_class_label:
+		preview_class_label.text = class_type_text
 
 	# Update sprite
 	preview_sprite.texture = char_data.sprite_texture

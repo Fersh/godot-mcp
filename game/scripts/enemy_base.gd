@@ -536,7 +536,7 @@ func update_death_animation(delta: float) -> void:
 	if animation_frame >= max_frames:
 		spawn_gold_coin()
 		queue_free()
-	else:
+	elif sprite:
 		sprite.frame = ROW_DEATH * COLS_PER_ROW + int(animation_frame)
 
 func spawn_gold_coin() -> void:
@@ -602,6 +602,9 @@ func try_drop_item() -> void:
 	get_parent().add_child(dropped)
 
 func update_animation(delta: float, new_row: int, direction: Vector2) -> void:
+	if not sprite:
+		return
+
 	if current_row != new_row:
 		current_row = new_row
 		animation_frame = 0.0

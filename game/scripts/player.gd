@@ -2001,6 +2001,9 @@ func _spawn_elemental_text(enemy: Node2D, text: String, color: Color) -> void:
 			dmg_num.set_elemental(text, color)
 
 func update_animation(delta: float, move_direction: Vector2) -> void:
+	if not sprite:
+		return
+
 	var prev_row = current_row
 	var target_row: int
 
@@ -2092,6 +2095,9 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 func update_death_animation(delta: float) -> void:
 	# Play death animation once, then hold on last frame
 	if death_animation_finished:
+		return
+
+	if not sprite:
 		return
 
 	animation_frame += animation_speed * delta

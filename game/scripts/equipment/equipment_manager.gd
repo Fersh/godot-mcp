@@ -30,6 +30,17 @@ const SELL_PRICES: Dictionary = {
 
 const SAVE_PATH = "user://equipment.save"
 
+# Slot-based stat restrictions - each slot can only roll certain stats
+# This prevents stacking one stat across all equipment
+const SLOT_ALLOWED_STATS: Dictionary = {
+	ItemData.Slot.WEAPON: ["damage", "attack_speed", "crit_chance", "crit_damage", "melee_range", "projectile_speed", "knockback"],
+	ItemData.Slot.HELMET: ["max_hp", "damage_reduction", "dodge_chance", "cooldown_reduction", "xp_gain"],
+	ItemData.Slot.CHEST: ["max_hp", "damage_reduction", "thorns", "hp_on_kill", "dodge_chance"],
+	ItemData.Slot.BELT: ["move_speed", "dodge_chance", "xp_gain", "luck", "cooldown_reduction"],
+	ItemData.Slot.LEGS: ["move_speed", "dodge_chance", "damage_reduction", "max_hp"],
+	ItemData.Slot.RING: ["crit_chance", "crit_damage", "luck", "aoe_size", "summon_damage", "execute_damage", "attack_speed"]
+}
+
 # All owned items (permanent collection)
 var inventory: Array[ItemData] = []
 
@@ -130,23 +141,29 @@ func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
 	# Base weights
 	var weights = ItemData.BASE_DROP_WEIGHTS.duplicate()
 
-	# Time bonus: every 60 seconds, shift weights toward rarer items
-	var time_bonus = current_game_time / 60.0
-	weights[ItemData.Rarity.COMMON] = max(20.0, weights[ItemData.Rarity.COMMON] - time_bonus * 5)
-	weights[ItemData.Rarity.RARE] += time_bonus * 2
-	weights[ItemData.Rarity.EPIC] += time_bonus * 1.5
-	weights[ItemData.Rarity.LEGENDARY] += time_bonus * 0.5
+	# Time bonus: much slower scaling - meaningful rarity shift takes 10+ minutes
+	# Every 120 seconds (2 min), small shift toward rarer items
+	var time_bonus = current_game_time / 120.0
 
-	# Enemy type bonus
+	# Common drops more slowly - floor at 35% (was 20%)
+	weights[ItemData.Rarity.COMMON] = max(35.0, weights[ItemData.Rarity.COMMON] - time_bonus * 2.0)
+	# Rare increases slowly
+	weights[ItemData.Rarity.RARE] += time_bonus * 1.0
+	# Epic requires time investment - very slow scaling, capped
+	weights[ItemData.Rarity.EPIC] = min(weights[ItemData.Rarity.EPIC] + time_bonus * 0.4, 20.0)
+	# Legendary extremely rare - very slow scaling, capped
+	weights[ItemData.Rarity.LEGENDARY] = min(weights[ItemData.Rarity.LEGENDARY] + time_bonus * 0.1, 5.0)
+
+	# Enemy type bonus (reduced multipliers)
 	match enemy_type:
 		"elite":
-			weights[ItemData.Rarity.EPIC] *= 2.0
-			weights[ItemData.Rarity.LEGENDARY] *= 2.0
+			weights[ItemData.Rarity.EPIC] *= 1.5
+			weights[ItemData.Rarity.LEGENDARY] *= 1.5
 		"boss":
-			weights[ItemData.Rarity.COMMON] *= 0.2
-			weights[ItemData.Rarity.RARE] *= 0.5
-			weights[ItemData.Rarity.EPIC] *= 2.5
-			weights[ItemData.Rarity.LEGENDARY] *= 4.0
+			weights[ItemData.Rarity.COMMON] *= 0.3
+			weights[ItemData.Rarity.RARE] *= 0.6
+			weights[ItemData.Rarity.EPIC] *= 2.0
+			weights[ItemData.Rarity.LEGENDARY] *= 3.0
 
 	# Calculate total and roll
 	var total = 0.0
@@ -164,6 +181,63 @@ func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
 
 	return ItemData.Rarity.COMMON
 
+# Get a random prefix that has stats allowed for the given slot
+func _get_slot_filtered_prefix(slot: ItemData.Slot) -> Dictionary:
+	var allowed_stats = SLOT_ALLOWED_STATS.get(slot, [])
+	var valid_prefixes = []
+
+	for prefix_name in ItemDatabase.PREFIXES:
+		var prefix_stats = ItemDatabase.PREFIXES[prefix_name]
+		var has_valid_stat = false
+		for stat in prefix_stats:
+			if stat == "affix_ability":
+				continue
+			if stat in allowed_stats:
+				has_valid_stat = true
+				break
+		if has_valid_stat:
+			valid_prefixes.append(prefix_name)
+
+	# Fallback to any prefix if no valid ones found
+	if valid_prefixes.is_empty():
+		return ItemDatabase.get_random_prefix()
+
+	var key = valid_prefixes[randi() % valid_prefixes.size()]
+	return {"name": key, "stats": ItemDatabase.PREFIXES[key]}
+
+# Get a random suffix that has stats allowed for the given slot
+func _get_slot_filtered_suffix(slot: ItemData.Slot) -> Dictionary:
+	var allowed_stats = SLOT_ALLOWED_STATS.get(slot, [])
+	var valid_suffixes = []
+
+	for suffix_name in ItemDatabase.SUFFIXES:
+		var suffix_stats = ItemDatabase.SUFFIXES[suffix_name]
+		var has_valid_stat = false
+		for stat in suffix_stats:
+			if stat == "affix_ability":
+				continue
+			if stat in allowed_stats:
+				has_valid_stat = true
+				break
+		if has_valid_stat:
+			valid_suffixes.append(suffix_name)
+
+	# Fallback to any suffix if no valid ones found
+	if valid_suffixes.is_empty():
+		return ItemDatabase.get_random_suffix()
+
+	var key = valid_suffixes[randi() % valid_suffixes.size()]
+	return {"name": key, "stats": ItemDatabase.SUFFIXES[key]}
+
+# Filter stats to only those allowed for a slot
+func _filter_stats_for_slot(stats: Dictionary, slot: ItemData.Slot) -> Dictionary:
+	var allowed_stats = SLOT_ALLOWED_STATS.get(slot, [])
+	var filtered = {}
+	for stat in stats:
+		if stat == "affix_ability" or stat in allowed_stats:
+			filtered[stat] = stats[stat]
+	return filtered
+
 func _roll_stat(stat_name: String, is_affix: bool = false) -> float:
 	var ranges = ItemData.AFFIX_STAT_RANGES if is_affix else ItemData.BASE_STAT_RANGES
 	if not ranges.has(stat_name):
@@ -171,9 +245,23 @@ func _roll_stat(stat_name: String, is_affix: bool = false) -> float:
 	var min_val = ranges[stat_name][0]
 	var max_val = ranges[stat_name][1]
 	var rolled = randf_range(min_val, max_val)
-	# Ensure percentage stats don't roll to 0 - minimum 1%
-	if rolled < 0.01 and stat_name not in ["knockback", "thorns", "hp_on_kill"]:
-		rolled = 0.01
+
+	# Ensure meaningful minimum values - no +0% stats
+	# Percentage stats minimum 2% for base, 3% for affix
+	var min_percent = 0.03 if is_affix else 0.02
+	if stat_name in ["damage", "max_hp", "attack_speed", "move_speed", "crit_chance",
+					 "dodge_chance", "damage_reduction", "xp_gain", "luck", "melee_range",
+					 "projectile_speed", "crit_damage", "cooldown_reduction", "aoe_size",
+					 "execute_damage", "summon_damage"]:
+		rolled = max(rolled, min_percent)
+	# Flat stats have their own minimums
+	elif stat_name == "knockback":
+		rolled = max(rolled, 15.0)
+	elif stat_name == "thorns":
+		rolled = max(rolled, 4.0)
+	elif stat_name == "hp_on_kill":
+		rolled = max(rolled, 1.5)
+
 	return rolled
 
 func _generate_common_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
@@ -195,12 +283,23 @@ func _generate_common_item(item: ItemData, slot: ItemData.Slot, character_id: St
 	item.icon_path = base.get("icon_path", "")
 	item.weapon_type = base.get("weapon_type", ItemData.WeaponType.NONE)
 
-	# Roll 1-2 base stats (Common gets 1-2 stats)
+	# Roll 1-2 base stats (Common gets 1-2 stats) - filtered to slot-appropriate stats
 	var num_stats = randi_range(1, 2)
 	var template_stats = base.get("base_stats", {})
-	var available_stats = template_stats.keys()
+	var allowed_for_slot = SLOT_ALLOWED_STATS.get(slot, [])
+
+	# Filter template stats to only those allowed for this slot
+	var available_stats = []
+	for stat in template_stats.keys():
+		if stat in allowed_for_slot:
+			available_stats.append(stat)
+
+	# Fallback to slot-allowed stats if template has none
 	if available_stats.size() == 0:
-		available_stats = ["damage", "max_hp"]  # Fallback
+		available_stats = allowed_for_slot.duplicate()
+
+	# Shuffle for randomness
+	available_stats.shuffle()
 
 	item.base_stats = {}
 	for i in range(mini(num_stats, available_stats.size())):
@@ -211,18 +310,20 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 	# Start with common base (gets 2 base stats for Rare)
 	_generate_common_item(item, slot, character_id)
 
-	# Force 2 base stats for Rare
+	# Force 2 base stats for Rare - only from slot-allowed stats
 	if item.base_stats.size() < 2:
-		var all_stats = ItemData.BASE_STAT_RANGES.keys()
-		while item.base_stats.size() < 2:
-			var stat = all_stats[randi() % all_stats.size()]
+		var allowed_stats = SLOT_ALLOWED_STATS.get(slot, [])
+		var attempts = 0
+		while item.base_stats.size() < 2 and attempts < 20:
+			var stat = allowed_stats[randi() % allowed_stats.size()]
 			if not item.base_stats.has(stat):
 				item.base_stats[stat] = _roll_stat(stat, false)
+			attempts += 1
 
-	# Add one affix (prefix OR suffix) with rolled stats
+	# Add one affix (prefix OR suffix) with rolled stats - slot-filtered
 	item.affix_abilities = []
 	if randf() > 0.5:
-		var prefix_data = ItemDatabase.get_random_prefix()
+		var prefix_data = _get_slot_filtered_prefix(slot)
 		item.prefix = prefix_data.name
 		item.magic_stats = {}
 		for stat in prefix_data.stats:
@@ -232,7 +333,7 @@ func _generate_rare_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 		if prefix_data.stats.has("affix_ability"):
 			item.affix_abilities.append(prefix_data.stats.affix_ability)
 	else:
-		var suffix_data = ItemDatabase.get_random_suffix()
+		var suffix_data = _get_slot_filtered_suffix(slot)
 		item.suffix = suffix_data.name
 		item.magic_stats = {}
 		for stat in suffix_data.stats:
@@ -286,9 +387,9 @@ func _generate_epic_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 		var stat = stat_keys[i]
 		item.base_stats[stat] = _roll_stat(stat, false)
 
-	# Roll prefix + suffix stats (hidden in name - Epic has unique names)
-	var prefix_data = ItemDatabase.get_random_prefix()
-	var suffix_data = ItemDatabase.get_random_suffix()
+	# Roll prefix + suffix stats (hidden in name - Epic has unique names) - slot-filtered
+	var prefix_data = _get_slot_filtered_prefix(slot)
+	var suffix_data = _get_slot_filtered_suffix(slot)
 
 	item.magic_stats = {}
 	item.affix_abilities = []
@@ -332,9 +433,9 @@ func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id:
 		var stat = stat_keys[i]
 		item.base_stats[stat] = _roll_stat(stat, false)
 
-	# Roll prefix + suffix stats (hidden in name - Legendary has unique names)
-	var prefix_data = ItemDatabase.get_random_prefix()
-	var suffix_data = ItemDatabase.get_random_suffix()
+	# Roll prefix + suffix stats (hidden in name - Legendary has unique names) - slot-filtered
+	var prefix_data = _get_slot_filtered_prefix(slot)
+	var suffix_data = _get_slot_filtered_suffix(slot)
 
 	item.magic_stats = {}
 	item.affix_abilities = []
@@ -364,15 +465,20 @@ func _scale_item_stats(item: ItemData) -> void:
 
 # Check if an item should drop from this enemy
 func should_drop_item(enemy_type: String = "normal") -> bool:
-	var base_chance = 0.005  # 0.5% base drop rate (halved)
+	var base_chance = 0.004  # 0.4% base drop rate
 
-	# Time bonus
-	base_chance += current_game_time / 600.0 * 0.005  # +0.5% over 10 minutes
+	# Time bonus - slower scaling, caps at +0.8% over 20 minutes
+	var time_bonus = min(current_game_time / 1200.0 * 0.008, 0.008)
+	base_chance += time_bonus
+
+	# Cap normal enemy drop rate at 1.5%
+	base_chance = min(base_chance, 0.015)
 
 	# Enemy type bonus
 	match enemy_type:
 		"elite":
-			base_chance *= 3.0
+			base_chance *= 2.5  # Reduced from 3.0
+			base_chance = min(base_chance, 0.04)  # Cap elite drops at 4%
 		"boss":
 			base_chance = 1.0  # Guaranteed drop
 

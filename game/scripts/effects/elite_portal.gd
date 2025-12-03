@@ -44,10 +44,11 @@ func _ready() -> void:
 		sprite.name = "Sprite"
 		add_child(sprite)
 
-	sprite.texture = portal_texture
-	sprite.hframes = COLS
-	sprite.vframes = ROWS
-	sprite.frame = ROW_EMERGE * COLS  # Start at first frame of emerge
+	if sprite:
+		sprite.texture = portal_texture
+		sprite.hframes = COLS
+		sprite.vframes = ROWS
+		sprite.frame = ROW_EMERGE * COLS  # Start at first frame of emerge
 
 	# Calculate frame dimensions
 	if portal_texture:
@@ -105,6 +106,8 @@ func _process(delta: float) -> void:
 			pass
 
 func _animate(delta: float) -> void:
+	if not sprite:
+		return
 	animation_frame += ANIMATION_SPEED * delta
 	var max_frames = FRAME_COUNTS.get(current_row, 8)
 	var frame_index = int(animation_frame) % max_frames
