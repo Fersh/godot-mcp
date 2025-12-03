@@ -29,6 +29,7 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("game_over_ui")
 	play_again_button.pressed.connect(_on_play_again_pressed)
 
 	# Set title based on whether player gave up (set before _ready via set_gave_up)

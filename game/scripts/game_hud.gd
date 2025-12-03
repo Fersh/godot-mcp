@@ -253,6 +253,23 @@ func _on_level_up(new_level: int) -> void:
 		tween.tween_property(level_label, "scale", original_scale, 0.15).set_ease(Tween.EASE_IN)
 
 func _on_pause_pressed() -> void:
+	# Don't show pause menu if ability selection UIs are visible
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+
+	var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ability_ui and active_ability_ui.visible:
+		return
+
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
+
+	var pickup_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if pickup_ui and pickup_ui.visible:
+		return
+
 	if pause_menu == null:
 		pause_menu = pause_menu_scene.instantiate()
 		pause_menu.gave_up.connect(_on_gave_up)
@@ -275,8 +292,16 @@ func _input(event: InputEvent) -> void:
 	# ESC to toggle pause when not in other menus
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		# Check if other UIs are open
-		var ability_ui = get_tree().get_first_node_in_group("ability_selection")
+		var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
 		if ability_ui and ability_ui.visible:
+			return
+
+		var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+		if active_ability_ui and active_ability_ui.visible:
+			return
+
+		var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+		if ultimate_ui and ultimate_ui.visible:
 			return
 
 		var pickup_ui = get_tree().get_first_node_in_group("item_pickup_ui")

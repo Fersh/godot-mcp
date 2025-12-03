@@ -408,16 +408,42 @@ func hide_selection() -> void:
 	fire_particles.clear()
 
 func _safe_unpause() -> void:
-	# Check if other modals are visible before unpausing
+	"""Only unpause if no modal UI is open."""
+	# Check if player is dead - never unpause after death
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.is_dead:
+		return
+
+	# Check if game over UI is visible
+	var game_over_ui = get_tree().get_first_node_in_group("game_over_ui")
+	if game_over_ui:
+		return
+
+	# Check if continue screen is visible
+	var continue_ui = get_tree().get_first_node_in_group("continue_screen_ui")
+	if continue_ui:
+		return
+
+	# Check if pause menu is visible
+	var pause_menu = get_tree().get_first_node_in_group("pause_menu")
+	if pause_menu and pause_menu.visible:
+		return
+
+	# Check if passive ability selection UI is visible
 	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
 	if ability_ui and ability_ui.visible:
 		return
-	var item_ui = get_tree().get_first_node_in_group("item_pickup_ui")
-	if item_ui and item_ui.visible:
-		return
+
+	# Check if active ability selection UI is visible
 	var active_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
 	if active_ui and active_ui.visible:
 		return
+
+	# Check if item pickup UI is visible
+	var item_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if item_ui and item_ui.visible:
+		return
+
 	get_tree().paused = false
 
 func _input(event: InputEvent) -> void:

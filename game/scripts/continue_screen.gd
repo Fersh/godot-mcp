@@ -51,6 +51,7 @@ var player_ref: Node2D = null
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 100  # Above everything
+	add_to_group("continue_screen_ui")
 
 	# Load resources
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):

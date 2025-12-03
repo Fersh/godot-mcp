@@ -177,6 +177,8 @@ const BLADESTORM_FLIP_SPEED: float = 0.15  # Flip direction every 0.15 seconds
 # Death state
 var is_dead: bool = false
 var death_animation_finished: bool = false
+var death_time: float = 0.0  # Time when player died (for limiting posthumous damage)
+const POSTHUMOUS_DAMAGE_DURATION: float = 2.0  # How long to show damage after death
 
 # Target indicator (shows nearest enemy)
 var target_indicator: Node2D = null
@@ -195,9 +197,6 @@ signal health_changed(current_health: float, max_health: float)
 signal player_died()
 
 func _ready() -> void:
-	# Allow player to move while game is paused (for item pickup proximity)
-	process_mode = Node.PROCESS_MODE_ALWAYS
-
 	# Load character data from CharacterManager
 	_load_character_data()
 
@@ -533,8 +532,14 @@ func _apply_curse_effects() -> void:
 
 func take_damage(amount: float) -> void:
 	# If dead, still show damage effects (funny to keep getting beat up)
-	# but don't actually reduce HP further
+	# but don't actually reduce HP further - limited to 2 seconds for comedy
 	var is_posthumous_damage = is_dead
+
+	# Stop taking damage after 2 seconds of being dead
+	if is_posthumous_damage:
+		var time_since_death = Time.get_ticks_msec() / 1000.0 - death_time
+		if time_since_death > POSTHUMOUS_DAMAGE_DURATION:
+			return
 
 	# Check for invulnerability (from dodge or abilities) - but not when dead
 	if is_invulnerable and not is_posthumous_damage:
@@ -670,6 +675,7 @@ func take_damage(amount: float) -> void:
 				print("[Phoenix Debug] Phoenix triggered! Reviving...")
 				return  # Phoenix triggered, don't die
 		is_dead = true
+		death_time = Time.get_ticks_msec() / 1000.0  # Record time of death for posthumous damage limit
 		death_animation_finished = false
 		animation_frame = 0.0
 		current_row = row_death
@@ -982,17 +988,6 @@ func _physics_process(delta: float) -> void:
 			health_bar.set_shield(AbilityManager.transcendence_shields, AbilityManager.transcendence_max)
 
 	var direction := Vector2.ZERO
-
-	# Don't allow movement input when paused (except for item pickup proximity)
-	var can_move_while_paused = false
-	if get_tree().paused:
-		# Only allow movement if item pickup UI is visible (walking away from items)
-		var item_pickup_ui = get_tree().get_first_node_in_group("item_pickup_ui")
-		if item_pickup_ui and item_pickup_ui.visible:
-			can_move_while_paused = true
-		if not can_move_while_paused:
-			velocity = Vector2.ZERO
-			return
 
 	# Joystick input for mobile
 	if joystick_direction.length() > 0:
@@ -2359,6 +2354,7 @@ func revive_with_percent(hp_percent: float) -> void:
 	"""Revive player with a percentage of max health (phoenix ability)."""
 	current_health = max_health * hp_percent
 	is_dead = false
+	death_time = 0.0  # Reset death time on revive
 	death_animation_finished = false
 	animation_frame = 0.0
 	current_row = row_idle

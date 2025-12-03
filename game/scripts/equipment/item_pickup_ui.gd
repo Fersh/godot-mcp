@@ -138,14 +138,17 @@ func show_item(dropped_item: DroppedItem, show_comparison: bool = true) -> void:
 	# Update button states
 	_update_buttons()
 
-	# Show UI (pause is now controlled by main.gd based on proximity)
+	# Show and pause
 	visible = true
+	get_tree().paused = true
 
 func hide_ui() -> void:
 	visible = false
 	current_dropped_item = null
 	current_item = null
-	# Pause state is now controlled by main.gd based on proximity
+
+	# Only unpause if no other modal is open
+	_safe_unpause()
 
 func _safe_unpause() -> void:
 	# Check if ability selection UI is visible

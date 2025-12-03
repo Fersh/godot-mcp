@@ -259,6 +259,45 @@ func _update_difficulty_label() -> void:
 
 func hide_menu() -> void:
 	visible = false
+	_safe_unpause()
+
+func _safe_unpause() -> void:
+	"""Only unpause if no modal UI is open."""
+	# Check if player is dead - never unpause after death
+	var player = get_tree().get_first_node_in_group("player")
+	if player and player.is_dead:
+		return
+
+	# Check if game over UI is visible
+	var game_over_ui = get_tree().get_first_node_in_group("game_over_ui")
+	if game_over_ui:
+		return
+
+	# Check if continue screen is visible
+	var continue_ui = get_tree().get_first_node_in_group("continue_screen_ui")
+	if continue_ui:
+		return
+
+	# Check if ability selection UI is visible
+	var ability_ui = get_tree().get_first_node_in_group("ability_selection_ui")
+	if ability_ui and ability_ui.visible:
+		return
+
+	# Check if active ability selection UI is visible
+	var active_ability_ui = get_tree().get_first_node_in_group("active_ability_selection_ui")
+	if active_ability_ui and active_ability_ui.visible:
+		return
+
+	# Check if ultimate selection UI is visible
+	var ultimate_ui = get_tree().get_first_node_in_group("ultimate_selection_ui")
+	if ultimate_ui and ultimate_ui.visible:
+		return
+
+	# Check if item pickup UI is visible
+	var pickup_ui = get_tree().get_first_node_in_group("item_pickup_ui")
+	if pickup_ui and pickup_ui.visible:
+		return
+
 	get_tree().paused = false
 
 func _populate_powerups() -> void:
