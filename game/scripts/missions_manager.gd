@@ -311,7 +311,9 @@ func track_kill(enemy_type: String = "") -> void:
 		if mission.is_completed or mission.type != MissionData.MissionType.KILL:
 			continue
 		if mission.tracking_mode == MissionData.TrackingMode.CUMULATIVE:
-			if mission.add_progress(1):
+			var completed = mission.add_progress(1)
+			mission_progress_updated.emit(mission)
+			if completed:
 				mission_completed.emit(mission)
 				save_progress()
 
@@ -321,7 +323,9 @@ func track_kill(enemy_type: String = "") -> void:
 			if mission.is_completed or mission.type != MissionData.MissionType.SPECIFIC_ENEMY:
 				continue
 			if mission.enemy_type == enemy_type and mission.tracking_mode == MissionData.TrackingMode.CUMULATIVE:
-				if mission.add_progress(1):
+				var completed = mission.add_progress(1)
+				mission_progress_updated.emit(mission)
+				if completed:
 					mission_completed.emit(mission)
 					save_progress()
 
@@ -332,7 +336,9 @@ func track_elite_kill() -> void:
 	for mission in all_missions.values():
 		if mission.is_completed or mission.type != MissionData.MissionType.ELITE_KILL:
 			continue
-		if mission.add_progress(1):
+		var completed = mission.add_progress(1)
+		mission_progress_updated.emit(mission)
+		if completed:
 			mission_completed.emit(mission)
 			save_progress()
 
@@ -343,7 +349,9 @@ func track_boss_kill() -> void:
 	for mission in all_missions.values():
 		if mission.is_completed or mission.type != MissionData.MissionType.BOSS_KILL:
 			continue
-		if mission.add_progress(1):
+		var completed = mission.add_progress(1)
+		mission_progress_updated.emit(mission)
+		if completed:
 			mission_completed.emit(mission)
 			save_progress()
 
@@ -355,7 +363,9 @@ func track_coins_earned(amount: int) -> void:
 		if mission.is_completed or mission.type != MissionData.MissionType.ECONOMY:
 			continue
 		if mission.tracking_mode == MissionData.TrackingMode.CUMULATIVE:
-			if mission.add_progress(amount):
+			var completed = mission.add_progress(amount)
+			mission_progress_updated.emit(mission)
+			if completed:
 				mission_completed.emit(mission)
 				save_progress()
 
@@ -392,7 +402,9 @@ func track_run_completed() -> void:
 	for mission in all_missions.values():
 		if mission.is_completed or mission.type != MissionData.MissionType.MISC:
 			continue
-		if mission.add_progress(1):
+		var completed = mission.add_progress(1)
+		mission_progress_updated.emit(mission)
+		if completed:
 			mission_completed.emit(mission)
 			save_progress()
 
@@ -606,8 +618,8 @@ func get_in_progress_missions(max_count: int = 3) -> Array:
 
 	# Sort by completion percentage (closest to done first)
 	in_progress.sort_custom(func(a, b):
-		var a_pct = float(a.current_progress) / float(a.target_progress) if a.target_progress > 0 else 0
-		var b_pct = float(b.current_progress) / float(b.target_progress) if b.target_progress > 0 else 0
+		var a_pct = float(a.current_progress) / float(a.target_value) if a.target_value > 0 else 0
+		var b_pct = float(b.current_progress) / float(b.target_value) if b.target_value > 0 else 0
 		return a_pct > b_pct
 	)
 

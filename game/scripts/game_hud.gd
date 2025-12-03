@@ -406,86 +406,81 @@ func _create_missions_tracker() -> void:
 	missions_container.name = "MissionsTracker"
 	missions_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	missions_container.offset_left = MARGIN
-	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 25  # Below pause button
+	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 45  # Below pause button + 20px margin
 	missions_container.offset_right = MARGIN + 220
-	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 200
-	missions_container.add_theme_constant_override("separation", 6)
+	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 220
+	missions_container.add_theme_constant_override("separation", 16)
 	add_child(missions_container)
 
-	# Create 3 mission row slots
+	# Create 3 mission row slots with slight rotation (left side down)
 	for i in range(3):
 		var row = _create_mission_row()
 		row.visible = false
+		row.pivot_offset = Vector2(0, 14)  # Pivot on left side
+		row.rotation = 0.02  # Very slight rotation (~1.1 degrees)
 		missions_container.add_child(row)
 		mission_rows.append(row)
 
-func _create_mission_row() -> PanelContainer:
-	"""Create a single mission row UI element."""
-	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(200, 36)
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.05, 0.08, 0.85)
-	style.border_color = Color(0.3, 0.3, 0.35, 0.6)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(4)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	panel.add_theme_stylebox_override("panel", style)
+func _create_mission_row() -> Control:
+	"""Create a single mission row UI element - simplified with dropshadow."""
+	var container = Control.new()
+	container.custom_minimum_size = Vector2(200, 28)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 2)
+	vbox.name = "VBox"
+	vbox.add_theme_constant_override("separation", 7)
 
-	# Mission title
+	# Mission description label (with dropshadow)
 	var title = Label.new()
 	title.name = "Title"
 	title.add_theme_font_size_override("font_size", 9)
-	title.add_theme_color_override("font_color", Color(0.9, 0.85, 0.7))
+	title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	title.add_theme_constant_override("shadow_offset_x", 1)
+	title.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title)
 
-	# Progress bar container
-	var progress_container = HBoxContainer.new()
-	progress_container.add_theme_constant_override("separation", 6)
-
 	# Progress bar background
 	var bar_bg = Panel.new()
 	bar_bg.name = "ProgressBG"
-	bar_bg.custom_minimum_size = Vector2(120, 8)
+	bar_bg.custom_minimum_size = Vector2(180, 12)
 	var bar_bg_style = StyleBoxFlat.new()
-	bar_bg_style.bg_color = Color(0.15, 0.15, 0.18, 1)
-	bar_bg_style.set_corner_radius_all(2)
+	bar_bg_style.bg_color = Color(0.1, 0.1, 0.12, 0.8)
+	bar_bg_style.set_corner_radius_all(3)
 	bar_bg.add_theme_stylebox_override("panel", bar_bg_style)
 
 	# Progress bar fill
 	var bar_fill = Panel.new()
 	bar_fill.name = "ProgressFill"
-	bar_fill.size = Vector2(0, 8)
+	bar_fill.size = Vector2(0, 12)
 	bar_fill.position = Vector2(0, 0)
 	var bar_fill_style = StyleBoxFlat.new()
 	bar_fill_style.bg_color = Color(0.9, 0.7, 0.2, 1)
-	bar_fill_style.set_corner_radius_all(2)
+	bar_fill_style.set_corner_radius_all(3)
 	bar_fill.add_theme_stylebox_override("panel", bar_fill_style)
 	bar_bg.add_child(bar_fill)
 
-	progress_container.add_child(bar_bg)
-
-	# Progress text
-	var progress_text = Label.new()
-	progress_text.name = "ProgressText"
-	progress_text.add_theme_font_size_override("font_size", 8)
-	progress_text.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	# Percentage text inside the bar
+	var percent_label = Label.new()
+	percent_label.name = "PercentLabel"
+	percent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	percent_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	percent_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	percent_label.add_theme_font_size_override("font_size", 8)
+	percent_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+	percent_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	percent_label.add_theme_constant_override("shadow_offset_x", 1)
+	percent_label.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
-		progress_text.add_theme_font_override("font", pixel_font)
-	progress_container.add_child(progress_text)
+		percent_label.add_theme_font_override("font", pixel_font)
+	bar_bg.add_child(percent_label)
 
-	vbox.add_child(progress_container)
-	panel.add_child(vbox)
+	vbox.add_child(bar_bg)
+	container.add_child(vbox)
 
-	return panel
+	return container
 
 func _update_missions_display() -> void:
 	"""Update the missions tracker with current mission data."""
@@ -503,30 +498,39 @@ func _update_missions_display() -> void:
 		else:
 			row.visible = false
 
-func _update_mission_row(row: PanelContainer, mission) -> void:
+func _update_mission_row(row: Control, mission) -> void:
 	"""Update a single mission row with mission data."""
-	var vbox = row.get_child(0)
+	var vbox = row.get_node("VBox")
 	var title = vbox.get_node("Title")
-	var progress_container = vbox.get_child(1)
-	var bar_bg = progress_container.get_node("ProgressBG")
+	var bar_bg = vbox.get_node("ProgressBG")
 	var bar_fill = bar_bg.get_node("ProgressFill")
-	var progress_text = progress_container.get_node("ProgressText")
+	var percent_label = bar_bg.get_node("PercentLabel")
 
-	# Truncate title if too long
-	var display_title = mission.title
-	if display_title.length() > 20:
-		display_title = display_title.substr(0, 18) + ".."
-	title.text = display_title
+	# Show description instead of title, truncate if needed
+	var display_text = mission.description
+	if display_text.length() > 28:
+		display_text = display_text.substr(0, 26) + ".."
+	title.text = display_text
 
 	# Update progress bar
-	var progress_ratio = float(mission.current_progress) / float(mission.target_progress) if mission.target_progress > 0 else 0
+	var progress_ratio = float(mission.current_progress) / float(mission.target_value) if mission.target_value > 0 else 0
 	progress_ratio = clamp(progress_ratio, 0.0, 1.0)
-	bar_fill.size.x = 120 * progress_ratio
+	var bar_width = 180.0
+	bar_fill.size.x = bar_width * progress_ratio
 
-	# Update progress text
-	progress_text.text = "%d/%d" % [mission.current_progress, mission.target_progress]
+	# Update percentage text
+	var percent = int(progress_ratio * 100)
+	percent_label.text = "%d%%" % percent
 
-	# Change color if complete
+	# Smart font color: white if bar hasn't reached center, black if it has
+	if progress_ratio >= 0.5:
+		percent_label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+		percent_label.add_theme_color_override("font_shadow_color", Color(1, 1, 1, 0.3))
+	else:
+		percent_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+		percent_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+
+	# Change bar color if complete
 	if mission.is_completed:
 		var fill_style = bar_fill.get_theme_stylebox("panel").duplicate()
 		fill_style.bg_color = Color(0.3, 0.9, 0.4, 1)  # Green when complete
@@ -540,6 +544,58 @@ func _on_mission_completed(mission) -> void:
 func _on_mission_progress_updated(mission) -> void:
 	"""Handle mission progress update."""
 	_update_missions_display()
+	# Find and animate the row for this mission
+	_animate_mission_progress(mission)
+
+func _animate_mission_progress(mission) -> void:
+	"""Animate the progress bar for a specific mission."""
+	if not MissionsManager:
+		return
+
+	var displayed_missions = MissionsManager.get_in_progress_missions(3)
+	for i in range(min(displayed_missions.size(), mission_rows.size())):
+		if displayed_missions[i].id == mission.id:
+			var row = mission_rows[i]
+			if not row.visible:
+				continue
+			var vbox = row.get_node("VBox")
+			var bar_bg = vbox.get_node("ProgressBG")
+			var bar_fill = bar_bg.get_node("ProgressFill")
+			_animate_mission_bar(bar_bg, bar_fill)
+			break
+
+func _animate_mission_bar(bar_bg: Control, bar_fill: Control) -> void:
+	"""Subtle shake and pulse animation for mission progress bar."""
+	if bar_bg == null or bar_fill == null:
+		return
+
+	# Set pivot to center
+	bar_bg.pivot_offset = bar_bg.size / 2
+	bar_fill.pivot_offset = Vector2(bar_fill.size.x / 2, bar_fill.size.y / 2)
+
+	# Animate background bar
+	var tween = create_tween()
+	tween.set_parallel(true)
+
+	# Subtle pulse scale
+	tween.tween_property(bar_bg, "scale", Vector2(1.04, 1.08), 0.05).set_ease(Tween.EASE_OUT)
+
+	# Very subtle rotation shake
+	tween.tween_property(bar_bg, "rotation", 0.015, 0.03)
+
+	tween.set_parallel(false)
+	tween.tween_property(bar_bg, "rotation", -0.01, 0.03)
+	tween.tween_property(bar_bg, "rotation", 0.005, 0.02)
+	tween.tween_property(bar_bg, "rotation", 0.0, 0.02)
+
+	# Return scale to normal
+	tween.tween_property(bar_bg, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_OUT)
+
+	# Animate fill bar with slight delay
+	var fill_tween = create_tween()
+	fill_tween.tween_interval(0.02)
+	fill_tween.tween_property(bar_fill, "scale", Vector2(1.02, 1.06), 0.04).set_ease(Tween.EASE_OUT)
+	fill_tween.tween_property(bar_fill, "scale", Vector2(1.0, 1.0), 0.06).set_ease(Tween.EASE_OUT)
 
 func _show_mission_notification(mission) -> void:
 	"""Show a juicy notification when a mission is completed."""

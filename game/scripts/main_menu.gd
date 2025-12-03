@@ -26,7 +26,7 @@ var missions_badge: Control = null
 var upgrade_badge: Control = null
 
 const VERSION = "1.0.0"
-const BUILD = 10
+const BUILD = 12
 
 func _ready() -> void:
 	# Load pixel font
@@ -911,14 +911,14 @@ func _update_upgrade_badge() -> void:
 
 func _should_show_upgrade_badge() -> bool:
 	"""Check if upgrade badge should be shown (new coins earned since last shop visit)."""
-	if not GameSettings:
+	if not GameSettings or not StatsManager:
 		return false
 
 	var last_seen_coins = GameSettings.get_setting("last_shop_coins", -1)
 
-	# First time - don't show badge, just record current coins
+	# First time - show badge if player has any coins
 	if last_seen_coins == -1:
-		return false
+		return StatsManager.spendable_coins > 0
 
 	# Show badge if we have more coins than when we last visited shop
 	return StatsManager.spendable_coins > last_seen_coins
