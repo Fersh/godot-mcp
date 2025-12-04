@@ -146,6 +146,8 @@ func _ready() -> void:
 	# Store original sprite scale for squash/stretch effects
 	if sprite:
 		base_sprite_scale = sprite.scale
+		# Prevent texture bleeding between sprite sheet frames
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	# Let subclasses set their base stats first
 	_on_ready()

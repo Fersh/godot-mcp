@@ -3,7 +3,8 @@ extends CanvasLayer
 # Game HUD - Simplified UI with pause button in top left, XP bar in top center
 # Clicking pause button opens pause menu
 
-const PAUSE_BUTTON_SIZE := 32  # Simple pause button size (smaller)
+const PAUSE_BUTTON_SIZE := 32  # Visible pause button size
+const PAUSE_TOUCH_SIZE := 80  # Larger touch area for easier tapping
 const PROGRESS_BAR_HEIGHT := 31  # XP bar height (increased by 5px)
 const MARGIN := 48  # Distance from edge of screen
 const SPACING := 11
@@ -78,49 +79,69 @@ func _create_ui() -> void:
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	# === PAUSE BUTTON (top right, same margin as stats on left) ===
+	# === PAUSE BUTTON (top right, with larger touch area) ===
+	# Use a full-screen Control to position the button properly
 	var pause_container = Control.new()
 	pause_container.name = "PauseContainer"
-	pause_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	pause_container.offset_left = -26 - PAUSE_BUTTON_SIZE  # 26px from right edge (added 10px margin)
-	pause_container.offset_top = MARGIN - 27  # Shifted up 2px
-	pause_container.offset_right = -26
-	pause_container.offset_bottom = MARGIN - 27 + PAUSE_BUTTON_SIZE
+	pause_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	pause_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Let clicks pass through except for button
 	add_child(pause_container)
 
-	# Pause button
+	# Pause button - LARGE invisible touch area
 	pause_button = Button.new()
 	pause_button.name = "PauseButton"
-	pause_button.custom_minimum_size = Vector2(PAUSE_BUTTON_SIZE, PAUSE_BUTTON_SIZE)
-	pause_button.size = Vector2(PAUSE_BUTTON_SIZE, PAUSE_BUTTON_SIZE)
-	pause_button.position = Vector2.ZERO
+	# Position in top-right corner with larger touch area
+	pause_button.anchor_left = 1.0
+	pause_button.anchor_right = 1.0
+	pause_button.anchor_top = 0.0
+	pause_button.anchor_bottom = 0.0
+	pause_button.offset_left = -PAUSE_TOUCH_SIZE - 16
+	pause_button.offset_right = -16
+	pause_button.offset_top = 12
+	pause_button.offset_bottom = 12 + PAUSE_TOUCH_SIZE
 	pause_button.pressed.connect(_on_pause_pressed)
-	# Note: NOT using flat = true so border shows in normal state
+	pause_button.flat = true  # No default styling
+	pause_button.focus_mode = Control.FOCUS_NONE
+	pause_button.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# Pause button background style with light border when inactive
-	var pause_bg_style = StyleBoxFlat.new()
-	pause_bg_style.bg_color = Color(0.1, 0.1, 0.15, 0.7)
-	pause_bg_style.border_color = Color(0.6, 0.6, 0.65, 0.8)  # Light border when inactive
-	pause_bg_style.set_border_width_all(2)
-	pause_bg_style.set_corner_radius_all(4)
-	pause_button.add_theme_stylebox_override("normal", pause_bg_style)
-
-	var pause_hover_style = pause_bg_style.duplicate()
-	pause_hover_style.bg_color = Color(0.15, 0.15, 0.2, 0.8)
-	pause_hover_style.border_color = Color(0.8, 0.8, 0.85, 1.0)  # Brighter border on hover
-	pause_button.add_theme_stylebox_override("hover", pause_hover_style)
-
-	var pause_pressed_style = pause_bg_style.duplicate()
-	pause_pressed_style.bg_color = Color(0.08, 0.08, 0.12, 0.9)
-	pause_pressed_style.border_color = Color(0.5, 0.5, 0.55, 1.0)
-	pause_button.add_theme_stylebox_override("pressed", pause_pressed_style)
+	# Transparent style for the large touch area
+	var touch_style = StyleBoxFlat.new()
+	touch_style.bg_color = Color(0, 0, 0, 0)  # Fully transparent
+	pause_button.add_theme_stylebox_override("normal", touch_style)
+	pause_button.add_theme_stylebox_override("hover", touch_style)
+	pause_button.add_theme_stylebox_override("pressed", touch_style)
+	pause_button.add_theme_stylebox_override("focus", touch_style)
 
 	pause_container.add_child(pause_button)
+
+	# Visible pause button background (smaller, positioned in corner of touch area)
+	var pause_visual = Panel.new()
+	pause_visual.name = "PauseVisual"
+	pause_visual.custom_minimum_size = Vector2(PAUSE_BUTTON_SIZE, PAUSE_BUTTON_SIZE)
+	pause_visual.size = Vector2(PAUSE_BUTTON_SIZE, PAUSE_BUTTON_SIZE)
+	# Position in top-right corner of the touch area
+	pause_visual.anchor_left = 1.0
+	pause_visual.anchor_right = 1.0
+	pause_visual.anchor_top = 0.0
+	pause_visual.anchor_bottom = 0.0
+	pause_visual.offset_left = -PAUSE_BUTTON_SIZE
+	pause_visual.offset_right = 0
+	pause_visual.offset_top = 9
+	pause_visual.offset_bottom = 9 + PAUSE_BUTTON_SIZE
+	pause_visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var pause_bg_style = StyleBoxFlat.new()
+	pause_bg_style.bg_color = Color(0.1, 0.1, 0.15, 0.7)
+	pause_bg_style.border_color = Color(0.6, 0.6, 0.65, 0.8)
+	pause_bg_style.set_border_width_all(2)
+	pause_bg_style.set_corner_radius_all(4)
+	pause_visual.add_theme_stylebox_override("panel", pause_bg_style)
+	pause_button.add_child(pause_visual)
 
 	# === MISSIONS TRACKER (below pause button) ===
 	_create_missions_tracker()
 
-	# Pause icon (|| symbol)
+	# Pause icon (|| symbol) - inside the visual panel
 	pause_icon = Label.new()
 	pause_icon.name = "PauseIcon"
 	pause_icon.text = "||"
@@ -136,7 +157,7 @@ func _create_ui() -> void:
 		pause_icon.add_theme_font_override("font", pixel_font)
 	pause_icon.add_theme_font_size_override("font_size", 13)
 	pause_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pause_button.add_child(pause_icon)
+	pause_visual.add_child(pause_icon)
 
 	# === XP BAR (top center, 60% of screen width) ===
 	var xp_bar_width = viewport_size.x * 0.6  # 60% of screen width

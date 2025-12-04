@@ -9,6 +9,12 @@ func _on_ready() -> void:
 	# Fix texture filtering to prevent frame bleeding
 	if sprite:
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		# Also ensure the region is properly set to avoid edge bleeding
+		if sprite.texture:
+			var frame_w = sprite.texture.get_width() / 12.0
+			var frame_h = sprite.texture.get_height() / 5.0
+			# Slight inset to avoid edge pixels bleeding
+			sprite.region_enabled = false  # Use hframes/vframes, not region
 
 	# Ratfolk stats - fast and aggressive but fragile
 	speed = 87.3           # Fast and agile (10% slower)
