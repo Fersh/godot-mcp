@@ -293,3 +293,104 @@ Remove the `shadow_color`, `shadow_size`, and `shadow_offset` lines from `health
 10. `game/scripts/active_abilities/active_ability_database.gd` - Frost Totem rename
 11. `game/scripts/equipment/dropped_item.gd` - Common item black border
 12. `game/scripts/permanent_upgrades.gd` - Rank 4/5 cost increases
+
+---
+
+## Endless Mode Overhaul (2025-12-04)
+
+### 15. Endless Mode Now End-Game Difficulty
+
+**MAJOR CHANGE:** Endless mode has been completely rebalanced to function as end-game content, starting at 120% of Thanksgiving difficulty with infinite scaling.
+
+#### Before (Old Endless Mode)
+- Static 2x multiplier for health, damage, speed
+- No modifiers, no champions, no %HP damage
+- Essentially "Easy" difficulty that never changed
+
+#### After (New Endless Mode)
+
+**Starting Values (120% of Thanksgiving):**
+| Stat | Value |
+|------|-------|
+| Health | 82.1x |
+| Damage | 29.86x |
+| Speed | 8.82x |
+| Points | 12x |
+| Starting HP | 25% |
+| Healing | 25% |
+| Champion Chance | 35% |
+| %HP Damage/Hit | 3% |
+| XP Requirement | 4.58x |
+| Elite Health Bonus | +720% |
+| Elite Damage Bonus | +360% |
+| Boss Health Bonus | +1080% |
+| Boss Damage Bonus | +720% |
+
+**Active Modifiers:**
+- Chilling Touch (enemy slow on hit)
+- Elite Affixes
+- Faster Boss Enrage (35% HP threshold)
+
+**Spawn Rate:** Unchanged at 1.0x (performance concern)
+
+---
+
+### 16. Infinite Time-Based Scaling
+
+**NEW FEATURE:** Endless mode difficulty increases by 5% per minute, compounding with no cap.
+
+| Time Survived | Scaling Multiplier | Effective Health | Effective Damage |
+|---------------|-------------------|------------------|------------------|
+| 0 min | 1.0x | 82.1x | 29.86x |
+| 5 min | 1.28x | 105x | 38x |
+| 10 min | 1.63x | 134x | 49x |
+| 15 min | 2.08x | 171x | 62x |
+| 20 min | 2.65x | 218x | 79x |
+| 30 min | 4.32x | 355x | 129x |
+| 45 min | 8.99x | 738x | 268x |
+| 60 min | 18.68x | 1534x | 558x |
+
+**Safety Caps to Prevent Unplayability:**
+- Speed: Capped at 2x scaling (max ~17.6x total) to allow dodging
+- %HP Damage: Capped at 10% per hit to prevent instant kills
+- Champion Chance: Capped at 50%
+
+---
+
+### 17. Implementation Details
+
+**DifficultyManager Changes:**
+- Added `ENDLESS_BASE` constant with 120% Thanksgiving values
+- Added `ENDLESS_SCALING_PER_MINUTE` constant (0.05 = 5%)
+- Added `endless_game_time` tracking variable
+- Added `update_endless_time()` and `reset_endless_time()` functions
+- Added `get_endless_scaling_multiplier()` using compound interest formula: `pow(1.05, minutes)`
+- Updated all getter functions to use base * scaling for Endless mode
+
+**Main.gd Changes:**
+- Calls `DifficultyManager.reset_endless_time()` on run start
+- Calls `DifficultyManager.update_endless_time(game_time)` every frame in Endless mode
+
+---
+
+### Rollback Instructions
+
+**To revert to old Endless mode (static 2x):**
+Replace all Endless mode checks in `difficulty_manager.gd` getter functions with:
+```gdscript
+if current_mode == GameMode.ENDLESS:
+    return 2.0  # Or appropriate static value
+```
+
+**To disable time scaling:**
+Change `get_endless_scaling_multiplier()` to always return 1.0.
+
+**To adjust scaling rate:**
+Modify `ENDLESS_SCALING_PER_MINUTE` constant (0.05 = 5%, 0.03 = 3%, etc.)
+
+---
+
+### Files Modified
+
+13. `game/scripts/difficulty_manager.gd` - Endless base values, time scaling, updated getters
+14. `game/scripts/main.gd` - Time feed to DifficultyManager for Endless scaling

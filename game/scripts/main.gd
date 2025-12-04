@@ -65,6 +65,10 @@ func _ready() -> void:
 	if SoundManager:
 		SoundManager.play_music()
 
+	# Reset Endless mode time scaling for new run
+	if DifficultyManager:
+		DifficultyManager.reset_endless_time()
+
 	# Reset equipment manager for this run
 	if EquipmentManager:
 		EquipmentManager.reset_run()
@@ -104,6 +108,10 @@ func _process(delta: float) -> void:
 		# Update equipment manager with current game time
 		if EquipmentManager:
 			EquipmentManager.update_game_time(game_time)
+
+		# Update DifficultyManager for Endless mode time-based scaling
+		if DifficultyManager and DifficultyManager.is_endless_mode():
+			DifficultyManager.update_endless_time(game_time)
 
 	# Always check for nearby dropped items (needs to run while paused for walk-away unpause)
 	_check_nearby_items()

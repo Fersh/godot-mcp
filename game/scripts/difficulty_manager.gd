@@ -15,6 +15,32 @@ enum DifficultyTier { JUVENILE, VERY_EASY, EASY, NORMAL, NIGHTMARE, INFERNO, THA
 var current_mode: GameMode = GameMode.ENDLESS
 var current_difficulty: DifficultyTier = DifficultyTier.JUVENILE
 
+# Endless mode tracking
+var endless_game_time: float = 0.0
+
+# Endless mode base values (120% of Thanksgiving - end-game difficulty)
+# These start 20% harder than Thanksgiving and scale up infinitely over time
+const ENDLESS_BASE = {
+	"health_mult": 82.1,      # 68.42 * 1.2
+	"damage_mult": 29.86,     # 24.88 * 1.2
+	"speed_mult": 8.82,       # 7.35 * 1.2
+	"spawn_rate_mult": 1.0,   # No increase (performance concern)
+	"points_mult": 12.0,      # 10.0 * 1.2
+	"starting_hp": 0.25,      # Same as Thanksgiving
+	"healing_mult": 0.25,     # Same as Thanksgiving
+	"champion_chance": 0.35,  # Same as Thanksgiving
+	"xp_requirement_mult": 4.58,  # 3.815 * 1.2
+	"elite_health_bonus": 7.2,    # 6.0 * 1.2
+	"elite_damage_bonus": 3.6,    # 3.0 * 1.2
+	"boss_health_bonus": 10.8,    # 9.0 * 1.2
+	"boss_damage_bonus": 7.2,     # 6.0 * 1.2
+	"percent_hp_damage": 0.03,    # 0.025 * 1.2
+}
+
+# Endless mode scaling: 5% increase per minute, compounding
+# After 10 min: ~1.63x, After 20 min: ~2.65x, After 30 min: ~4.32x
+const ENDLESS_SCALING_PER_MINUTE: float = 0.05
+
 # Unlocked difficulties (persisted)
 var unlocked_difficulties: Array[DifficultyTier] = [DifficultyTier.JUVENILE]
 
@@ -258,6 +284,24 @@ func is_endless_mode() -> bool:
 	return current_mode == GameMode.ENDLESS
 
 # ============================================
+# ENDLESS MODE TIME SCALING
+# ============================================
+
+func update_endless_time(time: float) -> void:
+	"""Update the elapsed game time for Endless mode scaling."""
+	endless_game_time = time
+
+func reset_endless_time() -> void:
+	"""Reset endless game time (called at game start)."""
+	endless_game_time = 0.0
+
+func get_endless_scaling_multiplier() -> float:
+	"""Get the current scaling multiplier based on time elapsed.
+	Returns 1.0 at start, increases by 5% per minute compounding (no cap)."""
+	var minutes = endless_game_time / 60.0
+	return pow(1.0 + ENDLESS_SCALING_PER_MINUTE, minutes)
+
+# ============================================
 # DIFFICULTY DATA GETTERS
 # ============================================
 
@@ -276,63 +320,67 @@ func get_difficulty_color(tier: DifficultyTier = current_difficulty) -> Color:
 
 func get_health_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 2.0  # Endless mode uses 2x difficulty
+		return ENDLESS_BASE["health_mult"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty]["health_mult"]
 
 func get_damage_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 2.0  # Endless mode uses 2x difficulty
+		return ENDLESS_BASE["damage_mult"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty]["damage_mult"]
 
 func get_speed_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 2.0  # Endless mode uses 2x difficulty
+		# Cap speed at 2x the base to prevent enemies from becoming impossible to dodge
+		var scale = min(get_endless_scaling_multiplier(), 2.0)
+		return ENDLESS_BASE["speed_mult"] * scale
 	return DIFFICULTY_DATA[current_difficulty]["speed_mult"]
 
 func get_spawn_rate_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 1.0  # Spawn rate not doubled for endless
+		return ENDLESS_BASE["spawn_rate_mult"]  # No scaling for performance
 	return DIFFICULTY_DATA[current_difficulty]["spawn_rate_mult"]
 
 func get_points_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
-		return 2.0  # Endless mode uses 2x difficulty
+		return ENDLESS_BASE["points_mult"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty]["points_mult"]
 
 func get_xp_requirement_multiplier() -> float:
 	"""Get XP requirement multiplier for leveling (compounds with curse effects)."""
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return ENDLESS_BASE["xp_requirement_mult"]  # No time scaling
 	return DIFFICULTY_DATA[current_difficulty].get("xp_requirement_mult", 1.0)
 
 func get_elite_health_bonus() -> float:
 	"""Get elite health bonus multiplier (0.0 = no bonus, 1.0 = +100%)."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		return ENDLESS_BASE["elite_health_bonus"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty].get("elite_health_bonus", 0.0)
 
 func get_elite_damage_bonus() -> float:
 	"""Get elite damage bonus multiplier (0.0 = no bonus, 0.5 = +50%)."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		return ENDLESS_BASE["elite_damage_bonus"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty].get("elite_damage_bonus", 0.0)
 
 func get_boss_health_bonus() -> float:
 	"""Get boss health bonus multiplier (0.0 = no bonus, 1.5 = +150%)."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		return ENDLESS_BASE["boss_health_bonus"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty].get("boss_health_bonus", 0.0)
 
 func get_boss_damage_bonus() -> float:
 	"""Get boss damage bonus multiplier (0.0 = no bonus, 1.0 = +100%)."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		return ENDLESS_BASE["boss_damage_bonus"] * get_endless_scaling_multiplier()
 	return DIFFICULTY_DATA[current_difficulty].get("boss_damage_bonus", 0.0)
 
 func get_percent_hp_damage() -> float:
 	"""Get percent of max HP dealt as bonus damage per hit (0.0 = none, 0.025 = 2.5%)."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		# Cap at 10% per hit to prevent instant kills
+		var scaled = ENDLESS_BASE["percent_hp_damage"] * get_endless_scaling_multiplier()
+		return min(scaled, 0.10)
 	return DIFFICULTY_DATA[current_difficulty].get("percent_hp_damage", 0.0)
 
 # ============================================
@@ -342,13 +390,15 @@ func get_percent_hp_damage() -> float:
 func get_active_modifiers() -> Array:
 	"""Get list of active modifier IDs for current difficulty."""
 	if current_mode == GameMode.ENDLESS:
-		return []
+		# Endless mode has all Thanksgiving modifiers
+		return ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"]
 	return DIFFICULTY_DATA[current_difficulty]["modifiers"]
 
 func has_modifier(modifier_id: String) -> bool:
 	"""Check if a specific modifier is active."""
 	if current_mode == GameMode.ENDLESS:
-		return false
+		# Endless mode has all Thanksgiving modifiers
+		return modifier_id in ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"]
 	return modifier_id in DIFFICULTY_DATA[current_difficulty]["modifiers"]
 
 func get_modifier_info(modifier_id: String) -> Dictionary:
@@ -370,7 +420,7 @@ func has_reduced_starting_hp() -> bool:
 func get_starting_hp_percent() -> float:
 	"""Get starting HP percentage from difficulty data."""
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return ENDLESS_BASE["starting_hp"]  # 25% like Thanksgiving
 	return DIFFICULTY_DATA[current_difficulty].get("starting_hp", 1.0)
 
 func has_faster_enrage() -> bool:
@@ -388,7 +438,7 @@ func has_reduced_healing() -> bool:
 func get_healing_multiplier() -> float:
 	"""Get healing effectiveness multiplier from difficulty data."""
 	if current_mode == GameMode.ENDLESS:
-		return 1.0
+		return ENDLESS_BASE["healing_mult"]  # 25% like Thanksgiving
 	return DIFFICULTY_DATA[current_difficulty].get("healing_mult", 1.0)
 
 func has_champion_enemies() -> bool:
@@ -397,7 +447,9 @@ func has_champion_enemies() -> bool:
 func get_champion_chance() -> float:
 	"""Get champion spawn chance from difficulty data."""
 	if current_mode == GameMode.ENDLESS:
-		return 0.0
+		# Cap at 50% champion chance
+		var scaled = ENDLESS_BASE["champion_chance"] * get_endless_scaling_multiplier()
+		return min(scaled, 0.50)
 	return DIFFICULTY_DATA[current_difficulty].get("champion_chance", 0.0)
 
 # ============================================
