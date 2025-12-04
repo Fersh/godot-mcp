@@ -20,7 +20,13 @@ extends Node2D
 @export var intellect_devourer_elite_scene: PackedScene
 @export var bandit_necromancer_elite_scene: PackedScene
 @export var shardsoul_slayer_elite_scene: PackedScene
-@export var minotaur_scene: PackedScene  # Boss
+@export var minotaur_scene: PackedScene  # Boss - Pitiful
+@export var skeleton_king_scene: PackedScene  # Boss - Easy
+@export var kobold_king_scene: PackedScene  # Boss - Normal
+@export var giant_golem_scene: PackedScene  # Boss - Nightmare
+@export var lizardfolk_king_scene: PackedScene  # Boss - Hell
+@export var wendigo_scene: PackedScene  # Boss - Inferno
+@export var elder_dragon_scene: PackedScene  # Boss - Thanksgiving (Final Boss)
 
 @export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
 @export var warning_duration: float = 3.0  # How long to show warning
@@ -86,7 +92,20 @@ var pixel_font: Font = null
 # Available elite types
 enum EliteType { CYCLOPS, GOBLIN_KING, ORC, RATFOLK, SKELETON, SLIME, IMP, KOBOLD_PRIEST,
 	RATFOLK_MAGE, BAT, AKANAME, GHOUL, EYE_MONSTER, GOLEM, INTELLECT_DEVOURER, BANDIT_NECROMANCER, SHARDSOUL_SLAYER }
-enum BossType { MINOTAUR }
+enum BossType { MINOTAUR, SKELETON_KING, KOBOLD_KING, GIANT_GOLEM, LIZARDFOLK_KING, WENDIGO, ELDER_DRAGON }
+
+# Boss progression for Endless mode (cycles through in order)
+var endless_boss_order: Array[BossType] = [
+	BossType.MINOTAUR,
+	BossType.SKELETON_KING,
+	BossType.KOBOLD_KING,
+	BossType.GIANT_GOLEM,
+	BossType.LIZARDFOLK_KING,
+	BossType.WENDIGO,
+	BossType.ELDER_DRAGON
+]
+var endless_boss_index: int = 0
+
 var elite_pool: Array[EliteType] = [
 	EliteType.CYCLOPS,
 	EliteType.GOBLIN_KING,
@@ -106,7 +125,15 @@ var elite_pool: Array[EliteType] = [
 	EliteType.BANDIT_NECROMANCER,
 	EliteType.SHARDSOUL_SLAYER
 ]
-var boss_pool: Array[BossType] = [BossType.MINOTAUR]
+var boss_pool: Array[BossType] = [
+	BossType.MINOTAUR,
+	BossType.SKELETON_KING,
+	BossType.KOBOLD_KING,
+	BossType.GIANT_GOLEM,
+	BossType.LIZARDFOLK_KING,
+	BossType.WENDIGO,
+	BossType.ELDER_DRAGON
+]
 
 # Portal spawn system
 var portal_script = preload("res://scripts/effects/elite_portal.gd")
@@ -612,7 +639,31 @@ func _select_elite_type() -> EliteType:
 	return selected_type
 
 func _select_boss_type() -> BossType:
-	return BossType.MINOTAUR
+	# In Challenge mode, select boss based on current difficulty tier
+	if is_challenge_mode and DifficultyManager:
+		var tier = DifficultyManager.get_current_difficulty()
+		match tier:
+			DifficultyManager.DifficultyTier.JUVENILE:
+				return BossType.MINOTAUR
+			DifficultyManager.DifficultyTier.VERY_EASY:
+				return BossType.SKELETON_KING
+			DifficultyManager.DifficultyTier.EASY:
+				return BossType.KOBOLD_KING
+			DifficultyManager.DifficultyTier.NORMAL:
+				return BossType.GIANT_GOLEM
+			DifficultyManager.DifficultyTier.NIGHTMARE:
+				return BossType.LIZARDFOLK_KING
+			DifficultyManager.DifficultyTier.INFERNO:
+				return BossType.WENDIGO
+			DifficultyManager.DifficultyTier.THANKSGIVING_DINNER:
+				return BossType.ELDER_DRAGON
+			_:
+				return BossType.MINOTAUR
+
+	# In Endless mode, cycle through bosses in order
+	var boss = endless_boss_order[endless_boss_index]
+	endless_boss_index = (endless_boss_index + 1) % endless_boss_order.size()
+	return boss
 
 func _get_scene_for_elite(elite_type: EliteType) -> PackedScene:
 	match elite_type:
@@ -666,6 +717,18 @@ func _get_scene_for_boss(boss_type: BossType) -> PackedScene:
 	match boss_type:
 		BossType.MINOTAUR:
 			return minotaur_scene
+		BossType.SKELETON_KING:
+			return skeleton_king_scene
+		BossType.KOBOLD_KING:
+			return kobold_king_scene
+		BossType.GIANT_GOLEM:
+			return giant_golem_scene
+		BossType.LIZARDFOLK_KING:
+			return lizardfolk_king_scene
+		BossType.WENDIGO:
+			return wendigo_scene
+		BossType.ELDER_DRAGON:
+			return elder_dragon_scene
 		_:
 			return minotaur_scene
 

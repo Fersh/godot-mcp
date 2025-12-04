@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://doq6hteh263pd"]
+[gd_scene load_steps=55 format=3 uid="uid://doq6hteh263pd"]
 
 [ext_resource type="Script" uid="uid://bfoirup10bwgy" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
@@ -38,6 +38,21 @@
 [ext_resource type="PackedScene" path="res://scenes/enemy_bandit_necromancer.tscn" id="36_bandit_necromancer"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_golem.tscn" id="37_golem"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_shardsoul_slayer.tscn" id="38_shardsoul_slayer"]
+[ext_resource type="PackedScene" path="res://scenes/elite_ratfolk_mage.tscn" id="39_elite_ratfolk_mage"]
+[ext_resource type="PackedScene" path="res://scenes/elite_bat.tscn" id="40_elite_bat"]
+[ext_resource type="PackedScene" path="res://scenes/elite_akaname.tscn" id="41_elite_akaname"]
+[ext_resource type="PackedScene" path="res://scenes/elite_ghoul.tscn" id="42_elite_ghoul"]
+[ext_resource type="PackedScene" path="res://scenes/elite_eye_monster.tscn" id="43_elite_eye_monster"]
+[ext_resource type="PackedScene" path="res://scenes/elite_golem.tscn" id="44_elite_golem"]
+[ext_resource type="PackedScene" path="res://scenes/elite_intellect_devourer.tscn" id="45_elite_intellect_devourer"]
+[ext_resource type="PackedScene" path="res://scenes/elite_bandit_necromancer.tscn" id="46_elite_bandit_necromancer"]
+[ext_resource type="PackedScene" path="res://scenes/elite_shardsoul_slayer.tscn" id="47_elite_shardsoul_slayer"]
+[ext_resource type="PackedScene" path="res://scenes/boss_skeleton_king.tscn" id="48_skeleton_king"]
+[ext_resource type="PackedScene" path="res://scenes/boss_kobold_king.tscn" id="49_kobold_king"]
+[ext_resource type="PackedScene" path="res://scenes/boss_giant_golem.tscn" id="50_giant_golem"]
+[ext_resource type="PackedScene" path="res://scenes/boss_lizardfolk_king.tscn" id="51_lizardfolk_king"]
+[ext_resource type="PackedScene" path="res://scenes/boss_wendigo.tscn" id="52_wendigo"]
+[ext_resource type="PackedScene" path="res://scenes/boss_elder_dragon.tscn" id="53_elder_dragon"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_topwall"]
 size = Vector2(1848, 449)
@@ -94,7 +109,22 @@ skeleton_elite_scene = ExtResource("26_elite_skeleton")
 slime_elite_scene = ExtResource("27_elite_slime")
 imp_elite_scene = ExtResource("28_elite_imp")
 kobold_priest_elite_scene = ExtResource("29_elite_kobold_priest")
+ratfolk_mage_elite_scene = ExtResource("39_elite_ratfolk_mage")
+bat_elite_scene = ExtResource("40_elite_bat")
+akaname_elite_scene = ExtResource("41_elite_akaname")
+ghoul_elite_scene = ExtResource("42_elite_ghoul")
+eye_monster_elite_scene = ExtResource("43_elite_eye_monster")
+golem_elite_scene = ExtResource("44_elite_golem")
+intellect_devourer_elite_scene = ExtResource("45_elite_intellect_devourer")
+bandit_necromancer_elite_scene = ExtResource("46_elite_bandit_necromancer")
+shardsoul_slayer_elite_scene = ExtResource("47_elite_shardsoul_slayer")
 minotaur_scene = ExtResource("18_minotaur")
+skeleton_king_scene = ExtResource("48_skeleton_king")
+kobold_king_scene = ExtResource("49_kobold_king")
+giant_golem_scene = ExtResource("50_giant_golem")
+lizardfolk_king_scene = ExtResource("51_lizardfolk_king")
+wendigo_scene = ExtResource("52_wendigo")
+elder_dragon_scene = ExtResource("53_elder_dragon")
 
 [node name="GameHUD" parent="." instance=ExtResource("4_game_hud")]
 

@@ -1,0 +1,49 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/boss_skeleton_king.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/Skeleton King Sprite Sheet 96x96px.png" id="2_texture"]
+[ext_resource type="PackedScene" path="res://scenes/gold_coin.tscn" id="3_coin"]
+[ext_resource type="PackedScene" path="res://scenes/health_bar.tscn" id="4_health_bar"]
+[ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="5_damage_number"]
+[ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="6_hit_flash"]
+[ext_resource type="PackedScene" path="res://scenes/death_particles.tscn" id="7_death_particles"]
+[ext_resource type="PackedScene" path="res://scenes/equipment/dropped_item.tscn" id="8_dropped_item"]
+[ext_resource type="PackedScene" path="res://scenes/health_potion.tscn" id="9_health_potion"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_skeleton.tscn" id="10_skeleton"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hit_flash"]
+shader = ExtResource("6_hit_flash")
+shader_parameter/flash_intensity = 0.0
+shader_parameter/flash_color = Color(1, 0.3, 0.3, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_skeleton_king"]
+size = Vector2(70, 90)
+
+[node name="BossSkeletonKing" type="CharacterBody2D" groups=["enemies", "bosses"]]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_script")
+gold_coin_scene = ExtResource("3_coin")
+damage_number_scene = ExtResource("5_damage_number")
+death_particles_scene = ExtResource("7_death_particles")
+dropped_item_scene = ExtResource("8_dropped_item")
+health_potion_scene = ExtResource("9_health_potion")
+skeleton_scene = ExtResource("10_skeleton")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_hit_flash")
+scale = Vector2(2.4, 2.4)
+texture = ExtResource("2_texture")
+centered = true
+region_enabled = true
+region_rect = Rect2(0, 0, 864, 672)
+hframes = 9
+vframes = 7
+frame = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_skeleton_king")
+
+[node name="HealthBar" parent="." instance=ExtResource("4_health_bar")]
+visible = false
+offset_y = -120.0
