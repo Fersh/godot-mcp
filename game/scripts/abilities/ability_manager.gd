@@ -357,8 +357,24 @@ const TOXIC_RADIUS: float = 100.0
 # Is the player a ranged character? (for filtering abilities)
 var is_ranged_character: bool = true
 
+# ============================================
+# MODULAR EFFECT HANDLERS
+# ============================================
+var _stat_effects: StatEffects = null
+var _on_hit_effects: OnHitEffects = null
+var _on_kill_effects: OnKillEffects = null
+var _combat_effects: CombatEffects = null
+var _periodic_effects: PeriodicEffects = null
+
 func _ready() -> void:
 	all_abilities = AbilityDatabase.get_all_abilities()
+
+	# Initialize modular effect handlers
+	_stat_effects = StatEffects.new(self)
+	_on_hit_effects = OnHitEffects.new(self)
+	_on_kill_effects = OnKillEffects.new(self)
+	_combat_effects = CombatEffects.new(self)
+	_periodic_effects = PeriodicEffects.new(self)
 
 	# Connect equipment signals for real-time stat updates (deferred to ensure autoloads ready)
 	call_deferred("_connect_equipment_signals")
