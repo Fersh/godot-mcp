@@ -23,6 +23,13 @@ enum ClassType {
 	RANGED,  # Archer only
 }
 
+# Ability tier for branching upgrade system
+enum AbilityTier {
+	BASE,       # Tier 1 - Starting abilities
+	BRANCH,     # Tier 2 - Specialization branches
+	SIGNATURE   # Tier 3 - Ultimate form with unique mechanics
+}
+
 # Rarity weights for random selection
 const RARITY_WEIGHTS_LEVEL_1 = {
 	Rarity.COMMON: 55,
@@ -77,6 +84,16 @@ var invulnerability_duration: float = 0.0
 
 # Visual effect identifier (for spawning correct VFX)
 var effect_id: String = ""
+
+# ============================================
+# TIER SYSTEM PROPERTIES (for branching upgrades)
+# ============================================
+var tier: AbilityTier = AbilityTier.BASE
+var prerequisite_id: String = ""        # ID of required base/previous tier ability
+var branch_index: int = 0               # Which branch path (0, 1, 2...)
+var replaces_ability: bool = true       # If true, replaces parent ability; if false, adds alongside
+var unique_mechanic: String = ""        # Description of signature move's special behavior
+var visual_override: String = ""        # Custom VFX path for signature abilities
 
 func _init(
 	p_id: String,
@@ -152,6 +169,54 @@ func with_effect(p_effect_id: String) -> ActiveAbilityData:
 func with_icon(p_icon_path: String) -> ActiveAbilityData:
 	icon_path = p_icon_path
 	return self
+
+# ============================================
+# TIER SYSTEM BUILDER METHODS
+# ============================================
+
+func with_tier(p_tier: AbilityTier) -> ActiveAbilityData:
+	tier = p_tier
+	return self
+
+func with_prerequisite(p_prereq_id: String, p_branch: int = 0) -> ActiveAbilityData:
+	prerequisite_id = p_prereq_id
+	branch_index = p_branch
+	if tier == AbilityTier.BASE:
+		tier = AbilityTier.BRANCH
+	return self
+
+func with_signature(p_mechanic: String) -> ActiveAbilityData:
+	tier = AbilityTier.SIGNATURE
+	unique_mechanic = p_mechanic
+	return self
+
+func with_visual_override(p_visual: String) -> ActiveAbilityData:
+	visual_override = p_visual
+	return self
+
+func without_replacement() -> ActiveAbilityData:
+	replaces_ability = false
+	return self
+
+# Utility methods for tier system
+func is_base() -> bool:
+	return tier == AbilityTier.BASE
+
+func is_branch() -> bool:
+	return tier == AbilityTier.BRANCH
+
+func is_signature() -> bool:
+	return tier == AbilityTier.SIGNATURE
+
+func has_prerequisite() -> bool:
+	return prerequisite_id != ""
+
+func get_base_ability_id() -> String:
+	"""Extract base ability ID from this ability's chain"""
+	if prerequisite_id.is_empty():
+		return id
+	# For now, return prerequisite - would need tree lookup for full chain
+	return prerequisite_id
 
 # Utility methods
 static func get_rarity_color(p_rarity: Rarity) -> Color:
