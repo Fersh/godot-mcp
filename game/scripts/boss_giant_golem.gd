@@ -140,6 +140,7 @@ func _setup_boss() -> void:
 	]
 
 func _execute_attack(attack: Dictionary) -> void:
+	pending_attack_name = attack.name
 	match attack.name:
 		"stone_shield":
 			_start_stone_shield()
@@ -247,12 +248,6 @@ func _execute_current_attack() -> void:
 			_execute_ground_pound()
 
 	_play_attack_followthrough()
-
-func _select_attack() -> Dictionary:
-	var attack = super._select_attack()
-	if attack.size() > 0:
-		pending_attack_name = attack.get("name", "")
-	return attack
 
 func _execute_stone_shield() -> void:
 	stone_shield_active = true

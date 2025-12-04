@@ -7,6 +7,9 @@ class_name AbilityExecutor
 # Preloaded effect scenes (lazy loaded)
 var _effect_scenes: Dictionary = {}
 
+# Track base scale for gigantamax to prevent infinite scaling
+var _gigantamax_base_scales: Dictionary = {}  # player instance_id -> base_scale
+
 func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Main entry point - execute an ability."""
 	if not ability or not player:
@@ -3566,12 +3569,22 @@ func _execute_double_or_nothing(ability: ActiveAbilityData, player: Node2D) -> v
 
 func _execute_gigantamax(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Grow to giant size! Increased damage and knockback, but bigger hitbox."""
-	var original_scale = player.scale
-	var giant_scale = original_scale * 2.0
+	var player_id = player.get_instance_id()
 
-	# Grow animation
-	var grow = player.create_tween()
-	grow.tween_property(player, "scale", giant_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Store base scale on first use, or use existing base scale
+	if not _gigantamax_base_scales.has(player_id):
+		_gigantamax_base_scales[player_id] = player.scale
+
+	var base_scale = _gigantamax_base_scales[player_id]
+	var max_scale = base_scale * 2.0
+
+	# If already at max size, don't grow further (still apply effects)
+	var already_at_max = player.scale.x >= max_scale.x - 0.01
+
+	if not already_at_max:
+		# Grow animation to max size
+		var grow = player.create_tween()
+		grow.tween_property(player, "scale", max_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 	# Apply damage boost
 	if player.has_method("apply_damage_boost"):
@@ -3593,11 +3606,11 @@ func _execute_gigantamax(ability: ActiveAbilityData, player: Node2D) -> void:
 				_apply_knockback_to_enemy(enemy, away, ability.knockback_force)
 		)
 
-	# Shrink back after duration
+	# Shrink back to base scale after duration
 	get_tree().create_timer(ability.duration).timeout.connect(func():
 		if is_instance_valid(player):
 			var shrink = player.create_tween()
-			shrink.tween_property(player, "scale", original_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+			shrink.tween_property(player, "scale", base_scale, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	)
 
 	_spawn_effect("impact_smoke", player.global_position)

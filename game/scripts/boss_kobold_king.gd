@@ -140,6 +140,7 @@ func _setup_boss() -> void:
 	]
 
 func _execute_attack(attack: Dictionary) -> void:
+	pending_attack_name = attack.name
 	match attack.name:
 		"war_cry":
 			_start_war_cry()
@@ -271,13 +272,6 @@ func _is_frenzy_attack() -> bool:
 
 func _is_gold_attack() -> bool:
 	return pending_attack_name == "gold_barrage"
-
-# Override to track pending attack
-func _select_attack() -> Dictionary:
-	var attack = super._select_attack()
-	if attack.size() > 0:
-		pending_attack_name = attack.get("name", "")
-	return attack
 
 func _execute_war_cry() -> void:
 	war_cry_active = true

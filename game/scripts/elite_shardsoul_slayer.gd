@@ -61,8 +61,7 @@ const SOUL_TRAIL_INTERVAL: float = 0.15
 var active_soul_trails: Array[Node2D] = []
 const MAX_SOUL_TRAILS: int = 20
 
-# Store original stats
-var base_speed: float = 0.0
+# Store original stats (base_speed inherited from EnemyBase)
 var base_damage: float = 0.0
 
 func _setup_elite() -> void:

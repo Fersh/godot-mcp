@@ -814,9 +814,9 @@ func sell_item(item_id: String) -> int:
 
 	return sell_price
 
-# Find items that can be combined (same slot + same rarity)
+# Find items that can be combined (same slot + same rarity + same weapon type for weapons)
 func get_combinable_groups() -> Dictionary:
-	# Returns: { "slot_rarity_key": [item1, item2, item3, ...], ... }
+	# Returns: { "slot_rarity_weapontype_key": [item1, item2, item3, ...], ... }
 	var groups: Dictionary = {}
 
 	for item in inventory:
@@ -827,7 +827,13 @@ func get_combinable_groups() -> Dictionary:
 		if item.rarity == ItemData.Rarity.LEGENDARY:
 			continue
 
-		var key = "%d_%d" % [item.slot, item.rarity]
+		# For weapons, include weapon_type in the key so only same weapon types can combine
+		var key: String
+		if item.slot == ItemData.Slot.WEAPON:
+			key = "%d_%d_%d" % [item.slot, item.rarity, item.weapon_type]
+		else:
+			key = "%d_%d" % [item.slot, item.rarity]
+
 		if not groups.has(key):
 			groups[key] = []
 		groups[key].append(item)
@@ -847,11 +853,17 @@ func can_combine_item(item: ItemData) -> bool:
 	if item.rarity == ItemData.Rarity.LEGENDARY:
 		return false
 
-	var key = "%d_%d" % [item.slot, item.rarity]
+	# For weapons, include weapon_type in the key
+	var key: String
+	if item.slot == ItemData.Slot.WEAPON:
+		key = "%d_%d_%d" % [item.slot, item.rarity, item.weapon_type]
+	else:
+		key = "%d_%d" % [item.slot, item.rarity]
+
 	var groups = get_combinable_groups()
 	return groups.has(key)
 
-# Get count of combinable items matching this item's slot/rarity
+# Get count of combinable items matching this item's slot/rarity/weapon_type
 func get_combinable_count(item: ItemData) -> int:
 	if item.equipped_by != "":
 		return 0
@@ -863,7 +875,12 @@ func get_combinable_count(item: ItemData) -> int:
 		if inv_item.equipped_by != "":
 			continue
 		if inv_item.slot == item.slot and inv_item.rarity == item.rarity:
-			count += 1
+			# For weapons, also check weapon_type matches
+			if item.slot == ItemData.Slot.WEAPON:
+				if inv_item.weapon_type == item.weapon_type:
+					count += 1
+			else:
+				count += 1
 	return count
 
 # Combine 3 items into 1 higher rarity
@@ -874,6 +891,7 @@ func combine_items(item_ids: Array) -> ItemData:
 	var items: Array[ItemData] = []
 	var slot = -1
 	var rarity = -1
+	var weapon_type = -1
 
 	# Validate all items
 	for item_id in item_ids:
@@ -889,7 +907,11 @@ func combine_items(item_ids: Array) -> ItemData:
 		if slot == -1:
 			slot = item.slot
 			rarity = item.rarity
+			weapon_type = item.weapon_type
 		elif item.slot != slot or item.rarity != rarity:
+			return null
+		# For weapons, also check weapon_type matches
+		elif slot == ItemData.Slot.WEAPON and item.weapon_type != weapon_type:
 			return null
 
 		items.append(item)
@@ -912,6 +934,9 @@ func combine_items(item_ids: Array) -> ItemData:
 	new_item.slot = slot as ItemData.Slot
 	new_item.rarity = new_rarity as ItemData.Rarity
 	new_item.item_level = avg_level
+	# Preserve weapon type from combined items
+	if slot == ItemData.Slot.WEAPON:
+		new_item.weapon_type = weapon_type as ItemData.WeaponType
 
 	# Get character for weapon filtering
 	var character_id = ""

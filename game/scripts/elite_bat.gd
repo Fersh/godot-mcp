@@ -48,8 +48,7 @@ var swarm_warning_label: Label = null
 var swarm_warning_tween: Tween = null
 var active_swarm_bats: Array[Node] = []
 
-# Base stats storage for blitz
-var base_speed: float = 0.0
+# base_speed is inherited from EnemyBase
 
 func _setup_elite() -> void:
 	elite_name = "Dreadwing the Eclipsed"

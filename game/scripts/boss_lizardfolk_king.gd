@@ -10,7 +10,7 @@ extends BossBase
 # Attack damage values (16x Minotaur base)
 @export var claw_damage: float = 352.0  # 22 * 16
 @export var tail_damage: float = 280.0
-@export var poison_damage: float = 50.0  # Initial hit
+@export var poison_spit_damage: float = 50.0  # Initial hit
 @export var poison_dot_damage: float = 30.0  # Per tick
 @export var poison_dot_duration: float = 4.0
 @export var poison_dot_interval: float = 0.5
@@ -141,6 +141,7 @@ func _setup_boss() -> void:
 	]
 
 func _execute_attack(attack: Dictionary) -> void:
+	pending_attack_name = attack.name
 	match attack.name:
 		"intimidate":
 			_start_intimidate()
@@ -231,12 +232,6 @@ func _process_windup(delta: float) -> void:
 	if attack_windup_timer <= 0:
 		is_winding_up = false
 		_execute_current_attack()
-
-func _select_attack() -> Dictionary:
-	var attack = super._select_attack()
-	if attack.size() > 0:
-		pending_attack_name = attack.get("name", "")
-	return attack
 
 func _execute_current_attack() -> void:
 	hide_warning()
@@ -404,7 +399,7 @@ func _poison_explode(projectile: Area2D) -> void:
 	if player and is_instance_valid(player):
 		var dist = hit_pos.distance_to(player.global_position)
 		if dist <= 60:
-			var damage = poison_damage
+			var damage = poison_spit_damage
 			if player_intimidated:
 				damage *= (1.0 + INTIMIDATION_DAMAGE_TAKEN_BONUS)
 			if is_enraged:

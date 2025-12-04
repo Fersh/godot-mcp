@@ -183,6 +183,7 @@ func _setup_boss() -> void:
 	]
 
 func _execute_attack(attack: Dictionary) -> void:
+	pending_attack_name = attack.name
 	match attack.name:
 		"fire_rain":
 			_start_fire_rain()
@@ -376,12 +377,6 @@ func _process_windup(delta: float) -> void:
 	if attack_windup_timer <= 0:
 		is_winding_up = false
 		_execute_current_attack()
-
-func _select_attack() -> Dictionary:
-	var attack = super._select_attack()
-	if attack.size() > 0:
-		pending_attack_name = attack.get("name", "")
-	return attack
 
 func _execute_current_attack() -> void:
 	hide_warning()

@@ -20,10 +20,14 @@ enum Rarity {
 
 enum WeaponType {
 	NONE,
-	MELEE,
-	RANGED,
-	MAGIC,  # Books for mages
-	DAGGER  # Daggers for assassins
+	MELEE,    # Generic melee (legacy, use specific types below)
+	RANGED,   # Bows for rangers
+	MAGIC,    # Books/staves for mages
+	DAGGER,   # Daggers for assassins
+	SWORD,    # Swords for knights
+	AXE,      # Axes for barbarians
+	SPEAR,    # Spears for monks
+	MACE      # Maces (future)
 }
 
 # Rarity colors
@@ -57,7 +61,11 @@ const WEAPON_TYPE_NAMES: Dictionary = {
 	WeaponType.MELEE: "Melee",
 	WeaponType.RANGED: "Bow",
 	WeaponType.MAGIC: "Staff",
-	WeaponType.DAGGER: "Dagger"
+	WeaponType.DAGGER: "Dagger",
+	WeaponType.SWORD: "Sword",
+	WeaponType.AXE: "Axe",
+	WeaponType.SPEAR: "Spear",
+	WeaponType.MACE: "Mace"
 }
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
@@ -227,8 +235,20 @@ func can_be_equipped_by(character_id: String) -> bool:
 		if character_id == "beast":
 			return false
 		if weapon_type == WeaponType.MELEE:
-			# Swords for knight & barbarian, spears for monk
+			# Legacy generic melee - allow knight, monk, barbarian
 			return character_id in ["knight", "monk", "barbarian"]
+		elif weapon_type == WeaponType.SWORD:
+			# Swords for knight
+			return character_id == "knight"
+		elif weapon_type == WeaponType.AXE:
+			# Axes for barbarian
+			return character_id == "barbarian"
+		elif weapon_type == WeaponType.SPEAR:
+			# Spears for monk
+			return character_id == "monk"
+		elif weapon_type == WeaponType.MACE:
+			# Maces - future, allow knight and barbarian
+			return character_id in ["knight", "barbarian"]
 		elif weapon_type == WeaponType.RANGED:
 			return character_id == "archer"
 		elif weapon_type == WeaponType.MAGIC:

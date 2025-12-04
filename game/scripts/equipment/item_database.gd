@@ -183,21 +183,21 @@ const BASE_ITEMS: Dictionary = {
 	"sword_basic": {
 		"display_name": "Sword",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.05},
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon1.png"
 	},
 	"axe_basic": {
 		"display_name": "Axe",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.08},
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon5.png"
 	},
 	"mace_basic": {
 		"display_name": "Mace",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.MACE,
 		"base_stats": {"damage": 0.08, "knockback": 20.0},
 		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon1.png"
 	},
@@ -230,11 +230,11 @@ const BASE_ITEMS: Dictionary = {
 		"base_stats": {"attack_speed": 0.12},
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon4.png"
 	},
-	# SPEARS - Monk & Beast weapon (1-48 scaling, 1=common, 48=mythic)
+	# SPEARS - Monk weapon (1-48 scaling, 1=common, 48=mythic)
 	"spear_basic": {
 		"display_name": "Spear",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.04, "melee_range": 0.15},
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon1.png"
 	},
@@ -456,7 +456,7 @@ const EPIC_ITEMS: Dictionary = {
 		"display_name": "The Bonk Stick",
 		"description": "For when they need bonking.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.MACE,
 		"base_stats": {"damage": 0.15, "knockback": 50.0},
 		"grants_ability": "concussive_hit",
 		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon20.png"
@@ -474,7 +474,7 @@ const EPIC_ITEMS: Dictionary = {
 		"display_name": "Ow Ow Ow Blade",
 		"description": "Hurts them AND you. Mostly them.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.20},
 		"grants_ability": "thorns",
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon20.png"
@@ -483,7 +483,7 @@ const EPIC_ITEMS: Dictionary = {
 		"display_name": "Squeaky Hammer",
 		"description": "*squeak* *squeak* *SQUEAK*",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.MACE,
 		"base_stats": {"damage": 0.08, "attack_speed": 0.20},
 		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon25.png"
 	},
@@ -525,12 +525,12 @@ const EPIC_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon23.png"
 	},
 
-	# Weapons - Spears (Monk & Beast)
+	# Weapons - Spears (Monk)
 	"monks_wisdom": {
 		"display_name": "Staff of Wisdom",
 		"description": "Enlightenment through bonking.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.12, "attack_speed": 0.12},
 		"grants_ability": "deflect",
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon20.png"
@@ -539,7 +539,7 @@ const EPIC_ITEMS: Dictionary = {
 		"display_name": "Beast's Claw Spear",
 		"description": "Ripped from something big. Very big.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.15, "melee_range": 0.20},
 		"grants_ability": "frenzy",
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon25.png"
@@ -740,7 +740,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "Excalibur-ish",
 		"description": "Close enough to the real thing.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15, "attack_speed": 0.10},
 		"grants_equipment_ability": "holy_smite",
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon40.png"
@@ -749,7 +749,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "The Ban Hammer",
 		"description": "You have been banned from life.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.MACE,
 		"base_stats": {"damage": 0.25, "knockback": 100.0},
 		"grants_equipment_ability": "permaban",
 		"icon_path": "res://assets/sprites/items/mace/PNG/Transperent/Icon40.png"
@@ -758,7 +758,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "Infinity Blade +1",
 		"description": "One more than infinity.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.20, "attack_speed": 0.20, "crit_chance": 0.10},
 		"grants_equipment_ability": "scaling_damage",
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon45.png"
@@ -767,7 +767,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "Mom's Spaghetti Sword",
 		"description": "Palms are sweaty.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.18, "max_hp": 0.15},
 		"grants_equipment_ability": "comfort_food",
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon42.png"
@@ -776,7 +776,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "Nerf Sword (Pre-Nerf)",
 		"description": "Before the devs got to it.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SWORD,
 		"base_stats": {"damage": 0.35, "attack_speed": 0.15},
 		"grants_equipment_ability": "overtuned",
 		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon48.png"
@@ -811,12 +811,12 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/daggers/PNG/Transperent/Icon48.png"
 	},
 
-	# Weapons - Spears (Monk & Beast) - Legendary
+	# Weapons - Spears (Monk) - Legendary
 	"enlightenment_staff": {
 		"display_name": "Staff of Enlightenment",
 		"description": "One bonk and you'll understand everything.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.25, "attack_speed": 0.20, "melee_range": 0.25},
 		"grants_equipment_ability": "holy_smite",
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon40.png"
@@ -825,7 +825,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"display_name": "Primal Rage Spear",
 		"description": "RAAAAWR!",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MELEE,
+		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.30, "melee_range": 0.30, "crit_chance": 0.15},
 		"grants_equipment_ability": "scaling_damage",
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon48.png"
@@ -1357,19 +1357,8 @@ static func get_base_item_ids_for_character(slot: ItemData.Slot, character_id: S
 		# For weapons, filter by character's weapon type
 		if slot == ItemData.Slot.WEAPON:
 			var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
-			match character_id:
-				"archer":
-					if item_weapon_type != ItemData.WeaponType.RANGED:
-						continue
-				"mage":
-					if item_weapon_type != ItemData.WeaponType.MAGIC:
-						continue
-				"assassin":
-					if item_weapon_type != ItemData.WeaponType.DAGGER:
-						continue
-				"knight", "barbarian", "beast", "monk":
-					if item_weapon_type != ItemData.WeaponType.MELEE:
-						continue
+			if not _weapon_type_matches_character(item_weapon_type, character_id):
+				continue
 
 		ids.append(id)
 	return ids
@@ -1427,6 +1416,12 @@ static func _weapon_type_matches_character(weapon_type: int, character_id: Strin
 			return weapon_type == ItemData.WeaponType.MAGIC
 		"assassin":
 			return weapon_type == ItemData.WeaponType.DAGGER
-		"knight", "barbarian", "beast", "monk":
-			return weapon_type == ItemData.WeaponType.MELEE
+		"knight":
+			return weapon_type in [ItemData.WeaponType.SWORD, ItemData.WeaponType.MELEE]
+		"barbarian":
+			return weapon_type in [ItemData.WeaponType.AXE, ItemData.WeaponType.MACE, ItemData.WeaponType.MELEE]
+		"monk":
+			return weapon_type in [ItemData.WeaponType.SPEAR, ItemData.WeaponType.MELEE]
+		"beast":
+			return false  # Beast fights with claws, no weapons
 	return true  # Unknown character, allow all

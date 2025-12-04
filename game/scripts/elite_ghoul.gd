@@ -50,8 +50,7 @@ var fury_telegraph_timer: float = 0.0
 var fury_warning_label: Label = null
 var fury_warning_tween: Tween = null
 
-# Store original stats for fury mode
-var base_speed: float = 0.0
+# Store original stats for fury mode (base_speed inherited from EnemyBase)
 var base_damage: float = 0.0
 
 func _setup_elite() -> void:

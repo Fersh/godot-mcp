@@ -754,6 +754,9 @@ func _create_inventory_card(item: ItemData) -> Button:
 	if combine_mode and combine_selection.size() > 0:
 		var first = combine_selection[0]
 		is_same_group = item.slot == first.slot and item.rarity == first.rarity and not is_equipped
+		# For weapons, also require same weapon_type
+		if is_same_group and item.slot == ItemData.Slot.WEAPON:
+			is_same_group = item.weapon_type == first.weapon_type
 
 	if is_selected_for_combine:
 		# Purple highlight for selected combine items
@@ -820,11 +823,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 	# Equipped indicator in corner (top-left)
 	if is_equipped:
 		var indicator = Label.new()
-		# Use W for Wizard (mage) instead of M
-		var char_initial = item.equipped_by.substr(0, 1).to_upper()
-		if item.equipped_by == "mage":
-			char_initial = "W"  # Wizard
-		indicator.text = char_initial
+		indicator.text = "E"  # E for Equipped
 		if pixel_font:
 			indicator.add_theme_font_override("font", pixel_font)
 		indicator.add_theme_font_size_override("font_size", 18)
@@ -905,9 +904,13 @@ func _handle_combine_selection(item: ItemData) -> void:
 			_refresh_inventory()
 		return
 
-	# Check if item matches the current selection (same slot + rarity)
+	# Check if item matches the current selection (same slot + rarity + weapon_type for weapons)
 	var first = combine_selection[0]
-	if item.slot != first.slot or item.rarity != first.rarity:
+	var slot_matches = item.slot == first.slot
+	var rarity_matches = item.rarity == first.rarity
+	var weapon_type_matches = item.slot != ItemData.Slot.WEAPON or item.weapon_type == first.weapon_type
+
+	if not (slot_matches and rarity_matches and weapon_type_matches):
 		# Different group - start new selection
 		if EquipmentManager.can_combine_item(item):
 			combine_selection.clear()
