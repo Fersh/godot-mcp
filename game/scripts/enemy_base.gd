@@ -62,6 +62,14 @@ var poison_damage: float = 0.0
 var poison_tick_timer: float = 0.0
 const POISON_TICK_INTERVAL: float = 0.5
 
+# Status effect visual colors (saturated for clear visibility)
+const STATUS_COLOR_BURN: Color = Color(1.0, 0.35, 0.15)   # Deep orange-red
+const STATUS_COLOR_POISON: Color = Color(0.3, 1.0, 0.3)   # Vibrant green
+const STATUS_COLOR_SLOW: Color = Color(0.4, 0.65, 1.0)    # Icy blue
+const STATUS_COLOR_STUN: Color = Color(1.0, 0.85, 0.2)    # Bright yellow
+const STATUS_TINT_STRENGTH: float = 0.8  # Strong tint for clear visibility
+var base_modulate: Color = Color.WHITE  # Store original/champion color
+
 # Knockback
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
@@ -133,8 +141,12 @@ func _ready() -> void:
 		health_bar.set_health(current_health, max_health)
 		# Hide health bar for regular mobs until they take damage
 		# (champions will show health bar when make_champion() is called)
-		if enemy_rarity == "common":
+		if enemy_rarity == "normal":
 			health_bar.visible = false
+
+	# Capture sprite's initial modulate as base (after subclass setup)
+	if sprite:
+		base_modulate = sprite.modulate
 
 func _apply_difficulty_scaling() -> void:
 	"""Apply difficulty multipliers to enemy stats."""
@@ -158,6 +170,10 @@ func _physics_process(delta: float) -> void:
 		update_death_animation(delta)
 		return
 	handle_status_effects(delta)
+
+	# Apply status effect tint continuously (must run every frame)
+	if is_burning or is_poisoned or is_slowed or is_stunned:
+		_update_status_modulate()
 
 	if handle_knockback(delta):
 		return
@@ -299,7 +315,7 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 		# Show health bar for regular mobs when they take damage
-		if enemy_rarity == "common" and current_health < max_health:
+		if enemy_rarity == "normal" and current_health < max_health:
 			health_bar.visible = true
 
 	if SoundManager:
@@ -352,33 +368,54 @@ func apply_stagger() -> void:
 
 func apply_stun(duration: float) -> void:
 	"""Apply stun effect - enemy cannot move or attack. Bosses/elites are immune."""
-	# Bosses and elites cannot be stunned
 	if enemy_rarity == "boss" or enemy_rarity == "elite":
 		return
+	var was_stunned = is_stunned
 	is_stunned = true
 	stun_timer = max(stun_timer, duration)  # Don't reduce existing stun
 	is_winding_up = false
 	windup_timer = 0.0
+	if not was_stunned:
+		_update_status_modulate()
+		_spawn_status_text("STUN", Color(1.0, 0.9, 0.4))
 
 func apply_slow(percent: float, duration: float) -> void:
-	"""Apply slow effect - reduces movement speed."""
+	"""Apply slow effect - reduces movement speed. Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_slowed = is_slowed
 	is_slowed = true
 	slow_percent = max(slow_percent, percent)  # Use strongest slow
 	slow_timer = max(slow_timer, duration)
 	_update_speed()
+	if not was_slowed:
+		_update_status_modulate()
+		_spawn_status_text("SLOW", Color(0.4, 0.7, 1.0))
 
 func apply_burn(duration: float, custom_damage_per_tick: float = -1.0) -> void:
-	"""Apply burn effect - deals damage per tick (default: 5% max HP)."""
+	"""Apply burn effect - deals damage per tick (default: 5% max HP). Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_burning = is_burning
 	is_burning = true
 	burn_timer = max(burn_timer, duration)
 	if custom_damage_per_tick > 0:
 		burn_custom_damage = custom_damage_per_tick
+	if not was_burning:
+		_update_status_modulate()
+		_spawn_status_text("BURN", Color(1.0, 0.4, 0.2))
 
 func apply_poison(total_damage: float, duration: float) -> void:
-	"""Apply poison effect - deals damage over time."""
+	"""Apply poison effect - deals damage over time. Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_poisoned = is_poisoned
 	is_poisoned = true
 	poison_timer = max(poison_timer, duration)
 	poison_damage = total_damage / (duration / POISON_TICK_INTERVAL)  # Damage per tick
+	if not was_poisoned:
+		_update_status_modulate()
+		_spawn_status_text("POISON", Color(0.4, 1.0, 0.4))
 
 func handle_stun(delta: float) -> bool:
 	"""Handle stun status - returns true if stunned and should skip behavior."""
@@ -386,6 +423,7 @@ func handle_stun(delta: float) -> bool:
 		stun_timer -= delta
 		if stun_timer <= 0:
 			is_stunned = false
+			_update_status_modulate()
 		else:
 			velocity = Vector2.ZERO
 			update_animation(delta, ROW_DAMAGE, Vector2.ZERO)
@@ -401,6 +439,7 @@ func handle_status_effects(delta: float) -> void:
 			is_slowed = false
 			slow_percent = 0.0
 			_update_speed()
+			_update_status_modulate()
 
 	# Handle burn damage
 	if is_burning:
@@ -417,6 +456,7 @@ func handle_status_effects(delta: float) -> void:
 		if burn_timer <= 0:
 			is_burning = false
 			burn_custom_damage = -1.0  # Reset custom damage
+			_update_status_modulate()
 
 	# Handle poison damage
 	if is_poisoned:
@@ -427,6 +467,7 @@ func handle_status_effects(delta: float) -> void:
 			_take_dot_damage(poison_damage, Color(0.4, 1.0, 0.4))
 		if poison_timer <= 0:
 			is_poisoned = false
+			_update_status_modulate()
 			poison_damage = 0.0
 
 func _take_dot_damage(amount: float, color: Color) -> void:
@@ -438,7 +479,7 @@ func _take_dot_damage(amount: float, color: Color) -> void:
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
 		# Show health bar for regular mobs when they take damage
-		if enemy_rarity == "common" and current_health < max_health:
+		if enemy_rarity == "normal" and current_health < max_health:
 			health_bar.visible = true
 
 	# Spawn colored damage number (higher up to avoid overlapping normal damage)
@@ -461,6 +502,42 @@ func _update_speed() -> void:
 	else:
 		speed = base_speed
 
+func _update_status_modulate() -> void:
+	"""Update sprite color based on active status effects. Performance-friendly."""
+	if not sprite:
+		return
+
+	# Use max per channel for vibrant color stacking (no muddy averaging)
+	var has_status: bool = false
+	var blended_color: Color = Color(0, 0, 0, 1.0)
+
+	if is_burning:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_BURN.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_BURN.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_BURN.b)
+		has_status = true
+	if is_poisoned:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_POISON.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_POISON.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_POISON.b)
+		has_status = true
+	if is_slowed:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_SLOW.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_SLOW.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_SLOW.b)
+		has_status = true
+	if is_stunned:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_STUN.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_STUN.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_STUN.b)
+		has_status = true
+
+	# Apply blended status color or restore base
+	if has_status:
+		sprite.modulate = base_modulate.lerp(blended_color, STATUS_TINT_STRENGTH)
+	else:
+		sprite.modulate = base_modulate
+
 func get_current_speed() -> float:
 	"""Get the current effective speed (affected by slows)."""
 	return speed
@@ -473,6 +550,18 @@ func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
 	dmg_num.global_position = global_position + Vector2(0, -30)
 	get_parent().add_child(dmg_num)
 	dmg_num.set_damage(amount, is_critical, false)
+
+func _spawn_status_text(text: String, color: Color) -> void:
+	"""Spawn colored status text above this enemy."""
+	if damage_number_scene == null:
+		return
+	var dmg_num = damage_number_scene.instantiate()
+	dmg_num.global_position = global_position + Vector2(0, -50)
+	get_parent().add_child(dmg_num)
+	if dmg_num.has_method("set_status"):
+		dmg_num.set_status(text, color)
+	elif dmg_num.has_method("set_elemental"):
+		dmg_num.set_elemental(text, color)
 
 func die() -> void:
 	is_dying = true
@@ -663,8 +752,10 @@ func make_champion() -> void:
 	_create_champion_indicator()
 
 	# Apply golden/orange tint to indicate champion status
+	# Store as base_modulate so status effects blend correctly
 	if sprite:
-		sprite.modulate = Color(1.0, 0.85, 0.5)  # Golden tint
+		base_modulate = Color(1.0, 0.85, 0.5)  # Golden tint
+		sprite.modulate = base_modulate
 
 func _create_champion_indicator() -> void:
 	"""Create a visual indicator showing CHAMPION above the health bar and fire aura below feet."""

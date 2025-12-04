@@ -37,6 +37,10 @@ func _ready() -> void:
 	bg_style.border_color = Color(0, 0, 0, 1.0)  # Black border
 	bg_style.set_border_width_all(border_width)
 	bg_style.set_corner_radius_all(corner_radius)
+	# Add drop shadow for depth
+	bg_style.shadow_color = Color(0, 0, 0, 0.5)
+	bg_style.shadow_size = 3
+	bg_style.shadow_offset = Vector2(1, 2)
 	background.add_theme_stylebox_override("panel", bg_style)
 
 	# Set fill corner radius to match background (slightly smaller to fit inside border)

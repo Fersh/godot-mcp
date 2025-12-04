@@ -64,8 +64,9 @@ func setup(data: ItemData) -> void:
 		rarity_label.text = data.get_full_name()
 		rarity_label.add_theme_color_override("font_color", rarity_color)
 		rarity_label.add_theme_font_size_override("font_size", 10)
-		# Add white border/outline to text
-		rarity_label.add_theme_color_override("font_outline_color", Color.WHITE)
+		# Add border/outline to text - black for common (white text), white for others
+		var outline_color = Color.BLACK if data.rarity == ItemData.Rarity.COMMON else Color.WHITE
+		rarity_label.add_theme_color_override("font_outline_color", outline_color)
 		rarity_label.add_theme_constant_override("outline_size", 3)
 		# Put label above fire effect
 		rarity_label.z_index = 10

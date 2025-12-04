@@ -124,6 +124,43 @@ CHANGE: Regular enemies (non-elites, non-bosses) only show health bars when dama
 
 ---
 
+### 7. Status Effect Visual Tinting
+
+NEW FEATURE: Enemies now display color tints when affected by status effects.
+
+| Status Effect | Color | RGB |
+|---------------|-------|-----|
+| Burn | Orange-red | `Color(1.3, 0.6, 0.3)` |
+| Poison | Green | `Color(0.5, 1.2, 0.5)` |
+| Slow/Frozen | Light blue | `Color(0.6, 0.85, 1.3)` |
+| Stun | Yellow | `Color(1.3, 1.2, 0.5)` |
+
+**Details:**
+- Uses sprite modulate tinting (zero GPU overhead)
+- Multiple status effects blend their colors together
+- Tint strength: 40% blend with base color
+- Champions retain golden base tint with status effects layered on top
+- Only updates when status effects change (not every frame)
+
+**Implementation:** Added `_update_status_modulate()` in `enemy_base.gd`, called when status effects are applied/removed.
+
+---
+
+### 8. Health Bar Drop Shadow
+
+NEW FEATURE: All health bars now have a subtle drop shadow for better visual depth and readability.
+
+**Details:**
+- Shadow color: `Color(0, 0, 0, 0.5)` (50% black)
+- Shadow size: 3px blur
+- Shadow offset: `Vector2(1, 2)` (slightly down-right)
+- Uses native StyleBoxFlat shadow properties (zero performance cost)
+- Applies to player, enemy, elite, and boss health bars
+
+**Implementation:** Added `shadow_color`, `shadow_size`, and `shadow_offset` to the background StyleBoxFlat in `health_bar.gd`.
+
+---
+
 ## Rollback Instructions
 
 ### To revert base difficulty scaling:
@@ -149,6 +186,12 @@ Set all `percent_hp_damage` values to 0.0 in DIFFICULTY_DATA, or remove the calc
 ### To revert health bar visibility:
 Remove the visibility check in `enemy_base.gd` and always show health bars.
 
+### To disable status effect tinting:
+Remove the `_update_status_modulate()` calls from `apply_stun()`, `apply_slow()`, `apply_burn()`, `apply_poison()`, `handle_stun()`, and `handle_status_effects()` in `enemy_base.gd`.
+
+### To remove health bar drop shadow:
+Remove the `shadow_color`, `shadow_size`, and `shadow_offset` lines from `health_bar.gd` `_ready()`.
+
 ---
 
 ## Files Modified
@@ -157,4 +200,5 @@ Remove the visibility check in `enemy_base.gd` and always show health bars.
 2. `game/scripts/player.gd` - XP requirement multiplier, %HP damage
 3. `game/scripts/elite_base.gd` - Elite bonus application
 4. `game/scripts/boss_base.gd` - Boss bonus application
-5. `game/scripts/enemy_base.gd` - Health bar visibility logic
+5. `game/scripts/enemy_base.gd` - Health bar visibility logic, status effect color tinting
+6. `game/scripts/health_bar.gd` - Drop shadow for all health bars

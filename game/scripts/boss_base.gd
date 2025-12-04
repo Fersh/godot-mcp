@@ -124,7 +124,7 @@ func _update_aura(delta: float) -> void:
 
 	# Pulsing red modulate effect
 	var pulse = 0.15 + sin(aura_timer * 4.0) * 0.1
-	var base_color = Color(1.0, 1.0, 1.0, 1.0)
+	var white = Color(1.0, 1.0, 1.0, 1.0)
 
 	if sprite == null or not is_instance_valid(sprite):
 		return
@@ -132,9 +132,12 @@ func _update_aura(delta: float) -> void:
 	if is_enraged:
 		# More intense red when enraged
 		pulse = 0.25 + sin(aura_timer * 6.0) * 0.15
-		sprite.modulate = base_color.lerp(Color(1.5, 0.5, 0.5, 1.0), pulse)
+		base_modulate = white.lerp(Color(1.5, 0.5, 0.5, 1.0), pulse)
 	else:
-		sprite.modulate = base_color.lerp(Color(1.3, 0.7, 0.7, 1.0), pulse)
+		base_modulate = white.lerp(Color(1.3, 0.7, 0.7, 1.0), pulse)
+
+	# Apply status effects on top of boss aura
+	_update_status_modulate()
 
 func _trigger_enrage() -> void:
 	is_enraged = true

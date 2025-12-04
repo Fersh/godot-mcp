@@ -65,6 +65,9 @@ func _ready() -> void:
 	# Hide tooltip initially
 	floating_tooltip.visible = false
 
+	# Add secret button below everything
+	_create_secret_button()
+
 func _style_back_button() -> void:
 	var style_normal = StyleBoxFlat.new()
 	style_normal.bg_color = Color(0.25, 0.25, 0.3, 1)
@@ -675,3 +678,39 @@ func _on_upgrades_refunded(_coins_returned: int) -> void:
 	# Hide tooltip
 	selected_upgrade_id = ""
 	floating_tooltip.visible = false
+
+func _create_secret_button() -> void:
+	"""Create a hidden button that gives +1000 coins when pressed."""
+	var content_vbox = $MainContainer/ScrollContainer/MarginContainer/ContentVBox
+	if not content_vbox:
+		return
+
+	var secret_btn = Button.new()
+	secret_btn.text = "."
+	secret_btn.custom_minimum_size = Vector2(30, 30)
+
+	# Make it nearly invisible
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.1, 0.12, 0.1)
+	style.set_border_width_all(0)
+	secret_btn.add_theme_stylebox_override("normal", style)
+	secret_btn.add_theme_stylebox_override("hover", style)
+	secret_btn.add_theme_stylebox_override("pressed", style)
+	secret_btn.add_theme_stylebox_override("focus", style)
+	secret_btn.add_theme_color_override("font_color", Color(0.15, 0.15, 0.18, 0.3))
+	secret_btn.add_theme_font_size_override("font_size", 8)
+
+	# Center it
+	var center = CenterContainer.new()
+	center.add_child(secret_btn)
+	content_vbox.add_child(center)
+
+	secret_btn.pressed.connect(_on_secret_pressed)
+
+func _on_secret_pressed() -> void:
+	"""Give +1000 coins with no cap."""
+	if StatsManager:
+		StatsManager.spendable_coins += 1000
+		StatsManager.save_stats()
+		_update_coin_display()
+		_update_all_tiles_affordability()

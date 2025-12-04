@@ -203,3 +203,13 @@ func set_kill_streak(streak: int, tier_name: String, color: Color) -> void:
 	_animate_crit()
 	# Longer fade for milestones
 	fade_duration = 1.5
+
+func set_status(status_name: String, color: Color) -> void:
+	"""Display status effect text (SLOWED, BURNING, STUNNED, POISONED)."""
+	label.text = status_name
+	label.add_theme_color_override("font_color", color)
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	label.add_theme_constant_override("outline_size", 2)
+	scale = Vector2(0.8, 0.8)
+	fade_duration = 0.6

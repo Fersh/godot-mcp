@@ -639,7 +639,7 @@ static func _create_meteor_strike() -> ActiveAbilityData:
 static func _create_totem_of_frost() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"totem_of_frost",
-		"Totem of Frost",
+		"Frost Totem",
 		"Place a totem that slows and damages nearby enemies for 10 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,

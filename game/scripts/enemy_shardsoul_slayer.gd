@@ -97,9 +97,10 @@ func _process_behavior(delta: float) -> void:
 func activate_frenzy() -> void:
 	is_frenzied = true
 
-	# Visual feedback - red tint
+	# Visual feedback - red tint (update base_modulate so status effects blend correctly)
 	if sprite:
-		sprite.modulate = Color(1.2, 0.7, 0.7, 1.0)
+		base_modulate = Color(1.2, 0.7, 0.7, 1.0)
+		sprite.modulate = base_modulate
 
 	# Stat boosts are applied through multipliers in behavior
 
