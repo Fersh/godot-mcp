@@ -71,7 +71,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"arcane_absorption",
 			"Arcane Absorption",
 			"Kills reduce ability cooldowns by 0.5s",
-			AbilityData.Rarity.RARE,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ARCANE_ABSORPTION, value = 0.5}]
 		),
@@ -138,7 +138,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"cooldown_killer",
 			"Cooldown Killer",
 			"Kills reduce active ability cooldowns by 1s",
-			AbilityData.Rarity.RARE,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 1.0}]
 		),

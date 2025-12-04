@@ -67,7 +67,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"adrenaline_surge",
 			"Adrenaline Surge",
 			"Taking damage reduces active cooldowns by 0.5s",
-			AbilityData.Rarity.RARE,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ADRENALINE_SURGE, value = 0.5}]
 		),
@@ -91,7 +91,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			"kill_accelerant",
 			"Kill Accelerant",
 			"Kills reduce ultimate cooldown by 0.5s",
-			AbilityData.Rarity.RARE,
+			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.KILL_ACCELERANT, value = 0.5}]
 		),
