@@ -316,7 +316,7 @@ func _create_section_panel(title: String) -> PanelContainer:
 	var vbox = VBoxContainer.new()
 	vbox.custom_minimum_size = Vector2(CONTAINER_WIDTH, 0)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", 13)
 	panel.add_child(vbox)
 
 	# Section title

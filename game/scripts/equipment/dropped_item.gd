@@ -26,6 +26,10 @@ var glow_time: float = 0.0
 @onready var rarity_label: Label = $RarityLabel
 @onready var collision_shape: CollisionShape2D = $CollisionShape
 
+# Fire effect
+var fire_effect: ColorRect = null
+var rarity_particle_shader: Shader = null
+
 func _ready() -> void:
 	base_y = global_position.y
 	bob_time = randf() * TAU  # Random start phase
@@ -60,10 +64,18 @@ func setup(data: ItemData) -> void:
 		rarity_label.text = data.get_full_name()
 		rarity_label.add_theme_color_override("font_color", rarity_color)
 		rarity_label.add_theme_font_size_override("font_size", 10)
+		# Add white border/outline to text
+		rarity_label.add_theme_color_override("font_outline_color", Color.WHITE)
+		rarity_label.add_theme_constant_override("outline_size", 3)
+		# Put label above fire effect
+		rarity_label.z_index = 10
 		# Load pixel font
 		if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 			var pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 			rarity_label.add_theme_font_override("font", pixel_font)
+
+	# Create fire effect based on rarity
+	_create_fire_effect(data.rarity, rarity_color)
 
 	# Load icon if available
 	if data.icon_path != "" and ResourceLoader.exists(data.icon_path):
@@ -153,3 +165,63 @@ func get_display_info() -> Dictionary:
 		"description": item_data.description,
 		"icon_path": item_data.icon_path
 	}
+
+func _create_fire_effect(rarity: ItemData.Rarity, rarity_color: Color) -> void:
+	"""Create fire particle effect based on item rarity."""
+	# Load shader if not already loaded
+	if rarity_particle_shader == null:
+		if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
+			rarity_particle_shader = load("res://shaders/rarity_particles.gdshader")
+
+	if rarity_particle_shader == null:
+		return
+
+	# Determine fire color and intensity based on rarity
+	var fire_color: Color
+	var intensity: float
+	var density: float
+
+	match rarity:
+		ItemData.Rarity.COMMON:
+			fire_color = Color(1.0, 1.0, 1.0, 0.6)  # White fire
+			intensity = 0.4
+			density = 6.0
+		ItemData.Rarity.RARE:
+			fire_color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.7)
+			intensity = 0.7
+			density = 10.0
+		ItemData.Rarity.EPIC:
+			fire_color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.8)
+			intensity = 1.0
+			density = 14.0
+		ItemData.Rarity.LEGENDARY:
+			fire_color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.9)
+			intensity = 1.4
+			density = 18.0
+		ItemData.Rarity.MYTHIC:
+			fire_color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 1.0)
+			intensity = 2.0
+			density = 24.0
+		_:
+			fire_color = Color(1.0, 1.0, 1.0, 0.5)
+			intensity = 0.3
+			density = 5.0
+
+	# Create fire effect ColorRect
+	fire_effect = ColorRect.new()
+	fire_effect.size = Vector2(50, 60)
+	fire_effect.position = Vector2(-25, -50)  # Center below label, above item
+	fire_effect.z_index = -1  # Behind everything but visible
+	fire_effect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Apply shader
+	var mat = ShaderMaterial.new()
+	mat.shader = rarity_particle_shader
+	mat.set_shader_parameter("rarity_color", fire_color)
+	mat.set_shader_parameter("intensity", intensity)
+	mat.set_shader_parameter("speed", 1.2)
+	mat.set_shader_parameter("particle_density", density)
+	mat.set_shader_parameter("pixel_size", 0.08)
+	fire_effect.material = mat
+
+	add_child(fire_effect)

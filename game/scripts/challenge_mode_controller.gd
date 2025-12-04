@@ -56,7 +56,9 @@ func _process(delta: float) -> void:
 	if challenge_complete:
 		return
 
-	game_time += delta
+	# Only increment game time when not paused (ability selection, etc.)
+	if not get_tree().paused:
+		game_time += delta
 
 	# Check milestones (elite spawns at 2.5m, 5m, 7.5m)
 	for i in range(MILESTONE_TIMES.size()):
