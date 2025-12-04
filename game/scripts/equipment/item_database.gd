@@ -1331,16 +1331,22 @@ const EQUIPMENT_ABILITIES: Dictionary = {
 	},
 }
 
+# Weapon types excluded from drops (no proper images yet)
+const EXCLUDED_WEAPON_TYPES = [ItemData.WeaponType.MACE]
+
 static func get_base_item_ids_for_slot(slot: ItemData.Slot, weapon_type: int = -1) -> Array:
 	var ids = []
 	for id in BASE_ITEMS:
 		var item = BASE_ITEMS[id]
 		var item_slot = item.get("slot", ItemData.Slot.WEAPON)
 		if item_slot == slot:
-			# If weapon_type filter specified for weapons, only return matching types
-			if slot == ItemData.Slot.WEAPON and weapon_type >= 0:
+			# For weapons, exclude weapon types without images
+			if slot == ItemData.Slot.WEAPON:
 				var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
-				if item_weapon_type != weapon_type:
+				if item_weapon_type in EXCLUDED_WEAPON_TYPES:
+					continue
+				# If weapon_type filter specified, only return matching types
+				if weapon_type >= 0 and item_weapon_type != weapon_type:
 					continue
 			ids.append(id)
 	return ids
@@ -1354,9 +1360,11 @@ static func get_base_item_ids_for_character(slot: ItemData.Slot, character_id: S
 		if item_slot != slot:
 			continue
 
-		# For weapons, filter by character's weapon type
+		# For weapons, filter by character's weapon type and exclude unavailable types
 		if slot == ItemData.Slot.WEAPON:
 			var item_weapon_type = item.get("weapon_type", ItemData.WeaponType.NONE)
+			if item_weapon_type in EXCLUDED_WEAPON_TYPES:
+				continue
 			if not _weapon_type_matches_character(item_weapon_type, character_id):
 				continue
 
@@ -1419,7 +1427,7 @@ static func _weapon_type_matches_character(weapon_type: int, character_id: Strin
 		"knight":
 			return weapon_type in [ItemData.WeaponType.SWORD, ItemData.WeaponType.MELEE]
 		"barbarian":
-			return weapon_type in [ItemData.WeaponType.AXE, ItemData.WeaponType.MACE, ItemData.WeaponType.MELEE]
+			return weapon_type in [ItemData.WeaponType.AXE, ItemData.WeaponType.MELEE]  # MACE excluded - no images yet
 		"monk":
 			return weapon_type in [ItemData.WeaponType.SPEAR, ItemData.WeaponType.MELEE]
 		"beast":

@@ -589,9 +589,12 @@ func _on_equipment_slot_pressed(slot: ItemData.Slot) -> void:
 		HapticManager.light()
 	var equipped = EquipmentManager.get_equipped_item(selected_character, slot) if EquipmentManager else null
 	if equipped:
-		_show_equipped_popup(equipped)
-	selected_item = null
-	_hide_comparison()
+		# Show full item preview with stats (same as inventory items)
+		selected_item = equipped
+		_show_comparison(equipped)
+	else:
+		selected_item = null
+		_hide_comparison()
 
 func _refresh_stats() -> void:
 	# Clear existing stats
