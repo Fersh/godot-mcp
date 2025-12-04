@@ -1002,9 +1002,10 @@ func _show_equipped_popup(item: ItemData) -> void:
 	content_vbox.custom_minimum_size = Vector2(350, 0)
 	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	# Header - "EQUIPPED"
+	# Header - "EQUIPPED BY {CHARACTER}"
+	var equipped_name = CHARACTER_NAMES.get(item.equipped_by, item.equipped_by.capitalize())
 	var header = Label.new()
-	header.text = "- EQUIPPED -"
+	header.text = "- EQUIPPED BY %s -" % equipped_name.to_upper()
 	if pixel_font:
 		header.add_theme_font_override("font", pixel_font)
 	header.add_theme_font_size_override("font_size", 16)
@@ -1129,21 +1130,6 @@ func _show_equipped_popup(item: ItemData) -> void:
 		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		content_vbox.add_child(desc)
-
-	# Equipped by info at bottom
-	var equipped_spacer = Control.new()
-	equipped_spacer.custom_minimum_size = Vector2(0, 12)
-	content_vbox.add_child(equipped_spacer)
-
-	var equipped_label = Label.new()
-	var equipped_name = CHARACTER_NAMES.get(item.equipped_by, item.equipped_by.capitalize())
-	equipped_label.text = "Equipped by: %s" % equipped_name
-	if pixel_font:
-		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 14)
-	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
-	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content_vbox.add_child(equipped_label)
 
 	scroll.add_child(content_vbox)
 	vbox.add_child(scroll)
