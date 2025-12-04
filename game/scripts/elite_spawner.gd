@@ -11,6 +11,15 @@ extends Node2D
 @export var slime_elite_scene: PackedScene
 @export var imp_elite_scene: PackedScene
 @export var kobold_priest_elite_scene: PackedScene
+@export var ratfolk_mage_elite_scene: PackedScene
+@export var bat_elite_scene: PackedScene
+@export var akaname_elite_scene: PackedScene
+@export var ghoul_elite_scene: PackedScene
+@export var eye_monster_elite_scene: PackedScene
+@export var golem_elite_scene: PackedScene
+@export var intellect_devourer_elite_scene: PackedScene
+@export var bandit_necromancer_elite_scene: PackedScene
+@export var shardsoul_slayer_elite_scene: PackedScene
 @export var minotaur_scene: PackedScene  # Boss
 
 @export var spawn_interval: float = 150.0  # 2.5 minutes between spawns
@@ -75,7 +84,8 @@ var elite_health_bars: Array[Dictionary] = []  # Array of {elite, bar_container,
 var pixel_font: Font = null
 
 # Available elite types
-enum EliteType { CYCLOPS, GOBLIN_KING, ORC, RATFOLK, SKELETON, SLIME, IMP, KOBOLD_PRIEST }
+enum EliteType { CYCLOPS, GOBLIN_KING, ORC, RATFOLK, SKELETON, SLIME, IMP, KOBOLD_PRIEST,
+	RATFOLK_MAGE, BAT, AKANAME, GHOUL, EYE_MONSTER, GOLEM, INTELLECT_DEVOURER, BANDIT_NECROMANCER, SHARDSOUL_SLAYER }
 enum BossType { MINOTAUR }
 var elite_pool: Array[EliteType] = [
 	EliteType.CYCLOPS,
@@ -85,7 +95,16 @@ var elite_pool: Array[EliteType] = [
 	EliteType.SKELETON,
 	EliteType.SLIME,
 	EliteType.IMP,
-	EliteType.KOBOLD_PRIEST
+	EliteType.KOBOLD_PRIEST,
+	EliteType.RATFOLK_MAGE,
+	EliteType.BAT,
+	EliteType.AKANAME,
+	EliteType.GHOUL,
+	EliteType.EYE_MONSTER,
+	EliteType.GOLEM,
+	EliteType.INTELLECT_DEVOURER,
+	EliteType.BANDIT_NECROMANCER,
+	EliteType.SHARDSOUL_SLAYER
 ]
 var boss_pool: Array[BossType] = [BossType.MINOTAUR]
 
@@ -613,10 +632,31 @@ func _get_scene_for_elite(elite_type: EliteType) -> PackedScene:
 			return imp_elite_scene
 		EliteType.KOBOLD_PRIEST:
 			return kobold_priest_elite_scene
+		EliteType.RATFOLK_MAGE:
+			return ratfolk_mage_elite_scene
+		EliteType.BAT:
+			return bat_elite_scene
+		EliteType.AKANAME:
+			return akaname_elite_scene
+		EliteType.GHOUL:
+			return ghoul_elite_scene
+		EliteType.EYE_MONSTER:
+			return eye_monster_elite_scene
+		EliteType.GOLEM:
+			return golem_elite_scene
+		EliteType.INTELLECT_DEVOURER:
+			return intellect_devourer_elite_scene
+		EliteType.BANDIT_NECROMANCER:
+			return bandit_necromancer_elite_scene
+		EliteType.SHARDSOUL_SLAYER:
+			return shardsoul_slayer_elite_scene
 		_:
 			# Fallback to a random available scene
 			var scenes = [cyclops_scene, goblin_king_scene, orc_elite_scene, ratfolk_elite_scene,
-				skeleton_elite_scene, slime_elite_scene, imp_elite_scene, kobold_priest_elite_scene]
+				skeleton_elite_scene, slime_elite_scene, imp_elite_scene, kobold_priest_elite_scene,
+				ratfolk_mage_elite_scene, bat_elite_scene, akaname_elite_scene, ghoul_elite_scene,
+				eye_monster_elite_scene, golem_elite_scene, intellect_devourer_elite_scene,
+				bandit_necromancer_elite_scene, shardsoul_slayer_elite_scene]
 			var valid_scenes = scenes.filter(func(s): return s != null)
 			if valid_scenes.size() > 0:
 				return valid_scenes[randi() % valid_scenes.size()]
