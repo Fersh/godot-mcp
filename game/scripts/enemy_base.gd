@@ -131,6 +131,10 @@ func _ready() -> void:
 
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+		# Hide health bar for regular mobs until they take damage
+		# (champions will show health bar when make_champion() is called)
+		if enemy_rarity == "common":
+			health_bar.visible = false
 
 func _apply_difficulty_scaling() -> void:
 	"""Apply difficulty multipliers to enemy stats."""
@@ -294,6 +298,9 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	current_health -= amount
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+		# Show health bar for regular mobs when they take damage
+		if enemy_rarity == "common" and current_health < max_health:
+			health_bar.visible = true
 
 	if SoundManager:
 		SoundManager.play_hit()
@@ -430,6 +437,9 @@ func _take_dot_damage(amount: float, color: Color) -> void:
 	current_health -= amount
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+		# Show health bar for regular mobs when they take damage
+		if enemy_rarity == "common" and current_health < max_health:
+			health_bar.visible = true
 
 	# Spawn colored damage number (higher up to avoid overlapping normal damage)
 	if damage_number_scene:
@@ -644,9 +654,10 @@ func make_champion() -> void:
 	if sprite:
 		base_sprite_scale = sprite.scale
 
-	# Update health bar
+	# Update health bar and make it visible for champions
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
+		health_bar.visible = true
 
 	# Create champion indicator
 	_create_champion_indicator()

@@ -554,6 +554,12 @@ func take_damage(amount: float) -> void:
 	if not is_posthumous_damage and CurseEffects:
 		modified_amount = CurseEffects.modify_damage_taken(modified_amount)
 
+	# Apply difficulty %HP damage (Normal+ difficulties)
+	if not is_posthumous_damage and DifficultyManager:
+		var percent_hp_damage = DifficultyManager.get_percent_hp_damage()
+		if percent_hp_damage > 0:
+			modified_amount += max_health * percent_hp_damage
+
 	# Skip dodge/block/shield checks when dead - just show the damage effects
 	var was_blocked = false
 	var damage_after_shields = modified_amount
@@ -2193,6 +2199,10 @@ func add_xp(amount: float) -> void:
 		# XP scaling: 1.5x for levels 1-10, then 1.15x after level 10
 		# This allows faster progression in late game to reach ~level 20 by 20 mins
 		var level_multiplier = 1.5 if current_level <= 10 else 1.15
+
+		# Apply difficulty XP requirement multiplier (compounds with curses)
+		if DifficultyManager:
+			level_multiplier *= DifficultyManager.get_xp_requirement_multiplier()
 
 		# Apply Corrupted XP curse (increased XP requirements)
 		if CurseEffects:

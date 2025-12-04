@@ -61,6 +61,16 @@ func _on_ready() -> void:
 
 	# Apply 25% health boost to all elites
 	max_health *= 1.25
+
+	# Apply difficulty-based elite bonuses (Easy+ difficulties)
+	if DifficultyManager:
+		var health_bonus = DifficultyManager.get_elite_health_bonus()
+		var damage_bonus = DifficultyManager.get_elite_damage_bonus()
+		if health_bonus > 0:
+			max_health *= (1.0 + health_bonus)
+		if damage_bonus > 0:
+			attack_damage *= (1.0 + damage_bonus)
+
 	current_health = max_health
 
 	_init_attack_cooldowns()

@@ -40,8 +40,19 @@ var FRAMES_TAUNT: int = 5
 func _on_ready() -> void:
 	enemy_rarity = "boss"
 	base_scale = scale
-	base_damage = attack_damage
 	_setup_boss()
+
+	# Apply difficulty-based boss bonuses (Easy+ difficulties)
+	if DifficultyManager:
+		var health_bonus = DifficultyManager.get_boss_health_bonus()
+		var damage_bonus = DifficultyManager.get_boss_damage_bonus()
+		if health_bonus > 0:
+			max_health *= (1.0 + health_bonus)
+			current_health = max_health
+		if damage_bonus > 0:
+			attack_damage *= (1.0 + damage_bonus)
+
+	base_damage = attack_damage
 	_setup_aura()
 	_init_attack_cooldowns()
 

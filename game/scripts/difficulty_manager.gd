@@ -26,6 +26,7 @@ var completed_difficulties: Array[DifficultyTier] = []
 var completion_records: Dictionary = {}
 
 # Difficulty configuration data
+# 2025-12-04: Major rebalance - 20% compounding scaling, XP requirements, elite/boss bonuses, %HP damage
 const DIFFICULTY_DATA = {
 	DifficultyTier.JUVENILE: {
 		"name": "Pitiful",
@@ -33,11 +34,17 @@ const DIFFICULTY_DATA = {
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
-		"spawn_rate_mult": 1.375,  # +10% (was 1.25)
+		"spawn_rate_mult": 1.375,
 		"points_mult": 1.0,
 		"starting_hp": 1.0,
 		"healing_mult": 1.0,
 		"champion_chance": 0.0,
+		"xp_requirement_mult": 1.0,
+		"elite_health_bonus": 0.0,
+		"elite_damage_bonus": 0.0,
+		"boss_health_bonus": 0.0,
+		"boss_damage_bonus": 0.0,
+		"percent_hp_damage": 0.0,
 		"color": Color(0.5, 0.8, 0.5),  # Soft green
 		"modifiers": [],
 	},
@@ -47,81 +54,117 @@ const DIFFICULTY_DATA = {
 		"health_mult": 3.52,
 		"damage_mult": 2.7,
 		"speed_mult": 1.24,
-		"spawn_rate_mult": 3.3,  # +10% (was 3.0)
+		"spawn_rate_mult": 3.3,
 		"points_mult": 2.0,
 		"starting_hp": 1.0,
 		"healing_mult": 1.0,
 		"champion_chance": 0.0,
+		"xp_requirement_mult": 1.25,
+		"elite_health_bonus": 1.0,  # +100%
+		"elite_damage_bonus": 0.5,  # +50%
+		"boss_health_bonus": 1.5,   # +150%
+		"boss_damage_bonus": 1.0,   # +100%
+		"percent_hp_damage": 0.0,
 		"color": Color(0.6, 0.7, 0.9),  # Light blue
 		"modifiers": ["enemy_slow_on_hit"],
 	},
 	DifficultyTier.EASY: {
 		"name": "Normal",
-		"description": "+ Elites gain affixes. 5% champions.\n3x Points.",
-		"health_mult": 5.28,
-		"damage_mult": 3.3,
-		"speed_mult": 1.44,
-		"spawn_rate_mult": 4.235,  # +10% (was 3.85)
+		"description": "+ Elites gain affixes. 5% champions. +0.5% HP/hit.\n3x Points.",
+		"health_mult": 6.34,   # 5.28 * 1.2
+		"damage_mult": 3.96,   # 3.3 * 1.2
+		"speed_mult": 1.73,    # 1.44 * 1.2
+		"spawn_rate_mult": 4.235,
 		"points_mult": 3.0,
 		"starting_hp": 0.85,
 		"healing_mult": 0.85,
 		"champion_chance": 0.05,
+		"xp_requirement_mult": 1.5625,  # 1.25^2
+		"elite_health_bonus": 2.0,  # +200%
+		"elite_damage_bonus": 1.0,  # +100%
+		"boss_health_bonus": 3.0,   # +300%
+		"boss_damage_bonus": 2.0,   # +200%
+		"percent_hp_damage": 0.005, # 0.5%
 		"color": Color(0.9, 0.9, 0.5),  # Yellow
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes"],
 	},
 	DifficultyTier.NORMAL: {
 		"name": "Nightmare",
-		"description": "+ 70% HP/Healing. Boss enrages faster.\n4x Points.",
-		"health_mult": 8.36,
-		"damage_mult": 4.2,
-		"speed_mult": 1.64,
-		"spawn_rate_mult": 4.84,  # +10% (was 4.4)
+		"description": "+ 70% HP/Healing. Boss enrages faster. +1% HP/hit.\n4x Points.",
+		"health_mult": 12.04,  # 8.36 * 1.44
+		"damage_mult": 6.05,   # 4.2 * 1.44
+		"speed_mult": 2.36,    # 1.64 * 1.44
+		"spawn_rate_mult": 4.84,
 		"points_mult": 4.0,
 		"starting_hp": 0.70,
 		"healing_mult": 0.70,
 		"champion_chance": 0.08,
+		"xp_requirement_mult": 1.953,  # 1.25^3
+		"elite_health_bonus": 3.0,  # +300%
+		"elite_damage_bonus": 1.5,  # +150%
+		"boss_health_bonus": 4.5,   # +450%
+		"boss_damage_bonus": 3.0,   # +300%
+		"percent_hp_damage": 0.01,  # 1.0%
 		"color": Color(0.9, 0.6, 0.3),  # Orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
 	DifficultyTier.NIGHTMARE: {
 		"name": "Hell",
-		"description": "+ 55% HP, 50% Healing. 12% champions.\n5x Points.",
-		"health_mult": 12.1,
-		"damage_mult": 5.5,
-		"speed_mult": 1.9,
-		"spawn_rate_mult": 5.6,  # +10% (was 5.09)
+		"description": "+ 55% HP, 50% Healing. 12% champions. +1.5% HP/hit.\n5x Points.",
+		"health_mult": 20.91,  # 12.1 * 1.728
+		"damage_mult": 9.50,   # 5.5 * 1.728
+		"speed_mult": 3.28,    # 1.9 * 1.728
+		"spawn_rate_mult": 5.6,
 		"points_mult": 5.0,
 		"starting_hp": 0.55,
 		"healing_mult": 0.50,
 		"champion_chance": 0.12,
+		"xp_requirement_mult": 2.441,  # 1.25^4
+		"elite_health_bonus": 4.0,  # +400%
+		"elite_damage_bonus": 2.0,  # +200%
+		"boss_health_bonus": 6.0,   # +600%
+		"boss_damage_bonus": 4.0,   # +400%
+		"percent_hp_damage": 0.015, # 1.5%
 		"color": Color(0.9, 0.2, 0.2),  # Red
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
 	DifficultyTier.INFERNO: {
 		"name": "Inferno",
-		"description": "+ 40% HP, 35% Healing. 25% champions.\n6x Points.",
-		"health_mult": 18.15,
-		"damage_mult": 7.5,
-		"speed_mult": 2.4,
-		"spawn_rate_mult": 6.655,  # +10% (was 6.05)
+		"description": "+ 40% HP, 35% Healing. 25% champions. +2% HP/hit.\n6x Points.",
+		"health_mult": 37.64,  # 18.15 * 2.074
+		"damage_mult": 15.56,  # 7.5 * 2.074
+		"speed_mult": 4.98,    # 2.4 * 2.074
+		"spawn_rate_mult": 6.655,
 		"points_mult": 6.0,
 		"starting_hp": 0.40,
 		"healing_mult": 0.35,
 		"champion_chance": 0.25,
+		"xp_requirement_mult": 3.052,  # 1.25^5
+		"elite_health_bonus": 5.0,  # +500%
+		"elite_damage_bonus": 2.5,  # +250%
+		"boss_health_bonus": 7.5,   # +750%
+		"boss_damage_bonus": 5.0,   # +500%
+		"percent_hp_damage": 0.02,  # 2.0%
 		"color": Color(1.0, 0.4, 0.0),  # Bright orange/fire
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
 	DifficultyTier.THANKSGIVING_DINNER: {
 		"name": "Thanksgiving",
-		"description": "+ 25% HP/Healing. 35% champions.\n10x Points.",
-		"health_mult": 27.5,
-		"damage_mult": 10.0,
-		"speed_mult": 3.0,
-		"spawn_rate_mult": 8.47,  # +10% (was 7.7)
+		"description": "+ 25% HP/Healing. 35% champions. +2.5% HP/hit.\n10x Points.",
+		"health_mult": 68.42,  # 27.5 * 2.488
+		"damage_mult": 24.88,  # 10.0 * 2.488
+		"speed_mult": 7.35,    # 3.0 * 2.45 (slightly adjusted)
+		"spawn_rate_mult": 8.47,
 		"points_mult": 10.0,
 		"starting_hp": 0.25,
 		"healing_mult": 0.25,
 		"champion_chance": 0.35,
+		"xp_requirement_mult": 3.815,  # 1.25^6
+		"elite_health_bonus": 6.0,  # +600%
+		"elite_damage_bonus": 3.0,  # +300%
+		"boss_health_bonus": 9.0,   # +900%
+		"boss_damage_bonus": 6.0,   # +600%
+		"percent_hp_damage": 0.025, # 2.5%
 		"color": Color(0.8, 0.5, 0.2),  # Turkey brown/orange
 		"modifiers": ["enemy_slow_on_hit", "elite_affixes", "faster_enrage"],
 	},
@@ -255,6 +298,42 @@ func get_points_multiplier() -> float:
 	if current_mode == GameMode.ENDLESS:
 		return 2.0  # Endless mode uses 2x difficulty
 	return DIFFICULTY_DATA[current_difficulty]["points_mult"]
+
+func get_xp_requirement_multiplier() -> float:
+	"""Get XP requirement multiplier for leveling (compounds with curse effects)."""
+	if current_mode == GameMode.ENDLESS:
+		return 1.0
+	return DIFFICULTY_DATA[current_difficulty].get("xp_requirement_mult", 1.0)
+
+func get_elite_health_bonus() -> float:
+	"""Get elite health bonus multiplier (0.0 = no bonus, 1.0 = +100%)."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("elite_health_bonus", 0.0)
+
+func get_elite_damage_bonus() -> float:
+	"""Get elite damage bonus multiplier (0.0 = no bonus, 0.5 = +50%)."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("elite_damage_bonus", 0.0)
+
+func get_boss_health_bonus() -> float:
+	"""Get boss health bonus multiplier (0.0 = no bonus, 1.5 = +150%)."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("boss_health_bonus", 0.0)
+
+func get_boss_damage_bonus() -> float:
+	"""Get boss damage bonus multiplier (0.0 = no bonus, 1.0 = +100%)."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("boss_damage_bonus", 0.0)
+
+func get_percent_hp_damage() -> float:
+	"""Get percent of max HP dealt as bonus damage per hit (0.0 = none, 0.025 = 2.5%)."""
+	if current_mode == GameMode.ENDLESS:
+		return 0.0
+	return DIFFICULTY_DATA[current_difficulty].get("percent_hp_damage", 0.0)
 
 # ============================================
 # MODIFIER CHECKS
