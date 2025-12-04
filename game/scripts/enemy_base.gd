@@ -62,11 +62,31 @@ var poison_damage: float = 0.0
 var poison_tick_timer: float = 0.0
 const POISON_TICK_INTERVAL: float = 0.5
 
+# Freeze system (complete immobilization - like stun but icy)
+var is_frozen: bool = false
+var frozen_timer: float = 0.0
+
+# Bleed system (damage over time - stacks with burn/poison)
+var is_bleeding: bool = false
+var bleed_timer: float = 0.0
+var bleed_damage: float = 0.0
+var bleed_tick_timer: float = 0.0
+const BLEED_TICK_INTERVAL: float = 0.5
+
+# Shock system (brief damage amp or chain effect)
+var is_shocked: bool = false
+var shock_timer: float = 0.0
+var shock_damage_amp: float = 1.25  # 25% more damage taken while shocked
+const SHOCK_DURATION: float = 2.0
+
 # Status effect visual colors (saturated for clear visibility)
 const STATUS_COLOR_BURN: Color = Color(1.0, 0.35, 0.15)   # Deep orange-red
 const STATUS_COLOR_POISON: Color = Color(0.3, 1.0, 0.3)   # Vibrant green
 const STATUS_COLOR_SLOW: Color = Color(0.4, 0.65, 1.0)    # Icy blue
 const STATUS_COLOR_STUN: Color = Color(1.0, 0.85, 0.2)    # Bright yellow
+const STATUS_COLOR_FREEZE: Color = Color(0.7, 0.95, 1.0)  # Cyan/white ice
+const STATUS_COLOR_BLEED: Color = Color(0.8, 0.15, 0.15)  # Dark red
+const STATUS_COLOR_SHOCK: Color = Color(0.7, 0.5, 1.0)    # Electric purple
 const STATUS_TINT_STRENGTH: float = 0.8  # Strong tint for clear visibility
 var base_modulate: Color = Color.WHITE  # Store original/champion color
 
@@ -172,7 +192,7 @@ func _physics_process(delta: float) -> void:
 	handle_status_effects(delta)
 
 	# Apply status effect tint continuously (must run every frame)
-	if is_burning or is_poisoned or is_slowed or is_stunned:
+	if is_burning or is_poisoned or is_slowed or is_stunned or is_frozen or is_bleeding or is_shocked:
 		_update_status_modulate()
 
 	if handle_knockback(delta):
@@ -182,6 +202,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if handle_stun(delta):
+		return
+
+	if handle_freeze(delta):
 		return
 
 	handle_attack_cooldown(delta)
@@ -311,6 +334,10 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 	if is_dying:
 		return
 
+	# Apply shock damage amplification
+	if is_shocked:
+		amount *= shock_damage_amp
+
 	current_health -= amount
 	if health_bar:
 		health_bar.set_health(current_health, max_health)
@@ -417,6 +444,45 @@ func apply_poison(total_damage: float, duration: float) -> void:
 		_update_status_modulate()
 		_spawn_status_text("POISON", Color(0.4, 1.0, 0.4))
 
+func apply_freeze(duration: float) -> void:
+	"""Apply freeze effect - complete immobilization (icy stun). Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_frozen = is_frozen
+	is_frozen = true
+	frozen_timer = max(frozen_timer, duration)
+	is_winding_up = false
+	windup_timer = 0.0
+	if not was_frozen:
+		_update_status_modulate()
+		_spawn_status_text("FREEZE", Color(0.7, 0.95, 1.0))
+
+func apply_bleed(total_damage: float, duration: float) -> void:
+	"""Apply bleed effect - deals damage over time. Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_bleeding = is_bleeding
+	is_bleeding = true
+	bleed_timer = max(bleed_timer, duration)
+	bleed_damage = total_damage / (duration / BLEED_TICK_INTERVAL)  # Damage per tick
+	if not was_bleeding:
+		_update_status_modulate()
+		_spawn_status_text("BLEED", Color(0.8, 0.15, 0.15))
+
+func apply_shock(damage: float = 0.0) -> void:
+	"""Apply shock effect - increases damage taken. Bosses/elites are immune."""
+	if enemy_rarity == "boss" or enemy_rarity == "elite":
+		return
+	var was_shocked = is_shocked
+	is_shocked = true
+	shock_timer = SHOCK_DURATION
+	# If damage provided, deal it immediately
+	if damage > 0:
+		take_damage(damage, false)
+	if not was_shocked:
+		_update_status_modulate()
+		_spawn_status_text("SHOCK", Color(0.7, 0.5, 1.0))
+
 func handle_stun(delta: float) -> bool:
 	"""Handle stun status - returns true if stunned and should skip behavior."""
 	if is_stunned:
@@ -427,6 +493,19 @@ func handle_stun(delta: float) -> bool:
 		else:
 			velocity = Vector2.ZERO
 			update_animation(delta, ROW_DAMAGE, Vector2.ZERO)
+			return true
+	return false
+
+func handle_freeze(delta: float) -> bool:
+	"""Handle freeze status - returns true if frozen and should skip behavior."""
+	if is_frozen:
+		frozen_timer -= delta
+		if frozen_timer <= 0:
+			is_frozen = false
+			_update_status_modulate()
+		else:
+			velocity = Vector2.ZERO
+			# Frozen enemies don't animate - they're frozen solid
 			return true
 	return false
 
@@ -469,6 +548,25 @@ func handle_status_effects(delta: float) -> void:
 			is_poisoned = false
 			_update_status_modulate()
 			poison_damage = 0.0
+
+	# Handle bleed damage
+	if is_bleeding:
+		bleed_timer -= delta
+		bleed_tick_timer -= delta
+		if bleed_tick_timer <= 0:
+			bleed_tick_timer = BLEED_TICK_INTERVAL
+			_take_dot_damage(bleed_damage, Color(0.8, 0.15, 0.15))
+		if bleed_timer <= 0:
+			is_bleeding = false
+			_update_status_modulate()
+			bleed_damage = 0.0
+
+	# Handle shock timer (damage amp wears off)
+	if is_shocked:
+		shock_timer -= delta
+		if shock_timer <= 0:
+			is_shocked = false
+			_update_status_modulate()
 
 func _take_dot_damage(amount: float, color: Color) -> void:
 	"""Take damage from DoT effects without triggering on-hit effects."""
@@ -530,6 +628,21 @@ func _update_status_modulate() -> void:
 		blended_color.r = max(blended_color.r, STATUS_COLOR_STUN.r)
 		blended_color.g = max(blended_color.g, STATUS_COLOR_STUN.g)
 		blended_color.b = max(blended_color.b, STATUS_COLOR_STUN.b)
+		has_status = true
+	if is_frozen:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_FREEZE.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_FREEZE.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_FREEZE.b)
+		has_status = true
+	if is_bleeding:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_BLEED.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_BLEED.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_BLEED.b)
+		has_status = true
+	if is_shocked:
+		blended_color.r = max(blended_color.r, STATUS_COLOR_SHOCK.r)
+		blended_color.g = max(blended_color.g, STATUS_COLOR_SHOCK.g)
+		blended_color.b = max(blended_color.b, STATUS_COLOR_SHOCK.b)
 		has_status = true
 
 	# Apply blended status color or restore base

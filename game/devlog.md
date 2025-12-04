@@ -202,3 +202,94 @@ Remove the `shadow_color`, `shadow_size`, and `shadow_offset` lines from `health
 4. `game/scripts/boss_base.gd` - Boss bonus application
 5. `game/scripts/enemy_base.gd` - Health bar visibility logic, status effect color tinting
 6. `game/scripts/health_bar.gd` - Drop shadow for all health bars
+
+---
+
+## Additional Updates (2025-12-04)
+
+### 9. Status Effect Tinting Fix
+
+**BUG FIX:** Status effect tints were not visible due to hit_flash shader ignoring sprite.modulate.
+
+**Root Cause:** The hit_flash shader was reading raw texture color and outputting directly, bypassing the modulate property entirely.
+
+**Fix:** Modified `game/shaders/hit_flash.gdshader` to multiply texture by COLOR (which contains modulate) before mixing with flash color.
+
+**Updated Colors (more saturated for visibility):**
+| Status Effect | Color | RGB |
+|---------------|-------|-----|
+| Burn | Deep orange-red | `(1.0, 0.35, 0.15)` |
+| Poison | Vibrant green | `(0.3, 1.0, 0.3)` |
+| Slow | Icy blue | `(0.4, 0.65, 1.0)` |
+| Stun | Bright yellow | `(1.0, 0.85, 0.2)` |
+| Freeze | Cyan/white ice | `(0.7, 0.95, 1.0)` |
+| Bleed | Dark red | `(0.8, 0.15, 0.15)` |
+| Shock | Electric purple | `(0.7, 0.5, 1.0)` |
+
+**Tint strength increased from 60% to 80%** for better visibility.
+
+---
+
+### 10. New Status Effects: Freeze, Bleed, Shock
+
+**NEW FEATURE:** Added three missing status effects that were being called but not implemented.
+
+| Effect | Function | Behavior |
+|--------|----------|----------|
+| Freeze | `apply_freeze(duration)` | Complete immobilization (icy stun, no animation) |
+| Bleed | `apply_bleed(total_damage, duration)` | DoT every 0.5s, dark red tint |
+| Shock | `apply_shock(damage)` | +25% damage taken for 2s, optional instant damage |
+
+**Implementation:** Added to `enemy_base.gd` with full timer handling, status text popups, and color tinting.
+
+---
+
+### 11. Floor is Lava Damage Fix
+
+**BUG FIX:** "The Floor is Lava" ability was dealing essentially no damage.
+
+**Root Cause:** Damage was divided by number of spawns (35), then again by ticks (10), resulting in ~0.07 damage per tick.
+
+**Fix:** Each lava pool now deals 50% of ability damage over its lifetime (not divided by spawn count). Also added burn effect application to enemies standing in lava.
+
+**Files Modified:** `game/scripts/active_abilities/ability_executor.gd`
+
+---
+
+### 12. Frost Totem Rename
+
+**CHANGE:** Renamed "Totem of Frost" to "Frost Totem" for consistency.
+
+**Files Modified:** `game/scripts/active_abilities/active_ability_database.gd`
+
+---
+
+### 13. Common Item Border Color
+
+**CHANGE:** Common rarity items now display with a black text outline instead of white when dropped on the floor, improving readability against light backgrounds.
+
+**Files Modified:** `game/scripts/equipment/dropped_item.gd`
+
+---
+
+### 14. Permanent Upgrade Cost Increase (Rank 4 & 5)
+
+**BALANCE CHANGE:** Increased costs for high-rank permanent upgrades to slow late-game progression.
+
+| Rank | Old Multiplier | New Multiplier | Change |
+|------|----------------|----------------|--------|
+| Rank 4 | +40% (1.40x) | +68% (1.68x) | +20% increase |
+| Rank 5+ | +35% (1.35x) | +94% (1.94x) | +20% + additional 20% |
+
+**Files Modified:** `game/scripts/permanent_upgrades.gd`
+
+---
+
+## Additional Files Modified
+
+7. `game/shaders/hit_flash.gdshader` - Fixed modulate support for status tints
+8. `game/scripts/enemy_shardsoul_slayer.gd` - Fixed frenzy mode to use base_modulate
+9. `game/scripts/active_abilities/ability_executor.gd` - Floor is Lava damage fix
+10. `game/scripts/active_abilities/active_ability_database.gd` - Frost Totem rename
+11. `game/scripts/equipment/dropped_item.gd` - Common item black border
+12. `game/scripts/permanent_upgrades.gd` - Rank 4/5 cost increases

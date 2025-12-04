@@ -2269,7 +2269,8 @@ func _execute_floor_is_lava(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Create lava pools at intervals behind player
 	var spawn_interval = 0.2
 	var spawns = int(trail_duration / spawn_interval)
-	var damage_per_pool = damage / spawns
+	# Each pool deals full damage over its lifetime (not divided by spawn count)
+	var pool_damage = damage * 0.5  # Each pool deals 50% of ability damage
 
 	for i in range(spawns):
 		get_tree().create_timer(spawn_interval * i).timeout.connect(func():
@@ -2277,7 +2278,7 @@ func _execute_floor_is_lava(ability: ActiveAbilityData, player: Node2D) -> void:
 				return
 
 			# Create lava pool at current player position
-			var pool = _create_lava_pool(player.global_position, damage_per_pool, 3.0)
+			var pool = _create_lava_pool(player.global_position, pool_damage, 3.0)
 			lava_pools.append(pool)
 		)
 
@@ -2316,6 +2317,7 @@ func _create_lava_pool(position: Vector2, damage: float, lifetime: float) -> Nod
 	# Damage enemies standing in pool
 	var tick_interval = 0.3
 	var ticks = int(lifetime / tick_interval)
+	var damage_per_tick = damage / ticks
 
 	for i in range(ticks):
 		get_tree().create_timer(tick_interval * i).timeout.connect(func():
@@ -2323,7 +2325,10 @@ func _create_lava_pool(position: Vector2, damage: float, lifetime: float) -> Nod
 				return
 			var enemies = _get_enemies_in_radius(pool.global_position, radius)
 			for enemy in enemies:
-				_deal_damage_to_enemy(enemy, damage / ticks)
+				_deal_damage_to_enemy(enemy, damage_per_tick)
+				# Apply burn effect (it's lava!)
+				if enemy.has_method("apply_burn"):
+					enemy.apply_burn(1.5, damage_per_tick * 0.5)
 		)
 
 	# Fade out and remove

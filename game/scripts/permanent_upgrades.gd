@@ -202,7 +202,7 @@ func get_upgrade_cost(id: String) -> int:
 	var base_calculated_cost = upgrade.base_cost * pow(upgrade.cost_multiplier, current_rank)
 
 	# Apply additional rank multiplier for rank 2+ (next rank is current_rank + 1)
-	# Rank 2: +50%, Rank 3: +45%, Rank 4: +40%, Rank 5+: +35%
+	# Rank 2: +50%, Rank 3: +45%, Rank 4: +68%, Rank 5+: +94%
 	var next_rank = current_rank + 1
 	var rank_multiplier = 1.0
 	if next_rank >= 2:
@@ -212,9 +212,9 @@ func get_upgrade_cost(id: String) -> int:
 			3:
 				rank_multiplier = 1.45  # +45%
 			4:
-				rank_multiplier = 1.40  # +40%
+				rank_multiplier = 1.68  # +68% (was +40%, increased by 20%)
 			_:
-				rank_multiplier = 1.35  # +35% for rank 5+
+				rank_multiplier = 1.94  # +94% for rank 5+ (was +35%, increased by 20% + additional 20%)
 
 	return int(base_calculated_cost * rank_multiplier)
 
