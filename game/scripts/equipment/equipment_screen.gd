@@ -589,12 +589,10 @@ func _on_equipment_slot_pressed(slot: ItemData.Slot) -> void:
 		HapticManager.light()
 	var equipped = EquipmentManager.get_equipped_item(selected_character, slot) if EquipmentManager else null
 	if equipped:
-		# Show full item preview with stats (same as inventory items)
-		selected_item = equipped
-		_show_comparison(equipped)
-	else:
-		selected_item = null
-		_hide_comparison()
+		# Show equipped item popup with full details
+		_show_equipped_popup(equipped)
+	selected_item = null
+	_hide_comparison()
 
 func _refresh_stats() -> void:
 	# Clear existing stats
@@ -991,184 +989,226 @@ func _show_equipped_popup(item: ItemData) -> void:
 
 	var vbox = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 0)
+	vbox.custom_minimum_size = Vector2(0, 0)
 
-	# Scrollable content area
+	# Scrollable content area - match comparison view size
 	var scroll = ScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.custom_minimum_size = Vector2(300, 150)
+	scroll.custom_minimum_size = Vector2(350, 300)
 
 	var content_vbox = VBoxContainer.new()
-	content_vbox.add_theme_constant_override("separation", 12)
+	content_vbox.add_theme_constant_override("separation", 4)
+	content_vbox.custom_minimum_size = Vector2(350, 0)
+	content_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	# Equipped by (shown first, above item name)
+	# Header - "EQUIPPED"
+	var header = Label.new()
+	header.text = "- EQUIPPED -"
+	if pixel_font:
+		header.add_theme_font_override("font", pixel_font)
+	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_color_override("font_color", COLOR_TEXT_DIM)
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content_vbox.add_child(header)
+
+	# Icon with margin
+	var icon_margin = MarginContainer.new()
+	icon_margin.add_theme_constant_override("margin_top", 10)
+	icon_margin.add_theme_constant_override("margin_bottom", 10)
+
+	var icon_center = CenterContainer.new()
+	icon_center.custom_minimum_size = Vector2(40, 40)
+	if item.icon_path != "" and ResourceLoader.exists(item.icon_path):
+		var icon = TextureRect.new()
+		icon.texture = load(item.icon_path)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.custom_minimum_size = Vector2(29, 29)
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon_center.add_child(icon)
+	icon_margin.add_child(icon_center)
+	content_vbox.add_child(icon_margin)
+
+	# Name
+	var name_label = Label.new()
+	name_label.text = item.get_full_name()
+	if item_name_font:
+		name_label.add_theme_font_override("font", item_name_font)
+	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_color_override("font_color", item.get_rarity_color())
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content_vbox.add_child(name_label)
+
+	# Rarity
+	var rarity_label = Label.new()
+	var type_text = item.get_slot_name()
+	if item.slot == ItemData.Slot.WEAPON:
+		type_text = "%s %s" % [item.get_weapon_type_name(), item.get_slot_name()]
+	rarity_label.text = "%s %s" % [item.get_rarity_name(), type_text]
+	if pixel_font:
+		rarity_label.add_theme_font_override("font", pixel_font)
+	rarity_label.add_theme_font_size_override("font_size", 14)
+	rarity_label.add_theme_color_override("font_color", item.get_rarity_color().darkened(0.2))
+	rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rarity_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rarity_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content_vbox.add_child(rarity_label)
+
+	# Separator with margin
+	var sep_container = MarginContainer.new()
+	sep_container.add_theme_constant_override("margin_top", 8)
+	sep_container.add_theme_constant_override("margin_bottom", 8)
+	var sep = ColorRect.new()
+	var sep_color = item.get_rarity_color()
+	sep_color.a = 0.5
+	sep.color = sep_color
+	sep.custom_minimum_size = Vector2(0, 2)
+	sep_container.add_child(sep)
+	content_vbox.add_child(sep_container)
+
+	# Stats using get_stat_description() - same as comparison card
+	var stats_margin = MarginContainer.new()
+	stats_margin.add_theme_constant_override("margin_left", 20)
+	stats_margin.add_theme_constant_override("margin_right", 20)
+
+	var stats_vbox = VBoxContainer.new()
+	stats_vbox.add_theme_constant_override("separation", 4)
+
+	var stats_text = item.get_stat_description()
+	var stat_lines = stats_text.split("\n")
+
+	for line in stat_lines:
+		if line.strip_edges() == "":
+			continue
+
+		var is_special = line.to_lower().begins_with("special:")
+
+		# Add margin above special text
+		if is_special:
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 20)
+			stats_vbox.add_child(spacer)
+
+		var row = HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_BEGIN if is_special else BoxContainer.ALIGNMENT_CENTER
+		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var stat_label = Label.new()
+		stat_label.text = line
+		if pixel_font:
+			stat_label.add_theme_font_override("font", pixel_font)
+		stat_label.add_theme_font_size_override("font_size", 14)
+		stat_label.add_theme_color_override("font_color", COLOR_TEXT)
+		stat_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		stat_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if is_special:
+			stat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		row.add_child(stat_label)
+
+		stats_vbox.add_child(row)
+
+	stats_margin.add_child(stats_vbox)
+	content_vbox.add_child(stats_margin)
+
+	# Description
+	if item.description != "":
+		var desc_spacer = Control.new()
+		desc_spacer.custom_minimum_size = Vector2(0, 20)
+		content_vbox.add_child(desc_spacer)
+
+		var desc = Label.new()
+		desc.text = "\"%s\"" % item.description
+		if pixel_font:
+			desc.add_theme_font_override("font", pixel_font)
+		desc.add_theme_font_size_override("font_size", 13)
+		desc.add_theme_color_override("font_color", Color(0.7, 0.65, 0.5))
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		content_vbox.add_child(desc)
+
+	# Equipped by info at bottom
+	var equipped_spacer = Control.new()
+	equipped_spacer.custom_minimum_size = Vector2(0, 12)
+	content_vbox.add_child(equipped_spacer)
+
 	var equipped_label = Label.new()
 	var equipped_name = CHARACTER_NAMES.get(item.equipped_by, item.equipped_by.capitalize())
 	equipped_label.text = "Equipped by: %s" % equipped_name
 	if pixel_font:
 		equipped_label.add_theme_font_override("font", pixel_font)
-	equipped_label.add_theme_font_size_override("font_size", 16)
+	equipped_label.add_theme_font_size_override("font_size", 14)
 	equipped_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	equipped_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content_vbox.add_child(equipped_label)
 
-	# Item name
-	var name_label = Label.new()
-	name_label.text = item.get_full_name()
-	if item_name_font:
-		name_label.add_theme_font_override("font", item_name_font)
-	name_label.add_theme_font_size_override("font_size", 34)
-	name_label.add_theme_color_override("font_color", item.get_rarity_color())
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content_vbox.add_child(name_label)
-
-	# Item stats with margin container
-	var stats_margin = MarginContainer.new()
-	stats_margin.add_theme_constant_override("margin_top", 8)
-	stats_margin.add_theme_constant_override("margin_bottom", 8)
-
-	var stats_vbox = VBoxContainer.new()
-	stats_vbox.custom_minimum_size = Vector2(280, 0)
-	stats_vbox.add_theme_constant_override("separation", 4)
-
-	var stat_display_names = {
-		"damage": "Damage",
-		"max_hp": "Health",
-		"attack_speed": "Attack Speed",
-		"move_speed": "Move Speed",
-		"crit_chance": "Crit Chance",
-		"dodge_chance": "Dodge Chance",
-		"damage_reduction": "Defense",
-		"xp_gain": "XP Gain",
-		"luck": "Luck"
-	}
-
-	# Check for curse effects on equipment
-	var item_equipment_mult = 1.0
-	var item_has_curse = false
-	if CurseEffects:
-		item_equipment_mult = CurseEffects.get_equipment_bonus_multiplier()
-		item_has_curse = item_equipment_mult < 1.0
-
-	# Combine base_stats and magic_stats
-	var all_stats = {}
-	for stat_key in item.base_stats:
-		all_stats[stat_key] = item.base_stats[stat_key]
-	for stat_key in item.magic_stats:
-		if all_stats.has(stat_key):
-			all_stats[stat_key] += item.magic_stats[stat_key]
-		else:
-			all_stats[stat_key] = item.magic_stats[stat_key]
-
-	for stat_key in all_stats:
-		var raw_value = all_stats[stat_key]
-		if abs(raw_value) < 0.001:
-			continue
-
-		# Apply curse multiplier to show true value
-		var value = raw_value * item_equipment_mult
-
-		var stat_row = HBoxContainer.new()
-
-		var stat_name = Label.new()
-		stat_name.text = stat_display_names.get(stat_key, stat_key) + ":"
-		if pixel_font:
-			stat_name.add_theme_font_override("font", pixel_font)
-		stat_name.add_theme_font_size_override("font_size", 18)
-		stat_name.add_theme_color_override("font_color", Color(1, 1, 1, 1))
-		stat_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		stat_row.add_child(stat_name)
-
-		var stat_value = Label.new()
-		stat_value.text = "%+d%%" % int(value * 100)
-		if pixel_font:
-			stat_value.add_theme_font_override("font", pixel_font)
-		stat_value.add_theme_font_size_override("font_size", 18)
-		# Pink if cursed, otherwise normal color
-		if item_has_curse:
-			stat_value.add_theme_color_override("font_color", Color(1.0, 0.5, 0.7))  # Pink for cursed
-		else:
-			stat_value.add_theme_color_override("font_color", COLOR_STAT_UP if value > 0 else COLOR_STAT_DOWN)
-		stat_row.add_child(stat_value)
-
-		stats_vbox.add_child(stat_row)
-
-	stats_margin.add_child(stats_vbox)
-	content_vbox.add_child(stats_margin)
-
 	scroll.add_child(content_vbox)
 	vbox.add_child(scroll)
 
-	# Buttons fixed at bottom
+	# Buttons fixed at bottom - match comparison view styling
 	var button_margin = MarginContainer.new()
 	button_margin.add_theme_constant_override("margin_top", 16)
 	button_margin.add_theme_constant_override("margin_bottom", 12)
 
 	var button_row = HBoxContainer.new()
 	button_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	button_row.add_theme_constant_override("separation", 16)
+	button_row.add_theme_constant_override("separation", 12)
 
 	var cancel_btn = Button.new()
 	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(180, 50)
-	_style_button(cancel_btn, Color(0.3, 0.3, 0.35))
+	cancel_btn.custom_minimum_size = Vector2(110, 45)
+	_style_button(cancel_btn, Color(0.4, 0.3, 0.25))
 	if pixel_font:
 		cancel_btn.add_theme_font_override("font", pixel_font)
-	cancel_btn.add_theme_font_size_override("font_size", 20)
+	cancel_btn.add_theme_font_size_override("font_size", 16)
 	cancel_btn.pressed.connect(_hide_popups)
 	button_row.add_child(cancel_btn)
 
 	var unequip_btn = Button.new()
 	unequip_btn.text = "UNEQUIP"
-	unequip_btn.custom_minimum_size = Vector2(180, 50)
+	unequip_btn.custom_minimum_size = Vector2(110, 45)
 	_style_button(unequip_btn, Color(0.5, 0.3, 0.2))
 	if pixel_font:
 		unequip_btn.add_theme_font_override("font", pixel_font)
-	unequip_btn.add_theme_font_size_override("font_size", 20)
+	unequip_btn.add_theme_font_size_override("font_size", 16)
 	unequip_btn.pressed.connect(_on_unequip_popup_pressed)
 	button_row.add_child(unequip_btn)
 
 	button_margin.add_child(button_row)
 	vbox.add_child(button_margin)
 
-	# Style popup - darker and fully opaque
+	# Style popup - match comparison view styling
 	var popup_style = StyleBoxFlat.new()
-	popup_style.bg_color = Color(0.06, 0.055, 0.09, 1.0)
-	popup_style.border_color = item.get_rarity_color()
-	popup_style.set_border_width_all(3)
+	popup_style.bg_color = Color(0.1, 0.08, 0.12, 1.0)
+	popup_style.border_color = COLOR_BORDER
+	popup_style.set_border_width_all(4)
 	popup_style.corner_radius_top_left = 4
 	popup_style.corner_radius_top_right = 4
 	popup_style.corner_radius_bottom_left = 4
 	popup_style.corner_radius_bottom_right = 4
-	popup_style.content_margin_left = 24
-	popup_style.content_margin_right = 48
-	popup_style.content_margin_top = 20
-	popup_style.content_margin_bottom = 8
+	popup_style.content_margin_left = 16
+	popup_style.content_margin_right = 16
+	popup_style.content_margin_top = 12
+	popup_style.content_margin_bottom = 0
 	popup_panel.add_theme_stylebox_override("panel", popup_style)
 
 	popup_panel.add_child(vbox)
 	popup_panel.visible = true
 
-	# Position popup to the right of the equipment panel
+	# Position in center like comparison view
 	await get_tree().process_frame
-	var equip_rect = equipment_panel.get_global_rect()
 	var viewport_size = get_viewport().get_visible_rect().size
-
-	# Constrain max height
-	var max_height = min(popup_panel.size.y, viewport_size.y * 0.6)
-	scroll.custom_minimum_size.y = min(scroll.custom_minimum_size.y, max_height - 100)
+	var max_height = min(popup_panel.size.y, viewport_size.y * 0.7)
+	scroll.custom_minimum_size.y = min(scroll.custom_minimum_size.y, max_height - 80)
 	popup_panel.size.y = min(popup_panel.size.y, max_height)
 
-	var popup_x = equip_rect.position.x + equip_rect.size.x + 20
-	var popup_y = equip_rect.position.y
-
-	# Make sure it doesn't go off screen
-	if popup_x + popup_panel.size.x > viewport_size.x - 20:
-		popup_x = viewport_size.x - popup_panel.size.x - 20
-	if popup_y + popup_panel.size.y > viewport_size.y - 20:
-		popup_y = viewport_size.y - popup_panel.size.y - 20
-
-	popup_panel.position = Vector2(popup_x, popup_y)
+	popup_panel.position = Vector2(
+		(viewport_size.x - popup_panel.size.x) / 2,
+		(viewport_size.y - popup_panel.size.y) / 2
+	)
 
 func _show_comparison(item: ItemData) -> void:
 	_hide_popups()

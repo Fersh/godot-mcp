@@ -489,7 +489,7 @@ static func _create_sentry_turret() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
 		18.0
-	).with_damage(14.0, 1.0).with_duration(12.0).with_aoe(250.0).with_icon("res://assets/icons/abilities/sentry_turret.png")
+	).with_damage(4.0, 1.0).with_duration(12.0).with_aoe(250.0).with_icon("res://assets/icons/abilities/sentry_turret.png")  # 4 dmg per shot, 24 shots = 96 total
 
 # ============================================
 # RANGED ABILITY CREATORS - LEGENDARY

@@ -128,9 +128,9 @@ func _fire_at(target: Node2D) -> void:
 	line.default_color = Color(1.0, 0.6, 0.2, 0.9)
 	add_child(line)
 
-	# Deal damage
+	# Deal damage (damage is per shot, not total)
 	if target.has_method("take_damage"):
-		target.take_damage(damage / (duration / shoot_interval))
+		target.take_damage(damage)
 
 	# Fade out line
 	var tween = create_tween()

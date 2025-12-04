@@ -224,7 +224,7 @@ func get_stat_description() -> String:
 	for affix_id in affix_abilities:
 		if ItemDatabase and ItemDatabase.AFFIX_ABILITIES.has(affix_id):
 			var affix_info = ItemDatabase.AFFIX_ABILITIES[affix_id]
-			lines.append("[%s] %s" % [affix_info.name, affix_info.description])
+			lines.append("+%s" % affix_info.description)
 
 	return "\n".join(lines)
 

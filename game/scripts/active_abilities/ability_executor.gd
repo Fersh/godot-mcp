@@ -2996,16 +2996,14 @@ func _apply_dance_status(enemy: Node2D, duration: float) -> void:
 # ============================================
 
 func _execute_mirror_clone(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Create mirror clones that attack alongside you."""
+	"""Create a mirror clone that attacks alongside you."""
 	var damage = _get_damage(ability)
-	var clone_count = 2
 
-	for i in range(clone_count):
-		var angle = TAU * i / clone_count
-		var offset = Vector2(cos(angle), sin(angle)) * 60
-		var clone_pos = player.global_position + offset
+	# Spawn clone slightly behind player
+	var offset = Vector2(0, 40)
+	var clone_pos = player.global_position + offset
 
-		_spawn_mirror_clone(clone_pos, damage / clone_count, ability.duration, player)
+	_spawn_mirror_clone(clone_pos, damage, ability.duration, player)
 
 	_spawn_effect("magic_cast", player.global_position)
 	_play_sound("summon")
