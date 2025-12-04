@@ -736,12 +736,12 @@ static func _create_flame_wall() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"flame_wall",
 		"Flame Wall",
-		"Summon a wall of fire that burns enemies walking through for 6 seconds.",
+		"Summon a wide wall of fire that burns enemies walking through for 6 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.DIRECTION,
 		14.0
-	).with_damage(15.0, 1.3).with_aoe(180.0).with_duration(6.0).with_icon("res://assets/icons/abilities/flame_wall.png")
+	).with_damage(35.0, 1.5).with_aoe(350.0).with_duration(6.0).with_icon("res://assets/icons/abilities/flame_wall.png")
 
 static func _create_ice_barricade() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

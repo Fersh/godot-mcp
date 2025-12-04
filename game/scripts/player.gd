@@ -2036,6 +2036,14 @@ func _apply_elemental_effects_to_enemy(enemy: Node2D) -> void:
 		AbilityManager.trigger_lightning_at(enemy.global_position)
 		_spawn_elemental_text(enemy, "ZAP", Color(1.0, 0.9, 0.4))
 
+	# Crimson Edge - apply bleed on melee hit
+	if AbilityManager.has_bleeding:
+		if enemy.has_method("apply_bleed"):
+			var bleed_duration = AbilityManager.bleeding_dps  # Duration in seconds
+			var bleed_damage = 30.0 * bleed_duration  # 30 damage per second of duration
+			enemy.apply_bleed(bleed_damage, bleed_duration)
+		_spawn_elemental_text(enemy, "BLEED", Color(0.8, 0.15, 0.15))
+
 func _spawn_elemental_text(enemy: Node2D, text: String, color: Color) -> void:
 	"""Spawn a colored elemental damage number."""
 	if damage_number_scene:

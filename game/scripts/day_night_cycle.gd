@@ -8,7 +8,7 @@ const CYCLE_DURATION := 600.0  # 10 minutes per half-cycle (day->night or night-
 const FULL_CYCLE := CYCLE_DURATION * 2.0  # 20 minutes for full day/night cycle
 
 # Time of day phases (0.0 = midnight, 0.25 = sunrise, 0.5 = noon, 0.75 = sunset)
-var cycle_time := 0.475  # Start just before noon, reaches peak daylight at ~30s
+var cycle_time := 0.5  # Start at noon (brightest)
 var cycle_speed := 1.0 / FULL_CYCLE  # How much cycle_time advances per second
 
 # Color palette for different times of day - brighter values so characters stand out
@@ -35,9 +35,8 @@ const CHARACTER_BRIGHTNESS_BOOST := 0.4  # How much to counteract night darkness
 signal time_changed(time_of_day: float, is_night: bool)
 
 func _ready() -> void:
-	# Start with morning color
-	# Night colors are brighter (35-40% vs 15-20%) so characters remain visible
-	color = _get_sky_color(cycle_time)
+	# Start with pure white (noon) - no darkening at game start
+	color = Color.WHITE
 
 	# Find all torches after a frame
 	await get_tree().process_frame
@@ -50,23 +49,23 @@ func _find_torches() -> void:
 		torches.append(torch)
 
 func _process(delta: float) -> void:
-	# Advance time
+	# Keep color at white - disable day/night cycle darkening
+	color = Color.WHITE
+
+	# Advance time (for torch flickering only)
 	cycle_time += delta * cycle_speed
 	if cycle_time >= 1.0:
 		cycle_time -= 1.0
 
-	# Update sky color (lighter version for characters)
-	color = _get_sky_color(cycle_time)
-
-	# Calculate if it's night (for torch brightness)
+	# Calculate if it's night (for torch brightness only)
 	var night_factor = _get_night_factor(cycle_time)
 	torch_intensity = night_factor
 
 	# Update torch lights
 	_update_torch_lights(night_factor)
 
-	# Update character brightness (make them lighter than environment)
-	_update_character_brightness(night_factor)
+	# Skip character brightness modification - no longer needed with disabled cycle
+	# _update_character_brightness(night_factor)
 
 	# Emit signal for other systems
 	emit_signal("time_changed", cycle_time, night_factor > 0.3)

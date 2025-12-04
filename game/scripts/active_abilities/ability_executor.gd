@@ -2114,11 +2114,15 @@ func _start_periodic_damage(player: Node2D, ability: ActiveAbilityData, screen_w
 # ============================================
 
 func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Create a wall of fire that damages enemies passing through."""
+	"""Create a wall of fire that damages and burns enemies passing through."""
 	var damage = _get_damage(ability)
 	var direction = _get_attack_direction(player)
-	var wall_length = 200.0
-	var wall_width = 40.0
+	var wall_length = 350.0  # Much wider wall
+	var wall_width = 120.0   # Much wider hit area
+
+	# Burn parameters
+	var burn_duration = 3.0
+	var burn_damage = damage * 0.5  # Burn deals 50% of hit damage over duration
 
 	# Calculate wall center position in front of player
 	var wall_center = player.global_position + direction * 100
@@ -2132,12 +2136,15 @@ func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
 	get_tree().current_scene.add_child(wall)
 
 	# Visual representation - animated fire sprites along the wall
-	var fire_count = 5
+	var fire_count = 9  # More fire sprites for wider wall
 	for i in range(fire_count):
 		var offset = (i - fire_count / 2.0) * (wall_length / fire_count)
 		var fire = _create_fire_sprite()
 		fire.position = Vector2(offset, 0)
 		wall.add_child(fire)
+
+	# Track enemies that have been burned to avoid repeated burn application
+	var burned_enemies: Dictionary = {}
 
 	# Deal damage over duration
 	var tick_interval = 0.3
@@ -2156,6 +2163,15 @@ func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
 					var local_pos = wall.to_local(enemy.global_position)
 					if abs(local_pos.x) < wall_length / 2 and abs(local_pos.y) < wall_width / 2:
 						_deal_damage_to_enemy(enemy, damage_per_tick)
+
+						# Apply burn effect (only once per enemy per wall instance)
+						var enemy_id = enemy.get_instance_id()
+						if not burned_enemies.has(enemy_id):
+							burned_enemies[enemy_id] = true
+							if enemy.has_method("apply_burn"):
+								enemy.apply_burn(burn_duration, burn_damage)
+							elif enemy.has_method("apply_dot"):
+								enemy.apply_dot(burn_damage, burn_duration, "burn")
 		)
 
 	# Remove wall after duration

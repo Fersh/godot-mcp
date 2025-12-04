@@ -81,7 +81,7 @@ func _create_ui() -> void:
 	container.anchor_right = 1.0
 	container.anchor_top = 0.0
 	container.anchor_bottom = 0.1
-	container.offset_top = 118  # 48px margin + 70px extra = 118px from top (shifted down 30px)
+	container.offset_top = 98  # Moved up 20px from 118
 	container.offset_right = -48  # Match the game's margin
 	container.modulate.a = 0.0
 	add_child(container)

@@ -414,8 +414,8 @@ func _create_missions_tracker() -> void:
 	missions_container = VBoxContainer.new()
 	missions_container.name = "MissionsTracker"
 	missions_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	missions_container.offset_left = MARGIN + 40  # Shifted 40px right
-	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 65  # Shifted 20px down
+	missions_container.offset_left = MARGIN + 80  # Shifted 80px right (40 + 40)
+	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 35  # Adjusted down 10px
 	missions_container.offset_right = MARGIN + 260
 	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 280
 	missions_container.add_theme_constant_override("separation", 8)
@@ -441,6 +441,8 @@ func _create_missions_tracker() -> void:
 	missions_header.add_theme_stylebox_override("disabled", empty_style)
 	missions_header.focus_mode = Control.FOCUS_NONE
 	missions_header.pressed.connect(_on_missions_header_pressed)
+	# Set initial transparency based on collapsed state
+	missions_header.modulate.a = 1.0 if missions_expanded else 0.5
 	missions_container.add_child(missions_header)
 
 	# Create content container for mission rows with 10px top margin
@@ -469,6 +471,8 @@ func _on_missions_header_pressed() -> void:
 	missions_expanded = not missions_expanded
 	missions_content_margin.visible = missions_expanded
 	missions_header.text = ("v " if missions_expanded else "> ") + "MISSIONS"
+	# Make header more transparent when collapsed
+	missions_header.modulate.a = 1.0 if missions_expanded else 0.5
 
 	# Save state
 	if GameSettings:
@@ -502,8 +506,8 @@ func _create_mission_row() -> Control:
 	# Progress bar background - fixed width regardless of text
 	var bar_bg = Panel.new()
 	bar_bg.name = "ProgressBG"
-	bar_bg.custom_minimum_size = Vector2(180, 18)  # Increased height by 6px
-	bar_bg.size = Vector2(180, 18)  # Fixed size
+	bar_bg.custom_minimum_size = Vector2(144, 16)  # Width reduced 20%, height reduced 2px
+	bar_bg.size = Vector2(144, 16)  # Fixed size
 	bar_bg.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN  # Don't expand with text
 	var bar_bg_style = StyleBoxFlat.new()
 	bar_bg_style.bg_color = Color(0.1, 0.1, 0.12, 0.8)
@@ -513,7 +517,7 @@ func _create_mission_row() -> Control:
 	# Progress bar fill
 	var bar_fill = Panel.new()
 	bar_fill.name = "ProgressFill"
-	bar_fill.size = Vector2(0, 18)  # Increased height by 6px
+	bar_fill.size = Vector2(0, 16)  # Height reduced 2px
 	bar_fill.position = Vector2(0, 0)
 	var bar_fill_style = StyleBoxFlat.new()
 	bar_fill_style.bg_color = Color(0.9, 0.7, 0.2, 1)
@@ -527,7 +531,7 @@ func _create_mission_row() -> Control:
 	percent_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	percent_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	percent_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	percent_label.add_theme_font_size_override("font_size", 12)
+	percent_label.add_theme_font_size_override("font_size", 10)  # Reduced 2px
 	percent_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 	percent_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	percent_label.add_theme_constant_override("shadow_offset_x", 1)
@@ -574,7 +578,7 @@ func _update_mission_row(row: Control, mission) -> void:
 	# Update progress bar
 	var progress_ratio = float(mission.current_progress) / float(mission.target_value) if mission.target_value > 0 else 0
 	progress_ratio = clamp(progress_ratio, 0.0, 1.0)
-	var bar_width = 180.0
+	var bar_width = 144.0  # Reduced 20%
 	bar_fill.size.x = bar_width * progress_ratio
 
 	# Update percentage text

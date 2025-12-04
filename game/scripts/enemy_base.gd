@@ -164,12 +164,17 @@ func _ready() -> void:
 		if enemy_rarity == "normal":
 			health_bar.visible = false
 
-	# Capture sprite's initial modulate as base (after subclass setup)
-	# and ensure no tint is applied at spawn
+	# Capture sprite modulate for status effect blending
+	# If subclass set a custom modulate in _on_ready(), preserve it
+	# Otherwise ensure pure white (no errant tints)
 	if sprite:
-		base_modulate = sprite.modulate
-		# Explicitly reset modulate to base to ensure no errant tints
-		sprite.modulate = base_modulate
+		# Check if subclass set a custom base_modulate
+		if base_modulate == Color.WHITE:
+			# No custom tint set - ensure sprite is pure white
+			sprite.modulate = Color.WHITE
+		else:
+			# Subclass set a custom base_modulate - apply it to sprite
+			sprite.modulate = base_modulate
 
 func _apply_difficulty_scaling() -> void:
 	"""Apply difficulty multipliers to enemy stats."""

@@ -4,7 +4,7 @@ extends Area2D
 
 var orbit_index: int = 0
 var orbit_radius: float = 75.0
-var orbit_speed: float = 2.8
+var orbit_speed: float = 1.4  # Reduced 50%
 var angle: float = 0.0
 var base_damage: float = 10.0
 var slow_amount: float = 0.4  # 40% slow

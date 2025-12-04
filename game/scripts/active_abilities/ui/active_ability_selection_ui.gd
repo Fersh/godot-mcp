@@ -3,6 +3,60 @@ class_name ActiveAbilitySelectionUI
 
 signal ability_selected(ability: ActiveAbilityData)
 
+# Inner class for drawing circular icons
+class IconCircleDrawer extends Control:
+	var icon_size: int = 80
+	var border_width: int = 3
+	var border_color: Color = Color(0.5, 0.5, 0.5)
+	var bg_color: Color = Color(0.1, 0.1, 0.15)
+	var icon_texture: Texture2D = null
+	var fallback_letter: String = ""
+	var pixel_font: Font = null
+
+	func _draw() -> void:
+		var center = Vector2(icon_size, icon_size) / 2
+		var radius = icon_size / 2.0 - border_width
+
+		# Draw outer border circle
+		draw_circle(center, radius + border_width, border_color)
+
+		# Draw inner background circle
+		draw_circle(center, radius, bg_color)
+
+		# Draw icon clipped to circle
+		if icon_texture:
+			_draw_texture_clipped_to_circle(icon_texture, center, radius, Color.WHITE)
+		elif fallback_letter != "":
+			# Draw fallback letter
+			var font_size = int(icon_size * 0.4)
+			var font = pixel_font if pixel_font else ThemeDB.fallback_font
+			var text_size = font.get_string_size(fallback_letter, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
+			var text_pos = center - text_size / 2 + Vector2(0, text_size.y * 0.35)
+			draw_string(font, text_pos, fallback_letter, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+
+	func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: float, modulate: Color) -> void:
+		var segments = 64
+		var points = PackedVector2Array()
+		var uvs = PackedVector2Array()
+		var colors = PackedColorArray()
+
+		var tex_size = tex.get_size()
+		var scale_factor = (radius * 2) / min(tex_size.x, tex_size.y)
+		var scaled_size = tex_size * scale_factor
+
+		for i in range(segments):
+			var angle = (float(i) / segments) * TAU - PI / 2
+			var point = center + Vector2(cos(angle), sin(angle)) * radius
+			points.append(point)
+
+			var offset = point - center
+			var uv = Vector2(0.5, 0.5) + offset / scaled_size
+			uvs.append(uv)
+			colors.append(modulate)
+
+		if points.size() >= 3:
+			draw_polygon(points, colors, uvs, tex)
+
 var current_choices: Array[ActiveAbilityData] = []
 var ability_buttons: Array[Button] = []
 var all_abilities_pool: Array[ActiveAbilityData] = []
@@ -287,12 +341,25 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vbox.add_theme_constant_override("separation", 4)
 
-	# Spacer above ability name (for rarity tag)
+	# Spacer at top (for rarity tag)
 	var top_spacer = Control.new()
 	top_spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(top_spacer)
 
-	# Ability name (moved to top since rarity is now a tag)
+	# Icon circle container (centered) - now at top
+	var icon_container = CenterContainer.new()
+	icon_container.name = "IconContainer"
+	var icon_circle = _create_icon_circle(ability)
+	icon_circle.name = "IconCircle"
+	icon_container.add_child(icon_circle)
+	vbox.add_child(icon_container)
+
+	# Spacer after icon
+	var icon_spacer = Control.new()
+	icon_spacer.custom_minimum_size = Vector2(0, 8)
+	vbox.add_child(icon_spacer)
+
+	# Ability name (below icon)
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
@@ -303,6 +370,11 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
+
+	# Spacer after name
+	var name_spacer = Control.new()
+	name_spacer.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(name_spacer)
 
 	# Description
 	var desc_label = Label.new()
@@ -448,6 +520,36 @@ func _create_separator_style(rarity: ActiveAbilityData.Rarity) -> StyleBoxLine:
 	style.thickness = 1
 	return style
 
+func _create_icon_circle(ability: ActiveAbilityData) -> Control:
+	"""Create a circular icon display for the ability, similar to the ability button."""
+	var ICON_SIZE := 80
+	var BORDER_WIDTH := 3
+
+	var container = Control.new()
+	container.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+	container.size = Vector2(ICON_SIZE, ICON_SIZE)
+
+	# We'll use a custom drawing node for the circle
+	var icon_drawer = IconCircleDrawer.new()
+	icon_drawer.icon_size = ICON_SIZE
+	icon_drawer.border_width = BORDER_WIDTH
+	icon_drawer.border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+	icon_drawer.bg_color = Color(0.1, 0.1, 0.15, 1.0)
+	icon_drawer.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
+	icon_drawer.size = Vector2(ICON_SIZE, ICON_SIZE)
+
+	# Load the icon texture
+	var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
+	if ResourceLoader.exists(icon_path):
+		icon_drawer.icon_texture = load(icon_path)
+	else:
+		# Fallback letter
+		icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
+		icon_drawer.pixel_font = pixel_font
+
+	container.add_child(icon_drawer)
+	return container
+
 func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_reveal: bool = false) -> void:
 	var margin = button.get_child(0) as MarginContainer
 	if not margin:
@@ -456,19 +558,36 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if not vbox:
 		return
 
-	# Children: 0=top_spacer, 1=name, 2=desc, 3=cooldown
-	# Update name (child 1)
-	var name_label = vbox.get_child(1) as Label
+	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=name_spacer, 5=desc, 6=cooldown, 7=bottom_spacer
+	# Update icon circle (child 1 is icon_container)
+	var icon_container = vbox.get_child(1) as CenterContainer
+	if icon_container and icon_container.get_child_count() > 0:
+		var icon_circle = icon_container.get_child(0)
+		if icon_circle and icon_circle.get_child_count() > 0:
+			var icon_drawer = icon_circle.get_child(0) as IconCircleDrawer
+			if icon_drawer:
+				icon_drawer.border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+				var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
+				if ResourceLoader.exists(icon_path):
+					icon_drawer.icon_texture = load(icon_path)
+					icon_drawer.fallback_letter = ""
+				else:
+					icon_drawer.icon_texture = null
+					icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
+				icon_drawer.queue_redraw()
+
+	# Update name (child 3)
+	var name_label = vbox.get_child(3) as Label
 	if name_label:
 		name_label.text = ability.name
 
-	# Update description (child 2)
-	var desc_label = vbox.get_child(2) as Label
+	# Update description (child 5)
+	var desc_label = vbox.get_child(5) as Label
 	if desc_label:
 		desc_label.text = ability.description
 
-	# Update cooldown (child 3)
-	var cooldown_label = vbox.get_child(3) as Label
+	# Update cooldown (child 6)
+	var cooldown_label = vbox.get_child(6) as Label
 	if cooldown_label:
 		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
 

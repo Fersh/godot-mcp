@@ -71,16 +71,17 @@ func _create_ui() -> void:
 	var dodge_y = ability1_y + (ABILITY1_SIZE.y - BUTTON_SIZE.y) / 2
 	dodge_button.position = Vector2(0, dodge_y)
 
-	# Above Ability 1: Ability 2 (centered above Ability 1)
+	# Above Ability 1: Ability 2 (centered above Ability 1, moved up 20px)
 	var btn1 = _create_ability_button(1, BUTTON_SIZE)
-	var ability2_y = ability1_y - stack_spacing - BUTTON_SIZE.y
+	var ability2_y = ability1_y - stack_spacing - BUTTON_SIZE.y - 20  # Moved up 20px
 	btn1.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability2_y)
 	ability_buttons.append(btn1)
 
-	# Above Ability 2: Ability 3 (centered above Ability 2)
+	# Ability 3: Left of Ability 2, above Dodge, pulled slightly towards Ability 1
 	var btn2 = _create_ability_button(2, BUTTON_SIZE)
-	var ability3_y = ability2_y - stack_spacing - BUTTON_SIZE.y
-	btn2.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability3_y)
+	var ability3_y = dodge_y - stack_spacing - BUTTON_SIZE.y  # Above dodge
+	var ability3_x = BUTTON_SIZE.x * 0.55 - 20  # Between dodge (0) and ability 2, moved 20px left
+	btn2.position = Vector2(ability3_x, ability3_y)
 	ability_buttons.append(btn2)
 
 	# Full opacity for all ability buttons
@@ -138,12 +139,11 @@ func _connect_signals() -> void:
 		ActiveAbilityManager.ability_acquired.connect(_on_ability_acquired)
 
 func _setup_initial_state() -> void:
-	# Start with empty ability slots
-	# Hide ability 2 and 3 until unlocked (indices 1 and 2)
+	# Start with empty ability slots - hide all until acquired
+	# Player starts at level 0, first ability is selected at level 1
 	for i in range(ability_buttons.size()):
 		ability_buttons[i].setup_empty(i)
-		if i > 0:  # Ability 2 and 3 (indices 1 and 2)
-			ability_buttons[i].visible = false
+		ability_buttons[i].visible = false  # Hide all until ability is acquired
 
 func _on_ability_acquired(slot: int, ability: ActiveAbilityData) -> void:
 	"""Update the button when an ability is acquired."""
@@ -200,8 +200,7 @@ func reset_for_new_run() -> void:
 	"""Reset all buttons for a new game run."""
 	for i in range(ability_buttons.size()):
 		ability_buttons[i].setup_empty(i)
-		if i > 0:  # Hide ability 2 and 3 again
-			ability_buttons[i].visible = false
+		ability_buttons[i].visible = false  # Hide all until ability is acquired
 	dodge_button.setup_dodge()
 	if ultimate_button:
 		ultimate_button.reset_for_new_run()

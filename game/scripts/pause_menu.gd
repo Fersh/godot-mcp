@@ -346,7 +346,7 @@ func _add_no_powerups_label() -> void:
 
 func _create_powerup_row(ability: AbilityData, count: int) -> Control:
 	var container = VBoxContainer.new()
-	container.add_theme_constant_override("separation", 2)
+	container.add_theme_constant_override("separation", 7)  # 5px margin below ability name
 
 	var row = HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)

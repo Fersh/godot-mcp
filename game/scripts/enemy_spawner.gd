@@ -52,6 +52,10 @@ const EARLY_BOOST_EXTRA_MOBS: int = 10
 var early_boost_spawned: int = 0
 var early_boost_timer: float = 0.0
 
+# Level 0 initial spawn - spawn at screen edge so player has immediate action
+var initial_spawn_done: bool = false
+const INITIAL_SPAWN_COUNT: int = 4  # Number of mobs to spawn at screen edge
+
 # =============================================================================
 # ENDLESS MODE - 20 minute progression (enemies ordered weakest to strongest)
 # =============================================================================
@@ -212,6 +216,11 @@ func _process(delta: float) -> void:
 	# Don't spawn if disabled (challenge mode after boss killed)
 	if not is_spawning_enabled:
 		return
+
+	# Initial spawn at screen edge for immediate action at level 0
+	if not initial_spawn_done:
+		_do_initial_spawn()
+		initial_spawn_done = true
 
 	spawn_timer += delta
 
@@ -591,6 +600,64 @@ func start_spawning() -> void:
 func get_game_time() -> float:
 	"""Get the current game time in seconds."""
 	return game_time
+
+# ============================================
+# INITIAL SPAWN (Level 0 - Screen Edge)
+# ============================================
+
+func _do_initial_spawn() -> void:
+	"""Spawn initial enemies at the screen edge so player has immediate action."""
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		return
+
+	var scene = get_scene_for_type("ratfolk")  # Use weakest enemy for initial spawn
+	if not scene:
+		scene = enemy_scene
+
+	# Spawn enemies around the screen edge
+	for i in range(INITIAL_SPAWN_COUNT):
+		var enemy = scene.instantiate()
+		enemy.global_position = _get_screen_edge_spawn_position(player)
+		get_parent().add_child(enemy)
+
+func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
+	"""Get a spawn position at the edge of the visible screen."""
+	var viewport = get_viewport()
+	if not viewport:
+		return get_spawn_position()  # Fallback to normal spawn
+
+	var screen_size = viewport.get_visible_rect().size
+	var camera = viewport.get_camera_2d()
+	var player_pos = player.global_position
+
+	# Calculate screen bounds relative to player/camera
+	var screen_center = player_pos
+	if camera:
+		screen_center = camera.global_position
+
+	var half_width = screen_size.x / 2.0
+	var half_height = screen_size.y / 2.0
+
+	# Spawn just inside the screen edge (with small offset so they're visible immediately)
+	var edge_offset = 30.0  # Pixels inside the screen edge
+	var pos: Vector2
+	var roll = randf()
+
+	if roll < 0.25:
+		# Left edge
+		pos = Vector2(screen_center.x - half_width + edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
+	elif roll < 0.5:
+		# Right edge
+		pos = Vector2(screen_center.x + half_width - edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
+	elif roll < 0.75:
+		# Top edge
+		pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y - half_height + edge_offset)
+	else:
+		# Bottom edge
+		pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y + half_height - edge_offset)
+
+	return pos
 
 # ============================================
 # CHAMPION ENEMIES (Nightmare+ Difficulty)
