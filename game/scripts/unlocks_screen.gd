@@ -179,10 +179,15 @@ func _add_progress_categories_section() -> void:
 	var princess_total = 21
 	_add_progress_row(vbox, "Princesses Saved", princess_count, princess_total, Color(0.95, 0.5, 0.7))
 
+	# Stats Upgraded (total ranks purchased)
+	var stats_upgraded = PermanentUpgrades.get_total_ranks_purchased() if PermanentUpgrades else 0
+	var stats_total = PermanentUpgrades.get_max_possible_ranks() if PermanentUpgrades else 0
+	_add_progress_row(vbox, "Stats Upgraded", stats_upgraded, stats_total, Color(0.3, 0.85, 0.85))
+
 	# Upgrades Maxed
 	var upgrades_maxed = UnlocksManager.get_maxed_upgrades_count() if UnlocksManager else 0
 	var upgrades_total = UnlocksManager.get_total_upgrades() if UnlocksManager else 0
-	_add_progress_row(vbox, "Upgrades Maxed", upgrades_maxed, upgrades_total, Color(0.3, 0.85, 0.85))
+	_add_progress_row(vbox, "Upgrades Maxed", upgrades_maxed, upgrades_total, Color(0.6, 0.75, 0.95))
 
 	# Passive Abilities
 	var passive_count = UnlocksManager.get_unlocked_passive_count() if UnlocksManager else 0
@@ -398,12 +403,13 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 
 func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: float) -> Control:
 	"""Create a progress bar styled like the XP bar with rounded corners, borders, and texture."""
+	var bar_height = 14
 	var container = Control.new()
-	container.custom_minimum_size = Vector2(width, 20)
+	container.custom_minimum_size = Vector2(width, bar_height)
 
 	var bar = ProgressBar.new()
-	bar.custom_minimum_size = Vector2(width, 20)
-	bar.size = Vector2(width, 20)
+	bar.custom_minimum_size = Vector2(width, bar_height)
+	bar.size = Vector2(width, bar_height)
 	bar.max_value = 1.0
 	bar.value = progress
 	bar.show_percentage = false
@@ -413,7 +419,7 @@ func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: fl
 	bg_style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
 	bg_style.border_color = fill_color.darkened(0.5)
 	bg_style.set_border_width_all(2)
-	bg_style.set_corner_radius_all(4)
+	bg_style.set_corner_radius_all(3)
 	bar.add_theme_stylebox_override("background", bg_style)
 
 	# Fill style (colored with border)
@@ -421,7 +427,7 @@ func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: fl
 	fill_style.bg_color = fill_color
 	fill_style.border_color = fill_color.darkened(0.3)
 	fill_style.set_border_width_all(1)
-	fill_style.set_corner_radius_all(3)
+	fill_style.set_corner_radius_all(2)
 	bar.add_theme_stylebox_override("fill", fill_style)
 
 	container.add_child(bar)
@@ -429,15 +435,15 @@ func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: fl
 	# Add texture overlays (highlight and shadow)
 	var highlight = ColorRect.new()
 	highlight.color = Color(1.0, 1.0, 1.0, 0.2)
-	highlight.size = Vector2(width, 5)
+	highlight.size = Vector2(width, 3)
 	highlight.position = Vector2(0, 2)
 	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(highlight)
 
 	var shadow = ColorRect.new()
 	shadow.color = Color(0.0, 0.0, 0.0, 0.25)
-	shadow.size = Vector2(width, 6)
-	shadow.position = Vector2(0, 14)
+	shadow.size = Vector2(width, 4)
+	shadow.position = Vector2(0, bar_height - 4)
 	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	container.add_child(shadow)
 

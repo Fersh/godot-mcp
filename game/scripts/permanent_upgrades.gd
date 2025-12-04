@@ -404,3 +404,17 @@ func get_daredevil_multiplier() -> float:
 # Get daredevil points multiplier
 func get_daredevil_points_multiplier() -> float:
 	return 1.0 + (get_total_benefit("daredevil_protocol") * 2.0)
+
+# Get total upgrade ranks purchased (sum of all ranks across all upgrades)
+func get_total_ranks_purchased() -> int:
+	var total = 0
+	for id in upgrade_ranks:
+		total += upgrade_ranks[id]
+	return total
+
+# Get maximum possible upgrade ranks (sum of all max_ranks)
+func get_max_possible_ranks() -> int:
+	var total = 0
+	for id in upgrade_definitions:
+		total += upgrade_definitions[id].max_rank
+	return total
