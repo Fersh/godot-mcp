@@ -168,7 +168,7 @@ func die() -> void:
 
 	# Track boss kill in UnlocksManager
 	if UnlocksManager:
-		UnlocksManager.add_boss_kill()
+		UnlocksManager.add_boss_kill(elite_name)
 
 	# Track boss kill for missions
 	if MissionsManager:

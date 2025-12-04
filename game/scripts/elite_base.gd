@@ -226,7 +226,7 @@ func die() -> void:
 
 	# Track elite kill in UnlocksManager
 	if enemy_rarity == "elite" and UnlocksManager:
-		UnlocksManager.add_elite_kill()
+		UnlocksManager.add_elite_kill(elite_name)
 
 	# Track elite kill for missions
 	if enemy_rarity == "elite" and MissionsManager:

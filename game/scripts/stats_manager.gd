@@ -70,9 +70,9 @@ func end_run() -> void:
 		MissionsManager.end_run(run_victory)
 		MissionsManager.track_coins_earned(run_coins)
 
-		# Update endless stats if in endless mode
-		if run_game_mode == 0:  # Endless mode
-			UnlocksManager.update_endless_stats(run_time, run_wave, run_points)
+	# Update endless stats if in endless mode
+	if run_game_mode == 0 and UnlocksManager:  # Endless mode
+		UnlocksManager.update_endless_stats(run_time, run_wave, run_points)
 
 	# Add coins earned this run to spendable currency
 	# Apply coin gain bonus from permanent upgrades

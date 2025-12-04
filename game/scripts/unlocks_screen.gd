@@ -128,7 +128,7 @@ func _add_progress_categories_section() -> void:
 	overall_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var overall_label = Label.new()
-	overall_label.text = "Overall"
+	overall_label.text = "Total"
 	overall_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	overall_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
@@ -178,6 +178,11 @@ func _add_progress_categories_section() -> void:
 	var diff_total = 7
 	_add_progress_row(vbox, "Difficulties Beat", diff_count, diff_total, Color(0.9, 0.7, 0.2))
 
+	# Elites Beat (unique elites/bosses defeated)
+	var elites_beaten = UnlocksManager.get_unique_elites_beaten_count() if UnlocksManager else 0
+	var elites_total = UnlocksManager.get_total_unique_elites() if UnlocksManager else 24
+	_add_progress_row(vbox, "Elites Beat", elites_beaten, elites_total, Color(1.0, 0.5, 0.3))
+
 	# Princesses Saved
 	var princess_count = PrincessManager.get_unlocked_count() if PrincessManager else 0
 	var princess_total = 21
@@ -191,17 +196,17 @@ func _add_progress_categories_section() -> void:
 	# Passive Abilities
 	var passive_count = UnlocksManager.get_unlocked_passive_count() if UnlocksManager else 0
 	var passive_total = UnlocksManager.get_total_locked_passives() if UnlocksManager else 24
-	_add_progress_row(vbox, "Passive Abilities", passive_count, passive_total, Color(0.4, 0.9, 0.5))
+	_add_progress_row(vbox, "Passives Unlocked", passive_count, passive_total, Color(0.4, 0.9, 0.5))
 
 	# Active Abilities
 	var active_count = UnlocksManager.get_unlocked_active_count() if UnlocksManager else 0
 	var active_total = UnlocksManager.get_total_locked_actives() if UnlocksManager else 12
-	_add_progress_row(vbox, "Active Abilities", active_count, active_total, Color(0.7, 0.5, 1.0))
+	_add_progress_row(vbox, "Actives Unlocked", active_count, active_total, Color(0.7, 0.5, 1.0))
 
 	# Ultimate Abilities
 	var ult_count = UnlocksManager.get_unlocked_ultimate_count() if UnlocksManager else 0
 	var ult_total = UnlocksManager.get_total_locked_ultimates() if UnlocksManager else 6
-	_add_progress_row(vbox, "Ultimate Abilities", ult_count, ult_total, Color(1.0, 0.7, 0.3))
+	_add_progress_row(vbox, "Ultimates Unlocked", ult_count, ult_total, Color(1.0, 0.7, 0.3))
 
 	content_vbox.add_child(section)
 
@@ -215,26 +220,6 @@ func _add_combat_stats_section() -> void:
 	_add_stat_row(vbox, "Elites Killed", _format_number(stats.get("total_elites_killed", 0)))
 	_add_stat_row(vbox, "Bosses Killed", _format_number(stats.get("total_bosses_killed", 0)))
 	_add_stat_row(vbox, "Games Completed", _format_number(stats.get("games_completed", 0)))
-
-	# Spacer before achievements
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 8)
-	vbox.add_child(spacer)
-
-	# Hardest difficulty beaten
-	var hardest = stats.get("hardest_difficulty_beaten", -1)
-	var hardest_name = "None"
-	if hardest >= 0 and DifficultyManager:
-		hardest_name = DifficultyManager.get_difficulty_name(hardest)
-	_add_stat_row(vbox, "Hardest Difficulty", hardest_name)
-
-	# Highest curses used
-	var curses_dict = stats.get("hardest_with_curses", {})
-	var max_curses = 0
-	for diff in curses_dict:
-		if curses_dict[diff] > max_curses:
-			max_curses = curses_dict[diff]
-	_add_stat_row(vbox, "Most Curses Active", str(max_curses))
 
 	content_vbox.add_child(section)
 
@@ -254,9 +239,12 @@ func _add_game_mode_stats_section() -> void:
 	challenge_header.add_theme_color_override("font_color", Color(1.0, 0.65, 0.35))
 	vbox.add_child(challenge_header)
 
-	var fastest = stats.get("fastest_challenge_time", 999999.0)
-	var fastest_str = _format_time(fastest) if fastest < 999999.0 else "--:--"
-	_add_stat_row(vbox, "Fastest Clear", fastest_str)
+	# Hardest difficulty beaten
+	var hardest = stats.get("hardest_difficulty_beaten", -1)
+	var hardest_name = "None"
+	if hardest >= 0 and DifficultyManager:
+		hardest_name = DifficultyManager.get_difficulty_name(hardest)
+	_add_stat_row(vbox, "Hardest Difficulty", hardest_name)
 	_add_stat_row(vbox, "Best Points", _format_number(stats.get("highest_challenge_points", 0)))
 
 	# Spacer
@@ -275,7 +263,6 @@ func _add_game_mode_stats_section() -> void:
 	vbox.add_child(endless_header)
 
 	_add_stat_row(vbox, "Longest Survival", _format_time(stats.get("longest_endless_time", 0.0)))
-	_add_stat_row(vbox, "Highest Wave", str(stats.get("highest_endless_wave", 0)))
 	_add_stat_row(vbox, "Best Points", _format_number(stats.get("highest_endless_points", 0)))
 
 	# General stats from StatsManager

@@ -85,6 +85,20 @@ var highest_endless_points: int = 0
 var fastest_challenge_time: float = 999999.0
 var highest_challenge_points: int = 0
 
+# Unique elites beaten (by elite_name)
+var unique_elites_beaten: Array = []
+
+# All possible elites (17 elites + 7 bosses = 24 total)
+const ALL_ELITE_NAMES = [
+	# Elites
+	"One Eyed Monster", "Goblin King", "The Supervisor", "Rat Daddy", "Bone Daddy",
+	"Blobulous the Magnificent", "Infernal Intern", "The Grand Poobah", "Archmage Whiskersnatch",
+	"Dreadwing the Eclipsed", "The Plague Licker", "Rotfather", "The All-Seeing",
+	"Stoneheart the Immovable", "The Mind Ripper", "Lich King Mortanius", "Vexroth the Soulrender",
+	# Bosses
+	"Minotaur", "Skeleton King", "Kobold King", "Giant Golem", "Lizardfolk King", "Wendigo", "Elder Dragon"
+]
+
 # ============================================
 # INITIALIZATION
 # ============================================
@@ -277,13 +291,27 @@ func _get_available_locked_ultimates() -> Array:
 # KILL TRACKING
 # ============================================
 
-func add_elite_kill() -> void:
+func add_elite_kill(elite_name: String = "") -> void:
 	current_run_elites += 1
 	total_elites_killed += 1
+	# Track unique elite beaten
+	if elite_name != "" and elite_name not in unique_elites_beaten:
+		unique_elites_beaten.append(elite_name)
+		save_unlocks()
 
-func add_boss_kill() -> void:
+func add_boss_kill(boss_name: String = "") -> void:
 	current_run_bosses += 1
 	total_bosses_killed += 1
+	# Track unique boss beaten (bosses count as elites for completion)
+	if boss_name != "" and boss_name not in unique_elites_beaten:
+		unique_elites_beaten.append(boss_name)
+		save_unlocks()
+
+func get_unique_elites_beaten_count() -> int:
+	return unique_elites_beaten.size()
+
+func get_total_unique_elites() -> int:
+	return ALL_ELITE_NAMES.size()
 
 func add_monster_kills(count: int) -> void:
 	total_monsters_killed += count
@@ -349,14 +377,16 @@ func get_overall_unlock_progress() -> float:
 	var total_difficulties = 7
 	var total_characters = 7
 	var total_locked_abilities = get_total_locked_passives() + get_total_locked_actives() + get_total_locked_ultimates()
+	var total_elites = get_total_unique_elites()
 
 	var unlocked_princesses = PrincessManager.get_unlocked_count() if PrincessManager else 0
 	var unlocked_difficulties = DifficultyManager.completed_difficulties.size() if DifficultyManager else 0
 	var unlocked_characters = _count_unlocked_characters()
 	var unlocked_abilities = unlocked_passives.size() + unlocked_actives.size() + unlocked_ultimates.size()
+	var beaten_elites = get_unique_elites_beaten_count()
 
-	var total = total_princesses + total_difficulties + total_characters + total_locked_abilities
-	var unlocked = unlocked_princesses + unlocked_difficulties + unlocked_characters + unlocked_abilities
+	var total = total_princesses + total_difficulties + total_characters + total_locked_abilities + total_elites
+	var unlocked = unlocked_princesses + unlocked_difficulties + unlocked_characters + unlocked_abilities + beaten_elites
 
 	if total == 0:
 		return 1.0
@@ -428,6 +458,7 @@ func save_unlocks() -> void:
 		"highest_endless_points": highest_endless_points,
 		"fastest_challenge_time": fastest_challenge_time,
 		"highest_challenge_points": highest_challenge_points,
+		"unique_elites_beaten": unique_elites_beaten,
 	}
 
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -459,6 +490,7 @@ func load_unlocks() -> void:
 			highest_endless_points = data.get("highest_endless_points", 0)
 			fastest_challenge_time = data.get("fastest_challenge_time", 999999.0)
 			highest_challenge_points = data.get("highest_challenge_points", 0)
+			unique_elites_beaten = data.get("unique_elites_beaten", [])
 
 func reset_all_unlocks() -> void:
 	"""Reset all unlock progress (for settings reset)."""
@@ -476,6 +508,7 @@ func reset_all_unlocks() -> void:
 	highest_endless_points = 0
 	fastest_challenge_time = 999999.0
 	highest_challenge_points = 0
+	unique_elites_beaten.clear()
 	current_run_elites = 0
 	current_run_bosses = 0
 	save_unlocks()
