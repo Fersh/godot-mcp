@@ -71,32 +71,32 @@ func _process(delta: float) -> void:
 
 	# Keyboard shortcuts for abilities
 	if not get_tree().paused:
-		# Dodge: J or Q
-		if Input.is_key_pressed(KEY_J) or Input.is_key_pressed(KEY_Q):
+		# Dodge: J/1
+		if Input.is_key_pressed(KEY_J) or Input.is_key_pressed(KEY_1):
 			if not _dodge_key_held:
 				_dodge_key_held = true
 				perform_dodge()
 		else:
 			_dodge_key_held = false
 
-		# Ability 1: K or W (note: W may conflict with movement)
-		if Input.is_key_pressed(KEY_K):
+		# Ability 1: K/2
+		if Input.is_key_pressed(KEY_K) or Input.is_key_pressed(KEY_2):
 			if not _ability1_key_held:
 				_ability1_key_held = true
 				use_ability(0)
 		else:
 			_ability1_key_held = false
 
-		# Ability 2: L or E
-		if Input.is_key_pressed(KEY_L) or Input.is_key_pressed(KEY_E):
+		# Ability 2: L/3
+		if Input.is_key_pressed(KEY_L) or Input.is_key_pressed(KEY_3):
 			if not _ability2_key_held:
 				_ability2_key_held = true
 				use_ability(1)
 		else:
 			_ability2_key_held = false
 
-		# Ability 3: ; or R
-		if Input.is_key_pressed(KEY_SEMICOLON) or Input.is_key_pressed(KEY_R):
+		# Ability 3: ;/4
+		if Input.is_key_pressed(KEY_SEMICOLON) or Input.is_key_pressed(KEY_4):
 			if not _ability3_key_held:
 				_ability3_key_held = true
 				use_ability(2)

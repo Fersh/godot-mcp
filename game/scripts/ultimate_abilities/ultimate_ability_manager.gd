@@ -46,9 +46,9 @@ func _process(delta: float) -> void:
 		if cooldown_timer <= 0:
 			emit_signal("ultimate_ready")
 
-	# Keyboard shortcut for ultimate: T, Space, or ' (apostrophe - ability 4)
+	# Keyboard shortcut for ultimate: '/5
 	if not get_tree().paused and not is_executing:
-		if Input.is_key_pressed(KEY_T) or Input.is_key_pressed(KEY_SPACE) or Input.is_key_pressed(KEY_APOSTROPHE):
+		if Input.is_key_pressed(KEY_APOSTROPHE) or Input.is_key_pressed(KEY_5):
 			if not _ultimate_key_held:
 				_ultimate_key_held = true
 				use_ultimate()
