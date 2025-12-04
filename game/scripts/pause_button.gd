@@ -11,8 +11,38 @@ func _ready() -> void:
 
 	button.pressed.connect(_on_pause_pressed)
 	_setup_style()
+	_create_visual_icon()
 
 func _setup_style() -> void:
+	# Make the large button semi-visible for debugging (change to 0 alpha when working)
+	var transparent_style = StyleBoxFlat.new()
+	transparent_style.bg_color = Color(1, 0, 0, 0.3)  # RED for debugging
+
+	button.add_theme_stylebox_override("normal", transparent_style)
+	button.add_theme_stylebox_override("hover", transparent_style)
+	button.add_theme_stylebox_override("pressed", transparent_style)
+	button.add_theme_stylebox_override("focus", transparent_style)
+
+	# Ensure button captures input
+	button.mouse_filter = Control.MOUSE_FILTER_STOP
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+func _create_visual_icon() -> void:
+	# Create the visible pause button icon inside the large invisible button
+	var visual = PanelContainer.new()
+	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Position in the top-right corner of the large button area
+	visual.anchor_left = 1.0
+	visual.anchor_right = 1.0
+	visual.anchor_top = 0.0
+	visual.anchor_bottom = 0.0
+	visual.offset_left = -55
+	visual.offset_right = -16
+	visual.offset_top = 12
+	visual.offset_bottom = 67
+
+	# Style the visual panel
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.12, 0.2, 0.9)
 	style.border_width_left = 2
@@ -24,24 +54,21 @@ func _setup_style() -> void:
 	style.corner_radius_top_right = 4
 	style.corner_radius_bottom_left = 4
 	style.corner_radius_bottom_right = 4
+	visual.add_theme_stylebox_override("panel", style)
 
-	var style_hover = style.duplicate()
-	style_hover.bg_color = Color(0.2, 0.17, 0.25, 0.95)
-
-	var style_pressed = style.duplicate()
-	style_pressed.bg_color = Color(0.1, 0.08, 0.12, 0.95)
-	style_pressed.border_width_top = 4
-	style_pressed.border_width_bottom = 2
-
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style_hover)
-	button.add_theme_stylebox_override("pressed", style_pressed)
-	button.add_theme_stylebox_override("focus", style)
-
+	# Add the pause text
+	var label = Label.new()
+	label.text = "||"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if pixel_font:
-		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 16)
-	button.add_theme_color_override("font_color", Color(0.9, 0.85, 0.75, 1.0))
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.75, 1.0))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	visual.add_child(label)
+	button.add_child(visual)
 
 func _on_pause_pressed() -> void:
 	# Don't show pause menu if ability selection UIs are visible

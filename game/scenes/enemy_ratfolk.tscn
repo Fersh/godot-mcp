@@ -32,6 +32,7 @@ hit_sparks_scene = ExtResource("10_hit_sparks")
 
 [node name="Sprite" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_hit_flash")
+texture_filter = 0
 scale = Vector2(1.875, 1.875)
 texture = ExtResource("2_texture")
 hframes = 12

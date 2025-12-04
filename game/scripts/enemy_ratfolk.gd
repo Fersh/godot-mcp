@@ -6,6 +6,10 @@ extends EnemyBase
 func _on_ready() -> void:
 	enemy_type = "ratfolk"
 
+	# Fix texture filtering to prevent frame bleeding
+	if sprite:
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+
 	# Ratfolk stats - fast and aggressive but fragile
 	speed = 87.3           # Fast and agile (10% slower)
 	max_health = 12.0      # 40% less health than orc (20)
