@@ -448,6 +448,8 @@ func _style_back_button(button: Button) -> void:
 	style_normal.border_width_bottom = 4
 	style_normal.border_color = Color(0.15, 0.15, 0.2, 1)
 	style_normal.set_corner_radius_all(6)
+	style_normal.content_margin_left = 16
+	style_normal.content_margin_right = 16
 
 	var style_hover = StyleBoxFlat.new()
 	style_hover.bg_color = Color(0.35, 0.35, 0.4, 1)
@@ -457,6 +459,8 @@ func _style_back_button(button: Button) -> void:
 	style_hover.border_width_bottom = 4
 	style_hover.border_color = Color(0.2, 0.2, 0.25, 1)
 	style_hover.set_corner_radius_all(6)
+	style_hover.content_margin_left = 16
+	style_hover.content_margin_right = 16
 
 	button.add_theme_stylebox_override("normal", style_normal)
 	button.add_theme_stylebox_override("hover", style_hover)

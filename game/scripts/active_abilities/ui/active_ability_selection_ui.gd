@@ -354,27 +354,22 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	icon_container.add_child(icon_circle)
 	vbox.add_child(icon_container)
 
-	# Spacer after icon
+	# Spacer after icon (above name) - 20px added
 	var icon_spacer = Control.new()
-	icon_spacer.custom_minimum_size = Vector2(0, 8)
+	icon_spacer.custom_minimum_size = Vector2(0, 28)
 	vbox.add_child(icon_spacer)
 
-	# Ability name (below icon)
+	# Ability name (below icon) - colored by rarity
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", Color.WHITE)
+	name_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
-
-	# Spacer after name
-	var name_spacer = Control.new()
-	name_spacer.custom_minimum_size = Vector2(0, 4)
-	vbox.add_child(name_spacer)
 
 	# Description
 	var desc_label = Label.new()
@@ -558,7 +553,7 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if not vbox:
 		return
 
-	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=name_spacer, 5=desc, 6=cooldown, 7=bottom_spacer
+	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=desc, 5=cooldown, 6=bottom_spacer
 	# Update icon circle (child 1 is icon_container)
 	var icon_container = vbox.get_child(1) as CenterContainer
 	if icon_container and icon_container.get_child_count() > 0:
@@ -576,18 +571,19 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 					icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
 				icon_drawer.queue_redraw()
 
-	# Update name (child 3)
+	# Update name (child 3) - set color to rarity
 	var name_label = vbox.get_child(3) as Label
 	if name_label:
 		name_label.text = ability.name
+		name_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
 
-	# Update description (child 5)
-	var desc_label = vbox.get_child(5) as Label
+	# Update description (child 4)
+	var desc_label = vbox.get_child(4) as Label
 	if desc_label:
 		desc_label.text = ability.description
 
-	# Update cooldown (child 6)
-	var cooldown_label = vbox.get_child(6) as Label
+	# Update cooldown (child 5)
+	var cooldown_label = vbox.get_child(5) as Label
 	if cooldown_label:
 		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
 

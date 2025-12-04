@@ -137,20 +137,20 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 4)
+	vbox.add_theme_constant_override("separation", 0)  # Reduced margin between elements
 
 	# Spacer above ability name (for rarity tag)
 	var top_spacer = Control.new()
 	top_spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(top_spacer)
 
-	# Ability name
+	# Ability name - colored by rarity
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", Color.WHITE)
+	name_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -449,10 +449,11 @@ func update_card_content(button: Button, ability: AbilityData, is_final_reveal: 
 		return
 
 	# Children: 0=top_spacer, 1=name, 2=desc, 3=bottom_spacer
-	# Update name label (child 1)
+	# Update name label (child 1) - set color to rarity
 	var name_label = vbox.get_child(1) as Label
 	if name_label:
 		name_label.text = ability.name
+		name_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
 
 	# Update description label (child 2)
 	var desc_label = vbox.get_child(2) as Label
