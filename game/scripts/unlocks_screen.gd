@@ -125,10 +125,12 @@ func _add_progress_categories_section() -> void:
 	var progress = UnlocksManager.get_overall_unlock_progress() if UnlocksManager else 0.0
 	var overall_hbox = HBoxContainer.new()
 	overall_hbox.add_theme_constant_override("separation", 10)
+	overall_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var overall_label = Label.new()
 	overall_label.text = "Overall"
 	overall_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	overall_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		overall_label.add_theme_font_override("font", pixel_font)
 	overall_label.add_theme_font_size_override("font_size", 12)
@@ -137,12 +139,14 @@ func _add_progress_categories_section() -> void:
 
 	var overall_right = HBoxContainer.new()
 	overall_right.add_theme_constant_override("separation", 8)
+	overall_right.alignment = BoxContainer.ALIGNMENT_CENTER
 	overall_hbox.add_child(overall_right)
 
 	var overall_percent = Label.new()
 	overall_percent.text = "%d%%" % int(progress * 100)
 	overall_percent.custom_minimum_size = Vector2(60, 0)
 	overall_percent.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	overall_percent.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		overall_percent.add_theme_font_override("font", pixel_font)
 	overall_percent.add_theme_font_size_override("font_size", 11)
@@ -183,11 +187,6 @@ func _add_progress_categories_section() -> void:
 	var stats_upgraded = PermanentUpgrades.get_total_ranks_purchased() if PermanentUpgrades else 0
 	var stats_total = PermanentUpgrades.get_max_possible_ranks() if PermanentUpgrades else 0
 	_add_progress_row(vbox, "Stats Upgraded", stats_upgraded, stats_total, Color(0.3, 0.85, 0.85))
-
-	# Upgrades Maxed
-	var upgrades_maxed = UnlocksManager.get_maxed_upgrades_count() if UnlocksManager else 0
-	var upgrades_total = UnlocksManager.get_total_upgrades() if UnlocksManager else 0
-	_add_progress_row(vbox, "Upgrades Maxed", upgrades_maxed, upgrades_total, Color(0.6, 0.75, 0.95))
 
 	# Passive Abilities
 	var passive_count = UnlocksManager.get_unlocked_passive_count() if UnlocksManager else 0
@@ -321,7 +320,7 @@ func _create_section_panel(title: String) -> PanelContainer:
 	var vbox = VBoxContainer.new()
 	vbox.custom_minimum_size = Vector2(CONTAINER_WIDTH, 0)
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 13)
+	vbox.add_theme_constant_override("separation", 18)
 	panel.add_child(vbox)
 
 	# Section title
@@ -347,10 +346,12 @@ func _create_section_panel(title: String) -> PanelContainer:
 func _add_progress_row(container: VBoxContainer, label_text: String, current: int, total: int, color: Color) -> void:
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 10)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var label = Label.new()
 	label.text = label_text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 	label.add_theme_font_size_override("font_size", 12)
@@ -360,6 +361,7 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	# Right side container for count and bar (count first, then bar)
 	var right_container = HBoxContainer.new()
 	right_container.add_theme_constant_override("separation", 8)
+	right_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_child(right_container)
 
 	var progress = float(current) / float(total) if total > 0 else 0.0
@@ -368,11 +370,13 @@ func _add_progress_row(container: VBoxContainer, label_text: String, current: in
 	count_label.text = "%d%%" % int(progress * 100)
 	count_label.custom_minimum_size = Vector2(50, 0)
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	count_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	if pixel_font:
 		count_label.add_theme_font_override("font", pixel_font)
 	count_label.add_theme_font_size_override("font_size", 11)
 	count_label.add_theme_color_override("font_color", color)
 	right_container.add_child(count_label)
+
 	var bar = _create_xp_style_progress_bar(progress, color, PROGRESS_BAR_WIDTH)
 	right_container.add_child(bar)
 
@@ -402,24 +406,29 @@ func _add_stat_row(container: VBoxContainer, label_text: String, value_text: Str
 	container.add_child(hbox)
 
 func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: float) -> Control:
-	"""Create a progress bar styled like the XP bar with rounded corners, borders, and texture."""
-	var bar_height = 14
-	var container = Control.new()
-	container.custom_minimum_size = Vector2(width, bar_height)
+	"""Create a slim progress bar with rounded corners."""
+	var bar_height = 8
 
 	var bar = ProgressBar.new()
 	bar.custom_minimum_size = Vector2(width, bar_height)
 	bar.size = Vector2(width, bar_height)
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.max_value = 1.0
 	bar.value = progress
 	bar.show_percentage = false
 
-	# Background style (dark with border)
+	# Background style (dark with border) - set expand margins to control height
 	var bg_style = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.12, 0.12, 0.18, 0.95)
+	bg_style.bg_color = Color(0.1, 0.1, 0.15, 0.95)
 	bg_style.border_color = fill_color.darkened(0.5)
-	bg_style.set_border_width_all(2)
+	bg_style.set_border_width_all(1)
 	bg_style.set_corner_radius_all(3)
+	bg_style.content_margin_top = 0
+	bg_style.content_margin_bottom = 0
+	bg_style.content_margin_left = 0
+	bg_style.content_margin_right = 0
+	bg_style.expand_margin_top = 0
+	bg_style.expand_margin_bottom = 0
 	bar.add_theme_stylebox_override("background", bg_style)
 
 	# Fill style (colored with border)
@@ -428,26 +437,13 @@ func _create_xp_style_progress_bar(progress: float, fill_color: Color, width: fl
 	fill_style.border_color = fill_color.darkened(0.3)
 	fill_style.set_border_width_all(1)
 	fill_style.set_corner_radius_all(2)
+	fill_style.content_margin_top = 0
+	fill_style.content_margin_bottom = 0
+	fill_style.content_margin_left = 0
+	fill_style.content_margin_right = 0
 	bar.add_theme_stylebox_override("fill", fill_style)
 
-	container.add_child(bar)
-
-	# Add texture overlays (highlight and shadow)
-	var highlight = ColorRect.new()
-	highlight.color = Color(1.0, 1.0, 1.0, 0.2)
-	highlight.size = Vector2(width, 3)
-	highlight.position = Vector2(0, 2)
-	highlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	container.add_child(highlight)
-
-	var shadow = ColorRect.new()
-	shadow.color = Color(0.0, 0.0, 0.0, 0.25)
-	shadow.size = Vector2(width, 4)
-	shadow.position = Vector2(0, bar_height - 4)
-	shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	container.add_child(shadow)
-
-	return container
+	return bar
 
 func _style_header() -> void:
 	var style = StyleBoxFlat.new()
