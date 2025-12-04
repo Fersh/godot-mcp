@@ -3,7 +3,7 @@ extends CanvasLayer
 # Buff bar - displays active temporary buffs below the XP bar
 # Shows icons with cooldown overlay and tooltip on hold
 
-const ICON_SIZE := Vector2(32, 32)  # Slightly smaller to fit on one line
+const ICON_SIZE := Vector2(35, 35)  # Increased by 10%
 const ICON_SPACING := 6
 const ROW_SPACING := 4
 const MAX_PER_ROW := 8
@@ -62,23 +62,21 @@ func _get_random_rune_texture() -> Texture2D:
 	return null
 
 func _create_ui() -> void:
-	# Right-aligned container at top
-	var right_container = Control.new()
-	right_container.name = "RightContainer"
-	right_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	right_container.offset_top = MARGIN_TOP + 10  # Shifted down 10px
-	right_container.offset_right = -MARGIN_RIGHT
-	right_container.offset_left = -500  # Allow space for buffs to expand left
-	right_container.offset_bottom = MARGIN_TOP + 10 + ICON_SIZE.y
-	add_child(right_container)
+	# Center-aligned container at top
+	var center_container = Control.new()
+	center_container.name = "CenterContainer"
+	center_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	center_container.offset_top = MARGIN_TOP + 10  # Shifted down 10px
+	center_container.offset_bottom = MARGIN_TOP + 10 + ICON_SIZE.y
+	add_child(center_container)
 
-	# HBox for buff icons (right-aligned, expands left)
+	# HBox for buff icons (center-aligned)
 	buff_container = HBoxContainer.new()
 	buff_container.name = "BuffContainer"
-	buff_container.alignment = BoxContainer.ALIGNMENT_END  # Right-aligned
+	buff_container.alignment = BoxContainer.ALIGNMENT_CENTER  # Center-aligned
 	buff_container.add_theme_constant_override("separation", ICON_SPACING)
 	buff_container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	right_container.add_child(buff_container)
+	center_container.add_child(buff_container)
 
 func _get_buff_container() -> HBoxContainer:
 	# Return the main buff container (single row now)

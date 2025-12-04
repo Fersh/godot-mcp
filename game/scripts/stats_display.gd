@@ -77,32 +77,32 @@ func _create_stats_ui() -> void:
 	if existing:
 		existing.queue_free()
 
-	# Create main container - horizontal layout, right of pause button
-	var container = HBoxContainer.new()
+	# Create main container - vertical layout, top-left corner
+	var container = VBoxContainer.new()
 	container.name = "StatsContainer"
 	container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	container.offset_left = MARGIN + PAUSE_BUTTON_SIZE + 60  # Right of pause button with more spacing
-	container.offset_top = MARGIN + 10 + (PAUSE_BUTTON_SIZE - ICON_SIZE) / 2  # Vertically centered with pause button, shifted down 10px
-	container.add_theme_constant_override("separation", 16)  # Horizontal spacing between stat groups
+	container.offset_left = 16  # Left margin
+	container.offset_top = 19  # Top margin (shifted down 2px)
+	container.add_theme_constant_override("separation", 8)  # Vertical spacing between rows
 	add_child(container)
 
-	# Create time (icon + value) - with extra width for consistency
+	# Create time (icon + value) - first row
 	var time_row = _create_stat_row(TIME_ICON_PATH, Color(0.7, 0.9, 1, 1), 120)
 	time_icon = time_row.get_node("Icon")
 	wave_label = time_row.get_node("Label")
 	container.add_child(time_row)
 
-	# Create coins (icon + value) - with extra width for large numbers
-	var coins_row = _create_stat_row(COINS_ICON_PATH, Color(1, 0.84, 0, 1), 80)
-	coins_icon = coins_row.get_node("Icon")
-	coins_label = coins_row.get_node("Label")
-	container.add_child(coins_row)
-
-	# Create points (icon + value) - with extra width for large numbers
+	# Create points (icon + value) - second row
 	var points_row = _create_stat_row(POINTS_ICON_PATH, Color(1, 1, 1, 1), 100)
 	points_icon = points_row.get_node("Icon")
 	points_label = points_row.get_node("Label")
 	container.add_child(points_row)
+
+	# Create coins (icon + value) - third row
+	var coins_row = _create_stat_row(COINS_ICON_PATH, Color(1, 0.84, 0, 1), 80)
+	coins_icon = coins_row.get_node("Icon")
+	coins_label = coins_row.get_node("Label")
+	container.add_child(coins_row)
 
 func _create_stat_row(icon_path: String, label_color: Color, min_label_width: float = 0) -> HBoxContainer:
 	var row = HBoxContainer.new()

@@ -4,7 +4,7 @@ var pixel_font: Font = null
 var pause_menu_scene: PackedScene = preload("res://scenes/pause_menu.tscn")
 var pause_menu: CanvasLayer = null
 
-@onready var button: Button = $MarginContainer/PauseButton
+@onready var button: Button = $FullScreenControl/PauseButton
 
 func _ready() -> void:
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")

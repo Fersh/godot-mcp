@@ -4,7 +4,7 @@ extends CanvasLayer
 # Clicking pause button opens pause menu
 
 const PAUSE_BUTTON_SIZE := 32  # Simple pause button size (smaller)
-const PROGRESS_BAR_HEIGHT := 26  # XP bar height (reduced by 8px)
+const PROGRESS_BAR_HEIGHT := 31  # XP bar height (increased by 5px)
 const MARGIN := 48  # Distance from edge of screen
 const SPACING := 11
 
@@ -22,6 +22,10 @@ var level_label: Label = null
 
 # Missions tracker UI
 var missions_container: VBoxContainer = null
+var missions_content: VBoxContainer = null  # Container for mission rows (collapsible)
+var missions_content_margin: MarginContainer = null  # Margin wrapper for content
+var missions_header: Button = null  # Clickable header
+var missions_expanded: bool = true  # Track expanded state
 var mission_rows: Array = []  # Array of HBoxContainers for each mission
 
 # Mission completion notification
@@ -74,14 +78,14 @@ func _create_ui() -> void:
 	# Get viewport size for positioning
 	var viewport_size = get_viewport().get_visible_rect().size
 
-	# === PAUSE BUTTON (top left, on same line as stats) ===
+	# === PAUSE BUTTON (top right, same margin as stats on left) ===
 	var pause_container = Control.new()
 	pause_container.name = "PauseContainer"
-	pause_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	pause_container.offset_left = MARGIN
-	pause_container.offset_top = MARGIN + 10  # Shifted down 10px
-	pause_container.offset_right = MARGIN + PAUSE_BUTTON_SIZE
-	pause_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 10
+	pause_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	pause_container.offset_left = -26 - PAUSE_BUTTON_SIZE  # 26px from right edge (added 10px margin)
+	pause_container.offset_top = MARGIN - 27  # Shifted up 2px
+	pause_container.offset_right = -26
+	pause_container.offset_bottom = MARGIN - 27 + PAUSE_BUTTON_SIZE
 	add_child(pause_container)
 
 	# Pause button
@@ -134,15 +138,16 @@ func _create_ui() -> void:
 	pause_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pause_button.add_child(pause_icon)
 
-	# === XP BAR (top, spans from pause button left edge to same margin on right) ===
-	var xp_bar_x = MARGIN  # Align with pause button left edge
-	var xp_bar_width = viewport_size.x - (MARGIN * 2)  # Same margin on both sides
+	# === XP BAR (top center, 60% of screen width) ===
+	var xp_bar_width = viewport_size.x * 0.6  # 60% of screen width
+	var xp_bar_x = (viewport_size.x - xp_bar_width) / 2.0  # Centered
 
 	var xp_container = Control.new()
 	xp_container.name = "XPContainer"
 	xp_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	xp_container.offset_top = MARGIN - 30  # Raised 30px (was 40px)
 	xp_container.offset_bottom = MARGIN - 30 + PROGRESS_BAR_HEIGHT + 18  # Added 18px margin below (10 + 8)
+	xp_container.mouse_filter = Control.MOUSE_FILTER_IGNORE  # Allow clicks to pass through to pause button
 	add_child(xp_container)
 
 	# Progress bar background
@@ -155,7 +160,7 @@ func _create_ui() -> void:
 	progress_bg_style.bg_color = Color(0.1, 0.1, 0.1, 1.0)
 	progress_bg_style.border_color = Color(0.3, 0.25, 0.2, 1.0)
 	progress_bg_style.set_border_width_all(2)
-	progress_bg_style.set_corner_radius_all(2)
+	progress_bg_style.set_corner_radius_all(4)  # Same as pause button
 	progress_bar_bg.add_theme_stylebox_override("panel", progress_bg_style)
 	xp_container.add_child(progress_bar_bg)
 
@@ -163,11 +168,11 @@ func _create_ui() -> void:
 	progress_bar_fill = Panel.new()
 	progress_bar_fill.name = "ProgressBarFill"
 	progress_bar_fill.size = Vector2(0, PROGRESS_BAR_HEIGHT - 4)
-	progress_bar_fill.position = Vector2(xp_bar_x + 2, 2)
+	progress_bar_fill.position = Vector2(xp_bar_x + 2, 2)  # Inside the bg bar
 	progress_bar_fill.clip_contents = true
 	var progress_fill_style = StyleBoxFlat.new()
 	progress_fill_style.bg_color = Color(0.3, 0.7, 1.0, 1.0)  # Blue
-	progress_fill_style.set_corner_radius_all(1)
+	progress_fill_style.set_corner_radius_all(3)  # Slightly less than bg to fit inside
 	progress_bar_fill.add_theme_stylebox_override("panel", progress_fill_style)
 	xp_container.add_child(progress_bar_fill)
 	_add_bar_texture_overlays(progress_bar_fill, PROGRESS_BAR_HEIGHT - 4, xp_bar_width)
@@ -402,15 +407,53 @@ func _animate_bar_fill_shake(fill_bar: Control) -> void:
 
 func _create_missions_tracker() -> void:
 	"""Create the missions tracker UI below the pause button."""
+	# Load saved expanded state
+	if GameSettings:
+		missions_expanded = GameSettings.get_setting("missions_expanded", true)
+
 	missions_container = VBoxContainer.new()
 	missions_container.name = "MissionsTracker"
 	missions_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	missions_container.offset_left = MARGIN
-	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 45  # Below pause button + 20px margin
-	missions_container.offset_right = MARGIN + 220
-	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 220
-	missions_container.add_theme_constant_override("separation", 24)  # Increased by 8px
+	missions_container.offset_left = MARGIN + 40  # Shifted 40px right
+	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 65  # Shifted 20px down
+	missions_container.offset_right = MARGIN + 260
+	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 280
+	missions_container.add_theme_constant_override("separation", 8)
 	add_child(missions_container)
+
+	# Create header button
+	missions_header = Button.new()
+	missions_header.name = "MissionsHeader"
+	missions_header.flat = true
+	missions_header.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	missions_header.text = ("v " if missions_expanded else "> ") + "MISSIONS"
+	missions_header.add_theme_font_size_override("font_size", 12)
+	missions_header.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	missions_header.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
+	if pixel_font:
+		missions_header.add_theme_font_override("font", pixel_font)
+	# Remove all borders/backgrounds
+	var empty_style = StyleBoxEmpty.new()
+	missions_header.add_theme_stylebox_override("focus", empty_style)
+	missions_header.add_theme_stylebox_override("normal", empty_style)
+	missions_header.add_theme_stylebox_override("hover", empty_style)
+	missions_header.add_theme_stylebox_override("pressed", empty_style)
+	missions_header.add_theme_stylebox_override("disabled", empty_style)
+	missions_header.focus_mode = Control.FOCUS_NONE
+	missions_header.pressed.connect(_on_missions_header_pressed)
+	missions_container.add_child(missions_header)
+
+	# Create content container for mission rows with 10px top margin
+	missions_content_margin = MarginContainer.new()
+	missions_content_margin.name = "MissionsContentMargin"
+	missions_content_margin.add_theme_constant_override("margin_top", 10)
+	missions_content_margin.visible = missions_expanded
+	missions_container.add_child(missions_content_margin)
+
+	missions_content = VBoxContainer.new()
+	missions_content.name = "MissionsContent"
+	missions_content.add_theme_constant_override("separation", 24)
+	missions_content_margin.add_child(missions_content)
 
 	# Create 3 mission row slots with slight rotation (left side down)
 	for i in range(3):
@@ -418,8 +461,22 @@ func _create_missions_tracker() -> void:
 		row.visible = false
 		row.pivot_offset = Vector2(0, 14)  # Pivot on left side
 		row.rotation = 0.02  # Very slight rotation (~1.1 degrees)
-		missions_container.add_child(row)
+		missions_content.add_child(row)
 		mission_rows.append(row)
+
+func _on_missions_header_pressed() -> void:
+	"""Toggle missions expanded/collapsed state."""
+	missions_expanded = not missions_expanded
+	missions_content_margin.visible = missions_expanded
+	missions_header.text = ("v " if missions_expanded else "> ") + "MISSIONS"
+
+	# Save state
+	if GameSettings:
+		GameSettings.set_setting("missions_expanded", missions_expanded)
+
+	# Play sound
+	if SoundManager:
+		SoundManager.play_click()
 
 func _create_mission_row() -> Control:
 	"""Create a single mission row UI element - simplified with dropshadow."""
@@ -430,12 +487,12 @@ func _create_mission_row() -> Control:
 	vbox.name = "VBox"
 	vbox.add_theme_constant_override("separation", 7)
 
-	# Mission description label (with dropshadow)
+	# Mission description label (with dropshadow) - smaller and lighter
 	var title = Label.new()
 	title.name = "Title"
-	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
-	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
+	title.add_theme_font_size_override("font_size", 12)  # Reduced by 2px
+	title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))  # Slightly lighter
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
 	title.add_theme_constant_override("shadow_offset_x", 1)
 	title.add_theme_constant_override("shadow_offset_y", 1)
 	if pixel_font:
