@@ -57,7 +57,7 @@ static func _create_doom() -> ActiveAbilityData:
 		"After a delay, cursed enemy takes massive damage.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
-		ActiveAbilityData.TargetType.STRONGEST_ENEMY,
+		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		15.0
 	).with_damage(300.0, 4.0) \
 	 .with_range(400.0) \

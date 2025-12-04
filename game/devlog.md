@@ -394,3 +394,202 @@ Modify `ENDLESS_SCALING_PER_MINUTE` constant (0.05 = 5%, 0.03 = 3%, etc.)
 
 13. `game/scripts/difficulty_manager.gd` - Endless base values, time scaling, updated getters
 14. `game/scripts/main.gd` - Time feed to DifficultyManager for Endless scaling
+
+---
+
+## Ability System Revamp - Infrastructure (2025-12-04)
+
+### 18. Tiered Branching Active Ability System (Data Layer Only)
+
+**NEW INFRASTRUCTURE:** Created complete data structure for tiered branching active abilities inspired by Hades (boon tiers), Diablo 4 (skill branching), and Path of Exile (support gems).
+
+**NOTE:** This is infrastructure only - the selection UI and passive-to-active unlock connections are NOT yet implemented. The trees exist but aren't accessible in-game yet.
+
+#### Tier Structure
+| Tier | Name | Rarity | Description |
+|------|------|--------|-------------|
+| Tier 1 | Base | Common/Rare | Starting ability |
+| Tier 2 | Branch | Rare | Two mutually exclusive upgrade paths |
+| Tier 3 | Signature | Epic | Powerful culmination with unique mechanics |
+
+#### 55 Ability Trees Created
+
+**20 Melee Trees:**
+- cleave, bash, charge, spin, slam, dash, whirlwind, leap, shout, throw
+- taunt, execute, block, impale, uppercut, combo, roar, stomp, parry, rampage
+
+**20 Ranged Trees:**
+- power_shot, multi_shot, trap, rain, turret, volley, evasion, explosive, poison, frost_arrow
+- mark, snipe, decoy, grapple, boomerang, smoke, net, ricochet, barrage, quickdraw
+
+**15 Global Trees:**
+- fireball, frost_nova, lightning, heal, teleport, time, summon, aura, shield, gravity
+- bomb, drain, curse, blink, thorns
+
+Each tree has:
+- 1 Base ability (Tier 1)
+- 2 Branch paths (Tier 2) - mutually exclusive
+- 2 Signature abilities (Tier 3) - one per branch
+
+**Total abilities defined:** 275 (55 trees × 5 abilities each)
+
+---
+
+### 19. Ability Tree Node System
+
+**NEW FILE:** `game/scripts/active_abilities/trees/ability_tree_node.gd`
+
+Class for managing individual ability tree progression:
+- Tracks current tier and acquired branch
+- Manages prerequisite validation
+- Provides upgrade availability queries
+- Handles tree reset for new runs
+
+---
+
+### 20. Ability Tree Registry
+
+**NEW FILE:** `game/scripts/active_abilities/trees/ability_tree_registry.gd`
+
+Central registry managing all 55 ability trees:
+- Lazy initialization on first access
+- Lookup by base ID or any ability ID in tree
+- Class-type filtering (melee/ranged/global)
+- Upgrade availability queries
+- Debug printing of all registered trees
+
+---
+
+### 21. Active Ability Data Extensions
+
+**MODIFIED:** `game/scripts/active_abilities/active_ability_data.gd`
+
+Added tier/prerequisite support:
+```gdscript
+enum AbilityTier { BASE, BRANCH, SIGNATURE }
+
+var tier: AbilityTier = AbilityTier.BASE
+var prerequisite_id: String = ""
+var branch_index: int = 0
+var unique_mechanic: String = ""  # Signature move description
+
+# Builder methods
+func with_prerequisite(prereq_id: String, branch: int) -> ActiveAbilityData
+func with_signature(mechanic: String) -> ActiveAbilityData
+```
+
+---
+
+### 22. Modular Executor System
+
+**NEW FILES:**
+- `game/scripts/active_abilities/executors/base_executor.gd` - Base class
+- `game/scripts/active_abilities/executors/melee_executor.gd` - Melee ability execution
+- `game/scripts/active_abilities/executors/ranged_executor.gd` - Ranged ability execution
+- `game/scripts/active_abilities/executors/global_executor.gd` - Global ability execution
+
+**MODIFIED:** `game/scripts/active_abilities/ability_executor.gd`
+
+Added routing to modular executors:
+```gdscript
+func _try_modular_executors(ability: ActiveAbilityData, player: Node2D) -> bool:
+    if not AbilityTreeRegistry.is_ability_in_tree(ability.id):
+        return false  # Fall back to legacy executor
+    match ability.class_type:
+        ClassType.MELEE: return _melee_executor.execute(ability, player)
+        ClassType.RANGED: return _ranged_executor.execute(ability, player)
+        ClassType.GLOBAL: return _global_executor.execute(ability, player)
+```
+
+Legacy abilities continue to work through fallback path.
+
+---
+
+### 23. Effect Module Extraction
+
+Extracted logic from `ability_manager.gd` (3221 lines) into modular files:
+
+**NEW FILES:**
+- `game/scripts/abilities/effects/stat_effects.gd` - Stat calculations (damage, attack speed, crit, etc.)
+- `game/scripts/abilities/effects/on_hit_effects.gd` - On-hit procs (ignite, frostbite, vampirism, etc.)
+
+**EXISTING FILES (from previous work):**
+- `game/scripts/abilities/effects/periodic_effects.gd` - Tick-based effects
+- `game/scripts/abilities/effects/on_kill_effects.gd` - Kill streak effects
+- `game/scripts/abilities/effects/combat_effects.gd` - Combat mechanics
+
+**MODIFIED:** `game/scripts/abilities/ability_manager.gd`
+
+Wired up all 5 effect modules:
+```gdscript
+var _stat_effects: StatEffects = null
+var _on_hit_effects: OnHitEffects = null
+var _on_kill_effects: OnKillEffects = null
+var _combat_effects: CombatEffects = null
+var _periodic_effects: PeriodicEffects = null
+
+func _ready() -> void:
+    _stat_effects = StatEffects.new(self)
+    _on_hit_effects = OnHitEffects.new(self)
+    # ... etc
+```
+
+---
+
+### What's NOT Implemented Yet
+
+The following features from the design doc are **NOT** implemented:
+
+1. **Mixed Selection Pool** - Upgrades don't appear alongside passives during level-up
+2. **Upgrade UI Styling** - No green borders for Tier 2, no gold borders for Tier 3
+3. **Passive → Active Unlock** - Passive abilities don't trigger upgrade availability
+4. **Prerequisite Enforcement** - Trees don't check if player has required abilities
+5. **Branch Mutual Exclusivity** - No enforcement of "pick one branch" rule
+
+The data layer is complete; the gameplay integration layer remains to be built.
+
+---
+
+### Files Created
+
+```
+game/scripts/active_abilities/trees/
+├── ability_tree_node.gd
+├── ability_tree_registry.gd
+├── melee/
+│   ├── cleave_tree.gd, bash_tree.gd, charge_tree.gd, spin_tree.gd
+│   ├── slam_tree.gd, dash_tree.gd, whirlwind_tree.gd, leap_tree.gd
+│   ├── shout_tree.gd, throw_tree.gd, taunt_tree.gd, execute_tree.gd
+│   ├── block_tree.gd, impale_tree.gd, uppercut_tree.gd, combo_tree.gd
+│   ├── roar_tree.gd, stomp_tree.gd, parry_tree.gd, rampage_tree.gd
+├── ranged/
+│   ├── power_shot_tree.gd, multi_shot_tree.gd, trap_tree.gd, rain_tree.gd
+│   ├── turret_tree.gd, volley_tree.gd, evasion_tree.gd, explosive_tree.gd
+│   ├── poison_tree.gd, frost_arrow_tree.gd, mark_tree.gd, snipe_tree.gd
+│   ├── decoy_tree.gd, grapple_tree.gd, boomerang_tree.gd, smoke_tree.gd
+│   ├── net_tree.gd, ricochet_tree.gd, barrage_tree.gd, quickdraw_tree.gd
+├── global/
+│   ├── fireball_tree.gd, frost_nova_tree.gd, lightning_tree.gd, heal_tree.gd
+│   ├── teleport_tree.gd, time_tree.gd, summon_tree.gd, aura_tree.gd
+│   ├── shield_tree.gd, gravity_tree.gd, bomb_tree.gd, drain_tree.gd
+│   ├── curse_tree.gd, blink_tree.gd, thorns_tree.gd
+
+game/scripts/active_abilities/executors/
+├── base_executor.gd
+├── melee_executor.gd
+├── ranged_executor.gd
+├── global_executor.gd
+
+game/scripts/abilities/effects/
+├── stat_effects.gd (new)
+├── on_hit_effects.gd (new)
+├── periodic_effects.gd (existing)
+├── on_kill_effects.gd (existing)
+├── combat_effects.gd (existing)
+```
+
+### Files Modified
+
+15. `game/scripts/active_abilities/active_ability_data.gd` - Tier enum, prerequisite fields, builder methods
+16. `game/scripts/active_abilities/ability_executor.gd` - Modular executor routing
+17. `game/scripts/abilities/ability_manager.gd` - Effect module wiring

@@ -71,7 +71,7 @@ static func _create_execute() -> ActiveAbilityData:
 		"Deals massive damage to low health targets.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
-		ActiveAbilityData.TargetType.LOWEST_HP,
+		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		8.0
 	).with_damage(80.0, 1.8) \
 	 .with_range(450.0) \
@@ -85,7 +85,7 @@ static func _create_deadeye() -> ActiveAbilityData:
 		"Time slows as you line up the perfect shot.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
-		ActiveAbilityData.TargetType.LOWEST_HP,
+		ActiveAbilityData.TargetType.NEAREST_ENEMY,
 		15.0
 	).with_damage(200.0, 3.0) \
 	 .with_range(500.0) \

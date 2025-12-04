@@ -241,4 +241,4 @@ static func print_all_trees() -> void:
 	print("=== Ability Tree Registry ===")
 	print("Total trees: ", _trees.size())
 	for base_id in _trees:
-		print(_trees[base_id].to_string())
+		print(_trees[base_id].to_debug_string())

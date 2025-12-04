@@ -153,7 +153,7 @@ func reset() -> void:
 # DEBUG
 # ============================================
 
-func to_string() -> String:
+func to_debug_string() -> String:
 	var s = "AbilityTree: " + get_base_id() + "\n"
 	s += "  Current: Tier " + str(current_tier + 1)
 	if acquired_branch >= 0:
