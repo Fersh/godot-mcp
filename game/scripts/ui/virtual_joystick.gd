@@ -11,12 +11,17 @@ const TRANSPARENCY_ACTIVE := 0.6  # More visible when pressed
 const SMOOTHING_ACCEL := 8.0  # Smooth ease into movement
 const SMOOTHING_DECEL := 50.0  # Quick response when stopping or changing direction
 
+# Absolute direction mode - direction based on screen position, not joystick-relative
+const USE_ABSOLUTE_DIRECTION := true
+const ABSOLUTE_DEADZONE_RADIUS := 40.0  # Deadzone radius for absolute mode
+
 var is_active: bool = false
 var touch_index: int = -1
 var current_direction: Vector2 = Vector2.ZERO
 var target_direction: Vector2 = Vector2.ZERO  # Raw input direction
 var knob_offset: Vector2 = Vector2.ZERO
 var target_knob_offset: Vector2 = Vector2.ZERO  # Raw knob position
+var touch_start_pos: Vector2 = Vector2.ZERO  # Where the touch started (for absolute direction)
 
 func _ready() -> void:
 	modulate.a = TRANSPARENCY_IDLE
@@ -86,6 +91,7 @@ func _input(event: InputEvent) -> void:
 			if event.pressed and not is_active:
 				is_active = true
 				touch_index = event.index
+				touch_start_pos = event.position  # Store where touch started for absolute direction
 				modulate.a = TRANSPARENCY_ACTIVE  # Make more visible when touched
 				_update_knob(event.position)
 			elif not event.pressed and event.index == touch_index:
@@ -99,21 +105,37 @@ func _input(event: InputEvent) -> void:
 			_update_knob(event.position)
 
 func _update_knob(touch_pos: Vector2) -> void:
-	var delta = touch_pos - global_position
-	var distance = delta.length()
+	# Calculate movement direction
+	if USE_ABSOLUTE_DIRECTION:
+		# Absolute direction mode: direction is based on movement from touch start position
+		# This means if you move left from where you started touching, character moves left
+		var direction_delta = touch_pos - touch_start_pos
+		var direction_distance = direction_delta.length()
 
-	# Clamp knob to joystick radius
-	if distance > JOYSTICK_RADIUS:
-		delta = delta.normalized() * JOYSTICK_RADIUS
-
-	# Set target knob position (smoothing happens in _process)
-	target_knob_offset = delta
-
-	# Calculate target direction with deadzone
-	if distance > DEADZONE * JOYSTICK_RADIUS:
-		target_direction = delta.normalized()
+		# Use a deadzone for absolute direction
+		if direction_distance > ABSOLUTE_DEADZONE_RADIUS:
+			target_direction = direction_delta.normalized()
+			# Visual knob reflects movement direction, scaled to joystick radius
+			var knob_magnitude = clamp(direction_distance / 150.0, 0.0, 1.0) * JOYSTICK_RADIUS
+			target_knob_offset = target_direction * knob_magnitude
+		else:
+			target_direction = Vector2.ZERO
+			target_knob_offset = Vector2.ZERO
 	else:
-		target_direction = Vector2.ZERO
+		# Relative direction mode: direction based on joystick position
+		var visual_delta = touch_pos - global_position
+		var visual_distance = visual_delta.length()
+
+		# Clamp knob to joystick radius for visual
+		if visual_distance > JOYSTICK_RADIUS:
+			visual_delta = visual_delta.normalized() * JOYSTICK_RADIUS
+
+		target_knob_offset = visual_delta
+
+		if visual_distance > DEADZONE * JOYSTICK_RADIUS:
+			target_direction = visual_delta.normalized()
+		else:
+			target_direction = Vector2.ZERO
 
 func _reset() -> void:
 	is_active = false

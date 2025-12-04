@@ -96,9 +96,8 @@ func _ready() -> void:
 	# Setup challenge mode if selected
 	_setup_challenge_mode()
 
-	# Show level 1 active ability selection after a short delay
-	# (allows UI to initialize first)
-	get_tree().create_timer(0.1).timeout.connect(_show_initial_ability_selection)
+	# Note: No initial ability selection - player starts at level 0
+	# First kill triggers level up to 1 which shows the ability selection
 
 func _process(delta: float) -> void:
 	# Only update game time when not paused

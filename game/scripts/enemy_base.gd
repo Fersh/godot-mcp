@@ -165,8 +165,11 @@ func _ready() -> void:
 			health_bar.visible = false
 
 	# Capture sprite's initial modulate as base (after subclass setup)
+	# and ensure no tint is applied at spawn
 	if sprite:
 		base_modulate = sprite.modulate
+		# Explicitly reset modulate to base to ensure no errant tints
+		sprite.modulate = base_modulate
 
 func _apply_difficulty_scaling() -> void:
 	"""Apply difficulty multipliers to enemy stats."""

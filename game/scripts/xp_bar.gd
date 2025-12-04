@@ -67,7 +67,7 @@ func _create_xp_bar_ui() -> void:
 	# Create level label inside progress bar
 	level_label = Label.new()
 	level_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	level_label.text = "Lv 1"
+	level_label.text = "Lv 0"  # Start at level 0
 	level_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	level_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	level_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))

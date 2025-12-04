@@ -189,7 +189,8 @@ var current_target: Node2D = null
 const MAX_LEVEL: int = 20
 var current_xp: float = 0.0
 var xp_to_next_level: float = 526.24  # Base XP required (10% increase from 478.4)
-var current_level: int = 1
+var current_level: int = 0  # Start at level 0, first kill grants level 1
+var first_kill_done: bool = false  # Track if first kill has triggered auto-level
 
 signal xp_changed(current_xp: float, xp_needed: float, level: int)
 signal level_up(new_level: int)
@@ -2242,10 +2243,47 @@ func add_xp(amount: float) -> void:
 		emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 func give_kill_xp(enemy_max_hp: float = 100.0) -> void:
+	# First kill at level 0 triggers automatic level up to level 1
+	if current_level == 0 and not first_kill_done:
+		first_kill_done = true
+		_trigger_first_level_up()
+		return
+
 	# XP based on enemy HP: 10-30 scaled by HP (100 HP = base, higher HP = more XP)
 	var hp_factor = clamp(enemy_max_hp / 100.0, 0.5, 3.0)
 	var xp_gain = randf_range(10.0, 30.0) * hp_factor
 	add_xp(xp_gain)
+
+func _trigger_first_level_up() -> void:
+	"""Handle the automatic level up from 0 to 1 on first kill."""
+	current_level = 1
+	current_xp = 0.0
+
+	# Apply level bonus
+	if AbilityManager:
+		AbilityManager.add_level_bonus()
+
+	# Increase max health by 5% and heal the same amount
+	var health_increase = ceili(base_max_health * 0.05)
+	base_max_health += health_increase
+	max_health += health_increase
+	current_health += health_increase
+	if health_bar:
+		health_bar.set_health(current_health, max_health)
+	emit_signal("health_changed", current_health, max_health)
+
+	# Play level up effects
+	if SoundManager:
+		SoundManager.play_levelup()
+	if HapticManager:
+		HapticManager.level_up()
+	if JuiceManager:
+		JuiceManager.trigger_level_up_celebration()
+	_spawn_level_up_effect()
+
+	# Emit signals
+	emit_signal("level_up", current_level)
+	emit_signal("xp_changed", current_xp, xp_to_next_level, current_level)
 
 # Ability system helper functions
 func heal(amount: float, _play_sound: bool = true, show_particles: bool = false, show_text: bool = false) -> void:
