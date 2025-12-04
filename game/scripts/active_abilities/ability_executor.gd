@@ -3,6 +3,9 @@ class_name AbilityExecutor
 
 # Executes active abilities by delegating to specific ability handlers
 # Each ability type has its own execution logic
+#
+# NEW: Routes to modular executors for tiered ability trees
+# Falls back to legacy handlers for existing abilities
 
 # Preloaded effect scenes (lazy loaded)
 var _effect_scenes: Dictionary = {}
@@ -10,11 +13,51 @@ var _effect_scenes: Dictionary = {}
 # Track base scale for gigantamax to prevent infinite scaling
 var _gigantamax_base_scales: Dictionary = {}  # player instance_id -> base_scale
 
+# Modular executors for tiered ability trees
+var _melee_executor: MeleeExecutor
+var _ranged_executor: RangedExecutor
+var _global_executor: GlobalExecutor
+
+func _ready() -> void:
+	# Initialize modular executors with reference to this main executor
+	_melee_executor = MeleeExecutor.new(self)
+	_ranged_executor = RangedExecutor.new(self)
+	_global_executor = GlobalExecutor.new(self)
+
 func execute(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Main entry point - execute an ability."""
 	if not ability or not player:
 		return
 
+	# Try modular executors first (for tiered ability trees)
+	if _try_modular_executors(ability, player):
+		return
+
+	# Fall back to legacy handlers
+	_execute_legacy(ability, player)
+
+func _try_modular_executors(ability: ActiveAbilityData, player: Node2D) -> bool:
+	"""Try to execute using modular executors. Returns true if handled."""
+	# Check if ability is in a registered tree
+	if not AbilityTreeRegistry.is_ability_in_tree(ability.id):
+		return false
+
+	# Route based on class type
+	match ability.class_type:
+		ActiveAbilityData.ClassType.MELEE:
+			if _melee_executor and _melee_executor.execute(ability, player):
+				return true
+		ActiveAbilityData.ClassType.RANGED:
+			if _ranged_executor and _ranged_executor.execute(ability, player):
+				return true
+		ActiveAbilityData.ClassType.GLOBAL:
+			if _global_executor and _global_executor.execute(ability, player):
+				return true
+
+	return false
+
+func _execute_legacy(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Legacy execution path for existing abilities."""
 	# Route to specific ability handler based on ID
 	match ability.id:
 		# Melee Common
