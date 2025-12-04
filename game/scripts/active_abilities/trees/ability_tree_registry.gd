@@ -34,7 +34,14 @@ static func _register_all_trees() -> void:
 	_register_tree(WhirlwindTree.create())
 	_register_tree(LeapTree.create())
 	_register_tree(ShoutTree.create())
-	# Add more melee trees as they're created
+	_register_tree(ThrowTree.create())
+	_register_tree(TauntTree.create())
+	_register_tree(ExecuteTree.create())
+	_register_tree(BlockTree.create())
+	_register_tree(ImpaleTree.create())
+	_register_tree(UppercutTree.create())
+	_register_tree(ComboTree.create())
+	_register_tree(RoarTree.create())
 
 	# Register ranged trees
 	_register_tree(PowerShotTree.create())
@@ -44,14 +51,27 @@ static func _register_all_trees() -> void:
 	_register_tree(TurretTree.create())
 	_register_tree(VolleyTree.create())
 	_register_tree(EvasionTree.create())
-	# Add more ranged trees as they're created
+	_register_tree(ExplosiveTree.create())
+	_register_tree(PoisonTree.create())
+	_register_tree(FrostArrowTree.create())
+	_register_tree(MarkTree.create())
+	_register_tree(SnipeTree.create())
+	_register_tree(DecoyTree.create())
+	_register_tree(GrappleTree.create())
+	_register_tree(BoomerangTree.create())
 
 	# Register global trees
 	_register_tree(FireballTree.create())
 	_register_tree(FrostNovaTree.create())
 	_register_tree(LightningTree.create())
 	_register_tree(HealTree.create())
-	# Add more global trees as they're created
+	_register_tree(TeleportTree.create())
+	_register_tree(TimeTree.create())
+	_register_tree(SummonTree.create())
+	_register_tree(AuraTree.create())
+	_register_tree(ShieldTree.create())
+	_register_tree(GravityTree.create())
+	_register_tree(BombTree.create())
 
 static func _register_tree(tree: AbilityTreeNode) -> void:
 	"""Register a tree and build lookup indices"""
