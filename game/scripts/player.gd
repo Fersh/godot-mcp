@@ -45,6 +45,10 @@ var difficulty_slow_timer: float = 0.0
 var toxic_trail_timer: float = 0.0
 const TOXIC_TRAIL_INTERVAL: float = 0.4  # Spawn pool every 0.4 seconds while moving
 
+# Blazing Trail fire spawning
+var fire_trail_timer: float = 0.0
+const FIRE_TRAIL_INTERVAL: float = 0.3  # Spawn fire pool every 0.3 seconds while moving
+
 # Active buffs tracking for UI {buff_id: {timer: float, duration: float, name: String, description: String, color: Color}}
 var active_buffs: Dictionary = {}
 signal buff_changed(buffs: Dictionary)
@@ -1037,6 +1041,16 @@ func _physics_process(delta: float) -> void:
 				AbilityManager.spawn_toxic_pool(global_position)
 		else:
 			toxic_trail_timer = 0.0  # Reset timer when standing still
+
+	# Blazing Trail - spawn fire pools while moving
+	if AbilityManager and AbilityManager.has_blazing_trail:
+		if direction.length() > 0.1:  # Only spawn when actually moving
+			fire_trail_timer += delta
+			if fire_trail_timer >= FIRE_TRAIL_INTERVAL:
+				fire_trail_timer = 0.0
+				AbilityManager.spawn_fire_pool(global_position)
+		else:
+			fire_trail_timer = 0.0  # Reset timer when standing still
 
 	# Apply recoil to actual position BEFORE clamping
 	if recoil_offset.length() > 0.1:

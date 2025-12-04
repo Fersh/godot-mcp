@@ -322,6 +322,9 @@ var blood_trail_duration: float = 0.0  # How long blood pools last
 var has_toxic_traits: bool = false
 var toxic_traits_damage: float = 0.0  # Damage per tick from poison pools
 
+var has_blazing_trail: bool = false
+var blazing_trail_damage: float = 0.0  # Damage per tick from fire pools
+
 # ============================================
 # NEW SUMMON TYPES
 # ============================================
@@ -653,6 +656,8 @@ func reset() -> void:
 	blood_trail_duration = 0.0
 	has_toxic_traits = false
 	toxic_traits_damage = 0.0
+	has_blazing_trail = false
+	blazing_trail_damage = 0.0
 
 	# Reset new summon types
 	has_chicken_summon = false
@@ -1505,6 +1510,9 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.TOXIC_TRAITS:
 				has_toxic_traits = true
 				toxic_traits_damage = value
+			AbilityData.EffectType.BLAZING_TRAIL:
+				has_blazing_trail = true
+				blazing_trail_damage = value
 
 			# Summon Types
 			AbilityData.EffectType.CHICKEN_SUMMON:
@@ -1677,6 +1685,23 @@ func spawn_toxic_pool(position: Vector2) -> void:
 		pool.global_position = position
 		pool.lifetime = 3.0  # Fixed 3 second duration
 		pool.damage_per_tick = toxic_traits_damage * get_summon_damage_multiplier()
+		player.get_parent().add_child(pool)
+
+func spawn_fire_pool(position: Vector2) -> void:
+	"""Spawn a fire pool at the given position that damages enemies."""
+	if not has_blazing_trail:
+		return
+
+	var player = get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+
+	var fire_pool_scene = load("res://scenes/abilities/fire_pool.tscn")
+	if fire_pool_scene:
+		var pool = fire_pool_scene.instantiate()
+		pool.global_position = position
+		pool.lifetime = 2.5  # Slightly shorter than poison
+		pool.damage_per_tick = blazing_trail_damage * get_summon_damage_multiplier()
 		player.get_parent().add_child(pool)
 
 func get_summon_damage_multiplier() -> float:
