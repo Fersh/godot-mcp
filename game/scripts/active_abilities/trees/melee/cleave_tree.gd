@@ -3,8 +3,14 @@ class_name CleaveTree
 
 # Cleave Ability Tree
 # Base: Wide arc attack hitting multiple enemies
-# Branch A (Executioner): Bonus damage to low HP enemies -> Guillotine (execute mechanic)
-# Branch B (Crowd Control): Slow enemies -> Shockwave (knockback + stun)
+# Branch A (Executioner): Bonus damage to low HP enemies -> of Judgment (execute mechanic)
+# Branch B (Sweeping): Slow enemies -> of Thunder (knockback + stun)
+#
+# Naming: Base "Cleave" -> "Executioner's Cleave" -> "Executioner's Cleave of Judgment"
+#                       -> "Sweeping Cleave" -> "Sweeping Cleave of Thunder"
+
+const BASE_NAME = "Cleave"
+const BASE_ID = "cleave"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -29,8 +35,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"cleave",
-		"Cleave",
+		BASE_ID,
+		BASE_NAME,
 		"Swing your weapon in a wide arc, damaging all enemies in front of you.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -47,8 +53,8 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_executioner_swing() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"cleave_executioner",
-		"Executioner's Swing",
-		"Cleave deals 2x damage to enemies below 50% HP.",
+		"Executioner's Cleave",  # Will be overwritten by with_prefix
+		"Deals 2x damage to enemies below 50% HP.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -56,7 +62,8 @@ static func _create_executioner_swing() -> ActiveAbilityData:
 	).with_damage(60.0, 1.8) \
 	 .with_aoe(180.0) \
 	 .with_effect("cleave_executioner") \
-	 .with_prerequisite("cleave", 0)
+	 .with_prerequisite("cleave", 0) \
+	 .with_prefix("Executioner's", BASE_NAME, BASE_ID)
 
 # ============================================
 # TIER 3 - BRANCH A: GUILLOTINE (SIGNATURE)
@@ -65,8 +72,8 @@ static func _create_executioner_swing() -> ActiveAbilityData:
 static func _create_guillotine() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"cleave_guillotine",
-		"Guillotine",
-		"Execute enemies below 20% HP. Deals massive damage to others. The blade of justice shows no mercy.",
+		"Executioner's Cleave of Judgment",  # Will be overwritten by with_suffix
+		"Execute enemies below 20% HP instantly. Deals massive damage to others.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -75,7 +82,8 @@ static func _create_guillotine() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_effect("guillotine") \
 	 .with_prerequisite("cleave_executioner", 0) \
-	 .with_signature("Instant execute enemies below 20% HP")
+	 .with_signature("Instant execute enemies below 20% HP") \
+	 .with_suffix("of Judgment", BASE_NAME, "Executioner's", BASE_ID)
 
 # ============================================
 # TIER 2 - BRANCH B: CROWD CONTROL PATH
@@ -84,8 +92,8 @@ static func _create_guillotine() -> ActiveAbilityData:
 static func _create_crowd_control_cleave() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"cleave_crowd",
-		"Crowd Control Cleave",
-		"Cleave slows enemies by 60% for 2 seconds.",
+		"Sweeping Cleave",  # Will be overwritten by with_prefix
+		"Slows enemies by 60% for 2 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -94,7 +102,8 @@ static func _create_crowd_control_cleave() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_slow(0.6, 2.0) \
 	 .with_effect("cleave_frost") \
-	 .with_prerequisite("cleave", 1)
+	 .with_prerequisite("cleave", 1) \
+	 .with_prefix("Sweeping", BASE_NAME, BASE_ID)
 
 # ============================================
 # TIER 3 - BRANCH B: SHOCKWAVE CLEAVE (SIGNATURE)
@@ -103,8 +112,8 @@ static func _create_crowd_control_cleave() -> ActiveAbilityData:
 static func _create_shockwave_cleave() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"cleave_shockwave",
-		"Shockwave Cleave",
-		"Unleash a devastating shockwave that knocks enemies back and stuns them. The ground trembles with each swing.",
+		"Sweeping Cleave of Thunder",  # Will be overwritten by with_suffix
+		"Unleash a devastating shockwave that knocks enemies back and stuns them.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -116,7 +125,8 @@ static func _create_shockwave_cleave() -> ActiveAbilityData:
 	 .with_slow(0.5, 3.0) \
 	 .with_effect("shockwave") \
 	 .with_prerequisite("cleave_crowd", 1) \
-	 .with_signature("Massive knockback wave that stuns enemies")
+	 .with_signature("Massive knockback wave that stuns enemies") \
+	 .with_suffix("of Thunder", BASE_NAME, "Sweeping", BASE_ID)
 
 # ============================================
 # UTILITY FUNCTIONS

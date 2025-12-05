@@ -309,15 +309,17 @@ func _load_icon() -> void:
 		icon_texture.texture = null
 		return
 
-	# Try to load ability-specific icon
-	var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
+	# Use base ability's icon for upgrades (they share the same icon)
+	var icon_id = ability.get_icon_ability_id()
+	var icon_path = "res://assets/icons/abilities/" + icon_id + ".png"
 	if ResourceLoader.exists(icon_path):
 		icon_texture.texture = load(icon_path)
 		cooldown_label.visible = false
 	else:
-		# Fallback: use first letter as placeholder
+		# Fallback: use first letter of base_name as placeholder
 		icon_texture.texture = null
-		cooldown_label.text = ability.name.substr(0, 1).to_upper()
+		var display_letter = ability.base_name.substr(0, 1).to_upper() if not ability.base_name.is_empty() else ability.name.substr(0, 1).to_upper()
+		cooldown_label.text = display_letter
 		cooldown_label.visible = true
 		cooldown_label.add_theme_color_override("font_color", Color.WHITE)
 

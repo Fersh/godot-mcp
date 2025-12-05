@@ -95,6 +95,12 @@ var replaces_ability: bool = true       # If true, replaces parent ability; if f
 var unique_mechanic: String = ""        # Description of signature move's special behavior
 var visual_override: String = ""        # Custom VFX path for signature abilities
 
+# Compound naming system - builds names like "Fiery Whirlwind of Chaos"
+var base_name: String = ""              # Core ability name (e.g., "Whirlwind") - inherited from base
+var name_prefix: String = ""            # Adjective for T2 (e.g., "Fiery")
+var name_suffix: String = ""            # Suffix for T3 (e.g., "of Chaos")
+var base_ability_id: String = ""        # ID of the root base ability (for icon lookup)
+
 func _init(
 	p_id: String,
 	p_name: String,
@@ -106,12 +112,14 @@ func _init(
 ) -> void:
 	id = p_id
 	name = p_name
+	base_name = p_name  # Default base_name is the full name (for base abilities)
 	description = p_desc
 	rarity = p_rarity
 	class_type = p_class_type
 	target_type = p_target_type
 	cooldown = p_cooldown
 	effect_id = p_id  # Default effect ID matches ability ID
+	base_ability_id = p_id  # Default to self (overridden for upgrades)
 
 # Builder pattern methods for clean initialization
 func with_damage(base: float, multiplier: float = 1.0) -> ActiveAbilityData:
@@ -198,6 +206,43 @@ func without_replacement() -> ActiveAbilityData:
 	replaces_ability = false
 	return self
 
+# ============================================
+# COMPOUND NAMING BUILDER METHODS
+# ============================================
+
+func with_prefix(p_prefix: String, p_base_name: String, p_base_id: String) -> ActiveAbilityData:
+	## Set prefix for T2 ability (e.g., "Fiery" for "Fiery Whirlwind")
+	name_prefix = p_prefix
+	base_name = p_base_name
+	base_ability_id = p_base_id
+	name = get_display_name()  # Update the name field
+	return self
+
+func with_suffix(p_suffix: String, p_base_name: String, p_prefix: String, p_base_id: String) -> ActiveAbilityData:
+	## Set suffix for T3 ability (e.g., "of Chaos" for "Fiery Whirlwind of Chaos")
+	name_suffix = p_suffix
+	base_name = p_base_name
+	name_prefix = p_prefix
+	base_ability_id = p_base_id
+	name = get_display_name()  # Update the name field
+	return self
+
+func get_display_name() -> String:
+	## Build the full display name from prefix + base + suffix
+	var display = ""
+	if not name_prefix.is_empty():
+		display = name_prefix + " "
+	display += base_name
+	if not name_suffix.is_empty():
+		display += " " + name_suffix
+	return display
+
+func get_icon_ability_id() -> String:
+	## Get the base ability ID for icon lookup (upgrades use base ability's icon)
+	if base_ability_id.is_empty():
+		return id
+	return base_ability_id
+
 # Utility methods for tier system
 func is_base() -> bool:
 	return tier == AbilityTier.BASE
@@ -219,12 +264,11 @@ func get_prerequisite_id() -> String:
 	## Returns the ID of the prerequisite ability
 	return prerequisite_id
 
-func get_base_ability_id() -> String:
-	## Extract base ability ID from this ability's chain
-	if prerequisite_id.is_empty():
+func get_root_ability_id() -> String:
+	## Get the root base ability ID (for icon lookup)
+	if base_ability_id.is_empty():
 		return id
-	# For now, return prerequisite - would need tree lookup for full chain
-	return prerequisite_id
+	return base_ability_id
 
 # Utility methods
 static func get_rarity_color(p_rarity: Rarity) -> Color:
