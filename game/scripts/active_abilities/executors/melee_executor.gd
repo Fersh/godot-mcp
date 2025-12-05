@@ -65,10 +65,10 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
-		# SPIN TREE
+		# WHIRLWIND TREE (formerly Spin Tree)
 		# ============================================
-		"spinning_attack":
-			_execute_spinning_attack(ability, player)
+		"whirlwind":
+			_execute_whirlwind_base(ability, player)
 			return true
 		"spin_vortex":
 			_execute_spin_vortex(ability, player)
@@ -122,11 +122,10 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
-		# WHIRLWIND TREE
+		# OLD WHIRLWIND TREE (deprecated - merged into Spin/Whirlwind Tree above)
 		# ============================================
-		"whirlwind":
-			_execute_whirlwind(ability, player)
-			return true
+		# "whirlwind" is now handled by _execute_whirlwind_base above
+		# Old variants kept for backwards compatibility with saved games
 		"whirlwind_vacuum":
 			_execute_whirlwind_vacuum(ability, player)
 			return true
@@ -176,6 +175,25 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 		"shout_rage_incarnate":
 			_execute_shout_rage_incarnate(ability, player)
+			return true
+
+		# ============================================
+		# ROAR TREE
+		# ============================================
+		"roar":
+			_execute_roar(ability, player)
+			return true
+		"roar_intimidate":
+			_execute_roar_intimidate(ability, player)
+			return true
+		"roar_crushing":
+			_execute_roar_crushing(ability, player)
+			return true
+		"roar_enrage":
+			_execute_roar_enrage(ability, player)
+			return true
+		"roar_blood_rage":
+			_execute_roar_blood_rage(ability, player)
 			return true
 
 		# ============================================
@@ -508,18 +526,25 @@ func _execute_charge_unstoppable(ability: ActiveAbilityData, player: Node2D) -> 
 	_impact_pause(0.1)
 
 # ============================================
-# SPIN TREE IMPLEMENTATIONS
+# WHIRLWIND TREE IMPLEMENTATIONS (formerly Spin Tree)
 # ============================================
 
-func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> void:
+func _execute_whirlwind_base(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base Whirlwind - sustained spinning attack"""
 	var damage = _get_damage(ability)
-	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
-	for enemy in enemies:
-		_deal_damage_to_enemy(enemy, damage)
+	# Spawn whirlwind effect that follows player and deals damage over time
+	var whirlwind = _spawn_effect("whirlwind", player.global_position)
+	if whirlwind and whirlwind.has_method("setup"):
+		whirlwind.setup(player, damage, ability.radius, ability.duration)
+	else:
+		# Fallback: instant damage to all enemies in radius
+		var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
 
-	_spawn_effect("spin", player.global_position)
-	_play_sound("swing")
+	_play_sound("whirlwind")
+	_screen_shake("small")
 
 func _execute_spin_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Sustained spinning with pull - creates a vortex that pulls enemies"""
@@ -814,7 +839,7 @@ func _execute_dash_shadow_legion(ability: ActiveAbilityData, player: Node2D) -> 
 	_screen_shake("small")
 
 # ============================================
-# WHIRLWIND TREE IMPLEMENTATIONS
+# OLD WHIRLWIND TREE IMPLEMENTATIONS (deprecated - kept for backwards compatibility)
 # ============================================
 
 func _execute_whirlwind_vacuum(ability: ActiveAbilityData, player: Node2D) -> void:
@@ -1030,3 +1055,127 @@ func _execute_shout_rage_incarnate(ability: ActiveAbilityData, player: Node2D) -
 	_spawn_effect("rage_incarnate", player.global_position)
 	_play_sound("rage_incarnate")
 	_screen_shake("large")
+
+# ============================================
+# ROAR TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_roar(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Terrifying roar that fears enemies briefly"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		# Apply fear - enemies flee
+		if enemy.has_method("apply_fear"):
+			enemy.apply_fear(ability.duration)
+		elif enemy.has_method("apply_knockback"):
+			# Fallback: strong knockback away from player
+			var dir = (enemy.global_position - player.global_position).normalized()
+			_apply_knockback(enemy, dir, 300.0)
+
+	_spawn_effect("roar", player.global_position)
+	_play_sound("roar")
+	_screen_shake("medium")
+
+func _execute_roar_intimidate(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Feared enemies deal 30% less damage"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		# Apply fear
+		if enemy.has_method("apply_fear"):
+			enemy.apply_fear(ability.duration * 0.4)  # Shorter fear
+		elif enemy.has_method("apply_knockback"):
+			var dir = (enemy.global_position - player.global_position).normalized()
+			_apply_knockback(enemy, dir, 250.0)
+
+		# Apply damage reduction debuff
+		if enemy.has_method("apply_damage_reduction_debuff"):
+			enemy.apply_damage_reduction_debuff(0.3, ability.duration)
+		elif enemy.has_method("apply_weaken"):
+			enemy.apply_weaken(0.3, ability.duration)
+
+	_spawn_effect("roar", player.global_position)
+	_play_sound("roar")
+	_screen_shake("medium")
+
+func _execute_roar_crushing(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Crushing presence aura - permanent debuff aura"""
+	# Initial fear burst
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	for enemy in enemies:
+		if enemy.has_method("apply_fear"):
+			enemy.apply_fear(2.0)
+		elif enemy.has_method("apply_knockback"):
+			var dir = (enemy.global_position - player.global_position).normalized()
+			_apply_knockback(enemy, dir, 350.0)
+
+	# SIGNATURE: Create crushing presence aura
+	var aura = _spawn_effect("crushing_presence", player.global_position)
+	if aura and aura.has_method("setup"):
+		# Aura that follows player, weakens enemies (-40% damage, -30% speed), fears on contact
+		aura.setup(player, ability.radius, ability.duration, 0.4, 0.3)
+	else:
+		# Fallback: Apply buff to player that creates the aura effect
+		if player.has_method("add_temporary_buff"):
+			player.add_temporary_buff("crushing_presence", ability.duration, {
+				"aura_radius": ability.radius,
+				"enemy_damage_reduction": 0.4,
+				"enemy_speed_reduction": 0.3,
+				"fear_on_contact": true
+			})
+
+	_spawn_effect("roar", player.global_position)
+	_play_sound("crushing_presence")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+func _execute_roar_enrage(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Roar buffs your damage by 40%"""
+	# Fear enemies first
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	for enemy in enemies:
+		if enemy.has_method("apply_fear"):
+			enemy.apply_fear(1.5)
+		elif enemy.has_method("apply_knockback"):
+			var dir = (enemy.global_position - player.global_position).normalized()
+			_apply_knockback(enemy, dir, 200.0)
+
+	# Apply damage buff to self
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("enraging_roar", ability.duration, {
+			"damage_bonus": 0.4
+		})
+
+	_spawn_effect("roar", player.global_position)
+	_play_sound("roar")
+	_screen_shake("medium")
+
+func _execute_roar_blood_rage(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Blood rage - each hit increases power, lifesteal, attack speed"""
+	# Fear enemies
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+	for enemy in enemies:
+		if enemy.has_method("apply_fear"):
+			enemy.apply_fear(2.0)
+		elif enemy.has_method("apply_knockback"):
+			var dir = (enemy.global_position - player.global_position).normalized()
+			_apply_knockback(enemy, dir, 300.0)
+
+	# SIGNATURE: Blood rage buff - stacking damage, lifesteal, attack speed
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("blood_rage", ability.duration, {
+			"damage_bonus_per_hit": 0.1,  # +10% per hit
+			"max_damage_bonus": 1.0,       # Cap at +100%
+			"lifesteal_percent": 0.15,     # 15% lifesteal
+			"attack_speed_bonus": 0.25     # 25% attack speed
+		})
+
+	# Visual transformation
+	if player.has_method("start_blood_rage"):
+		player.start_blood_rage(ability.duration)
+
+	_spawn_effect("blood_rage", player.global_position)
+	_play_sound("blood_rage")
+	_screen_shake("large")
+	_impact_pause(0.2)

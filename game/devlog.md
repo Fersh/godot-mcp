@@ -2,6 +2,39 @@
 
 ---
 
+## Date: 2025-12-04 - Fireball Fix & Buff
+
+### Summary
+Fixed Fireball ability not spawning projectiles and significantly buffed its stats.
+
+### Bug Fix
+**Issue:** Fireball and Phoenix Flame weren't working because `global_executor.gd` was using `base_executor._spawn_projectile()` which only works with arrow scenes (for ranged characters).
+
+**Fix:** Updated to use `_main_executor._spawn_projectile()` which properly creates ability projectiles with the correct fireball sprite and explosion behavior.
+
+### Stat Buffs
+
+| Stat | Before | After | Change |
+|------|--------|-------|--------|
+| Base Damage | 45 | 60 | +33% |
+| Damage Multiplier | 1.3x | 1.5x | +15% |
+| Effective Damage | 58.5 | 90 | +54% |
+| AoE Radius | 80 | 100 | +25% |
+| Projectile Speed | 450 | 500 | +11% |
+| Cooldown | 5s | 4s | -20% |
+| AoE Damage | 50% | 75% | +50% |
+
+### Additional Improvements
+- Fireball explosion now applies **3 second burn** to enemies in AoE
+- Phoenix Flame now properly deals AoE damage with burn and heals 15% of damage dealt
+
+### Files Modified
+- `game/scripts/active_abilities/executors/global_executor.gd` - Fixed projectile spawning
+- `game/scripts/active_abilities/trees/global/fireball_tree.gd` - Buffed stats
+- `game/scripts/projectiles/ability_projectile.gd` - Increased AoE damage and added burn
+
+---
+
 ## Date: 2025-12-04 - Standalone Active Ability Cleanup
 
 ### Summary
@@ -30,9 +63,50 @@ This creates a more satisfying progression where powerful abilities feel earned 
 
 ### Files Modified
 - `game/scripts/active_abilities/active_ability_database.gd` - Commented out 8 ability registrations
+- `game/scripts/active_abilities/executors/melee_executor.gd` - Added Roar Tree executor implementations
+
+### Roar Tree Implementations Added
+
+| Ability | Tier | Effect |
+|---------|------|--------|
+| **Terrifying Roar** | BASE | Fear enemies in radius, causing them to flee |
+| **Intimidating Roar** | T2 | Fear + enemies deal 30% less damage |
+| **Crushing Presence** | T3 | Aura: -40% enemy damage, -30% speed, fear on contact |
+| **Enraging Roar** | T2 | Fear + self +40% damage buff |
+| **Blood Rage** | T3 | Fear + stacking damage per hit (+10%, max +100%), lifesteal, attack speed |
 
 ### Note
 **Avatar of War** commented out pending creation of a "Transform" or "War Form" base ability tree.
+
+---
+
+## Date: 2025-12-04 - Spinning Attack → Whirlwind Tree Rename
+
+### Summary
+Renamed "Spinning Attack" to "Whirlwind" as the base ability, merged the old Whirlwind Tree into it, and updated visuals to use whirlwind effect.
+
+### Changes
+
+**Spin Tree → Whirlwind Tree:**
+- Base renamed from "Spinning Attack" (COMMON) to "Whirlwind" (COMMON)
+- Base now uses sustained spinning with `whirlwind` effect instead of instant `spin` effect
+- Base now has 1.5s duration (sustained spinning)
+- All branch abilities renamed:
+  - "Vortex Spinning Attack" → "Vortex Whirlwind"
+  - "Vortex Spinning Attack of Storms" → "Vortex Whirlwind of Storms"
+  - "Deflecting Spinning Attack" → "Deflecting Whirlwind"
+  - "Deflecting Spinning Attack of Mirrors" → "Deflecting Whirlwind of Mirrors"
+
+**Old Whirlwind Tree (RARE base) - Deprecated:**
+- Tree registration commented out in AbilityTreeRegistry
+- Old variants (vacuum, singularity, flame, inferno) kept for backwards compatibility
+- Players should now use the new Whirlwind Tree (formerly Spin Tree)
+
+### Files Modified
+- `game/scripts/active_abilities/trees/melee/spin_tree.gd` - Renamed to Whirlwind, updated effect
+- `game/scripts/active_abilities/executors/melee_executor.gd` - Updated match cases and implementations
+- `game/scripts/active_abilities/active_ability_database.gd` - Commented out spinning_attack and whirlwind standalone registrations
+- `game/scripts/active_abilities/trees/ability_tree_registry.gd` - Commented out old WhirlwindTree registration
 
 ---
 

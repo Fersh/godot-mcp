@@ -94,23 +94,18 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 # ============================================
 
 func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
-	var damage = _get_damage(ability)
+	"""Base Fireball - projectile that explodes on impact with AoE burn damage"""
 	var direction = _get_attack_direction(player)
 	var target = _get_nearest_enemy(player.global_position, 500.0)
 	if target:
 		direction = (target.global_position - player.global_position).normalized()
 
-	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
-	if proj:
-		if "damage" in proj:
-			proj.damage = damage
-		if "explosion_radius" in proj:
-			proj.explosion_radius = ability.radius
-		if "applies_burn" in proj:
-			proj.applies_burn = true
+	# Use main executor's projectile spawner for proper fireball projectile
+	if _main_executor and _main_executor.has_method("_spawn_projectile"):
+		_main_executor._spawn_projectile("fireball", player.global_position, direction, ability)
 
-	_spawn_effect("fireball", player.global_position)
 	_play_sound("fireball")
+	_screen_shake("small")
 
 func _execute_meteor_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Call down a meteor at target location after delay"""
@@ -154,18 +149,25 @@ func _execute_phoenix_flame(ability: ActiveAbilityData, player: Node2D) -> void:
 	if target:
 		direction = (target.global_position - player.global_position).normalized()
 
-	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
-	if proj:
-		if "damage" in proj:
-			proj.damage = damage
-		if "explosion_radius" in proj:
-			proj.explosion_radius = ability.radius
-		if "heals_on_hit" in proj:
-			proj.heals_on_hit = true
-			proj.heal_percent = 0.15  # 15% of damage as heal
+	# Use main executor's projectile spawner for proper fireball projectile
+	if _main_executor and _main_executor.has_method("_spawn_projectile"):
+		_main_executor._spawn_projectile("fireball", player.global_position, direction, ability)
 
-	_spawn_effect("fireball", player.global_position)
+	# Apply healing effect to player when projectile hits (handled by projectile callback)
+	# For now, do immediate AoE damage with heal as fallback
+	var enemies = _get_enemies_in_radius(player.global_position + direction * 150.0, ability.radius)
+	var total_damage_dealt = 0.0
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_burn(enemy, 3.0)
+		total_damage_dealt += damage
+
+	# Heal 15% of damage dealt
+	if total_damage_dealt > 0 and player.has_method("heal"):
+		player.heal(total_damage_dealt * 0.15)
+
 	_play_sound("fireball")
+	_screen_shake("small")
 
 func _execute_phoenix_dive(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Invulnerable dash, heal 10% max HP per enemy hit"""

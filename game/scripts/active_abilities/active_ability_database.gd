@@ -68,13 +68,13 @@ static func _register_all_abilities() -> void:
 	_register(_create_cleave())
 	_register(_create_shield_bash())
 	_register(_create_ground_slam())
-	_register(_create_spinning_attack())
+	# _register(_create_spinning_attack())  # Removed - renamed to Whirlwind (now tree base)
 	_register(_create_dash_strike())
 
 	# ============================================
 	# MELEE - RARE
 	# ============================================
-	_register(_create_whirlwind())
+	# _register(_create_whirlwind())  # Removed - now Whirlwind Tree base (COMMON)
 	# _register(_create_seismic_slam())  # Removed - now Slam Tree T2 (Seismic Ground Slam)
 	_register(_create_savage_leap())
 	# _register(_create_blade_rush())  # Removed - now Dash Tree T2 (Rushing Dash Strike)

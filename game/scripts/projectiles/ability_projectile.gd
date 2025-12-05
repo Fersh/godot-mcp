@@ -157,7 +157,10 @@ func _explode() -> void:
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= explosion_radius:
 				if enemy.has_method("take_damage"):
-					enemy.take_damage(damage * 0.5, false)  # Half damage for AOE
+					enemy.take_damage(damage * 0.75, false)  # 75% damage for AOE (buffed from 50%)
+				# Apply burn for fire abilities
+				if ability_id == "fireball" and enemy.has_method("apply_burn"):
+					enemy.apply_burn(3.0)
 
 	queue_free()
 
