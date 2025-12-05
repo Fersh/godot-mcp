@@ -820,22 +820,30 @@ func _populate_options() -> void:
 		child.queue_free()
 
 	# Music toggle
-	_create_option_toggle("Music", GameSettings.music_enabled, func(toggled): GameSettings.set_music_enabled(toggled))
-
-	# Music volume control
-	_create_option_volume("Music Volume", GameSettings.music_volume,
-		func(): GameSettings.set_music_volume(GameSettings.music_volume - 0.1),
-		func(): GameSettings.set_music_volume(GameSettings.music_volume + 0.1)
+	_create_option_toggle("Music", GameSettings.music_enabled, func(toggled):
+		GameSettings.set_music_enabled(toggled)
+		_populate_options()  # Refresh to show/hide volume control
 	)
+
+	# Music volume control (only show if music is enabled)
+	if GameSettings.music_enabled:
+		_create_option_volume("Music Volume", GameSettings.music_volume,
+			func(): GameSettings.set_music_volume(GameSettings.music_volume - 0.1),
+			func(): GameSettings.set_music_volume(GameSettings.music_volume + 0.1)
+		)
 
 	# SFX toggle
-	_create_option_toggle("Sound Effects", GameSettings.sfx_enabled, func(toggled): GameSettings.set_sfx_enabled(toggled))
-
-	# SFX volume control
-	_create_option_volume("SFX Volume", GameSettings.sfx_volume,
-		func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume - 0.1),
-		func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume + 0.1)
+	_create_option_toggle("Sound Effects", GameSettings.sfx_enabled, func(toggled):
+		GameSettings.set_sfx_enabled(toggled)
+		_populate_options()  # Refresh to show/hide volume control
 	)
+
+	# SFX volume control (only show if SFX is enabled)
+	if GameSettings.sfx_enabled:
+		_create_option_volume("SFX Volume", GameSettings.sfx_volume,
+			func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume - 0.1),
+			func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume + 0.1)
+		)
 
 	# Haptics toggle
 	_create_option_toggle("Haptics", GameSettings.haptics_enabled, func(toggled): GameSettings.set_haptics_enabled(toggled))

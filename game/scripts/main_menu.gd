@@ -21,6 +21,7 @@ var pixel_font: Font = null
 var settings_panel: Control = null
 var confirmation_dialog: Control = null
 var locked_message_label: Label = null
+var settings_options_container: VBoxContainer = null
 
 # Notification badges
 var missions_badge: Control = null
@@ -746,53 +747,12 @@ func _show_settings_panel() -> void:
 	settings_panel.add_child(scroll_container)
 
 	# Options container inside scroll
-	var options_container = VBoxContainer.new()
-	options_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	options_container.add_theme_constant_override("separation", 20)
-	scroll_container.add_child(options_container)
+	settings_options_container = VBoxContainer.new()
+	settings_options_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	settings_options_container.add_theme_constant_override("separation", 20)
+	scroll_container.add_child(settings_options_container)
 
-	# Music toggle
-	_create_toggle_option(options_container, "Music", GameSettings.music_enabled, func(toggled): GameSettings.set_music_enabled(toggled))
-
-	# SFX toggle
-	_create_toggle_option(options_container, "Sound Effects", GameSettings.sfx_enabled, func(toggled): GameSettings.set_sfx_enabled(toggled))
-
-	# Haptics toggle
-	_create_toggle_option(options_container, "Haptics", GameSettings.haptics_enabled, func(toggled): GameSettings.set_haptics_enabled(toggled))
-
-	# Screen shake toggle
-	_create_toggle_option(options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
-
-	# Damage numbers toggle
-	_create_toggle_option(options_container, "Damage Numbers", GameSettings.damage_numbers_enabled, func(toggled): GameSettings.set_damage_numbers_enabled(toggled))
-
-	# Freeze frames toggle (hitstop effects)
-	_create_toggle_option(options_container, "Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
-
-	# Status text toggle (BURN, POISON, etc. over enemies)
-	_create_toggle_option(options_container, "Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
-
-	# Visual effects toggle (tinting, chromatic aberration, etc.)
-	_create_toggle_option(options_container, "Visual Effects", GameSettings.visual_effects_enabled, func(toggled): GameSettings.set_visual_effects_enabled(toggled))
-
-	# Track missions toggle
-	_create_toggle_option(options_container, "Track Missions", GameSettings.track_missions_enabled, func(toggled): GameSettings.set_track_missions_enabled(toggled))
-
-	# Spacer
-	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 20)
-	options_container.add_child(spacer)
-
-	# Reset progress button
-	var reset_button = Button.new()
-	reset_button.text = "RESET PROGRESS"
-	reset_button.custom_minimum_size = Vector2(300, 50)
-	if pixel_font:
-		reset_button.add_theme_font_override("font", pixel_font)
-	reset_button.add_theme_font_size_override("font_size", 14)
-	_style_red_button(reset_button)
-	reset_button.pressed.connect(_on_reset_progress_pressed)
-	options_container.add_child(reset_button)
+	_populate_settings_options()
 
 	# Close button
 	var close_button = Button.new()
@@ -809,6 +769,74 @@ func _show_settings_panel() -> void:
 	_style_golden_button(close_button)
 	close_button.pressed.connect(_hide_settings_panel)
 	settings_panel.add_child(close_button)
+
+func _populate_settings_options() -> void:
+	# Clear existing
+	for child in settings_options_container.get_children():
+		child.queue_free()
+
+	# Music toggle
+	_create_toggle_option(settings_options_container, "Music", GameSettings.music_enabled, func(toggled):
+		GameSettings.set_music_enabled(toggled)
+		_populate_settings_options()  # Refresh to show/hide volume control
+	)
+
+	# Music volume control (only show if music is enabled)
+	if GameSettings.music_enabled:
+		_create_volume_option(settings_options_container, "Music Volume", GameSettings.music_volume,
+			func(): GameSettings.set_music_volume(GameSettings.music_volume - 0.1),
+			func(): GameSettings.set_music_volume(GameSettings.music_volume + 0.1)
+		)
+
+	# SFX toggle
+	_create_toggle_option(settings_options_container, "Sound Effects", GameSettings.sfx_enabled, func(toggled):
+		GameSettings.set_sfx_enabled(toggled)
+		_populate_settings_options()  # Refresh to show/hide volume control
+	)
+
+	# SFX volume control (only show if SFX is enabled)
+	if GameSettings.sfx_enabled:
+		_create_volume_option(settings_options_container, "SFX Volume", GameSettings.sfx_volume,
+			func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume - 0.1),
+			func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume + 0.1)
+		)
+
+	# Haptics toggle
+	_create_toggle_option(settings_options_container, "Haptics", GameSettings.haptics_enabled, func(toggled): GameSettings.set_haptics_enabled(toggled))
+
+	# Screen shake toggle
+	_create_toggle_option(settings_options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
+
+	# Damage numbers toggle
+	_create_toggle_option(settings_options_container, "Damage Numbers", GameSettings.damage_numbers_enabled, func(toggled): GameSettings.set_damage_numbers_enabled(toggled))
+
+	# Freeze frames toggle (hitstop effects)
+	_create_toggle_option(settings_options_container, "Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
+
+	# Status text toggle (BURN, POISON, etc. over enemies)
+	_create_toggle_option(settings_options_container, "Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
+
+	# Visual effects toggle (tinting, chromatic aberration, etc.)
+	_create_toggle_option(settings_options_container, "Visual Effects", GameSettings.visual_effects_enabled, func(toggled): GameSettings.set_visual_effects_enabled(toggled))
+
+	# Track missions toggle
+	_create_toggle_option(settings_options_container, "Track Missions", GameSettings.track_missions_enabled, func(toggled): GameSettings.set_track_missions_enabled(toggled))
+
+	# Spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(0, 20)
+	settings_options_container.add_child(spacer)
+
+	# Reset progress button
+	var reset_button = Button.new()
+	reset_button.text = "RESET PROGRESS"
+	reset_button.custom_minimum_size = Vector2(300, 50)
+	if pixel_font:
+		reset_button.add_theme_font_override("font", pixel_font)
+	reset_button.add_theme_font_size_override("font_size", 14)
+	_style_red_button(reset_button)
+	reset_button.pressed.connect(_on_reset_progress_pressed)
+	settings_options_container.add_child(reset_button)
 
 func _create_toggle_option(container: VBoxContainer, label_text: String, initial_value: bool, on_toggle: Callable) -> void:
 	var hbox = HBoxContainer.new()
@@ -828,6 +856,94 @@ func _create_toggle_option(container: VBoxContainer, label_text: String, initial
 	toggle.button_pressed = initial_value
 	toggle.toggled.connect(on_toggle)
 	hbox.add_child(toggle)
+
+func _create_volume_option(container: VBoxContainer, label_text: String, initial_value: float, on_decrease: Callable, on_increase: Callable) -> void:
+	var hbox = HBoxContainer.new()
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_theme_constant_override("separation", 8)
+	container.add_child(hbox)
+
+	var label = Label.new()
+	label.text = label_text
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	hbox.add_child(label)
+
+	# Controls container
+	var controls = HBoxContainer.new()
+	controls.add_theme_constant_override("separation", 6)
+	hbox.add_child(controls)
+
+	# Decrease button
+	var decrease_btn = Button.new()
+	decrease_btn.text = "-"
+	decrease_btn.custom_minimum_size = Vector2(36, 36)
+	_style_volume_button(decrease_btn)
+	decrease_btn.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		on_decrease.call()
+		_populate_settings_options()  # Refresh to show new value
+	)
+	controls.add_child(decrease_btn)
+
+	# Volume display
+	var volume_label = Label.new()
+	volume_label.text = "%d%%" % int(initial_value * 100)
+	volume_label.custom_minimum_size = Vector2(50, 0)
+	volume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		volume_label.add_theme_font_override("font", pixel_font)
+	volume_label.add_theme_font_size_override("font_size", 14)
+	volume_label.add_theme_color_override("font_color", Color.WHITE)
+	controls.add_child(volume_label)
+
+	# Increase button
+	var increase_btn = Button.new()
+	increase_btn.text = "+"
+	increase_btn.custom_minimum_size = Vector2(36, 36)
+	_style_volume_button(increase_btn)
+	increase_btn.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		on_increase.call()
+		_populate_settings_options()  # Refresh to show new value
+	)
+	controls.add_child(increase_btn)
+
+func _style_volume_button(button: Button) -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.25, 0.22, 0.30, 1.0)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 3
+	style.border_color = Color(0.35, 0.28, 0.18, 1.0)
+	style.corner_radius_top_left = 2
+	style.corner_radius_top_right = 2
+	style.corner_radius_bottom_left = 2
+	style.corner_radius_bottom_right = 2
+
+	var style_hover = style.duplicate()
+	style_hover.bg_color = Color(0.35, 0.30, 0.40, 1.0)
+
+	var style_pressed = style.duplicate()
+	style_pressed.bg_color = Color(0.20, 0.18, 0.25, 1.0)
+	style_pressed.border_width_top = 3
+	style_pressed.border_width_bottom = 2
+
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style)
+
+	if pixel_font:
+		button.add_theme_font_override("font", pixel_font)
+	button.add_theme_font_size_override("font_size", 18)
+	button.add_theme_color_override("font_color", Color.WHITE)
 
 func _style_red_button(button: Button) -> void:
 	var style_normal = StyleBoxFlat.new()

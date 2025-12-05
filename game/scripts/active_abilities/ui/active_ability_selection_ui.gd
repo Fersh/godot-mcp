@@ -44,13 +44,17 @@ class IconCircleDrawer extends Control:
 		var scale_factor = (radius * 2) / min(tex_size.x, tex_size.y)
 		var scaled_size = tex_size * scale_factor
 
+		# UV inset to avoid sampling edge pixels (fixes white border artifacts)
+		var uv_inset = 0.92
+
 		for i in range(segments):
 			var angle = (float(i) / segments) * TAU - PI / 2
 			var point = center + Vector2(cos(angle), sin(angle)) * radius
 			points.append(point)
 
 			var offset = point - center
-			var uv = Vector2(0.5, 0.5) + offset / scaled_size
+			# Scale UV coordinates inward to avoid edge sampling artifacts
+			var uv = Vector2(0.5, 0.5) + (offset / scaled_size) * uv_inset
 			uvs.append(uv)
 			colors.append(modulate)
 

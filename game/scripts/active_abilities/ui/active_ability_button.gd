@@ -168,6 +168,9 @@ func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: fl
 	var scale_factor = (radius * 2) / min(tex_size.x, tex_size.y)
 	var scaled_size = tex_size * scale_factor
 
+	# UV inset to avoid sampling edge pixels (fixes white border artifacts)
+	var uv_inset = 0.92
+
 	for i in range(segments):
 		var angle = (float(i) / segments) * TAU - PI / 2
 		var point = center + Vector2(cos(angle), sin(angle)) * radius
@@ -175,8 +178,8 @@ func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: fl
 
 		# Calculate UV based on position relative to center
 		var offset = point - center
-		# Map from circle space to texture space
-		var uv = Vector2(0.5, 0.5) + offset / scaled_size
+		# Map from circle space to texture space (scaled inward to avoid edge artifacts)
+		var uv = Vector2(0.5, 0.5) + (offset / scaled_size) * uv_inset
 		uvs.append(uv)
 		colors.append(modulate)
 

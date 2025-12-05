@@ -368,12 +368,13 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 
 func _create_particle_container_for_ability(ability) -> Control:
 	## Create particle container for either type
-	## Upgrades get green flame particles
+	## Upgrades get green flame particles (T3 gets more intense flames)
 	var is_upgrade = _is_active_ability_upgrade(ability)
 
 	if is_upgrade:
-		# Green flames for all upgrade abilities
-		return _create_upgrade_particle_container()
+		# Green flames for upgrade abilities - T3 gets enhanced flames
+		var is_signature = ability is ActiveAbilityData and ability.is_signature()
+		return _create_upgrade_particle_container(is_signature)
 
 	if ability is ActiveAbilityData:
 		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
@@ -582,8 +583,9 @@ func _get_particle_density(rarity: AbilityData.Rarity) -> float:
 		_:
 			return 0.0
 
-func _create_upgrade_particle_container() -> Control:
+func _create_upgrade_particle_container(is_signature: bool = false) -> Control:
 	## Create green flame particles for upgrade abilities
+	## T3/Signature abilities get more intense flames
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -591,8 +593,9 @@ func _create_upgrade_particle_container() -> Control:
 	container.clip_contents = false
 
 	var green_color = Color(0.2, 0.93, 0.35)  # Bright green
-	var intensity = 1.5
-	var density = 14.0
+	# T3 gets more intense and denser flames
+	var intensity = 2.2 if is_signature else 1.5
+	var density = 22.0 if is_signature else 14.0
 
 	# Create main top particle strip (behind card, rising above)
 	var top_particles = ColorRect.new()
