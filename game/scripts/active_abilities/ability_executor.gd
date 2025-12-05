@@ -575,7 +575,7 @@ func _screen_shake(intensity: String = "medium") -> void:
 			"large":
 				JuiceManager.shake_large()
 
-func _impact_pause() -> void:
+func _impact_pause(_duration: float = 0.05) -> void:
 	"""Trigger a 1-frame pause for impact feel."""
 	if JuiceManager:
 		JuiceManager.hitstop_micro()

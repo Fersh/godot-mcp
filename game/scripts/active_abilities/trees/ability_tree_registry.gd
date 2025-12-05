@@ -181,18 +181,13 @@ static func get_available_upgrades_for_ability(ability_id: String) -> Array[Acti
 	ensure_initialized()
 	var tree = get_tree_for_ability(ability_id)
 	if not tree:
-		print("[DEBUG] Registry: No tree found for ability_id=", ability_id)
 		return []
 
 	# Check if this is the current ability in the tree
 	var current = tree.get_current_ability()
-	print("[DEBUG] Registry: ability_id=", ability_id, " tree.current=", current.id if current else "null", " tree.acquired_branch=", tree.acquired_branch, " tree.current_tier=", tree.current_tier)
 	if current and current.id == ability_id:
-		var upgrades = tree.get_available_upgrades()
-		print("[DEBUG] Registry: tree.get_available_upgrades() returned ", upgrades.size(), " upgrades")
-		return upgrades
+		return tree.get_available_upgrades()
 
-	print("[DEBUG] Registry: current.id != ability_id, no upgrades returned")
 	return []
 
 static func get_all_available_upgrades(acquired_ability_ids: Array) -> Array[ActiveAbilityData]:

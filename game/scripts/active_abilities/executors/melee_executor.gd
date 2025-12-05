@@ -240,14 +240,15 @@ func _execute_cleave_executioner(ability: ActiveAbilityData, player: Node2D) -> 
 			final_damage *= 2.0
 		_deal_damage_to_enemy(enemy, final_damage)
 
-	var effect = _spawn_effect("cleave_executioner", player.global_position)
+	# Use base cleave effect
+	var effect = _spawn_effect("cleave", player.global_position)
 	if effect and "direction" in effect:
 		effect.direction = direction
 	_play_sound("swing")
 	_screen_shake("small")
 
 func _execute_cleave_guillotine(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Execute enemies below 20% HP"""
+	"""Tier 3 SIGNATURE: Execute enemies below 20% HP - uses base cleave effect"""
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, ability.radius * 2.5)
 	var direction = target.global_position - player.global_position if target else _get_attack_direction(player)
@@ -260,14 +261,14 @@ func _execute_cleave_guillotine(ability: ActiveAbilityData, player: Node2D) -> v
 			# Instant kill
 			if enemy.has_method("take_damage"):
 				enemy.take_damage(99999.0)
-			_spawn_effect("guillotine_execute", enemy.global_position)
 		else:
 			_deal_damage_to_enemy(enemy, damage)
 
-	var effect = _spawn_effect("guillotine", player.global_position)
+	# Use base cleave effect
+	var effect = _spawn_effect("cleave", player.global_position)
 	if effect and "direction" in effect:
 		effect.direction = direction
-	_play_sound("guillotine")
+	_play_sound("swing")
 	_screen_shake("large")
 	_impact_pause(0.1)
 
@@ -283,7 +284,8 @@ func _execute_cleave_crowd(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
 
-	var effect = _spawn_effect("cleave_frost", player.global_position)
+	# Use base cleave effect
+	var effect = _spawn_effect("cleave", player.global_position)
 	if effect and "direction" in effect:
 		effect.direction = direction
 	_play_sound("swing")
@@ -303,8 +305,9 @@ func _execute_cleave_shockwave(ability: ActiveAbilityData, player: Node2D) -> vo
 		var knockback_dir = (enemy.global_position - player.global_position).normalized()
 		_apply_knockback(enemy, knockback_dir, ability.knockback_force)
 
-	_spawn_effect("shockwave", player.global_position)
-	_play_sound("earthquake")
+	# Use base cleave effect
+	_spawn_effect("cleave", player.global_position)
+	_play_sound("swing")
 	_screen_shake("large")
 	_impact_pause(0.1)
 
@@ -337,7 +340,8 @@ func _execute_bash_shockwave(ability: ActiveAbilityData, player: Node2D) -> void
 		var knockback_dir = (enemy.global_position - player.global_position).normalized()
 		_apply_knockback(enemy, knockback_dir, ability.knockback_force)
 
-	_spawn_effect("shockwave_bash", player.global_position)
+	# Use base bash effect
+	_spawn_effect("shield_bash", player.global_position)
 	_play_sound("shield_hit")
 	_screen_shake("medium")
 
@@ -354,8 +358,9 @@ func _execute_bash_earthquake(ability: ActiveAbilityData, player: Node2D) -> voi
 		knockback_dir.y = -0.5  # Add upward component
 		_apply_knockback(enemy, knockback_dir.normalized(), ability.knockback_force)
 
-	_spawn_effect("earthquake", player.global_position)
-	_play_sound("earthquake")
+	# Use base bash effect
+	_spawn_effect("shield_bash", player.global_position)
+	_play_sound("shield_hit")
 	_screen_shake("large")
 	_impact_pause(0.15)
 
@@ -368,7 +373,8 @@ func _execute_bash_lockdown(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(target, damage)
 		_apply_stun(target, ability.stun_duration)
 
-	_spawn_effect("lockdown_bash", player.global_position)
+	# Use base bash effect
+	_spawn_effect("shield_bash", player.global_position)
 	_play_sound("shield_hit")
 	_screen_shake("small")
 
@@ -386,8 +392,9 @@ func _execute_bash_petrify(ability: ActiveAbilityData, player: Node2D) -> void:
 		elif target.has_method("apply_vulnerability"):
 			target.apply_vulnerability(2.0, ability.stun_duration)
 
-	_spawn_effect("petrify", target.global_position if target else player.global_position)
-	_play_sound("stone")
+	# Use base bash effect
+	_spawn_effect("shield_bash", player.global_position)
+	_play_sound("shield_hit")
 	_screen_shake("medium")
 	_impact_pause(0.1)
 
@@ -427,7 +434,8 @@ func _execute_charge_trample(ability: ActiveAbilityData, player: Node2D) -> void
 		_deal_damage_to_enemy(enemy, damage)
 
 	_dash_player(player, direction, ability.range_distance, 0.2)
-	_spawn_effect("trample", player.global_position)
+	# Use base charge effect
+	_spawn_effect("charge", player.global_position)
 	_play_sound("dash")
 	_screen_shake("small")
 
@@ -444,10 +452,9 @@ func _execute_charge_stampede(ability: ActiveAbilityData, player: Node2D) -> voi
 
 	_dash_player(player, direction, ability.range_distance, 0.4)
 
-	# SIGNATURE: Spawn fire trail
-	_spawn_effect("stampede", player.global_position)
-	_spawn_effect("fire_trail", player.global_position)
-	_play_sound("stampede")
+	# Use base charge effect
+	_spawn_effect("charge", player.global_position)
+	_play_sound("dash")
 	_screen_shake("medium")
 
 func _execute_charge_shield(ability: ActiveAbilityData, player: Node2D) -> void:
@@ -466,8 +473,9 @@ func _execute_charge_shield(ability: ActiveAbilityData, player: Node2D) -> void:
 		_apply_knockback(hit_enemy, knockback_dir, ability.knockback_force)
 
 	_dash_player(player, direction, ability.range_distance, 0.25)
-	_spawn_effect("shield_charge", player.global_position)
-	_play_sound("shield_dash")
+	# Use base charge effect
+	_spawn_effect("charge", player.global_position)
+	_play_sound("dash")
 
 func _execute_charge_unstoppable(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Stun all, destroy projectiles"""
@@ -493,8 +501,9 @@ func _execute_charge_unstoppable(ability: ActiveAbilityData, player: Node2D) -> 
 			proj.queue_free()
 
 	_dash_player(player, direction, ability.range_distance, 0.3)
-	_spawn_effect("unstoppable", player.global_position)
-	_play_sound("unstoppable")
+	# Use base charge effect
+	_spawn_effect("charge", player.global_position)
+	_play_sound("dash")
 	_screen_shake("large")
 	_impact_pause(0.1)
 
@@ -513,34 +522,38 @@ func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> voi
 	_play_sound("swing")
 
 func _execute_spin_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Sustained spinning with pull"""
+	"""Tier 2: Sustained spinning with pull - uses base spin effect"""
 	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
-	# Create vortex effect that persists
-	var effect = _spawn_effect("vortex", player.global_position)
-	if effect and effect.has_method("setup"):
-		effect.setup(ability.duration, ability.radius, damage)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		# Pull enemies toward player
+		var pull_dir = (player.global_position - enemy.global_position).normalized()
+		_apply_knockback(enemy, pull_dir, 50.0)
 
-	_play_sound("vortex")
+	# Use base spin effect
+	_spawn_effect("spin", player.global_position)
+	_play_sound("swing")
 
 func _execute_spin_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Move freely while spinning"""
+	"""Tier 3 SIGNATURE: Move freely while spinning - enhanced spin effect"""
 	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
-	# SIGNATURE: Create persistent bladestorm attached to player
-	var effect = _spawn_effect("bladestorm", player.global_position)
-	if effect and effect.has_method("attach_to"):
-		effect.attach_to(player, ability.duration, ability.radius, damage)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		# Pull enemies toward player (stronger pull than vortex)
+		var pull_dir = (player.global_position - enemy.global_position).normalized()
+		_apply_knockback(enemy, pull_dir, 80.0)
 
-	# Grant movement ability
-	if player.has_method("enable_bladestorm"):
-		player.enable_bladestorm(ability.duration)
-
-	_play_sound("bladestorm")
+	# Use base spin effect
+	_spawn_effect("spin", player.global_position)
+	_play_sound("swing")
 	_screen_shake("small")
 
 func _execute_spin_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Deflect projectiles"""
+	"""Tier 2: Deflect projectiles - uses base spin effect"""
 	var damage = _get_damage(ability)
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
@@ -551,11 +564,12 @@ func _execute_spin_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
 	if player.has_method("enable_deflect"):
 		player.enable_deflect(ability.duration)
 
-	_spawn_effect("deflect_spin", player.global_position)
+	# Use base spin effect
+	_spawn_effect("spin", player.global_position)
 	_play_sound("swing")
 
 func _execute_spin_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Reflected projectiles home in"""
+	"""Tier 3 SIGNATURE: Reflected projectiles home in - uses base spin effect"""
 	var damage = _get_damage(ability)
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
@@ -570,8 +584,9 @@ func _execute_spin_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
 	if player.has_method("enable_mirror_dance"):
 		player.enable_mirror_dance(ability.duration)
 
-	_spawn_effect("mirror_dance", player.global_position)
-	_play_sound("mirror")
+	# Use base spin effect
+	_spawn_effect("spin", player.global_position)
+	_play_sound("swing")
 	_screen_shake("medium")
 
 # ============================================
