@@ -6,6 +6,9 @@ class_name FrostNovaTree
 # Branch A (Blizzard): Persistent AoE -> Absolute Zero (massive freeze + shatter)
 # Branch B (Prison): Single target freeze -> Shatter (chain ice explosions)
 
+const BASE_NAME = "Frost Nova"
+const BASE_ID = "frost_nova"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,8 +51,9 @@ static func _create_blizzard() -> ActiveAbilityData:
 	 .with_aoe(180.0) \
 	 .with_duration(5.0) \
 	 .with_slow(0.5, 1.0) \
-	 .with_effect("blizzard") \
-	 .with_prerequisite("frost_nova", 0)
+	 .with_effect("frost_nova") \
+	 .with_prerequisite("frost_nova", 0) \
+	 .with_prefix("Blizzard", BASE_NAME, BASE_ID)
 
 static func _create_absolute_zero() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -63,9 +67,10 @@ static func _create_absolute_zero() -> ActiveAbilityData:
 	).with_damage(60.0, 1.5) \
 	 .with_aoe(300.0) \
 	 .with_stun(3.0) \
-	 .with_effect("absolute_zero") \
+	 .with_effect("frost_nova") \
 	 .with_prerequisite("frost_nova_blizzard", 0) \
-	 .with_signature("All enemies frozen 3s, shatter for 50% bonus damage on death")
+	 .with_signature("All enemies frozen 3s, shatter for 50% bonus damage on death") \
+	 .with_suffix("of Absolute Zero", BASE_NAME, "Blizzard", BASE_ID)
 
 static func _create_ice_prison() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,8 +84,9 @@ static func _create_ice_prison() -> ActiveAbilityData:
 	).with_damage(50.0, 1.3) \
 	 .with_range(300.0) \
 	 .with_stun(2.0) \
-	 .with_effect("ice_prison") \
-	 .with_prerequisite("frost_nova", 1)
+	 .with_effect("frost_nova") \
+	 .with_prerequisite("frost_nova", 1) \
+	 .with_prefix("Prison", BASE_NAME, BASE_ID)
 
 static func _create_shatter() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -95,9 +101,10 @@ static func _create_shatter() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_aoe(100.0) \
 	 .with_stun(2.5) \
-	 .with_effect("ice_shatter") \
+	 .with_effect("frost_nova") \
 	 .with_prerequisite("frost_nova_prison", 1) \
-	 .with_signature("Up to 5 targets frozen, each shatters dealing AoE damage")
+	 .with_signature("Up to 5 targets frozen, each shatters dealing AoE damage") \
+	 .with_suffix("of Shattering", BASE_NAME, "Prison", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["frost_nova", "frost_nova_blizzard", "frost_nova_absolute", "frost_nova_prison", "frost_nova_shatter"]

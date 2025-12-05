@@ -6,6 +6,9 @@ class_name FireballTree
 # Branch A (Meteor): Delayed massive AoE -> Meteor Shower (multiple meteors)
 # Branch B (Phoenix): Healing fire -> Phoenix Dive (dash through enemies, heal on hit)
 
+const BASE_NAME = "Fireball"
+const BASE_ID = "fireball"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,8 +51,9 @@ static func _create_meteor_strike() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_cast_time(1.0) \
 	 .with_stun(1.0) \
-	 .with_effect("meteor") \
-	 .with_prerequisite("fireball", 0)
+	 .with_effect("fireball") \
+	 .with_prerequisite("fireball", 0) \
+	 .with_prefix("Meteor", BASE_NAME, BASE_ID)
 
 static func _create_meteor_shower() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -65,9 +69,10 @@ static func _create_meteor_shower() -> ActiveAbilityData:
 	 .with_cast_time(0.5) \
 	 .with_duration(3.0) \
 	 .with_stun(0.5) \
-	 .with_effect("meteor_shower") \
+	 .with_effect("fireball") \
 	 .with_prerequisite("fireball_meteor", 0) \
-	 .with_signature("5 meteors rain down over 3 seconds")
+	 .with_signature("5 meteors rain down over 3 seconds") \
+	 .with_suffix("of the Meteor Shower", BASE_NAME, "Meteor", BASE_ID)
 
 static func _create_phoenix_flame() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +86,9 @@ static func _create_phoenix_flame() -> ActiveAbilityData:
 	).with_damage(55.0, 1.4) \
 	 .with_projectiles(1, 400.0) \
 	 .with_aoe(100.0) \
-	 .with_effect("phoenix_flame") \
-	 .with_prerequisite("fireball", 1)
+	 .with_effect("fireball") \
+	 .with_prerequisite("fireball", 1) \
+	 .with_prefix("Phoenix", BASE_NAME, BASE_ID)
 
 static func _create_phoenix_dive() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -98,9 +104,10 @@ static func _create_phoenix_dive() -> ActiveAbilityData:
 	 .with_aoe(80.0) \
 	 .with_movement() \
 	 .with_invulnerability(1.0) \
-	 .with_effect("phoenix_dive") \
+	 .with_effect("fireball") \
 	 .with_prerequisite("fireball_phoenix", 1) \
-	 .with_signature("Invulnerable dash, heal 10% max HP per enemy hit")
+	 .with_signature("Invulnerable dash, heal 10% max HP per enemy hit") \
+	 .with_suffix("of the Phoenix", BASE_NAME, "Phoenix", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["fireball", "fireball_meteor", "fireball_shower", "fireball_phoenix", "fireball_dive"]

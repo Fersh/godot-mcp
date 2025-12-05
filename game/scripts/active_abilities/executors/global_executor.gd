@@ -123,12 +123,12 @@ func _execute_meteor_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 		target_pos = target.global_position
 
 	# Spawn warning indicator
-	_spawn_effect("meteor_warning", target_pos)
+	_spawn_effect("fireball", target_pos)
 	_play_sound("meteor_incoming")
 
 	# Delayed impact (handled by effect)
 	# The meteor effect should handle the actual damage after cast_time
-	var meteor = _spawn_effect("meteor_strike", target_pos)
+	var meteor = _spawn_effect("fireball", target_pos)
 	if meteor and meteor.has_method("setup"):
 		meteor.setup(damage, ability.radius, ability.stun_duration)
 
@@ -137,8 +137,8 @@ func _execute_meteor_shower(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
 	var center = player.global_position
 
-	# SIGNATURE: Spawn multiple meteors in area
-	var shower = _spawn_effect("meteor_shower", center)
+	# SIGNATURE: Spawn multiple meteors in area (uses fireball effect)
+	var shower = _spawn_effect("fireball", center)
 	if shower and shower.has_method("setup"):
 		shower.setup(damage, ability.radius, 5, ability.duration)
 
@@ -164,8 +164,8 @@ func _execute_phoenix_flame(ability: ActiveAbilityData, player: Node2D) -> void:
 			proj.heals_on_hit = true
 			proj.heal_percent = 0.15  # 15% of damage as heal
 
-	_spawn_effect("phoenix_flame", player.global_position)
-	_play_sound("phoenix_flame")
+	_spawn_effect("fireball", player.global_position)
+	_play_sound("fireball")
 
 func _execute_phoenix_dive(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Invulnerable dash, heal 10% max HP per enemy hit"""
@@ -204,9 +204,9 @@ func _execute_phoenix_dive(ability: ActiveAbilityData, player: Node2D) -> void:
 		var heal_amount = max_hp * 0.10 * enemies_hit
 		player.heal(heal_amount)
 
-	_spawn_effect("phoenix_dive", start_pos)
-	_spawn_effect("phoenix_dive_trail", end_pos)
-	_play_sound("phoenix_dive")
+	_spawn_effect("fireball", start_pos)
+	_spawn_effect("fireball", end_pos)
+	_play_sound("fireball")
 	_screen_shake("medium")
 
 # ============================================
@@ -231,7 +231,7 @@ func _execute_blizzard(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Persistent AoE that damages and slows over time"""
 	var damage = _get_damage(ability)
 
-	var blizzard = _spawn_effect("blizzard", player.global_position)
+	var blizzard = _spawn_effect("frost_nova", player.global_position)
 	if blizzard and blizzard.has_method("setup"):
 		blizzard.setup(damage, ability.radius, ability.duration, ability.slow_percent)
 
@@ -251,7 +251,7 @@ func _execute_absolute_zero(ability: ActiveAbilityData, player: Node2D) -> void:
 		if enemy.has_method("mark_for_shatter"):
 			enemy.mark_for_shatter(damage * 0.5, ability.radius * 0.5)
 
-	_spawn_effect("absolute_zero", player.global_position)
+	_spawn_effect("frost_nova", player.global_position)
 	_play_sound("absolute_zero")
 	_screen_shake("large")
 	_impact_pause(0.2)
@@ -262,7 +262,7 @@ func _execute_ice_prison(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target = _get_nearest_enemy(player.global_position, ability.range_value)
 
 	if target:
-		var prison = _spawn_effect("ice_prison", target.global_position)
+		var prison = _spawn_effect("frost_nova", target.global_position)
 		if prison and prison.has_method("setup"):
 			prison.setup(damage, ability.stun_duration)
 		_apply_stun(target, ability.stun_duration)
@@ -277,7 +277,7 @@ func _execute_shatter(ability: ActiveAbilityData, player: Node2D) -> void:
 	# SIGNATURE: Each frozen enemy shatters and damages nearby
 	for target in targets:
 		_apply_stun(target, ability.stun_duration)
-		var prison = _spawn_effect("ice_prison_shatter", target.global_position)
+		var prison = _spawn_effect("frost_nova", target.global_position)
 		if prison and prison.has_method("setup"):
 			prison.setup(damage, ability.stun_duration, ability.radius)
 
@@ -321,7 +321,7 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Persistent storm that strikes random enemies"""
 	var damage = _get_damage(ability)
 
-	var storm = _spawn_effect("thunderstorm", player.global_position)
+	var storm = _spawn_effect("chain_lightning", player.global_position)
 	if storm and storm.has_method("setup"):
 		storm.setup(damage, ability.radius, ability.duration)
 
@@ -339,7 +339,7 @@ func _execute_overload(ability: ActiveAbilityData, player: Node2D) -> void:
 	# SIGNATURE: Initial massive strike
 	_deal_damage_to_enemy(target, damage)
 	_apply_stun(target, ability.stun_duration)
-	_spawn_effect("overload", target.global_position)
+	_spawn_effect("chain_lightning", target.global_position)
 
 	# Chain from stunned target to all nearby
 	var nearby = _get_enemies_in_radius(target.global_position, ability.radius)
@@ -357,7 +357,7 @@ func _execute_static_field(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Aura that shocks nearby enemies"""
 	var damage = _get_damage(ability)
 
-	var field = _spawn_effect("static_field", player.global_position)
+	var field = _spawn_effect("chain_lightning", player.global_position)
 	if field and field.has_method("setup"):
 		field.setup(damage, ability.radius, ability.duration)
 		# Attach to player
@@ -378,7 +378,7 @@ func _execute_power_surge(ability: ActiveAbilityData, player: Node2D) -> void:
 			"chain_range": ability.radius
 		})
 
-	_spawn_effect("power_surge", player.global_position)
+	_spawn_effect("chain_lightning", player.global_position)
 	_play_sound("power_surge")
 	_screen_shake("medium")
 
@@ -392,14 +392,14 @@ func _execute_heal(ability: ActiveAbilityData, player: Node2D) -> void:
 	if player.has_method("heal"):
 		player.heal(heal_amount)
 
-	_spawn_effect("heal", player.global_position)
+	_spawn_effect("healing_light", player.global_position)
 	_play_sound("heal")
 
 func _execute_regen_aura(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Create healing zone"""
 	var heal_per_tick = ability.base_damage * 0.2
 
-	var aura = _spawn_effect("regen_aura", player.global_position)
+	var aura = _spawn_effect("healing_light", player.global_position)
 	if aura and aura.has_method("setup"):
 		aura.setup(heal_per_tick, ability.radius, ability.duration)
 
@@ -410,7 +410,7 @@ func _execute_sanctuary(ability: ActiveAbilityData, player: Node2D) -> void:
 	var heal_per_tick = ability.base_damage * 0.3
 
 	# SIGNATURE: Zone also grants damage reduction
-	var sanctuary = _spawn_effect("sanctuary", player.global_position)
+	var sanctuary = _spawn_effect("healing_light", player.global_position)
 	if sanctuary and sanctuary.has_method("setup"):
 		sanctuary.setup(heal_per_tick, ability.radius, ability.duration, 0.3)  # 30% DR
 
@@ -431,7 +431,7 @@ func _execute_emergency_heal(ability: ActiveAbilityData, player: Node2D) -> void
 	if player.has_method("heal"):
 		player.heal(heal_amount)
 
-	_spawn_effect("emergency_heal", player.global_position)
+	_spawn_effect("healing_light", player.global_position)
 	_play_sound("emergency_heal")
 
 func _execute_martyrdom(ability: ActiveAbilityData, player: Node2D) -> void:
@@ -448,7 +448,7 @@ func _execute_martyrdom(ability: ActiveAbilityData, player: Node2D) -> void:
 			"damage_taken_multiplier": 1.5
 		})
 
-	_spawn_effect("martyrdom", player.global_position)
+	_spawn_effect("healing_light", player.global_position)
 	_play_sound("martyrdom")
 	_screen_shake("medium")
 

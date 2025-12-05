@@ -6,6 +6,9 @@ class_name DrainTree
 # Branch A (Siphon): AoE drain -> Soul Feast (massive AoE, heal to full)
 # Branch B (Transfer): Give health to transfer damage -> Sacrifice (hurt self to mega damage)
 
+const BASE_NAME = "Life Drain"
+const BASE_ID = "drain"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -45,8 +48,9 @@ static func _create_siphon() -> ActiveAbilityData:
 		12.0
 	).with_damage(30.0, 0.8) \
 	 .with_aoe(200.0) \
-	 .with_effect("soul_siphon") \
-	 .with_prerequisite("drain", 0)
+	 .with_effect("life_drain") \
+	 .with_prerequisite("drain", 0) \
+	 .with_prefix("Siphon", BASE_NAME, BASE_ID)
 
 static func _create_soul_feast() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -60,9 +64,10 @@ static func _create_soul_feast() -> ActiveAbilityData:
 	).with_damage(50.0, 1.3) \
 	 .with_aoe(300.0) \
 	 .with_duration(3.0) \
-	 .with_effect("soul_feast") \
+	 .with_effect("life_drain") \
 	 .with_prerequisite("drain_siphon", 0) \
-	 .with_signature("Channel 3s, massive drain, heal to full, temporary max HP boost")
+	 .with_signature("Channel 3s, massive drain, heal to full, temporary max HP boost") \
+	 .with_suffix("of the Soul Feast", BASE_NAME, "Siphon", BASE_ID)
 
 static func _create_transfer() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,8 +80,9 @@ static func _create_transfer() -> ActiveAbilityData:
 		6.0
 	).with_damage(80.0, 1.5) \
 	 .with_range(300.0) \
-	 .with_effect("life_transfer") \
-	 .with_prerequisite("drain", 1)
+	 .with_effect("life_drain") \
+	 .with_prerequisite("drain", 1) \
+	 .with_prefix("Transfer", BASE_NAME, BASE_ID)
 
 static func _create_sacrifice() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -90,9 +96,10 @@ static func _create_sacrifice() -> ActiveAbilityData:
 	).with_damage(200.0, 3.0) \
 	 .with_range(350.0) \
 	 .with_aoe(180.0) \
-	 .with_effect("blood_sacrifice") \
+	 .with_effect("life_drain") \
 	 .with_prerequisite("drain_transfer", 1) \
-	 .with_signature("Costs 50% current HP, damage scales with HP sacrificed")
+	 .with_signature("Costs 50% current HP, damage scales with HP sacrificed") \
+	 .with_suffix("of Blood Sacrifice", BASE_NAME, "Transfer", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["drain", "drain_siphon", "drain_feast", "drain_transfer", "drain_sacrifice"]

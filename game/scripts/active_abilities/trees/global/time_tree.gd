@@ -6,6 +6,9 @@ class_name TimeTree
 # Branch A (Stop): Full time stop -> Temporal Prison (freeze specific enemies)
 # Branch B (Rewind): Restore HP/position -> Chronoshift (full reset)
 
+const BASE_NAME = "Time Slow"
+const BASE_ID = "time_slow"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -45,8 +48,9 @@ static func _create_time_stop() -> ActiveAbilityData:
 		25.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(1.5) \
-	 .with_effect("time_stop") \
-	 .with_prerequisite("time_slow", 0)
+	 .with_effect("time_slow") \
+	 .with_prerequisite("time_slow", 0) \
+	 .with_prefix("Stop", BASE_NAME, BASE_ID)
 
 static func _create_temporal_prison() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -61,9 +65,10 @@ static func _create_temporal_prison() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(3.0) \
 	 .with_stun(3.0) \
-	 .with_effect("temporal_prison") \
+	 .with_effect("time_slow") \
 	 .with_prerequisite("time_stop", 0) \
-	 .with_signature("Enemies frozen, all damage stored and dealt at once when released")
+	 .with_signature("Enemies frozen, all damage stored and dealt at once when released") \
+	 .with_suffix("of Temporal Prison", BASE_NAME, "Stop", BASE_ID)
 
 static func _create_rewind() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,8 +80,9 @@ static func _create_rewind() -> ActiveAbilityData:
 		ActiveAbilityData.TargetType.SELF,
 		20.0
 	).with_damage(0.0, 0.0) \
-	 .with_effect("rewind") \
-	 .with_prerequisite("time_slow", 1)
+	 .with_effect("time_slow") \
+	 .with_prerequisite("time_slow", 1) \
+	 .with_prefix("Rewind", BASE_NAME, BASE_ID)
 
 static func _create_chronoshift() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -89,9 +95,10 @@ static func _create_chronoshift() -> ActiveAbilityData:
 		45.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(10.0) \
-	 .with_effect("chronoshift") \
+	 .with_effect("time_slow") \
 	 .with_prerequisite("time_rewind", 1) \
-	 .with_signature("Full HP/position restore, enemies damaged during period take it again")
+	 .with_signature("Full HP/position restore, enemies damaged during period take it again") \
+	 .with_suffix("of Chronoshift", BASE_NAME, "Rewind", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["time_slow", "time_stop", "time_prison", "time_rewind", "time_chronoshift"]

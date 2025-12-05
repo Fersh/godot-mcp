@@ -6,6 +6,9 @@ class_name CurseTree
 # Branch A (Weakness): Weaken enemies -> Doom (massive damage after delay)
 # Branch B (Spread): Spreading curse -> Plague (jumps on death)
 
+const BASE_NAME = "Curse"
+const BASE_ID = "curse"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -47,8 +50,9 @@ static func _create_weakness() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(350.0) \
 	 .with_duration(6.0) \
-	 .with_effect("weakness_curse") \
-	 .with_prerequisite("curse", 0)
+	 .with_effect("curse") \
+	 .with_prerequisite("curse", 0) \
+	 .with_prefix("Weakness", BASE_NAME, BASE_ID)
 
 static func _create_doom() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -62,9 +66,10 @@ static func _create_doom() -> ActiveAbilityData:
 	).with_damage(300.0, 4.0) \
 	 .with_range(400.0) \
 	 .with_duration(3.0) \
-	 .with_effect("mark_of_doom") \
+	 .with_effect("curse") \
 	 .with_prerequisite("curse_weakness", 0) \
-	 .with_signature("3s delay, then massive damage, damage increased by hits during countdown")
+	 .with_signature("3s delay, then massive damage, damage increased by hits during countdown") \
+	 .with_suffix("of Doom", BASE_NAME, "Weakness", BASE_ID)
 
 static func _create_spread() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,8 +84,9 @@ static func _create_spread() -> ActiveAbilityData:
 	 .with_range(300.0) \
 	 .with_aoe(150.0) \
 	 .with_duration(5.0) \
-	 .with_effect("spreading_curse") \
-	 .with_prerequisite("curse", 1)
+	 .with_effect("curse") \
+	 .with_prerequisite("curse", 1) \
+	 .with_prefix("Spreading", BASE_NAME, BASE_ID)
 
 static func _create_plague() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -95,9 +101,10 @@ static func _create_plague() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_aoe(200.0) \
 	 .with_duration(8.0) \
-	 .with_effect("plague_curse") \
+	 .with_effect("curse") \
 	 .with_prerequisite("curse_spread", 1) \
-	 .with_signature("Jumps to 3 enemies on death, curse stacks increase damage, chain reaction potential")
+	 .with_signature("Jumps to 3 enemies on death, curse stacks increase damage, chain reaction potential") \
+	 .with_suffix("of the Plague", BASE_NAME, "Spreading", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["curse", "curse_weakness", "curse_doom", "curse_spread", "curse_plague"]

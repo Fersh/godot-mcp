@@ -6,6 +6,9 @@ class_name ShieldTree
 # Branch A (Absorb): Convert damage to healing -> Retaliation (damage back)
 # Branch B (Bubble): Team shield -> Fortress (massive area shield)
 
+const BASE_NAME = "Barrier"
+const BASE_ID = "barrier"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -45,8 +48,9 @@ static func _create_absorb() -> ActiveAbilityData:
 		15.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(6.0) \
-	 .with_effect("absorb_shield") \
-	 .with_prerequisite("barrier", 0)
+	 .with_effect("barrier") \
+	 .with_prerequisite("barrier", 0) \
+	 .with_prefix("Absorb", BASE_NAME, BASE_ID)
 
 static func _create_retaliation() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -60,9 +64,10 @@ static func _create_retaliation() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(200.0) \
 	 .with_duration(8.0) \
-	 .with_effect("retaliation_shield") \
+	 .with_effect("barrier") \
 	 .with_prerequisite("barrier_absorb", 0) \
-	 .with_signature("200% reflected damage, heal 50% of absorbed, stuns nearby")
+	 .with_signature("200% reflected damage, heal 50% of absorbed, stuns nearby") \
+	 .with_suffix("of Retaliation", BASE_NAME, "Absorb", BASE_ID)
 
 static func _create_bubble() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -76,8 +81,9 @@ static func _create_bubble() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(150.0) \
 	 .with_duration(5.0) \
-	 .with_effect("bubble") \
-	 .with_prerequisite("barrier", 1)
+	 .with_effect("barrier") \
+	 .with_prerequisite("barrier", 1) \
+	 .with_prefix("Bubble", BASE_NAME, BASE_ID)
 
 static func _create_fortress() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -91,9 +97,10 @@ static func _create_fortress() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(250.0) \
 	 .with_duration(6.0) \
-	 .with_effect("fortress") \
+	 .with_effect("barrier") \
 	 .with_prerequisite("barrier_bubble", 1) \
-	 .with_signature("Complete immunity inside, enemies pushed out, heal over time")
+	 .with_signature("Complete immunity inside, enemies pushed out, heal over time") \
+	 .with_suffix("of the Fortress", BASE_NAME, "Bubble", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["barrier", "barrier_absorb", "barrier_retaliation", "barrier_bubble", "barrier_fortress"]

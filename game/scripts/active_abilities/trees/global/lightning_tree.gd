@@ -6,6 +6,9 @@ class_name LightningTree
 # Branch A (Storm): AoE storm -> Overload (massive strike with chain stun)
 # Branch B (Static): Aura that shocks -> Power Surge (buff that electrifies attacks)
 
+const BASE_NAME = "Chain Lightning"
+const BASE_ID = "chain_lightning"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -47,8 +50,9 @@ static func _create_thunderstorm() -> ActiveAbilityData:
 	).with_damage(30.0, 1.0) \
 	 .with_aoe(250.0) \
 	 .with_duration(5.0) \
-	 .with_effect("thunderstorm") \
-	 .with_prerequisite("chain_lightning", 0)
+	 .with_effect("chain_lightning") \
+	 .with_prerequisite("chain_lightning", 0) \
+	 .with_prefix("Storm", BASE_NAME, BASE_ID)
 
 static func _create_overload() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -63,9 +67,10 @@ static func _create_overload() -> ActiveAbilityData:
 	 .with_range(500.0) \
 	 .with_aoe(200.0) \
 	 .with_stun(1.5) \
-	 .with_effect("overload") \
+	 .with_effect("chain_lightning") \
 	 .with_prerequisite("chain_lightning_storm", 0) \
-	 .with_signature("Initial target stunned, chains at double damage to nearby")
+	 .with_signature("Initial target stunned, chains at double damage to nearby") \
+	 .with_suffix("of Overload", BASE_NAME, "Storm", BASE_ID)
 
 static func _create_static_field() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,8 +84,9 @@ static func _create_static_field() -> ActiveAbilityData:
 	).with_damage(15.0, 0.6) \
 	 .with_aoe(150.0) \
 	 .with_duration(8.0) \
-	 .with_effect("static_field") \
-	 .with_prerequisite("chain_lightning", 1)
+	 .with_effect("chain_lightning") \
+	 .with_prerequisite("chain_lightning", 1) \
+	 .with_prefix("Static", BASE_NAME, BASE_ID)
 
 static func _create_power_surge() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -94,9 +100,10 @@ static func _create_power_surge() -> ActiveAbilityData:
 	).with_damage(20.0, 0.8) \
 	 .with_aoe(120.0) \
 	 .with_duration(10.0) \
-	 .with_effect("power_surge") \
+	 .with_effect("chain_lightning") \
 	 .with_prerequisite("chain_lightning_static", 1) \
-	 .with_signature("All attacks chain lightning, +20% attack speed")
+	 .with_signature("All attacks chain lightning, +20% attack speed") \
+	 .with_suffix("of Power Surge", BASE_NAME, "Static", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["chain_lightning", "chain_lightning_storm", "chain_lightning_overload", "chain_lightning_static", "chain_lightning_surge"]

@@ -6,6 +6,9 @@ class_name TeleportTree
 # Branch A (Blink): Longer range -> Dimension Shift (invulnerable blink)
 # Branch B (Shadow): Leave clone -> Shadow Swap (swap with clone)
 
+const BASE_NAME = "Teleport"
+const BASE_ID = "teleport"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,8 +51,9 @@ static func _create_blink() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_movement() \
 	 .with_invulnerability(0.3) \
-	 .with_effect("blink") \
-	 .with_prerequisite("teleport", 0)
+	 .with_effect("teleport") \
+	 .with_prerequisite("teleport", 0) \
+	 .with_prefix("Blink", BASE_NAME, BASE_ID)
 
 static func _create_dimension_shift() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,9 +68,10 @@ static func _create_dimension_shift() -> ActiveAbilityData:
 	 .with_range(500.0) \
 	 .with_movement() \
 	 .with_invulnerability(0.8) \
-	 .with_effect("dimension_shift") \
+	 .with_effect("teleport") \
 	 .with_prerequisite("teleport_blink", 0) \
-	 .with_signature("Damage all enemies in path, leave afterimage that explodes")
+	 .with_signature("Damage all enemies in path, leave afterimage that explodes") \
+	 .with_suffix("of Dimensions", BASE_NAME, "Blink", BASE_ID)
 
 static func _create_shadow_step() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +86,9 @@ static func _create_shadow_step() -> ActiveAbilityData:
 	 .with_range(250.0) \
 	 .with_duration(4.0) \
 	 .with_movement() \
-	 .with_effect("shadow_step") \
-	 .with_prerequisite("teleport", 1)
+	 .with_effect("teleport") \
+	 .with_prerequisite("teleport", 1) \
+	 .with_prefix("Shadow", BASE_NAME, BASE_ID)
 
 static func _create_shadow_swap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -98,9 +104,10 @@ static func _create_shadow_swap() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_duration(6.0) \
 	 .with_movement() \
-	 .with_effect("shadow_swap") \
+	 .with_effect("teleport") \
 	 .with_prerequisite("teleport_shadow", 1) \
-	 .with_signature("Clone attacks enemies, swap causes explosion, reset CD on kill")
+	 .with_signature("Clone attacks enemies, swap causes explosion, reset CD on kill") \
+	 .with_suffix("of Shadows", BASE_NAME, "Shadow", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["teleport", "teleport_blink", "teleport_dimension", "teleport_shadow", "teleport_swap"]

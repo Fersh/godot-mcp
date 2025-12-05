@@ -6,6 +6,9 @@ class_name AuraTree
 # Branch A (Might): Attack buff -> Avatar (massive transformation)
 # Branch B (Speed): Speed buff -> Haste (attack and move speed)
 
+const BASE_NAME = "Empower"
+const BASE_ID = "empower"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -45,8 +48,9 @@ static func _create_might() -> ActiveAbilityData:
 		20.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(8.0) \
-	 .with_effect("might") \
-	 .with_prerequisite("empower", 0)
+	 .with_effect("empower") \
+	 .with_prerequisite("empower", 0) \
+	 .with_prefix("Might", BASE_NAME, BASE_ID)
 
 static func _create_avatar() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -60,9 +64,10 @@ static func _create_avatar() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(100.0) \
 	 .with_duration(12.0) \
-	 .with_effect("avatar_of_war") \
+	 .with_effect("empower") \
 	 .with_prerequisite("empower_might", 0) \
-	 .with_signature("2x size, 100% damage, all attacks are AoE, 25% damage reduction")
+	 .with_signature("2x size, 100% damage, all attacks are AoE, 25% damage reduction") \
+	 .with_suffix("of the Avatar", BASE_NAME, "Might", BASE_ID)
 
 static func _create_speed() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,8 +80,9 @@ static func _create_speed() -> ActiveAbilityData:
 		18.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(7.0) \
-	 .with_effect("quicken") \
-	 .with_prerequisite("empower", 1)
+	 .with_effect("empower") \
+	 .with_prerequisite("empower", 1) \
+	 .with_prefix("Quick", BASE_NAME, BASE_ID)
 
 static func _create_haste() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -89,9 +95,10 @@ static func _create_haste() -> ActiveAbilityData:
 		35.0
 	).with_damage(20.0, 0.5) \
 	 .with_duration(10.0) \
-	 .with_effect("haste") \
+	 .with_effect("empower") \
 	 .with_prerequisite("empower_speed", 1) \
-	 .with_signature("100% attack speed, 50% move speed, afterimages deal 25% damage")
+	 .with_signature("100% attack speed, 50% move speed, afterimages deal 25% damage") \
+	 .with_suffix("of Haste", BASE_NAME, "Quick", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["empower", "empower_might", "empower_avatar", "empower_speed", "empower_haste"]

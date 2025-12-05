@@ -6,6 +6,9 @@ class_name SummonTree
 # Branch A (Golem): Tank minion -> Titan (massive golem)
 # Branch B (Swarm): Multiple weak minions -> Army (endless horde)
 
+const BASE_NAME = "Summon Minion"
+const BASE_ID = "summon"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -45,8 +48,9 @@ static func _create_golem() -> ActiveAbilityData:
 		20.0
 	).with_damage(35.0, 1.0) \
 	 .with_duration(20.0) \
-	 .with_effect("summon_golem") \
-	 .with_prerequisite("summon", 0)
+	 .with_effect("summon_minion") \
+	 .with_prerequisite("summon", 0) \
+	 .with_prefix("Golem", BASE_NAME, BASE_ID)
 
 static func _create_titan() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -60,9 +64,10 @@ static func _create_titan() -> ActiveAbilityData:
 	).with_damage(80.0, 1.5) \
 	 .with_aoe(150.0) \
 	 .with_duration(25.0) \
-	 .with_effect("summon_titan") \
+	 .with_effect("summon_minion") \
 	 .with_prerequisite("summon_golem", 0) \
-	 .with_signature("Massive AoE attacks, taunts all enemies, earthquakes on stomp")
+	 .with_signature("Massive AoE attacks, taunts all enemies, earthquakes on stomp") \
+	 .with_suffix("of the Titan", BASE_NAME, "Golem", BASE_ID)
 
 static func _create_swarm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -76,8 +81,9 @@ static func _create_swarm() -> ActiveAbilityData:
 	).with_damage(15.0, 0.5) \
 	 .with_duration(12.0) \
 	 .with_projectiles(4, 0) \
-	 .with_effect("summon_swarm") \
-	 .with_prerequisite("summon", 1)
+	 .with_effect("summon_minion") \
+	 .with_prerequisite("summon", 1) \
+	 .with_prefix("Swarm", BASE_NAME, BASE_ID)
 
 static func _create_army() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -91,9 +97,10 @@ static func _create_army() -> ActiveAbilityData:
 	).with_damage(20.0, 0.6) \
 	 .with_duration(30.0) \
 	 .with_projectiles(8, 0) \
-	 .with_effect("army_of_dead") \
+	 .with_effect("summon_minion") \
 	 .with_prerequisite("summon_swarm", 1) \
-	 .with_signature("8 minions, respawn after 3s when killed, explode on death")
+	 .with_signature("8 minions, respawn after 3s when killed, explode on death") \
+	 .with_suffix("of the Army", BASE_NAME, "Swarm", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["summon", "summon_golem", "summon_titan", "summon_swarm", "summon_army"]
