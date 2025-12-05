@@ -95,8 +95,8 @@ func _create_ui() -> void:
 	pause_button.anchor_right = 1.0
 	pause_button.anchor_top = 0.0
 	pause_button.anchor_bottom = 0.0
-	pause_button.offset_left = -PAUSE_TOUCH_SIZE - 16
-	pause_button.offset_right = -16
+	pause_button.offset_left = -PAUSE_TOUCH_SIZE - 56
+	pause_button.offset_right = -56
 	pause_button.offset_top = 12
 	pause_button.offset_bottom = 12 + PAUSE_TOUCH_SIZE
 	pause_button.pressed.connect(_on_pause_pressed)

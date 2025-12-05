@@ -24,7 +24,7 @@ func _init(p_base: ActiveAbilityData = null) -> void:
 		base_ability = p_base
 
 func add_branch(tier2: ActiveAbilityData, tier3: ActiveAbilityData = null) -> AbilityTreeNode:
-	"""Add a branch path with tier 2 and optional tier 3 abilities"""
+	## Add a branch path with tier 2 and optional tier 3 abilities
 	var branch_path: Array = [tier2]
 	if tier3:
 		branch_path.append(tier3)
@@ -36,7 +36,7 @@ func add_branch(tier2: ActiveAbilityData, tier3: ActiveAbilityData = null) -> Ab
 # ============================================
 
 func get_available_upgrades() -> Array[ActiveAbilityData]:
-	"""Get all upgrade options available to the player right now"""
+	## Get all upgrade options available to the player right now
 	var upgrades: Array[ActiveAbilityData] = []
 
 	# If player hasn't chosen a branch yet (has base only)
@@ -55,11 +55,11 @@ func get_available_upgrades() -> Array[ActiveAbilityData]:
 	return upgrades
 
 func can_upgrade() -> bool:
-	"""Check if any upgrades are available"""
+	## Check if any upgrades are available
 	return get_available_upgrades().size() > 0
 
 func can_upgrade_to(ability_id: String) -> bool:
-	"""Check if a specific ability is available as an upgrade"""
+	## Check if a specific ability is available as an upgrade
 	for upgrade in get_available_upgrades():
 		if upgrade.id == ability_id:
 			return true
@@ -70,7 +70,7 @@ func can_upgrade_to(ability_id: String) -> bool:
 # ============================================
 
 func apply_upgrade(ability: ActiveAbilityData) -> bool:
-	"""Apply an upgrade and update tracking. Returns true if successful."""
+	## Apply an upgrade and update tracking. Returns true if successful.
 	# Find which branch this ability belongs to
 	for i in branches.size():
 		var branch = branches[i]
@@ -88,8 +88,12 @@ func apply_upgrade(ability: ActiveAbilityData) -> bool:
 						return true
 	return false
 
+func upgrade_to(ability: ActiveAbilityData) -> bool:
+	## Alias for apply_upgrade
+	return apply_upgrade(ability)
+
 func get_current_ability() -> ActiveAbilityData:
-	"""Get the current highest-tier ability the player has in this tree"""
+	## Get the current highest-tier ability the player has in this tree
 	if current_tier == 0:
 		return base_ability
 	elif current_tier == 1 and acquired_branch >= 0:
@@ -103,22 +107,22 @@ func get_current_ability() -> ActiveAbilityData:
 # ============================================
 
 func get_base_id() -> String:
-	"""Get the base ability ID"""
+	## Get the base ability ID
 	return base_ability.id if base_ability else ""
 
 func get_branch_count() -> int:
-	"""Get number of branch paths"""
+	## Get number of branch paths
 	return branches.size()
 
 func get_max_tier() -> int:
-	"""Get the maximum tier available in any branch"""
+	## Get the maximum tier available in any branch
 	var max_tier = 1  # Base is tier 1
 	for branch in branches:
 		max_tier = maxi(max_tier, branch.size() + 1)
 	return max_tier
 
 func get_all_abilities() -> Array[ActiveAbilityData]:
-	"""Get all abilities in this tree (base + all branches)"""
+	## Get all abilities in this tree (base + all branches)
 	var all: Array[ActiveAbilityData] = []
 	if base_ability:
 		all.append(base_ability)
@@ -129,7 +133,7 @@ func get_all_abilities() -> Array[ActiveAbilityData]:
 	return all
 
 func get_tier_abilities(p_tier: int) -> Array[ActiveAbilityData]:
-	"""Get all abilities at a specific tier (1 = base, 2 = branches, 3 = signatures)"""
+	## Get all abilities at a specific tier (1 = base, 2 = branches, 3 = signatures)
 	var abilities: Array[ActiveAbilityData] = []
 	if p_tier == 1 and base_ability:
 		abilities.append(base_ability)
@@ -145,7 +149,7 @@ func get_tier_abilities(p_tier: int) -> Array[ActiveAbilityData]:
 # ============================================
 
 func reset() -> void:
-	"""Reset player progress (for new run)"""
+	## Reset player progress (for new run)
 	acquired_branch = -1
 	current_tier = 0
 

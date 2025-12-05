@@ -81,7 +81,7 @@ func _create_stats_ui() -> void:
 	var container = VBoxContainer.new()
 	container.name = "StatsContainer"
 	container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	container.offset_left = 16  # Left margin
+	container.offset_left = 56  # Left margin (moved 40px inward)
 	container.offset_top = 19  # Top margin (shifted down 2px)
 	container.add_theme_constant_override("separation", 8)  # Vertical spacing between rows
 	add_child(container)

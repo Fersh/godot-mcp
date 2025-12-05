@@ -208,11 +208,19 @@ func is_branch() -> bool:
 func is_signature() -> bool:
 	return tier == AbilityTier.SIGNATURE
 
+func is_upgrade() -> bool:
+	## Returns true if this is a Tier 2 or Tier 3 ability (not base)
+	return tier != AbilityTier.BASE
+
 func has_prerequisite() -> bool:
 	return prerequisite_id != ""
 
+func get_prerequisite_id() -> String:
+	## Returns the ID of the prerequisite ability
+	return prerequisite_id
+
 func get_base_ability_id() -> String:
-	"""Extract base ability ID from this ability's chain"""
+	## Extract base ability ID from this ability's chain
 	if prerequisite_id.is_empty():
 		return id
 	# For now, return prerequisite - would need tree lookup for full chain
