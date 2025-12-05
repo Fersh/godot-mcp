@@ -4,7 +4,7 @@ extends Node2D
 # Shows actual ability radius with fantasy RPG pixel aesthetic
 
 var radius: float = 100.0
-var duration: float = 0.4
+var duration: float = 0.65  # Increased duration for better visibility
 var pixel_size: int = 4  # Size of each "pixel" for retro look
 
 var _time: float = 0.0
@@ -12,11 +12,12 @@ var _cracks: Array[Dictionary] = []
 var _debris: Array[Dictionary] = []
 var _dust_particles: Array[Dictionary] = []
 
-# Colors for earth/stone theme
-const CRACK_COLOR = Color(0.2, 0.15, 0.1, 1.0)  # Dark brown
-const IMPACT_COLOR = Color(0.4, 0.35, 0.25, 1.0)  # Medium brown
-const DUST_COLOR = Color(0.6, 0.55, 0.45, 0.7)  # Light tan dust
-const RING_COLOR = Color(0.35, 0.3, 0.2, 0.8)  # Shockwave ring
+# Colors for earth/stone theme - brighter and more saturated
+const CRACK_COLOR = Color(0.15, 0.1, 0.05, 1.0)  # Dark brown/black cracks
+const IMPACT_COLOR = Color(0.55, 0.45, 0.3, 1.0)  # Brighter brown impact
+const DUST_COLOR = Color(0.75, 0.65, 0.5, 0.85)  # Brighter tan dust
+const RING_COLOR = Color(0.9, 0.75, 0.4, 0.9)  # Golden/orange shockwave ring
+const FLASH_COLOR = Color(1.0, 0.95, 0.8, 1.0)  # Bright flash at impact
 
 func _ready() -> void:
 	_generate_cracks()
@@ -54,30 +55,30 @@ func _generate_cracks() -> void:
 		})
 
 func _generate_debris() -> void:
-	# Generate pixelated rock debris
-	var debris_count = randi_range(12, 20)
+	# Generate pixelated rock debris - more pieces for bigger impact
+	var debris_count = randi_range(18, 28)
 	for i in range(debris_count):
 		var angle = randf() * TAU
-		var dist = randf_range(20.0, radius * 0.8)
-		var size = randi_range(2, 4)
+		var dist = randf_range(25.0, radius * 0.9)
+		var size = randi_range(2, 5)
 		_debris.append({
-			"start_pos": Vector2.from_angle(angle) * dist * 0.3,
+			"start_pos": Vector2.from_angle(angle) * dist * 0.2,
 			"end_pos": Vector2.from_angle(angle) * dist,
 			"size": size,
-			"height_offset": randf_range(20.0, 50.0),
-			"delay": randf_range(0.0, 0.1)
+			"height_offset": randf_range(30.0, 70.0),  # Higher arc
+			"delay": randf_range(0.0, 0.12)
 		})
 
 func _generate_dust() -> void:
-	# Generate dust cloud particles
-	var dust_count = randi_range(20, 30)
+	# Generate dust cloud particles - more and larger
+	var dust_count = randi_range(30, 45)
 	for i in range(dust_count):
 		var angle = randf() * TAU
-		var dist = randf_range(radius * 0.3, radius * 1.1)
+		var dist = randf_range(radius * 0.2, radius * 1.2)
 		_dust_particles.append({
 			"pos": Vector2.from_angle(angle) * dist,
-			"size": randi_range(3, 8),
-			"alpha_offset": randf_range(0.0, 0.3)
+			"size": randi_range(4, 10),  # Larger dust clouds
+			"alpha_offset": randf_range(0.0, 0.25)
 		})
 
 func _process(_delta: float) -> void:
@@ -100,24 +101,31 @@ func _draw() -> void:
 	_draw_impact_center()
 
 func _draw_shockwave_rings() -> void:
-	var ring_progress = clamp(_time * 1.5, 0.0, 1.0)
-	var ring_radius = radius * ring_progress
-	var ring_alpha = (1.0 - _time) * 0.6
+	# Draw multiple expanding rings for more impact
+	for ring_index in range(3):
+		var ring_delay = ring_index * 0.08
+		var ring_time = clamp((_time - ring_delay) * 1.2, 0.0, 1.0)
+		if ring_time <= 0:
+			continue
 
-	if ring_alpha <= 0:
-		return
+		var ring_radius = radius * ring_time
+		var ring_alpha = (1.0 - ring_time) * (0.9 - ring_index * 0.2)
 
-	# Draw pixelated ring
-	var color = RING_COLOR
-	color.a = ring_alpha
+		if ring_alpha <= 0:
+			continue
 
-	# Draw ring as series of rectangles around circumference
-	var segments = int(ring_radius * 0.5)
-	segments = max(segments, 16)
-	for i in range(segments):
-		var angle = (TAU / segments) * i
-		var pos = Vector2.from_angle(angle) * ring_radius
-		_draw_pixel_rect(pos, pixel_size * 2, color)
+		# Draw pixelated ring
+		var color = RING_COLOR
+		color.a = ring_alpha
+
+		# Draw ring as series of rectangles around circumference
+		var ring_thickness = pixel_size * (3 - ring_index)  # Outer rings thinner
+		var segments = int(ring_radius * 0.6)
+		segments = max(segments, 20)
+		for i in range(segments):
+			var angle = (TAU / segments) * i
+			var pos = Vector2.from_angle(angle) * ring_radius
+			_draw_pixel_rect(pos, ring_thickness, color)
 
 func _draw_cracks() -> void:
 	for crack in _cracks:
@@ -137,7 +145,7 @@ func _draw_cracks() -> void:
 
 func _draw_debris() -> void:
 	for debris in _debris:
-		var debris_progress = clamp((_time - debris.delay) * 2.5, 0.0, 1.0)
+		var debris_progress = clamp((_time - debris.delay) * 1.8, 0.0, 1.0)  # Slower animation
 		if debris_progress <= 0:
 			continue
 
@@ -149,21 +157,21 @@ func _draw_debris() -> void:
 		var height = sin(debris_progress * PI) * debris.height_offset
 		pos.y -= height
 
-		var alpha = 1.0 - debris_progress * 0.5
+		var alpha = 1.0 - debris_progress * 0.3  # Fade slower
 		var color = IMPACT_COLOR
 		color.a = alpha
 
 		_draw_pixel_rect(pos, debris.size * pixel_size, color)
 
 func _draw_dust() -> void:
-	var dust_alpha = (1.0 - _time) * 0.8
+	var dust_alpha = (1.0 - _time * 0.7) * 0.9  # Fade slower, higher opacity
 	if dust_alpha <= 0:
 		return
 
 	for dust in _dust_particles:
-		var expand = 1.0 + _time * 0.3
+		var expand = 1.0 + _time * 0.4  # Expand more
 		var pos: Vector2 = dust.pos * expand
-		pos.y -= _time * 20.0  # Float upward
+		pos.y -= _time * 25.0  # Float upward a bit faster
 
 		var color = DUST_COLOR
 		color.a = dust_alpha * (1.0 - dust.alpha_offset)
@@ -171,22 +179,38 @@ func _draw_dust() -> void:
 		_draw_pixel_rect(pos, dust.size, color)
 
 func _draw_impact_center() -> void:
-	var impact_alpha = (1.0 - _time) * 0.9
+	# Draw bright flash at the very start
+	var flash_alpha = (1.0 - _time * 4.0) * 1.0
+	if flash_alpha > 0:
+		var flash_color = FLASH_COLOR
+		flash_color.a = flash_alpha
+		var flash_size = 50.0 * (1.0 + _time * 2.0)
+		for x in range(-int(flash_size / pixel_size), int(flash_size / pixel_size) + 1):
+			for y in range(-int(flash_size / pixel_size), int(flash_size / pixel_size) + 1):
+				var pos = Vector2(x, y) * pixel_size
+				if pos.length() < flash_size * 0.6:
+					var dist_factor = pos.length() / (flash_size * 0.6)
+					var pixel_color = flash_color
+					pixel_color.a *= (1.0 - dist_factor)
+					_draw_pixel_rect(pos, pixel_size, pixel_color)
+
+	# Draw impact crater that persists longer
+	var impact_alpha = (1.0 - _time * 0.7) * 0.95
 	if impact_alpha <= 0:
 		return
 
 	var color = IMPACT_COLOR
 	color.a = impact_alpha
 
-	# Draw pixelated impact crater
-	var crater_size = 30.0 * (1.0 + _time * 0.5)
+	# Draw pixelated impact crater - larger and more visible
+	var crater_size = 40.0 * (1.0 + _time * 0.4)
 	for x in range(-int(crater_size / pixel_size), int(crater_size / pixel_size) + 1):
 		for y in range(-int(crater_size / pixel_size), int(crater_size / pixel_size) + 1):
 			var pos = Vector2(x, y) * pixel_size
-			if pos.length() < crater_size * 0.7:
-				var dist_factor = pos.length() / (crater_size * 0.7)
+			if pos.length() < crater_size * 0.75:
+				var dist_factor = pos.length() / (crater_size * 0.75)
 				var pixel_color = color
-				pixel_color.a *= (1.0 - dist_factor * 0.5)
+				pixel_color.a *= (1.0 - dist_factor * 0.4)
 				_draw_pixel_rect(pos, pixel_size, pixel_color)
 
 func _draw_pixel_rect(pos: Vector2, size: int, color: Color) -> void:

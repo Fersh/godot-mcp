@@ -66,14 +66,14 @@ func _create_ui() -> void:
 	btn0.position = Vector2(stack_x, ability1_y)
 	ability_buttons.append(btn0)
 
-	# Dodge: Left side, vertically centered with Ability 1
+	# Dodge: Left side, vertically centered with Ability 1, moved 20px left
 	dodge_button = _create_dodge_button(BUTTON_SIZE)
 	var dodge_y = ability1_y + (ABILITY1_SIZE.y - BUTTON_SIZE.y) / 2
-	dodge_button.position = Vector2(0, dodge_y)
+	dodge_button.position = Vector2(-20, dodge_y)  # 20px more left
 
-	# Above Ability 1: Ability 2 (centered above Ability 1, moved up 20px)
+	# Above Ability 1: Ability 2 (centered above Ability 1, moved up 40px total)
 	var btn1 = _create_ability_button(1, BUTTON_SIZE)
-	var ability2_y = ability1_y - stack_spacing - BUTTON_SIZE.y - 20  # Moved up 20px
+	var ability2_y = ability1_y - stack_spacing - BUTTON_SIZE.y - 40  # Moved up 40px total (was 20)
 	btn1.position = Vector2(stack_x + (ABILITY1_SIZE.x - BUTTON_SIZE.x) / 2, ability2_y)
 	ability_buttons.append(btn1)
 
