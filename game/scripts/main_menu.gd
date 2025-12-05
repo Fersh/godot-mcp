@@ -705,17 +705,17 @@ func _show_settings_panel() -> void:
 	# Dark overlay
 	var overlay = ColorRect.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0, 0, 0, 0.8)
+	overlay.color = Color(0, 0, 0, 0.92)
 	settings_panel.add_child(overlay)
 
 	# Panel background
 	var panel_bg = ColorRect.new()
 	panel_bg.set_anchors_preset(Control.PRESET_CENTER)
-	panel_bg.custom_minimum_size = Vector2(400, 500)
+	panel_bg.custom_minimum_size = Vector2(400, 600)
 	panel_bg.offset_left = -200
-	panel_bg.offset_top = -250
+	panel_bg.offset_top = -300
 	panel_bg.offset_right = 200
-	panel_bg.offset_bottom = 250
+	panel_bg.offset_bottom = 300
 	panel_bg.color = Color(0.15, 0.12, 0.1, 0.95)
 	settings_panel.add_child(panel_bg)
 
@@ -725,9 +725,9 @@ func _show_settings_panel() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.set_anchors_preset(Control.PRESET_CENTER)
 	title.offset_left = -180
-	title.offset_top = -230
+	title.offset_top = -280
 	title.offset_right = 180
-	title.offset_bottom = -200
+	title.offset_bottom = -250
 	if pixel_font:
 		title.add_theme_font_override("font", pixel_font)
 	title.add_theme_font_size_override("font_size", 26)
@@ -738,9 +738,9 @@ func _show_settings_panel() -> void:
 	var options_container = VBoxContainer.new()
 	options_container.set_anchors_preset(Control.PRESET_CENTER)
 	options_container.offset_left = -170
-	options_container.offset_top = -180
+	options_container.offset_top = -230
 	options_container.offset_right = 170
-	options_container.offset_bottom = 150
+	options_container.offset_bottom = 180
 	options_container.add_theme_constant_override("separation", 20)
 	settings_panel.add_child(options_container)
 
@@ -756,11 +756,11 @@ func _show_settings_panel() -> void:
 	# Screen shake toggle
 	_create_toggle_option(options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
-	# Status text toggle (BURN, POISON, etc. over enemies)
-	_create_toggle_option(options_container, "Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
-
 	# Freeze frames toggle (hitstop effects)
 	_create_toggle_option(options_container, "Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
+
+	# Status text toggle (BURN, POISON, etc. over enemies)
+	_create_toggle_option(options_container, "Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
 
 	# Visual effects toggle (tinting, chromatic aberration, etc.)
 	_create_toggle_option(options_container, "Visual Effects", GameSettings.visual_effects_enabled, func(toggled): GameSettings.set_visual_effects_enabled(toggled))
@@ -790,9 +790,9 @@ func _show_settings_panel() -> void:
 	close_button.custom_minimum_size = Vector2(200, 50)
 	close_button.set_anchors_preset(Control.PRESET_CENTER)
 	close_button.offset_left = -100
-	close_button.offset_top = 180
+	close_button.offset_top = 230
 	close_button.offset_right = 100
-	close_button.offset_bottom = 230
+	close_button.offset_bottom = 280
 	if pixel_font:
 		close_button.add_theme_font_override("font", pixel_font)
 	close_button.add_theme_font_size_override("font_size", 16)

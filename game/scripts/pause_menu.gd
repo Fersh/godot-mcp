@@ -831,11 +831,11 @@ func _populate_options() -> void:
 	# Screen shake toggle
 	_create_option_toggle("Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
-	# Status text toggle (BURN, POISON, etc. over enemies)
-	_create_option_toggle("Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
-
 	# Freeze frames toggle (hitstop effects)
 	_create_option_toggle("Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
+
+	# Status text toggle (BURN, POISON, etc. over enemies)
+	_create_option_toggle("Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
 
 	# Visual effects toggle (tinting, chromatic aberration, etc.)
 	_create_option_toggle("Visual Effects", GameSettings.visual_effects_enabled, func(toggled): GameSettings.set_visual_effects_enabled(toggled))
