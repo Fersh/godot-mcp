@@ -619,6 +619,93 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"counter_stance":
 			return "counter_stance_pixel"
 
+		# Pixelated melee ability effects (T3 ultimates)
+		# Stomp T3
+		"tectonic_shift":
+			return "tectonic_shift_pixel"
+		"thunderous_impact":
+			return "thunderous_impact_pixel"
+		# Cleave T3
+		"guillotine":
+			return "guillotine_pixel"
+		"shockwave_cleave":
+			return "shockwave_cleave_pixel"
+		# Charge T3
+		"stampede":
+			return "stampede_pixel"
+		"unstoppable_charge":
+			return "unstoppable_charge_pixel"
+		# Whirlwind T3
+		"singularity":
+			return "singularity_pixel"
+		"inferno_tornado":
+			return "inferno_tornado_pixel"
+		# Spin T3
+		"bladestorm_pixel":
+			return "bladestorm_pixel"
+		"mirror_dance":
+			return "mirror_dance_pixel"
+		# Uppercut T3
+		"air_combo":
+			return "air_combo_pixel"
+		"piledriver":
+			return "piledriver_pixel"
+		# Execute T3
+		"soul_harvest":
+			return "soul_harvest_pixel"
+		"decapitate":
+			return "decapitate_pixel"
+		# Rampage T3
+		"bloodlust":
+			return "bloodlust_pixel"
+		"unstoppable_force":
+			return "unstoppable_force_pixel"
+		# Dash T3
+		"omnislash_pixel":
+			return "omnislash_pixel"
+		"shadow_legion":
+			return "shadow_legion_pixel"
+		# Combo T3
+		"infinite_combo":
+			return "infinite_combo_pixel"
+		"ultimate_finisher":
+			return "ultimate_finisher_pixel"
+		# Impale T3
+		"shish_kebab":
+			return "shish_kebab_pixel"
+		"crucify":
+			return "crucify_pixel"
+		# Parry T3
+		"perfect_riposte":
+			return "perfect_riposte_pixel"
+		"mirror_guard":
+			return "mirror_guard_pixel"
+		# Block T3
+		"mirror_shield":
+			return "mirror_shield_pixel"
+		"riposte":
+			return "riposte_pixel"
+		# Throw T3
+		"orbital_blades":
+			return "orbital_blades_pixel"
+		"impaler":
+			return "impaler_pixel"
+		# Roar T3
+		"crushing_presence":
+			return "crushing_presence_pixel"
+		"blood_rage":
+			return "blood_rage_pixel"
+		# Shout T3
+		"warlords_command":
+			return "warlords_command_pixel"
+		"rage_incarnate":
+			return "rage_incarnate_pixel"
+		# Taunt T3
+		"unstoppable_taunt":
+			return "unstoppable_taunt_pixel"
+		"vengeance":
+			return "vengeance_pixel"
+
 		_:
 			return effect_id  # Return original if no mapping
 
