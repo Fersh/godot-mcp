@@ -822,8 +822,20 @@ func _populate_options() -> void:
 	# Music toggle
 	_create_option_toggle("Music", GameSettings.music_enabled, func(toggled): GameSettings.set_music_enabled(toggled))
 
+	# Music volume control
+	_create_option_volume("Music Volume", GameSettings.music_volume,
+		func(): GameSettings.set_music_volume(GameSettings.music_volume - 0.1),
+		func(): GameSettings.set_music_volume(GameSettings.music_volume + 0.1)
+	)
+
 	# SFX toggle
 	_create_option_toggle("Sound Effects", GameSettings.sfx_enabled, func(toggled): GameSettings.set_sfx_enabled(toggled))
+
+	# SFX volume control
+	_create_option_volume("SFX Volume", GameSettings.sfx_volume,
+		func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume - 0.1),
+		func(): GameSettings.set_sfx_volume(GameSettings.sfx_volume + 0.1)
+	)
 
 	# Haptics toggle
 	_create_option_toggle("Haptics", GameSettings.haptics_enabled, func(toggled): GameSettings.set_haptics_enabled(toggled))
@@ -864,6 +876,94 @@ func _create_option_toggle(label_text: String, initial_value: bool, on_toggle: C
 	toggle.button_pressed = initial_value
 	toggle.toggled.connect(on_toggle)
 	hbox.add_child(toggle)
+
+func _create_option_volume(label_text: String, initial_value: float, on_decrease: Callable, on_increase: Callable) -> void:
+	var hbox = HBoxContainer.new()
+	hbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_theme_constant_override("separation", 8)
+	options_container.add_child(hbox)
+
+	var label = Label.new()
+	label.text = label_text
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", COLOR_TEXT)
+	hbox.add_child(label)
+
+	# Controls container
+	var controls = HBoxContainer.new()
+	controls.add_theme_constant_override("separation", 6)
+	hbox.add_child(controls)
+
+	# Decrease button
+	var decrease_btn = Button.new()
+	decrease_btn.text = "-"
+	decrease_btn.custom_minimum_size = Vector2(36, 36)
+	_style_volume_button(decrease_btn)
+	decrease_btn.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		on_decrease.call()
+		_populate_options()  # Refresh to show new value
+	)
+	controls.add_child(decrease_btn)
+
+	# Volume display
+	var volume_label = Label.new()
+	volume_label.text = "%d%%" % int(initial_value * 100)
+	volume_label.custom_minimum_size = Vector2(50, 0)
+	volume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	if pixel_font:
+		volume_label.add_theme_font_override("font", pixel_font)
+	volume_label.add_theme_font_size_override("font_size", 14)
+	volume_label.add_theme_color_override("font_color", COLOR_TEXT)
+	controls.add_child(volume_label)
+
+	# Increase button
+	var increase_btn = Button.new()
+	increase_btn.text = "+"
+	increase_btn.custom_minimum_size = Vector2(36, 36)
+	_style_volume_button(increase_btn)
+	increase_btn.pressed.connect(func():
+		if SoundManager:
+			SoundManager.play_click()
+		on_increase.call()
+		_populate_options()  # Refresh to show new value
+	)
+	controls.add_child(increase_btn)
+
+func _style_volume_button(button: Button) -> void:
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.25, 0.22, 0.30, 1.0)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 3
+	style.border_color = COLOR_BORDER
+	style.corner_radius_top_left = 2
+	style.corner_radius_top_right = 2
+	style.corner_radius_bottom_left = 2
+	style.corner_radius_bottom_right = 2
+
+	var style_hover = style.duplicate()
+	style_hover.bg_color = Color(0.35, 0.30, 0.40, 1.0)
+
+	var style_pressed = style.duplicate()
+	style_pressed.bg_color = Color(0.20, 0.18, 0.25, 1.0)
+	style_pressed.border_width_top = 3
+	style_pressed.border_width_bottom = 2
+
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style_hover)
+	button.add_theme_stylebox_override("pressed", style_pressed)
+	button.add_theme_stylebox_override("focus", style)
+
+	if pixel_font:
+		button.add_theme_font_override("font", pixel_font)
+	button.add_theme_font_size_override("font_size", 18)
+	button.add_theme_color_override("font_color", COLOR_TEXT)
 
 func _input(event: InputEvent) -> void:
 	if not visible:

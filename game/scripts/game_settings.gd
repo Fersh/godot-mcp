@@ -11,6 +11,8 @@ var sfx_enabled: bool = true
 var screen_shake_enabled: bool = true
 var haptics_enabled: bool = true
 var master_volume: float = 1.0  # 0.0 to 1.0
+var music_volume: float = 1.0  # 0.0 to 1.0 - separate music volume
+var sfx_volume: float = 1.0  # 0.0 to 1.0 - separate sfx volume
 var track_missions_enabled: bool = true  # Show mission tracker in game HUD
 
 # Visual effect toggles
@@ -36,6 +38,8 @@ func load_settings() -> void:
 		screen_shake_enabled = config.get_value("visual", "screen_shake_enabled", true)
 		haptics_enabled = config.get_value("haptics", "haptics_enabled", true)
 		master_volume = config.get_value("audio", "master_volume", 1.0)
+		music_volume = config.get_value("audio", "music_volume", 1.0)
+		sfx_volume = config.get_value("audio", "sfx_volume", 1.0)
 		track_missions_enabled = config.get_value("gameplay", "track_missions_enabled", true)
 		# Visual effect toggles
 		damage_numbers_enabled = config.get_value("visual", "damage_numbers_enabled", true)
@@ -55,6 +59,8 @@ func save_settings() -> void:
 	config.set_value("visual", "screen_shake_enabled", screen_shake_enabled)
 	config.set_value("haptics", "haptics_enabled", haptics_enabled)
 	config.set_value("audio", "master_volume", master_volume)
+	config.set_value("audio", "music_volume", music_volume)
+	config.set_value("audio", "sfx_volume", sfx_volume)
 	config.set_value("gameplay", "track_missions_enabled", track_missions_enabled)
 	# Visual effect toggles
 	config.set_value("visual", "damage_numbers_enabled", damage_numbers_enabled)
@@ -134,6 +140,18 @@ func set_master_volume(volume: float) -> void:
 	master_volume = clamp(volume, 0.0, 1.0)
 	var volume_db = linear_to_db(master_volume)
 	AudioServer.set_bus_volume_db(0, volume_db)
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_music_volume(volume: float) -> void:
+	music_volume = clamp(volume, 0.0, 1.0)
+	if SoundManager:
+		SoundManager.apply_music_volume()
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_sfx_volume(volume: float) -> void:
+	sfx_volume = clamp(volume, 0.0, 1.0)
 	save_settings()
 	emit_signal("settings_changed")
 

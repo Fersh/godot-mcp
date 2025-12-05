@@ -197,7 +197,11 @@ func _play_sound(stream: AudioStream, volume_db: float = 0.0, pitch_variance: fl
 		return
 	var player = _get_available_player()
 	player.stream = stream
-	player.volume_db = volume_db
+	# Apply SFX volume multiplier from settings
+	var sfx_volume_adjustment = 0.0
+	if GameSettings:
+		sfx_volume_adjustment = linear_to_db(GameSettings.sfx_volume)
+	player.volume_db = volume_db + sfx_volume_adjustment
 	if pitch_variance > 0:
 		player.pitch_scale = randf_range(1.0 - pitch_variance, 1.0 + pitch_variance)
 	else:
@@ -284,7 +288,7 @@ func play_menu_music() -> void:
 
 	if menu_music:
 		music_player.stream = menu_music
-		music_player.volume_db = MUSIC_VOLUME_DB
+		music_player.volume_db = _get_adjusted_music_volume()
 		music_player.play()
 
 func play_music() -> void:
@@ -298,7 +302,7 @@ func play_music() -> void:
 
 	if music1:
 		music_player.stream = music1
-		music_player.volume_db = MUSIC_VOLUME_DB
+		music_player.volume_db = _get_adjusted_music_volume()
 		music_player.play()
 
 func play_game_over_music() -> void:
@@ -312,7 +316,7 @@ func play_game_over_music() -> void:
 
 	if game_over_music:
 		music_player.stream = game_over_music
-		music_player.volume_db = MUSIC_VOLUME_DB
+		music_player.volume_db = _get_adjusted_music_volume()
 		music_player.play()
 
 func play_boss_music(boss: Node = null) -> void:
@@ -370,6 +374,32 @@ func set_music_volume(volume_db: float) -> void:
 	if music_player:
 		music_player.volume_db = volume_db
 
+func apply_music_volume() -> void:
+	"""Apply music volume from GameSettings to music players."""
+	if not GameSettings:
+		return
+	var music_volume_adjustment = linear_to_db(GameSettings.music_volume)
+	var adjusted_music_db = MUSIC_VOLUME_DB + music_volume_adjustment
+	var adjusted_overlay_db = OVERLAY_VOLUME_DB + music_volume_adjustment
+	if music_player:
+		music_player.volume_db = adjusted_music_db
+	if overlay_music_player:
+		overlay_music_player.volume_db = adjusted_overlay_db
+
+func _get_adjusted_music_volume() -> float:
+	"""Get the music volume adjusted by GameSettings."""
+	var base_volume = MUSIC_VOLUME_DB
+	if GameSettings:
+		base_volume += linear_to_db(GameSettings.music_volume)
+	return base_volume
+
+func _get_adjusted_overlay_volume() -> float:
+	"""Get the overlay music volume adjusted by GameSettings."""
+	var base_volume = OVERLAY_VOLUME_DB
+	if GameSettings:
+		base_volume += linear_to_db(GameSettings.music_volume)
+	return base_volume
+
 # ============================================
 # INTERNAL MUSIC HELPERS
 # ============================================
@@ -421,7 +451,7 @@ func _start_overlay_music(track: AudioStream, state: MusicState) -> void:
 	if overlay_fade_tween:
 		overlay_fade_tween.kill()
 	overlay_fade_tween = create_tween()
-	overlay_fade_tween.tween_property(overlay_music_player, "volume_db", OVERLAY_VOLUME_DB, FADE_IN_DURATION)
+	overlay_fade_tween.tween_property(overlay_music_player, "volume_db", _get_adjusted_overlay_volume(), FADE_IN_DURATION)
 
 func _end_overlay_music() -> void:
 	"""End boss/elite music and fade back to background music."""
@@ -454,7 +484,7 @@ func _end_overlay_music() -> void:
 		in_game_music_loop = true
 
 		fade_tween = create_tween()
-		fade_tween.tween_property(music_player, "volume_db", MUSIC_VOLUME_DB, FADE_IN_DURATION)
+		fade_tween.tween_property(music_player, "volume_db", _get_adjusted_music_volume(), FADE_IN_DURATION)
 
 # ============================================
 # ACTIVE ABILITY SOUNDS
