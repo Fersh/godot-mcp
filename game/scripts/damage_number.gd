@@ -89,8 +89,8 @@ func set_damage(amount: float, is_critical: bool = false, is_player_damage: bool
 		# Shake animation for player damage (#22)
 		_animate_shake()
 	elif is_critical:
-		# ENHANCED Critical hit - gold with "CRIT!" prefix (#7)
-		label.text = "CRIT! " + str(int(amount))
+		# Critical hit - gold color, larger size, special animation
+		label.text = str(int(amount))
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1, 1))
 		label.add_theme_font_size_override("font_size", 32)
 		# Strong outline for crits

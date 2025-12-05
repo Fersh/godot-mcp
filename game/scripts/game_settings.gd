@@ -13,6 +13,11 @@ var haptics_enabled: bool = true
 var master_volume: float = 1.0  # 0.0 to 1.0
 var track_missions_enabled: bool = true  # Show mission tracker in game HUD
 
+# Visual effect toggles
+var status_text_enabled: bool = true  # Show status text over enemies (BURN, POISON, etc.)
+var freeze_frames_enabled: bool = true  # Hitstop/freeze frame effects on hits/kills
+var visual_effects_enabled: bool = true  # Status tinting, chromatic aberration, zoom punch, etc.
+
 # Generic settings storage for misc values
 var misc_settings: Dictionary = {}
 
@@ -31,6 +36,10 @@ func load_settings() -> void:
 		haptics_enabled = config.get_value("haptics", "haptics_enabled", true)
 		master_volume = config.get_value("audio", "master_volume", 1.0)
 		track_missions_enabled = config.get_value("gameplay", "track_missions_enabled", true)
+		# Visual effect toggles
+		status_text_enabled = config.get_value("visual", "status_text_enabled", true)
+		freeze_frames_enabled = config.get_value("visual", "freeze_frames_enabled", true)
+		visual_effects_enabled = config.get_value("visual", "visual_effects_enabled", true)
 		# Load misc settings
 		if config.has_section("misc"):
 			for key in config.get_section_keys("misc"):
@@ -45,6 +54,10 @@ func save_settings() -> void:
 	config.set_value("haptics", "haptics_enabled", haptics_enabled)
 	config.set_value("audio", "master_volume", master_volume)
 	config.set_value("gameplay", "track_missions_enabled", track_missions_enabled)
+	# Visual effect toggles
+	config.set_value("visual", "status_text_enabled", status_text_enabled)
+	config.set_value("visual", "freeze_frames_enabled", freeze_frames_enabled)
+	config.set_value("visual", "visual_effects_enabled", visual_effects_enabled)
 	# Save misc settings
 	for key in misc_settings:
 		config.set_value("misc", key, misc_settings[key])
@@ -91,6 +104,21 @@ func set_haptics_enabled(enabled: bool) -> void:
 
 func set_track_missions_enabled(enabled: bool) -> void:
 	track_missions_enabled = enabled
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_status_text_enabled(enabled: bool) -> void:
+	status_text_enabled = enabled
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_freeze_frames_enabled(enabled: bool) -> void:
+	freeze_frames_enabled = enabled
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_visual_effects_enabled(enabled: bool) -> void:
+	visual_effects_enabled = enabled
 	save_settings()
 	emit_signal("settings_changed")
 

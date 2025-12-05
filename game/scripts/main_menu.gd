@@ -756,6 +756,15 @@ func _show_settings_panel() -> void:
 	# Screen shake toggle
 	_create_toggle_option(options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
+	# Status text toggle (BURN, POISON, etc. over enemies)
+	_create_toggle_option(options_container, "Status Text", GameSettings.status_text_enabled, func(toggled): GameSettings.set_status_text_enabled(toggled))
+
+	# Freeze frames toggle (hitstop effects)
+	_create_toggle_option(options_container, "Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
+
+	# Visual effects toggle (tinting, chromatic aberration, etc.)
+	_create_toggle_option(options_container, "Visual Effects", GameSettings.visual_effects_enabled, func(toggled): GameSettings.set_visual_effects_enabled(toggled))
+
 	# Track missions toggle
 	_create_toggle_option(options_container, "Track Missions", GameSettings.track_missions_enabled, func(toggled): GameSettings.set_track_missions_enabled(toggled))
 

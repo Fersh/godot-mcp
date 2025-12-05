@@ -34,6 +34,7 @@ enum AttackType {
 @export var base_crit_rate: float = 0.0  # Base crit chance
 @export var base_block_rate: float = 0.0  # Chance to block incoming damage
 @export var base_dodge_rate: float = 0.0  # Chance to dodge attacks entirely
+@export var base_armor: int = 0  # Flat damage reduction per hit
 
 # Spritesheet configuration
 @export_group("Sprite")
@@ -135,6 +136,7 @@ static func create_archer() -> CharacterData:
 	data.base_crit_rate = 0.08  # 8% base crit
 	data.base_block_rate = 0.0  # 0% block
 	data.base_dodge_rate = 0.10  # 10% dodge
+	data.base_armor = 0  # No armor - ranged
 
 	# Sprite config (archer is 32x32 per frame)
 	data.frame_size = Vector2(32, 32)
@@ -185,6 +187,7 @@ static func create_knight() -> CharacterData:
 	data.base_crit_rate = 0.05  # 5% base crit
 	data.base_block_rate = 0.05  # 5% block
 	data.base_dodge_rate = 0.05  # 5% dodge
+	data.base_armor = 2  # Heavy armor - tanky melee
 
 	# Sprite config (knight is 128x64 per frame based on user specification)
 	data.frame_size = Vector2(128, 64)
@@ -235,6 +238,7 @@ static func create_beast() -> CharacterData:
 	data.base_crit_rate = 0.12  # 12% base crit
 	data.base_block_rate = 0.0  # 0% block - doesn't know how to block
 	data.base_dodge_rate = 0.15  # 15% dodge - very agile
+	data.base_armor = 1  # Thick hide
 
 	# Sprite config (128x128 per frame, 11 cols x 9 rows)
 	# Note: 1408/11=128, 1152/9=128
@@ -300,6 +304,7 @@ static func create_mage() -> CharacterData:
 	data.base_crit_rate = 0.10  # 10% base crit
 	data.base_block_rate = 0.0  # No block - squishy
 	data.base_dodge_rate = 0.05  # 5% dodge - slow
+	data.base_armor = 0  # No armor - ranged
 
 	# Sprite config (32x32 per frame, 12x12 grid)
 	data.frame_size = Vector2(32, 32)
@@ -357,6 +362,7 @@ static func create_monk() -> CharacterData:
 	data.base_crit_rate = 0.08  # 8% base crit
 	data.base_block_rate = 0.03  # 3% block
 	data.base_dodge_rate = 0.08  # 8% dodge
+	data.base_armor = 1  # Light armor - agile melee
 
 	# Sprite config (96x96 per frame, 16 cols x 8 rows)
 	data.frame_size = Vector2(96, 96)
@@ -422,6 +428,7 @@ static func create_barbarian() -> CharacterData:
 	data.base_crit_rate = 0.08
 	data.base_block_rate = 0.05
 	data.base_dodge_rate = 0.03
+	data.base_armor = 2  # Tough skin - tanky melee
 
 	# Sprite config (96x96 per frame, 8 cols x 6 rows)
 	data.frame_size = Vector2(96, 96)
@@ -483,6 +490,7 @@ static func create_assassin() -> CharacterData:
 	data.base_crit_rate = 0.18  # Highest crit
 	data.base_block_rate = 0.0  # No blocking
 	data.base_dodge_rate = 0.20  # Highest dodge
+	data.base_armor = 1  # Light armor - hybrid attacker
 
 	# Sprite config (64x32 per frame, 8 cols x 8 rows)
 	data.frame_size = Vector2(64, 32)

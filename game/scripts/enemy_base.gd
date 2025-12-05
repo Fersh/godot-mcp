@@ -281,6 +281,9 @@ func handle_hit_flash(delta: float) -> void:
 			sprite.material.set_shader_parameter("flash_intensity", 0.0)
 
 func _apply_hit_squash() -> void:
+	# Check if visual effects are enabled
+	if GameSettings and not GameSettings.visual_effects_enabled:
+		return
 	if not sprite:
 		return
 
@@ -360,9 +363,11 @@ func take_damage(amount: float, is_critical: bool = false) -> void:
 
 	spawn_damage_number(amount, is_critical)
 
-	flash_timer = flash_duration
-	if sprite.material:
-		sprite.material.set_shader_parameter("flash_intensity", 1.0)
+	# Hit flash effect (only if visual effects enabled)
+	if not GameSettings or GameSettings.visual_effects_enabled:
+		flash_timer = flash_duration
+		if sprite.material:
+			sprite.material.set_shader_parameter("flash_intensity", 1.0)
 
 	# Squash effect on hit
 	_apply_hit_squash()
@@ -615,6 +620,11 @@ func _update_status_modulate() -> void:
 	if not sprite:
 		return
 
+	# Check if visual effects are disabled - restore base color
+	if GameSettings and not GameSettings.visual_effects_enabled:
+		sprite.modulate = base_modulate
+		return
+
 	# Use max per channel for vibrant color stacking (no muddy averaging)
 	var has_status: bool = false
 	var blended_color: Color = Color(0, 0, 0, 1.0)
@@ -676,6 +686,9 @@ func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
 
 func _spawn_status_text(text: String, color: Color) -> void:
 	"""Spawn colored status text above this enemy."""
+	# Check if status text is enabled in settings
+	if GameSettings and not GameSettings.status_text_enabled:
+		return
 	if damage_number_scene == null:
 		return
 	var dmg_num = damage_number_scene.instantiate()

@@ -168,6 +168,9 @@ func shake_large() -> void:
 
 # Hit stop - freeze game for a moment
 func hitstop(duration: float = 0.05) -> void:
+	# Check if freeze frames are enabled in settings
+	if GameSettings and not GameSettings.freeze_frames_enabled:
+		return
 	if hitstop_timer <= 0:
 		original_time_scale = Engine.time_scale
 	hitstop_timer = duration
@@ -191,6 +194,9 @@ func hitstop_large() -> void:
 
 # Zoom punch - brief zoom in then back out for impact
 func zoom_punch(intensity: float = 0.02) -> void:
+	# Check if visual effects are enabled in settings
+	if GameSettings and not GameSettings.visual_effects_enabled:
+		return
 	if not camera:
 		return
 
@@ -222,6 +228,9 @@ func zoom_punch_large() -> void:
 
 # Trigger chromatic aberration
 func chromatic_pulse(intensity: float = 1.0) -> void:
+	# Check if visual effects are enabled in settings
+	if GameSettings and not GameSettings.visual_effects_enabled:
+		return
 	chromatic_intensity = intensity
 
 # Trigger damage flash (red vignette)

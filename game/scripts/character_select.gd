@@ -205,9 +205,9 @@ func _setup_preview_panel() -> void:
 	spacer3.custom_minimum_size = Vector2(0, 6)
 	vbox.add_child(spacer3)
 
-	# Stats section - fixed height for all stats (7 rows * ~16px each)
+	# Stats section - fixed height for all stats (8 rows * ~16px each)
 	preview_stats_container = VBoxContainer.new()
-	preview_stats_container.custom_minimum_size = Vector2(150, 115)
+	preview_stats_container.custom_minimum_size = Vector2(150, 130)
 	preview_stats_container.add_theme_constant_override("separation", 2)
 	vbox.add_child(preview_stats_container)
 
@@ -545,6 +545,7 @@ func _update_preview() -> void:
 	_add_stat_row_to_container(stats_box, "Damage", "x%.1f" % char_data.base_damage, _get_stat_color(char_data.base_damage, 0.8, 1.8))
 
 	# Combat stats
+	_add_stat_row_to_container(stats_box, "Armor", "%d" % char_data.base_armor, _get_stat_color(char_data.base_armor, 0, 2))
 	_add_stat_row_to_container(stats_box, "Crit Rate", "%d%%" % int(char_data.base_crit_rate * 100), _get_stat_color(char_data.base_crit_rate, 0.0, 0.15))
 	_add_stat_row_to_container(stats_box, "Block Rate", "%d%%" % int(char_data.base_block_rate * 100), _get_stat_color(char_data.base_block_rate, 0.0, 0.10))
 	_add_stat_row_to_container(stats_box, "Dodge Rate", "%d%%" % int(char_data.base_dodge_rate * 100), _get_stat_color(char_data.base_dodge_rate, 0.0, 0.15))
