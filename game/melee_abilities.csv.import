@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cp2vjx6uaimif"
+
+[deps]
+
+files=["res://melee_abilities.Ability Name.translation", "res://melee_abilities.Tier.translation", "res://melee_abilities.Branch.translation", "res://melee_abilities.Builds From.translation", "res://melee_abilities.Description.translation", "res://melee_abilities.Damage.translation", "res://melee_abilities.Damage Multiplier.translation", "res://melee_abilities.Cooldown (sec).translation", "res://melee_abilities.Range.translation", "res://melee_abilities.Radius (AoE).translation", "res://melee_abilities.Stun (sec).translation", "res://melee_abilities.Knockback.translation", "res://melee_abilities.Duration (sec).translation", "res://melee_abilities.Signature/Special.translation"]
+
+source_file="res://melee_abilities.csv"
+dest_files=["res://melee_abilities.Ability Name.translation", "res://melee_abilities.Tier.translation", "res://melee_abilities.Branch.translation", "res://melee_abilities.Builds From.translation", "res://melee_abilities.Description.translation", "res://melee_abilities.Damage.translation", "res://melee_abilities.Damage Multiplier.translation", "res://melee_abilities.Cooldown (sec).translation", "res://melee_abilities.Range.translation", "res://melee_abilities.Radius (AoE).translation", "res://melee_abilities.Stun (sec).translation", "res://melee_abilities.Knockback.translation", "res://melee_abilities.Duration (sec).translation", "res://melee_abilities.Signature/Special.translation"]
+
+[params]
+
+compress=true
+delimiter=0
