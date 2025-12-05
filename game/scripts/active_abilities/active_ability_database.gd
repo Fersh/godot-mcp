@@ -18,6 +18,10 @@ static func get_ability(id: String) -> ActiveAbilityData:
 	_ensure_initialized()
 	return _abilities.get(id, null)
 
+static func get_ability_by_id(id: String) -> ActiveAbilityData:
+	"""Alias for get_ability for consistent API naming."""
+	return get_ability(id)
+
 static func get_abilities_for_class(is_melee: bool) -> Array[ActiveAbilityData]:
 	_ensure_initialized()
 	var result: Array[ActiveAbilityData] = []

@@ -417,6 +417,18 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	rarity_tag.name = "RarityTag"
 	button.add_child(rarity_tag)
 
+	# Tier banner for upgrades (UPGRADE or SIGNATURE)
+	if ability.is_upgrade():
+		var tier_banner = _create_tier_banner(ability)
+		tier_banner.name = "TierBanner"
+		button.add_child(tier_banner)
+
+	# Prerequisite indicator showing what ability this upgrades from
+	if ability.is_upgrade():
+		var prereq_indicator = _create_prerequisite_indicator(ability)
+		prereq_indicator.name = "PrereqIndicator"
+		button.add_child(prereq_indicator)
+
 	# Add particle effect container (starts hidden, shown after card settles)
 	var particle_container = _create_particle_container(ability.rarity)
 	particle_container.name = "ParticleContainer"
@@ -424,7 +436,7 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	button.add_child(particle_container)
 	particle_containers.append(particle_container)
 
-	_style_button(button, ability.rarity)
+	_style_button(button, ability.rarity, ability)
 
 	button.pressed.connect(_on_ability_selected.bind(index))
 
@@ -469,7 +481,90 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	center.add_child(tag)
 	return center
 
-func _style_button(button: Button, rarity: ActiveAbilityData.Rarity) -> void:
+func _create_tier_banner(ability: ActiveAbilityData) -> CenterContainer:
+	"""Create a banner showing UPGRADE or SIGNATURE for tiered abilities."""
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	center.anchor_left = 0
+	center.anchor_right = 1
+	center.anchor_top = 1
+	center.anchor_bottom = 1
+	center.offset_top = -8
+	center.offset_bottom = 16  # Slightly below the card
+
+	var banner = PanelContainer.new()
+
+	# Determine banner style based on tier
+	var banner_color: Color
+	var banner_text: String
+	if ability.is_signature():
+		banner_color = Color(1.0, 0.85, 0.3)  # Gold
+		banner_text = "SIGNATURE"
+	else:
+		banner_color = Color(0.2, 0.9, 0.3)  # Green
+		banner_text = "UPGRADE"
+
+	var banner_style = StyleBoxFlat.new()
+	banner_style.bg_color = banner_color
+	banner_style.set_corner_radius_all(4)
+	banner_style.content_margin_left = 12
+	banner_style.content_margin_right = 12
+	banner_style.content_margin_top = 3
+	banner_style.content_margin_bottom = 3
+	banner.add_theme_stylebox_override("panel", banner_style)
+
+	var label = Label.new()
+	label.name = "TierLabel"
+	label.text = banner_text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_color_override("font_color", Color.BLACK)
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	banner.add_child(label)
+
+	center.add_child(banner)
+	return center
+
+func _create_prerequisite_indicator(ability: ActiveAbilityData) -> Control:
+	"""Create an indicator showing what ability this upgrades from."""
+	var container = HBoxContainer.new()
+	container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	container.anchor_left = 0
+	container.anchor_right = 1
+	container.anchor_top = 0
+	container.anchor_bottom = 0
+	container.offset_top = 24  # Below the rarity tag
+	container.offset_bottom = 44
+	container.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	# Get prerequisite ability name
+	var prereq_id = ability.get_prerequisite_id()
+	var prereq_ability = ActiveAbilityDatabase.get_ability_by_id(prereq_id)
+	var prereq_name = prereq_ability.name if prereq_ability else prereq_id
+
+	# Arrow icon (→)
+	var arrow_label = Label.new()
+	arrow_label.text = "↑"
+	arrow_label.add_theme_font_size_override("font_size", 14)
+	arrow_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	if pixel_font:
+		arrow_label.add_theme_font_override("font", pixel_font)
+	container.add_child(arrow_label)
+
+	# Small text showing prerequisite
+	var prereq_label = Label.new()
+	prereq_label.name = "PrereqLabel"
+	prereq_label.text = " " + prereq_name
+	prereq_label.add_theme_font_size_override("font_size", 10)
+	prereq_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	if pixel_font:
+		prereq_label.add_theme_font_override("font", pixel_font)
+	container.add_child(prereq_label)
+
+	return container
+
+func _style_button(button: Button, rarity: ActiveAbilityData.Rarity, ability: ActiveAbilityData = null) -> void:
 	var style = StyleBoxFlat.new()
 
 	# Reduced transparency (0.98 instead of 0.95)
@@ -494,7 +589,22 @@ func _style_button(button: Button, rarity: ActiveAbilityData.Rarity) -> void:
 			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
 			style.border_color = Color(0.4, 0.4, 0.4)
 
-	style.set_border_width_all(3)
+	# Override border color for tiered abilities
+	if ability:
+		if ability.is_branch():
+			# Green border for Tier 2 upgrades
+			style.border_color = Color(0.2, 0.9, 0.3)
+			style.bg_color = Color(0.08, 0.18, 0.1, 0.98)  # Subtle green tint
+		elif ability.is_signature():
+			# Gold border for Tier 3 signature abilities
+			style.border_color = Color(1.0, 0.85, 0.3)
+			style.bg_color = Color(0.18, 0.15, 0.08, 0.98)  # Subtle gold tint
+
+	var border_width = 3
+	if ability and ability.is_upgrade():
+		border_width = 4  # Thicker border for upgrades
+
+	style.set_border_width_all(border_width)
 	style.set_corner_radius_all(12)
 
 	button.add_theme_stylebox_override("normal", style)
@@ -610,7 +720,69 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 		else:
 			particle_container.visible = false
 
-	_style_button(button, ability.rarity)
+	# Update tier banner visibility and content
+	var tier_banner = button.get_node_or_null("TierBanner") as CenterContainer
+	if is_final_reveal and ability.is_upgrade():
+		if not tier_banner:
+			# Create tier banner if it doesn't exist
+			tier_banner = _create_tier_banner(ability)
+			tier_banner.name = "TierBanner"
+			button.add_child(tier_banner)
+		else:
+			# Update existing banner
+			tier_banner.visible = true
+			_update_tier_banner(tier_banner, ability)
+	elif tier_banner:
+		tier_banner.visible = false
+
+	# Update prerequisite indicator visibility and content
+	var prereq_indicator = button.get_node_or_null("PrereqIndicator") as Control
+	if is_final_reveal and ability.is_upgrade():
+		if not prereq_indicator:
+			# Create indicator if it doesn't exist
+			prereq_indicator = _create_prerequisite_indicator(ability)
+			prereq_indicator.name = "PrereqIndicator"
+			button.add_child(prereq_indicator)
+		else:
+			# Update existing indicator
+			prereq_indicator.visible = true
+			_update_prerequisite_indicator(prereq_indicator, ability)
+	elif prereq_indicator:
+		prereq_indicator.visible = false
+
+	_style_button(button, ability.rarity, ability if is_final_reveal else null)
+
+func _update_tier_banner(banner: CenterContainer, ability: ActiveAbilityData) -> void:
+	"""Update existing tier banner for a new ability."""
+	var panel = banner.get_child(0) as PanelContainer
+	if not panel:
+		return
+
+	var banner_color: Color
+	var banner_text: String
+	if ability.is_signature():
+		banner_color = Color(1.0, 0.85, 0.3)  # Gold
+		banner_text = "SIGNATURE"
+	else:
+		banner_color = Color(0.2, 0.9, 0.3)  # Green
+		banner_text = "UPGRADE"
+
+	var banner_style = panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+	banner_style.bg_color = banner_color
+	panel.add_theme_stylebox_override("panel", banner_style)
+
+	var label = panel.get_child(0) as Label
+	if label:
+		label.text = banner_text
+
+func _update_prerequisite_indicator(indicator: Control, ability: ActiveAbilityData) -> void:
+	"""Update existing prerequisite indicator for a new ability."""
+	var prereq_label = indicator.get_node_or_null("PrereqLabel") as Label
+	if prereq_label:
+		var prereq_id = ability.get_prerequisite_id()
+		var prereq_ability = ActiveAbilityDatabase.get_ability_by_id(prereq_id)
+		var prereq_name = prereq_ability.name if prereq_ability else prereq_id
+		prereq_label.text = " " + prereq_name
 
 func _on_ability_selected(index: int) -> void:
 	if is_rolling:

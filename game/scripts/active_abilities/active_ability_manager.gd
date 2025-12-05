@@ -39,6 +39,12 @@ var player: Node2D = null
 # Cached abilities the player has already acquired (to prevent duplicates)
 var acquired_ability_ids: Array[String] = []
 
+# Tree upgrade tracking - maps base_ability_id -> current_ability_id
+var acquired_tree_abilities: Dictionary = {}
+
+# Chance for upgrades to appear in selection (40%)
+const UPGRADE_CHANCE: float = 0.40
+
 func _ready() -> void:
 	# Add to group so AbilityManager can find us for cooldown reduction
 	add_to_group("active_ability_manager")
@@ -113,6 +119,10 @@ func reset_for_new_run() -> void:
 	dodge_charges = 1
 	max_dodge_charges = 1
 	acquired_ability_ids.clear()
+	acquired_tree_abilities.clear()
+
+	# Reset all ability trees for new run
+	AbilityTreeRegistry.reset_all_trees()
 
 func register_player(p: Node2D) -> void:
 	"""Register the player reference for ability execution."""
@@ -130,7 +140,15 @@ func get_next_empty_slot() -> int:
 	return -1
 
 func acquire_ability(ability: ActiveAbilityData) -> bool:
-	"""Add an ability to the next available slot. Returns true if successful."""
+	"""Add an ability to the next available slot, or upgrade an existing slot. Returns true if successful."""
+
+	# Check if this is an upgrade to an existing ability
+	if ability.tier != ActiveAbilityData.AbilityTier.BASE:
+		var upgraded_slot = _try_upgrade_existing_ability(ability)
+		if upgraded_slot >= 0:
+			return true
+
+	# Otherwise, add to next empty slot (for base abilities)
 	var slot = get_next_empty_slot()
 	if slot == -1:
 		return false
@@ -138,8 +156,44 @@ func acquire_ability(ability: ActiveAbilityData) -> bool:
 	ability_slots[slot] = ability
 	cooldown_timers[slot] = 0.0
 	acquired_ability_ids.append(ability.id)
+
+	# Track tree progression
+	_track_tree_ability(ability)
+
 	emit_signal("ability_acquired", slot, ability)
 	return true
+
+func _try_upgrade_existing_ability(upgrade: ActiveAbilityData) -> int:
+	"""Try to replace an existing ability with its upgrade. Returns slot index or -1."""
+	# Find the slot containing the prerequisite ability
+	for i in MAX_ABILITY_SLOTS:
+		if ability_slots[i] != null and ability_slots[i].id == upgrade.prerequisite_id:
+			# Replace with upgrade
+			ability_slots[i] = upgrade
+			cooldown_timers[i] = 0.0  # Reset cooldown on upgrade
+			acquired_ability_ids.append(upgrade.id)
+
+			# Update tree progression
+			_track_tree_ability(upgrade)
+
+			emit_signal("ability_acquired", i, upgrade)
+			return i
+
+	return -1
+
+func _track_tree_ability(ability: ActiveAbilityData) -> void:
+	"""Track ability in tree progression system."""
+	var base_id = AbilityTreeRegistry.get_base_ability_id(ability.id)
+	if base_id.is_empty():
+		return
+
+	# Update our tracking
+	acquired_tree_abilities[base_id] = ability.id
+
+	# Update the tree's internal state
+	var tree = AbilityTreeRegistry.get_tree(base_id)
+	if tree:
+		tree.upgrade_to(ability)
 
 func get_ability_in_slot(slot: int) -> ActiveAbilityData:
 	"""Get the ability in a specific slot."""
@@ -461,9 +515,12 @@ func _on_dodge_complete() -> void:
 # ============================================
 
 func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) -> Array[ActiveAbilityData]:
-	"""Get random active abilities for the level-up selection screen."""
+	"""Get random active abilities for the level-up selection screen.
+	Includes upgrades for acquired abilities with UPGRADE_CHANCE probability."""
 	var available = _get_available_abilities(is_melee)
-	if available.is_empty():
+	var upgrades = _get_available_upgrades()
+
+	if available.is_empty() and upgrades.is_empty():
 		return []
 
 	# Get rarity weights for this level
@@ -477,16 +534,24 @@ func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) 
 	while selected.size() < count and attempts < max_attempts:
 		attempts += 1
 
-		# Roll for rarity
-		var rarity = _roll_rarity(weights)
+		# Roll to see if this slot should be an upgrade (40% chance if upgrades available)
+		var use_upgrade = not upgrades.is_empty() and randf() < UPGRADE_CHANCE
 
-		# Get abilities of this rarity
-		var rarity_abilities = available.filter(func(a): return a.rarity == rarity)
-		if rarity_abilities.is_empty():
+		var ability: ActiveAbilityData = null
+
+		if use_upgrade:
+			# Pick a random upgrade
+			ability = upgrades[randi() % upgrades.size()]
+		else:
+			# Roll for rarity and pick from available base abilities
+			var rarity = _roll_rarity(weights)
+			var rarity_abilities = available.filter(func(a): return a.rarity == rarity)
+			if rarity_abilities.is_empty():
+				continue
+			ability = rarity_abilities[randi() % rarity_abilities.size()]
+
+		if ability == null:
 			continue
-
-		# Pick a random one
-		var ability = rarity_abilities[randi() % rarity_abilities.size()]
 
 		# Check not already selected
 		var already_selected = false
@@ -498,7 +563,31 @@ func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) 
 		if not already_selected:
 			selected.append(ability)
 
+			# Remove from pools to prevent duplicates
+			if use_upgrade:
+				upgrades = upgrades.filter(func(a): return a.id != ability.id)
+			else:
+				available = available.filter(func(a): return a.id != ability.id)
+
 	return selected
+
+func _get_available_upgrades() -> Array[ActiveAbilityData]:
+	"""Get all available upgrades for currently equipped abilities."""
+	var upgrades: Array[ActiveAbilityData] = []
+
+	for i in MAX_ABILITY_SLOTS:
+		var current = ability_slots[i]
+		if current == null:
+			continue
+
+		# Get upgrades for this ability from the tree registry
+		var ability_upgrades = AbilityTreeRegistry.get_available_upgrades_for_ability(current.id)
+		for upgrade in ability_upgrades:
+			# Don't include already acquired abilities
+			if upgrade.id not in acquired_ability_ids:
+				upgrades.append(upgrade)
+
+	return upgrades
 
 func _get_available_abilities(is_melee: bool) -> Array[ActiveAbilityData]:
 	"""Get all abilities available for selection (not yet acquired)."""

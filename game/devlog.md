@@ -1,6 +1,59 @@
-# Difficulty Rebalance Devlog
+# Devlog
 
-## Date: 2025-12-04
+---
+
+## Date: 2025-12-04 - Ability Tree System Implementation
+
+### Summary
+Completed gameplay and UI integration for the tiered ability branching system. Players can now acquire base abilities and upgrade them through Tier 2 (BRANCH) and Tier 3 (SIGNATURE) versions with unique mechanics.
+
+### Changes Overview
+
+#### 1. Gameplay Integration (ActiveAbilityManager)
+- Added `acquired_tree_abilities` dictionary to track ability progression per tree
+- Implemented `UPGRADE_CHANCE = 0.40` (40% chance for upgrades to appear in selection)
+- Modified `acquire_ability()` to handle tier upgrades (replaces ability in slot)
+- Added `_try_upgrade_existing_ability()` for slot replacement logic
+- Added `_track_tree_ability()` for progression tracking
+- Modified `get_random_abilities_for_level()` to include available upgrades in the pool
+- Added `_get_available_upgrades()` to find all possible upgrades for current abilities
+
+#### 2. UI Integration (active_ability_selection_ui.gd)
+- Updated `_style_button()` to accept ability parameter for tier-based styling
+- **Tier 2 (BRANCH)**: Green border (#33E64D), subtle green background tint, 4px border
+- **Tier 3 (SIGNATURE)**: Gold border (#FFD94D), subtle gold background tint, 4px border
+- Added `_create_tier_banner()` - displays "UPGRADE" or "SIGNATURE" banner at card bottom
+- Added `_create_prerequisite_indicator()` - shows "↑ [Parent Ability Name]" at card top
+- Added `_update_tier_banner()` and `_update_prerequisite_indicator()` for slot machine animation support
+- Modified `_update_card_content()` to handle tier banners and prerequisite indicators during animation
+
+#### 3. Database (ActiveAbilityDatabase)
+- Added `get_ability_by_id()` alias for consistent API naming
+
+#### 4. Status Document
+- Updated `docs/ability_tree_status.md` with current implementation status
+- 20/55 ability trees have executor implementations complete
+
+### Files Modified
+- `scripts/active_abilities/active_ability_manager.gd` - upgrade tracking & mixed selection
+- `scripts/active_abilities/ui/active_ability_selection_ui.gd` - tier styling & banners
+- `scripts/active_abilities/active_ability_database.gd` - added get_ability_by_id alias
+- `docs/ability_tree_status.md` - updated implementation status
+
+### Implementation Status
+- **Phase 1 (Infrastructure)**: ✅ Complete
+- **Phase 2 (Gameplay Integration)**: ✅ Complete
+- **Phase 3 (UI Integration)**: ✅ Complete
+- **Phase 4 (Executor Implementation)**: 🔨 In Progress (20/55 trees)
+
+### Trees with Full Executor Support
+**Melee (9/20)**: Cleave, Bash, Charge, Spin, Slam, Dash, Whirlwind, Leap, Shout
+**Ranged (7/20)**: Power Shot, Multi Shot, Trap, Rain, Turret, Volley, Evasion
+**Global (4/15)**: Fireball, Frost Nova, Lightning, Heal
+
+---
+
+## Date: 2025-12-04 - Difficulty Rebalance
 
 ### Summary
 Major difficulty rebalance to make Challenge Mode progressively harder with consistent 20% scaling per tier, new XP requirements per difficulty, substantial boss/elite bonuses, and a new %HP damage mechanic.
