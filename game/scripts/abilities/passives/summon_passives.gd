@@ -24,7 +24,7 @@ static func get_abilities() -> Array[AbilityData]:
 		# SUMMON ENHANCEMENTS
 		# ============================================
 
-		# Pack Leader - Summons deal more damage
+		# Pack Leader - Summons deal more damage (requires any summon)
 		AbilityData.new(
 			"pack_leader",
 			"Pack Leader",
@@ -32,5 +32,5 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.SUMMON_DAMAGE, value = 0.25}]
-		),
+		).with_prerequisites(["chicken_companion", "summoner_aid", "blade_orbit", "flame_orbit", "frost_orbit"] as Array[String]),
 	]

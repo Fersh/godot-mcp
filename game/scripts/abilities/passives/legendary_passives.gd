@@ -96,7 +96,7 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.WIND_DANCER, value = 0.5}]
 		),
 
-		# Empathic Bond
+		# Empathic Bond (requires orbital or aura ability)
 		AbilityData.new(
 			"empathic_bond",
 			"Empathic Bond",
@@ -104,7 +104,7 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.EMPATHIC_BOND, value = 2.0}]
-		),
+		).with_prerequisites(["blade_orbit", "flame_orbit", "frost_orbit", "ring_of_fire", "toxic_cloud", "tesla_coil"] as Array[String]),
 
 		# Fortune's Favor
 		AbilityData.new(

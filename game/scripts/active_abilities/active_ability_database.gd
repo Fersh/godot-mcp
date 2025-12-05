@@ -119,7 +119,7 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# GLOBAL - COMMON
 	# ============================================
-	_register(_create_fireball())
+	# _register(_create_fireball())  # Disabled - Fireball tree temporarily removed
 	_register(_create_healing_light())
 	_register(_create_throwing_bomb())
 	# Blinding Flash merged into Pocket Sand

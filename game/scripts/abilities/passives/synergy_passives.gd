@@ -10,7 +10,7 @@ static func get_abilities() -> Array[AbilityData]:
 		# KILL STREAK ENHANCEMENTS
 		# ============================================
 
-		# Momentum Master - Kill streaks last longer
+		# Momentum Master - Kill streaks last longer (requires any kill streak ability)
 		AbilityData.new(
 			"momentum_master",
 			"Momentum Master",
@@ -18,7 +18,7 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MOMENTUM_MASTER, value = 0.5}]
-		),
+		).with_prerequisites(["rampage", "killing_frenzy", "massacre"] as Array[String]),
 
 		# ============================================
 		# ACTIVE ABILITY SYNERGIES
@@ -38,7 +38,7 @@ static func get_abilities() -> Array[AbilityData]:
 		# ELEMENTAL ENHANCEMENTS
 		# ============================================
 
-		# Conductor - Lightning chains further
+		# Conductor - Lightning chains further (requires lightning ability)
 		AbilityData.new(
 			"conductor",
 			"Conductor",
@@ -46,7 +46,7 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CONDUCTOR, value = 2.0}]
-		),
+		).with_prerequisites(["lightning_strike_proc", "static_charge"] as Array[String]),
 
 		# ============================================
 		# KILL EFFECTS

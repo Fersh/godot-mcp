@@ -111,7 +111,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ELEMENTAL_INFUSION, value = 1.0}]
-		),
+		).with_prerequisites(["ignite", "frostbite", "toxic_tip", "lightning_strike_proc", "static_charge", "chaotic_strikes"] as Array[String]),
 		AbilityData.new(
 			"phantom_strike",
 			"Phantom Strike",
@@ -182,10 +182,10 @@ static func get_common_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"regeneration",
 			"Regeneration",
-			"Heal 1% HP every 5 seconds",
+			"Heal 1% HP every 2.5 seconds",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.REGEN, value = 0.2}]  # HP per second
+			[{effect_type = AbilityData.EffectType.REGEN, value = 0.4}]  # HP per second
 		),
 		AbilityData.new(
 			"tank",
@@ -325,10 +325,10 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"time_dilation",
 			"Time Dilation",
-			"Enemies move 20% slower permanently",
+			"Enemies move 10% slower permanently",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.TIME_DILATION, value = 0.2}]  # 20% slow
+			[{effect_type = AbilityData.EffectType.TIME_DILATION, value = 0.1}]  # 10% slow
 		),
 		AbilityData.new(
 			"giant_slayer",

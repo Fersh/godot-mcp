@@ -44,7 +44,7 @@ static func get_abilities() -> Array[AbilityData]:
 		# ORBITAL ENHANCEMENTS
 		# ============================================
 
-		# Orbital Amplifier - +1 to random orbital
+		# Orbital Amplifier - +1 to random orbital (requires any orbital)
 		AbilityData.new(
 			"orbital_amplifier",
 			"Orbital Amplifier",
@@ -52,9 +52,9 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ORBITAL_AMPLIFIER, value = 1.0}]
-		),
+		).with_prerequisites(["blade_orbit", "flame_orbit", "frost_orbit"] as Array[String]),
 
-		# Orbital Mastery - +1 to ALL orbitals
+		# Orbital Mastery - +1 to ALL orbitals (requires Orbital Amplifier)
 		AbilityData.new(
 			"orbital_mastery",
 			"Orbital Mastery",
@@ -62,5 +62,5 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ORBITAL_MASTERY, value = 1.0}]
-		),
+		).with_prerequisites(["orbital_amplifier"] as Array[String]),
 	]

@@ -10,6 +10,13 @@ var _manager: Node = null
 # Upgrade boost chance for mixed pool (40%)
 const UPGRADE_BOOST_CHANCE: float = 0.40
 
+# Passive level tracking for guaranteed upgrades
+var passive_selections_since_upgrade: int = 0
+const GUARANTEED_UPGRADE_INTERVAL: int = 4  # Guarantee upgrade every 4 passive selections
+
+# Synergy weight boost (slight - 50% increase for synergistic abilities)
+const SYNERGY_WEIGHT_BOOST: float = 1.5
+
 func _init(manager: Node) -> void:
 	_manager = manager
 
@@ -22,16 +29,44 @@ func get_random_abilities(count: int = 3) -> Array[AbilityData]:
 	var available = get_available_abilities()
 	var choices: Array[AbilityData] = []
 
-	for i in count:
+	# Check if we need to guarantee an upgrade ability
+	var need_guaranteed_upgrade = passive_selections_since_upgrade >= GUARANTEED_UPGRADE_INTERVAL
+	var upgrade_included = false
+
+	# If we need a guaranteed upgrade, try to include one
+	if need_guaranteed_upgrade:
+		var available_upgrades = _get_available_upgrade_abilities(available)
+		if available_upgrades.size() > 0:
+			var upgrade = pick_weighted_random(available_upgrades, true)
+			if upgrade:
+				choices.append(upgrade)
+				available.erase(upgrade)
+				upgrade_included = true
+
+	# Fill remaining slots
+	for i in range(count - choices.size()):
 		if available.size() == 0:
 			break
 
-		var ability = pick_weighted_random(available)
+		var ability = pick_weighted_random(available, true)
 		if ability:
 			choices.append(ability)
 			available.erase(ability)
+			if ability.is_upgrade:
+				upgrade_included = true
+
+	# Shuffle to randomize positions
+	choices.shuffle()
+
+	# Update tracking - reset if upgrade was included
+	if upgrade_included:
+		passive_selections_since_upgrade = 0
 
 	return choices
+
+func on_passive_selection_made() -> void:
+	"""Called when player makes a passive selection - increment counter"""
+	passive_selections_since_upgrade += 1
 
 func get_available_abilities() -> Array[AbilityData]:
 	"""Get all passive abilities available for selection"""
@@ -54,9 +89,34 @@ func get_available_abilities() -> Array[AbilityData]:
 		if not is_ability_stackable(ability) and has_ability(ability.id):
 			continue
 
+		# Check prerequisites - must have at least one prerequisite ability
+		if not _meets_prerequisites(ability):
+			continue
+
 		available.append(ability)
 
 	return available
+
+func _meets_prerequisites(ability: AbilityData) -> bool:
+	"""Check if player meets prerequisites for an ability"""
+	# No prerequisites = always available
+	if ability.prerequisite_ids.size() == 0:
+		return true
+
+	# Must have at least one of the prerequisite abilities
+	for prereq_id in ability.prerequisite_ids:
+		if has_ability(prereq_id):
+			return true
+
+	return false
+
+func _get_available_upgrade_abilities(from_pool: Array[AbilityData]) -> Array[AbilityData]:
+	"""Get only upgrade abilities from the available pool"""
+	var upgrades: Array[AbilityData] = []
+	for ability in from_pool:
+		if ability.is_upgrade:
+			upgrades.append(ability)
+	return upgrades
 
 func is_ability_stackable(ability: AbilityData) -> bool:
 	"""Check if an ability can be acquired multiple times"""
@@ -86,8 +146,8 @@ func get_ability_acquisition_count(ability_id: String) -> int:
 			count += 1
 	return count
 
-func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
-	"""Pick a random ability weighted by rarity and diversity"""
+func pick_weighted_random(abilities: Array[AbilityData], apply_synergy_boost: bool = false) -> AbilityData:
+	"""Pick a random ability weighted by rarity, diversity, and synergies"""
 	if abilities.size() == 0:
 		return null
 
@@ -128,6 +188,11 @@ func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 			var acquisition_count = get_ability_acquisition_count(ability.id)
 			# Base weight of 1.0, reduced by 40% for each time already acquired
 			var weight = pow(0.6, acquisition_count)
+
+			# Apply synergy weight boost if enabled
+			if apply_synergy_boost and _has_synergy_with_current_build(ability):
+				weight *= SYNERGY_WEIGHT_BOOST
+
 			weights.append(weight)
 			total_weight += weight
 
@@ -144,6 +209,48 @@ func pick_weighted_random(abilities: Array[AbilityData]) -> AbilityData:
 		return rarity_pool[randi() % rarity_pool.size()]
 
 	return null
+
+func _has_synergy_with_current_build(ability: AbilityData) -> bool:
+	"""Check if ability synergizes with current build"""
+	# Check explicit synergy IDs
+	for synergy_id in ability.synergy_ids:
+		if has_ability(synergy_id):
+			return true
+
+	# Check implicit synergies based on effect types
+	return _check_implicit_synergies(ability)
+
+func _check_implicit_synergies(ability: AbilityData) -> bool:
+	"""Check for implicit synergies based on ability effects"""
+	for effect in ability.effects:
+		var effect_type = effect.get("effect_type", -1)
+
+		# Orbital synergies
+		if effect_type in [AbilityData.EffectType.ORBITAL_AMPLIFIER, AbilityData.EffectType.ORBITAL_MASTERY]:
+			if has_ability("blade_orbit") or has_ability("flame_orbit") or has_ability("frost_orbit") or has_ability("orbital_defense"):
+				return true
+
+		# Summon synergies
+		if effect_type == AbilityData.EffectType.SUMMON_DAMAGE:
+			if has_ability("chicken_companion") or has_ability("summoner_aid") or has_ability("drone_support"):
+				return true
+
+		# Elemental synergies
+		if effect_type in [AbilityData.EffectType.CHAIN_REACTION, AbilityData.EffectType.CONDUCTOR]:
+			if has_ability("ignite") or has_ability("frostbite") or has_ability("toxic_tip") or has_ability("lightning_strike_proc"):
+				return true
+
+		# Kill streak synergies
+		if effect_type == AbilityData.EffectType.MOMENTUM_MASTER:
+			if has_ability("rampage") or has_ability("killing_frenzy") or has_ability("massacre"):
+				return true
+
+		# Aura synergies for Empathic Bond
+		if effect_type == AbilityData.EffectType.EMPATHIC_BOND:
+			if has_ability("ring_of_fire") or has_ability("toxic_cloud") or has_ability("tesla_coil"):
+				return true
+
+	return false
 
 # ============================================
 # MIXED POOL SELECTION (Passives + Active Upgrades)

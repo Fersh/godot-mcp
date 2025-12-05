@@ -66,7 +66,7 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.STATIC_CHARGE, value = 5.0}]
 		),
 
-		# Chain Reaction (Legendary)
+		# Chain Reaction (requires any elemental effect)
 		AbilityData.new(
 			"chain_reaction",
 			"Chain Reaction",
@@ -74,5 +74,5 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CHAIN_REACTION, value = 2.0}]
-		),
+		).with_prerequisites(["ignite", "frostbite", "toxic_tip", "lightning_strike_proc", "static_charge", "chaotic_strikes"] as Array[String]),
 	]

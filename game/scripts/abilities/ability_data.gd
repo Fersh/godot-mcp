@@ -231,6 +231,17 @@ var type: Type
 var effects: Array  # Array of {effect_type: EffectType, value: float}
 var icon_path: String = ""
 
+# Prerequisite system - ability won't appear unless player has at least one of these
+# Empty array = no prerequisites (standalone ability)
+var prerequisite_ids: Array[String] = []
+
+# Synergy IDs - abilities that boost this one's weight when player has them
+# Used for slight weight boosting (not hard requirements)
+var synergy_ids: Array[String] = []
+
+# Whether this is an "upgrade" ability (enhances existing mechanics)
+var is_upgrade: bool = false
+
 func _init(p_id: String, p_name: String, p_desc: String, p_rarity: Rarity, p_type: Type, p_effects: Array) -> void:
 	id = p_id
 	name = p_name
@@ -238,6 +249,20 @@ func _init(p_id: String, p_name: String, p_desc: String, p_rarity: Rarity, p_typ
 	rarity = p_rarity
 	type = p_type
 	effects = p_effects
+
+# Builder methods for fluent API
+func with_prerequisites(ids: Array[String]) -> AbilityData:
+	prerequisite_ids = ids
+	is_upgrade = true
+	return self
+
+func with_synergies(ids: Array[String]) -> AbilityData:
+	synergy_ids = ids
+	return self
+
+func as_upgrade() -> AbilityData:
+	is_upgrade = true
+	return self
 
 static func get_rarity_color(rarity: Rarity) -> Color:
 	match rarity:

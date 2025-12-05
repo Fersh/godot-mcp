@@ -2,6 +2,109 @@
 
 ---
 
+## Date: 2025-12-05 - Passive Ability Prerequisite System
+
+### Summary
+Implemented a prerequisite system for passive upgrade abilities, guaranteeing upgrade opportunities every 4 passive levels, and added synergy-based weight boosting for better build cohesion.
+
+### New Features
+
+#### 1. Prerequisite System for Passive Abilities
+Upgrade abilities now require owning at least one prerequisite ability before appearing in selection.
+
+| Upgrade Ability | Requires (any of) |
+|-----------------|-------------------|
+| Orbital Amplifier | blade_orbit, flame_orbit, frost_orbit |
+| Orbital Mastery | orbital_amplifier |
+| Pack Leader | chicken_companion, summoner_aid, any orbital |
+| Momentum Master | rampage, killing_frenzy, massacre |
+| Conductor | lightning_strike_proc, static_charge |
+| Chain Reaction | ignite, frostbite, toxic_tip, lightning_strike_proc, static_charge, chaotic_strikes |
+| Elemental Infusion | ignite, frostbite, toxic_tip, lightning_strike_proc, static_charge, chaotic_strikes |
+| Empathic Bond | any orbital, ring_of_fire, toxic_cloud, tesla_coil |
+
+#### 2. Guaranteed Upgrade Every 4 Passive Levels
+- Tracks `passive_selections_since_upgrade` counter
+- After 4 passive ability selections without an upgrade, guarantees one upgrade slot appears
+- Counter resets when player selects any upgrade ability
+- Counter resets on game restart
+
+#### 3. Synergy Weight Boosting (1.5x / 50%)
+Abilities that synergize with current build get 50% higher selection weight:
+- **Orbital effects** → boosted if player has any orbital
+- **Summon damage** → boosted if player has summons (chicken, skeleton, drone)
+- **Chain Reaction/Conductor** → boosted if player has elemental effects
+- **Momentum Master** → boosted if player has kill streak abilities
+- **Empathic Bond** → boosted if player has auras/orbitals
+
+### Technical Implementation
+
+**AbilityData class** (`ability_data.gd`):
+- Added `prerequisite_ids: Array[String]` - must own at least one
+- Added `synergy_ids: Array[String]` - for soft weight boosting
+- Added `is_upgrade: bool` - marks abilities as upgrades
+- Added fluent builder methods: `with_prerequisites()`, `with_synergies()`, `as_upgrade()`
+
+**AbilityManager** (`ability_manager.gd`):
+- Added `_meets_prerequisites()` check in `get_available_abilities()`
+- Added `_has_synergy_with_current_build()` and `_check_implicit_synergies()`
+- Modified `pick_weighted_random()` to apply synergy boost
+- Modified `acquire_ability()` to track selections and reset counter
+- Added passive selection tracking in `reset()`
+
+### Files Modified
+- `game/scripts/abilities/ability_data.gd` - Prerequisite/synergy fields and builder methods
+- `game/scripts/abilities/ability_manager.gd` - Selection logic, tracking, synergy checks
+- `game/scripts/abilities/passives/orbital_passives.gd` - Prerequisites for Orbital Amplifier, Mastery
+- `game/scripts/abilities/passives/summon_passives.gd` - Prerequisites for Pack Leader
+- `game/scripts/abilities/passives/synergy_passives.gd` - Prerequisites for Momentum Master, Conductor
+- `game/scripts/abilities/passives/elemental_passives.gd` - Prerequisites for Chain Reaction
+- `game/scripts/abilities/passives/legendary_passives.gd` - Prerequisites for Empathic Bond
+- `game/scripts/abilities/ability_database.gd` - Prerequisites for Elemental Infusion
+
+---
+
+## Date: 2025-12-05 - Passive Balance & Mass Ability Implementations
+
+### Summary
+Adjusted passive abilities for balance. Implemented 140+ missing ability tree abilities across all three executors. Disabled Fireball.
+
+### Passive Balance Changes
+
+| Ability | Stat | Before | After |
+|---------|------|--------|-------|
+| Regeneration | Heal Rate | 1% HP every 5 seconds | 1% HP every 2.5 seconds |
+| Time Dilation | Enemy Slow | 20% slower | 10% slower |
+
+### Mass Ability Implementations
+
+Added complete implementations for all missing tier 2 and tier 3 abilities:
+
+| Executor | Trees Implemented | Abilities Added |
+|----------|-------------------|-----------------|
+| Melee | Throw, Taunt, Execute, Block, Impale, Uppercut, Combo, Stomp, Parry, Rampage | ~50 abilities |
+| Ranged | Explosive, Poison, Frost Arrow, Mark, Snipe, Grapple, Boomerang, Net, Ricochet, Barrage, Quickdraw | ~55 abilities |
+| Global | Aura, Shield, Bomb, Drain, Curse, Blink, Thorns | ~35 abilities |
+
+Each ability includes:
+- Damage mechanics with proper scaling
+- Status effects (stun, slow, burn, poison, bleed, etc.)
+- Procedural pixelated visual effects using Polygon2D
+- Screen shake and impact pause for feel
+
+### Fireball Disabled
+- Commented out in `active_ability_database.gd` (standalone ability)
+- Tree already disabled in `ability_tree_registry.gd`
+
+### Files Modified
+- `game/scripts/abilities/ability_database.gd` - Regeneration/Time Dilation values
+- `game/scripts/active_abilities/active_ability_database.gd` - Disabled Fireball
+- `game/scripts/active_abilities/executors/melee_executor.gd` - 10 tree implementations
+- `game/scripts/active_abilities/executors/ranged_executor.gd` - 11 tree implementations
+- `game/scripts/active_abilities/executors/global_executor.gd` - 7 tree implementations
+
+---
+
 ## Date: 2025-12-05 - Global Tree Implementations & Ability Cleanup
 
 ### Summary
