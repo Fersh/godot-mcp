@@ -26,7 +26,12 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.COMBAT_MOMENTUM, value = 0.05}]
 		),
 
-		# Executioner
+		# ============================================
+		# EXECUTIONER UPGRADE CHAIN
+		# Executioner → Cull the Weak → Soul Reaper
+		# ============================================
+
+		# Executioner (Base of chain)
 		AbilityData.new(
 			"executioner",
 			"Executioner",
@@ -34,6 +39,50 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.EXECUTIONER, value = 0.5}]
+		),
+
+		# Cull the Weak (Tier 2 - requires Executioner)
+		AbilityData.new(
+			"cull_the_weak",
+			"Cull the Weak",
+			"Instantly kill enemies under 20% HP",
+			AbilityData.Rarity.EPIC,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.CULL_WEAK, value = 0.2}]
+		).with_prerequisites(["executioner"] as Array[String]).as_upgrade(),
+
+		# Soul Reaper (Tier 3 - requires Cull the Weak)
+		AbilityData.new(
+			"soul_reaper",
+			"Soul Reaper",
+			"Executing low HP enemies heals 2.5% max HP",
+			AbilityData.Rarity.LEGENDARY,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.SOUL_REAPER, value = 0.025}]
+		).with_prerequisites(["cull_the_weak"] as Array[String]).as_upgrade(),
+
+		# ============================================
+		# FINISHER PASSIVES (Standalone)
+		# ============================================
+
+		# Armor Breaker (Melee only)
+		AbilityData.new(
+			"armor_breaker",
+			"Armor Breaker",
+			"Attacks ignore armor on enemies below 30% HP",
+			AbilityData.Rarity.RARE,
+			AbilityData.Type.MELEE_ONLY,
+			[{effect_type = AbilityData.EffectType.ARMOR_BREAKER, value = 0.3}]
+		),
+
+		# Finisher's Instinct
+		AbilityData.new(
+			"finishers_instinct",
+			"Finisher's Instinct",
+			"Guaranteed critical hit on enemies below 40% HP",
+			AbilityData.Rarity.EPIC,
+			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.FINISHERS_INSTINCT, value = 0.4}]
 		),
 
 		# Vengeance

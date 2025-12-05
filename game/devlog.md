@@ -2,12 +2,54 @@
 
 ---
 
+## Date: 2025-12-05 - Execute Tree Migration to Passive Upgrade Chain
+
+### Summary
+Migrated Execute active ability tree to passive abilities, creating an upgrade chain system. This establishes the pattern for future passive ability progression.
+
+### Execute Tree → Passive Upgrade Chain
+
+| Old Active Ability | New Passive | Tier |
+|--------------------|-------------|------|
+| Execute (BASE) | **Executioner** (already existed) | Base |
+| Reaper's Touch (T2-A) | **Cull the Weak** (moved, added prerequisite) | Tier 2 |
+| Soul Harvest (T3-A) | **Soul Reaper** (new) | Tier 3 |
+| Brutal Strike (T2-B) | **Armor Breaker** (new, standalone) | — |
+| Decapitate (T3-B) | **Finisher's Instinct** (new, standalone) | — |
+
+### Upgrade Chain
+
+```
+Executioner (RARE) → Cull the Weak (EPIC) → Soul Reaper (LEGENDARY)
+  +50% dmg <30%       Instant kill <20%      Execute heals 2.5% HP
+```
+
+### New Passives Added
+
+| Passive | Rarity | Type | Effect |
+|---------|--------|------|--------|
+| **Soul Reaper** | LEGENDARY | Passive | Executing low HP enemies heals 2.5% max HP |
+| **Armor Breaker** | RARE | Melee | Attacks ignore armor on enemies below 30% HP |
+| **Finisher's Instinct** | EPIC | Passive | Guaranteed critical hit on enemies below 40% HP |
+
+### New Effect Types
+- `ARMOR_BREAKER` - Ignore armor on low HP targets
+- `FINISHERS_INSTINCT` - Guaranteed crit on low HP targets
+
+### Files Modified
+- `ability_tree_registry.gd` - Commented out ExecuteTree
+- `combat_passives.gd` - Added upgrade chain (Cull the Weak, Soul Reaper) and new passives
+- `ability_database.gd` - Commented out standalone Cull the Weak (moved to chain)
+- `ability_data.gd` - Added ARMOR_BREAKER and FINISHERS_INSTINCT effect types
+
+---
+
 ## Date: 2025-12-05 - Melee Ability Roster Consolidation
 
 ### Summary
-Consolidated the melee ability roster from 19 to 11 active trees by removing redundant abilities and adding new branches to existing trees. Changed Battle Cry from offensive to defensive buff. Migrated Fiery Whirlwind into the main Whirlwind tree. Added Stun-focused branch to Ground Slam.
+Consolidated the melee ability roster from 19 to 10 active trees by removing redundant abilities and adding new branches to existing trees. Changed Battle Cry from offensive to defensive buff. Migrated Fiery Whirlwind into the main Whirlwind tree. Added Stun-focused branch to Ground Slam.
 
-### Trees Commented Out (8 total)
+### Trees Commented Out (9 total)
 
 | Tree | Reason |
 |------|--------|
@@ -17,10 +59,11 @@ Consolidated the melee ability roster from 19 to 11 active trees by removing red
 | **Taunt** | Redundant with defensive Battle Cry |
 | **Impale** | Overlaps with Charge (gap close + pin) |
 | **Uppercut** | Overlaps with Shield Bash (single-target CC) |
+| **Execute** | Migrated to passive upgrade chain (Executioner → Cull the Weak → Soul Reaper) |
 | **Whirlwind (duplicate)** | Merged into SpinTree |
 | **Fireball** | Temporarily disabled |
 
-### Active Melee Trees (11 remaining)
+### Active Melee Trees (10 remaining)
 
 | Tree | Identity |
 |------|----------|
@@ -31,7 +74,6 @@ Consolidated the melee ability roster from 19 to 11 active trees by removing red
 | **Leap** | Aerial engage/disengage |
 | **Battle Cry** | Defensive buff (damage reduction, CC immunity) |
 | **Throw** | Ranged melee option |
-| **Execute** | Finisher vs low HP |
 | **Block** | Active damage mitigation |
 | **Combo** | Multi-hit chain DPS |
 | **War Cry (Roar)** | Offensive buff (attack speed, damage) |

@@ -36,7 +36,7 @@ static func _register_all_trees() -> void:
 	_register_tree(ShoutTree.create())
 	_register_tree(ThrowTree.create())
 	# _register_tree(TauntTree.create())  # Commented out - redundant with defensive Battle Cry
-	_register_tree(ExecuteTree.create())
+	# _register_tree(ExecuteTree.create())  # Commented out - migrated to passive upgrade chain (Executioner → Cull the Weak → Soul Reaper)
 	_register_tree(BlockTree.create())
 	# _register_tree(ImpaleTree.create())  # Commented out - consolidating melee roster
 	# _register_tree(UppercutTree.create())  # Commented out - consolidating melee roster

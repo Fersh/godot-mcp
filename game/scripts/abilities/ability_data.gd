@@ -213,6 +213,10 @@ enum EffectType {
 	# Scaling Effects (New)
 	GETTING_WARMED_UP,  # +5% attack speed every 30s
 	INTIMIDATING_PRESENCE, # Fear enemies on sight
+
+	# Execute/Finisher Effects
+	ARMOR_BREAKER,      # Ignore armor on low HP enemies
+	FINISHERS_INSTINCT, # Guaranteed crit on low HP enemies
 }
 
 # Rarity weights for random selection (out of 100)

@@ -369,14 +369,15 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.TESLA_COIL, value = 10.0}]  # damage
 		),
-		AbilityData.new(
-			"cull_the_weak",
-			"Cull the Weak",
-			"Instantly kill enemies under 20% HP",
-			AbilityData.Rarity.EPIC,
-			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.CULL_WEAK, value = 0.2}]
-		),
+		# Cull the Weak moved to combat_passives.gd as part of Executioner upgrade chain
+		# AbilityData.new(
+		# 	"cull_the_weak",
+		# 	"Cull the Weak",
+		# 	"Instantly kill enemies under 20% HP",
+		# 	AbilityData.Rarity.EPIC,
+		# 	AbilityData.Type.PASSIVE,
+		# 	[{effect_type = AbilityData.EffectType.CULL_WEAK, value = 0.2}]
+		# ),
 		AbilityData.new(
 			"ring_of_fire",
 			"Ring of Fire",
