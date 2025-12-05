@@ -42,8 +42,8 @@ var acquired_ability_ids: Array[String] = []
 # Tree upgrade tracking - maps base_ability_id -> current_ability_id
 var acquired_tree_abilities: Dictionary = {}
 
-# Chance for upgrades to appear in selection (40%)
-const UPGRADE_CHANCE: float = 0.40
+# Chance for upgrades to appear in selection (50%)
+const UPGRADE_CHANCE: float = 0.50
 
 func _ready() -> void:
 	# Add to group so AbilityManager can find us for cooldown reduction
