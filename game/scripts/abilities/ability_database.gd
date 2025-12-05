@@ -597,13 +597,10 @@ static func get_melee_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"heavy_blade",
 			"Heavy Blade",
-			"+50% Area (Swing Size), +20% Damage",
+			"+25% swing size",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.MELEE_ONLY,
-			[
-				{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.5},
-				{effect_type = AbilityData.EffectType.DAMAGE, value = 0.2}
-			]
+			[{effect_type = AbilityData.EffectType.MELEE_AREA, value = 0.25}]
 		),
 		AbilityData.new(
 			"quick_slash",

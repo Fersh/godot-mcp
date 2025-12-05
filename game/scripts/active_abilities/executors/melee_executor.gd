@@ -673,10 +673,16 @@ func _execute_slam_earthquake(ability: ActiveAbilityData, player: Node2D) -> voi
 	var damage = _get_damage(ability)
 
 	# SIGNATURE: Damage the entire battlefield over time
-	var quake = _spawn_effect("earthquake", player.global_position)
-	if quake and quake.has_method("setup"):
+	var earthquake_scene = load("res://scripts/active_abilities/effects/earthquake_effect.gd")
+	if earthquake_scene:
+		var quake = Node2D.new()
+		quake.set_script(earthquake_scene)
+		quake.global_position = player.global_position
+		player.get_parent().add_child(quake)
+		# Setup: damage, radius, duration, stun_duration
 		quake.setup(damage, ability.radius, ability.duration, ability.stun_duration)
 
+	_spawn_effect("ground_slam", player.global_position)  # Visual feedback
 	_play_sound("earthquake")
 	_screen_shake("large")
 	_impact_pause(0.2)

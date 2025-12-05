@@ -23,10 +23,10 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"guardian_heart",
 			"Guardian's Heart",
-			"+50% healing received",
+			"+20% healing received",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.GUARDIAN_HEART, value = 0.5}]
+			[{effect_type = AbilityData.EffectType.GUARDIAN_HEART, value = 0.2}]
 		),
 
 		# Overheal Shield

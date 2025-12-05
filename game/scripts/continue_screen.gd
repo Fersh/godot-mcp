@@ -130,21 +130,21 @@ func _create_ui() -> void:
 	button_container.modulate.a = 0  # Start invisible
 	vbox.add_child(button_container)
 
-	# YES button
-	yes_button = Button.new()
-	yes_button.text = "YES"
-	yes_button.custom_minimum_size = Vector2(150, 60)
-	yes_button.pressed.connect(_on_yes_pressed)
-	_style_button(yes_button, Color(0.2, 0.7, 0.3), Color(0.1, 0.5, 0.2))
-	button_container.add_child(yes_button)
-
-	# NO button
+	# NO button (left side)
 	no_button = Button.new()
 	no_button.text = "NO"
 	no_button.custom_minimum_size = Vector2(150, 60)
 	no_button.pressed.connect(_on_no_pressed)
 	_style_button(no_button, Color(0.7, 0.2, 0.2), Color(0.5, 0.1, 0.1))
 	button_container.add_child(no_button)
+
+	# YES button (right side)
+	yes_button = Button.new()
+	yes_button.text = "YES"
+	yes_button.custom_minimum_size = Vector2(150, 60)
+	yes_button.pressed.connect(_on_yes_pressed)
+	_style_button(yes_button, Color(0.2, 0.7, 0.3), Color(0.1, 0.5, 0.2))
+	button_container.add_child(yes_button)
 
 func _style_button(button: Button, bg_color: Color, border_color: Color) -> void:
 	var style = StyleBoxFlat.new()

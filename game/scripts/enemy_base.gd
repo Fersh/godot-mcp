@@ -695,9 +695,8 @@ func die() -> void:
 	if SoundManager:
 		SoundManager.play_enemy_death()
 
-	# Micro hitstop and zoom punch on crit kills for impact
+	# Zoom punch on crit kills for visual impact (no freeze frame)
 	if died_from_crit and JuiceManager:
-		JuiceManager.hitstop_micro()
 		JuiceManager.zoom_punch_large()
 
 	# Don't reset flash - let it fade naturally for satisfying hit feedback
