@@ -1020,12 +1020,13 @@ func spawn_shield_gain_number(player: Node2D, amount: float) -> void:
 	if dmg_num.has_method("set_shield_gain"):
 		dmg_num.set_shield_gain(amount)
 
-# Get random abilities for level up selection (passives + active upgrades mixed)
+# Get random abilities for level up selection (passives + active upgrade trigger cards)
 func get_random_abilities(count: int = 3) -> Array:
-	## Returns mixed array of AbilityData (passives) and ActiveAbilityData (upgrades)
+	## Returns mixed array of AbilityData (passives) and trigger card Dictionaries (for active upgrades)
 	var available_passives = get_available_abilities()
-	var available_upgrades = _get_active_ability_upgrades()
+	var available_triggers = _get_all_active_upgrade_triggers()  # Get trigger cards, not raw upgrades
 	var choices: Array = []
+	var used_trigger_ability_ids: Array[String] = []  # Track which abilities we've added triggers for
 
 	# Check if we need to guarantee an upgrade ability (passive upgrade, not active ability upgrade)
 	var need_guaranteed_upgrade = passive_selections_since_upgrade >= GUARANTEED_UPGRADE_INTERVAL
@@ -1042,17 +1043,20 @@ func get_random_abilities(count: int = 3) -> Array:
 				passive_upgrade_included = true
 
 	for i in range(count - choices.size()):
-		if available_passives.size() == 0 and available_upgrades.size() == 0:
+		if available_passives.size() == 0 and available_triggers.size() == 0:
 			break
 
-		# Roll for active ability upgrade (50% chance if upgrades available)
-		var use_active_upgrade = available_upgrades.size() > 0 and randf() < 0.50
+		# Roll for active ability upgrade trigger (50% chance if triggers available)
+		var use_active_upgrade = available_triggers.size() > 0 and randf() < 0.50
 
 		if use_active_upgrade:
-			# Pick random active ability upgrade
-			var upgrade = available_upgrades[randi() % available_upgrades.size()]
-			choices.append(upgrade)
-			available_upgrades.erase(upgrade)
+			# Pick a trigger card (shows current ability, click to see upgrade options)
+			var trigger = available_triggers[0]
+			choices.append(trigger)
+			available_triggers.erase(trigger)
+			# Track this ability so we don't add multiple triggers for same ability
+			if trigger.ability:
+				used_trigger_ability_ids.append(trigger.ability.id)
 		elif available_passives.size() > 0:
 			# Pick weighted passive (with synergy boost)
 			var ability = pick_weighted_random(available_passives, true)
@@ -1061,11 +1065,11 @@ func get_random_abilities(count: int = 3) -> Array:
 				available_passives.erase(ability)
 				if ability.is_upgrade:
 					passive_upgrade_included = true
-		elif available_upgrades.size() > 0:
-			# Fallback to active upgrade if no passives left
-			var upgrade = available_upgrades[randi() % available_upgrades.size()]
-			choices.append(upgrade)
-			available_upgrades.erase(upgrade)
+		elif available_triggers.size() > 0:
+			# Fallback to trigger if no passives left
+			var trigger = available_triggers[0]
+			choices.append(trigger)
+			available_triggers.erase(trigger)
 
 	# Shuffle to randomize positions
 	choices.shuffle()

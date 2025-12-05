@@ -102,15 +102,17 @@ func _process(delta: float) -> void:
 			button.disabled = false
 
 func show_choices(abilities: Array) -> void:
-	## Show ability choices - can be mixed AbilityData (passives) and ActiveAbilityData (upgrades)
+	## Show ability choices - can be mixed AbilityData (passives) and trigger card Dictionaries
 	# Debug: print what we're receiving
 	print("[SHOW_CHOICES] Received ", abilities.size(), " abilities:")
 	for i in abilities.size():
 		var a = abilities[i]
-		if a is Dictionary:
-			print("  [", i, "] TRIGGER CARD for: ", a.get("ability", {}).get("name", "UNKNOWN"))
+		if a is Dictionary and a.has("is_trigger"):
+			var trigger_ability = a.get("ability")
+			var ability_name = trigger_ability.name if trigger_ability else "UNKNOWN"
+			print("  [", i, "] TRIGGER CARD for: ", ability_name)
 		elif a is ActiveAbilityData:
-			print("  [", i, "] ActiveAbility: ", a.name)
+			print("  [", i, "] ActiveAbility: ", a.name, " (should be trigger card!)")
 		elif a is AbilityData:
 			print("  [", i, "] Passive: ", a.name)
 		else:

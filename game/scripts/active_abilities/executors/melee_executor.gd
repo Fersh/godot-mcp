@@ -1527,33 +1527,55 @@ func _execute_throw_weapon(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_throw_ricochet(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Weapon bounces between 4 enemies"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
 
-	var proj = _spawn_effect("ricochet_blade", player.global_position)
-	if proj and proj.has_method("setup"):
-		proj.setup(direction, ability.projectile_speed, damage, 4)  # 4 bounces
+	# Get enemies for the blade to bounce between
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance * 1.5)
+
+	# Sort by distance to prioritize nearest enemies first
+	enemies.sort_custom(func(a, b):
+		return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position)
+	)
+
+	# Limit to 4 bounce targets
+	enemies = enemies.slice(0, 4)
+
+	if enemies.size() > 0:
+		var proj = _spawn_effect("ricochet_blade", player.global_position)
+		if proj and proj.has_method("setup"):
+			proj.setup(player.global_position, enemies, damage, 4)
 	else:
-		# Fallback: hit up to 4 enemies
-		var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
-		enemies = enemies.slice(0, 4)
-		for enemy in enemies:
-			_deal_damage_to_enemy(enemy, damage)
+		# No enemies - spawn effect anyway for visual feedback
+		var direction = _get_attack_direction(player)
+		var proj = _spawn_effect("ricochet_blade", player.global_position)
+		if proj and proj.has_method("setup"):
+			proj.setup(player.global_position, [], damage, 4)
 
 	_play_sound("throw")
 
 func _execute_throw_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: 6 orbiting blades for 8 seconds"""
+	"""Tier 3 SIGNATURE: Bouncing Throw Weapon of Storms
+	Combines bouncing blade (4 enemies) with sustained orbiting blades (8 seconds)"""
 	var damage = _get_damage(ability)
 
-	# Spawn 6 orbiting blades
-	for i in range(6):
-		var angle = i * TAU / 6
-		var blade = _spawn_effect("orbital_blades", player.global_position)
-		if blade and blade.has_method("setup"):
-			blade.setup(player, damage, ability.radius, ability.duration, angle)
+	# PART 1: Throw the bouncing blade at 4 enemies
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance * 1.5)
+	enemies.sort_custom(func(a, b):
+		return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position)
+	)
+	enemies = enemies.slice(0, 4)
+
+	if enemies.size() > 0:
+		var ricochet = _spawn_effect("ricochet_blade", player.global_position)
+		if ricochet and ricochet.has_method("setup"):
+			ricochet.setup(player.global_position, enemies, damage, 4)
+
+	# PART 2: Spawn sustained orbiting blades around player for 8 seconds
+	var orbital_blades = _spawn_effect("sustained_orbital_blades", player.global_position)
+	if orbital_blades and orbital_blades.has_method("setup"):
+		var orbit_radius = ability.radius if ability.radius > 0 else 80.0
+		var orbit_duration = ability.duration if ability.duration > 0 else 8.0
+		var orbit_dps = damage * 0.5  # 50% of ability damage as DPS for the orbit
+		orbital_blades.setup(player, orbit_dps, orbit_radius, orbit_duration)
 
 	_play_sound("bladestorm")
 	_screen_shake("medium")

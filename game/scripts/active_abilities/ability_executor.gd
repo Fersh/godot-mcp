@@ -688,6 +688,8 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Throw T3
 		"orbital_blades":
 			return "orbital_blades_pixel"
+		"sustained_orbital_blades":
+			return "sustained_orbital_blades"
 		"impaler":
 			return "impaler_pixel"
 		# Roar T3
