@@ -138,7 +138,7 @@ static func get_abilities() -> Array[AbilityData]:
 			"cooldown_killer",
 			"Cooldown Killer",
 			"Kills reduce active ability cooldowns by 1s",
-			AbilityData.Rarity.EPIC,
+			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 1.0}]
 		),

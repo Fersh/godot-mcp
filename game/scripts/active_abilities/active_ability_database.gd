@@ -161,7 +161,7 @@ static func _register_all_abilities() -> void:
 	# NEW ABILITIES - STEALTH & DECEPTION
 	# ============================================
 	# _register(_create_smoke_bomb())  # Removed - now Smoke Tree BASE (ranged)
-	_register(_create_now_you_see_me())
+	# _register(_create_now_you_see_me())  # Disabled - needs rework
 	_register(_create_pocket_sand())
 
 	# ============================================

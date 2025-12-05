@@ -402,14 +402,15 @@ func _on_gui_input(event: InputEvent) -> void:
 		else:
 			# Touch released
 			is_touch_held = false
+			# Always hide tooltip on release
+			_hide_tooltip()
 			if skillshot_active:
 				# Skillshot was active - fire with aim direction
 				_fire_skillshot()
 				_hide_aim_indicator()
 				skillshot_active = false
 			elif touch_triggered_tooltip:
-				# Was showing tooltip, hide it and don't trigger ability
-				_hide_tooltip()
+				# Was showing tooltip, don't trigger ability
 				touch_triggered_tooltip = false
 			else:
 				# Quick tap, trigger ability with auto-aim
@@ -448,6 +449,8 @@ func _on_gui_input(event: InputEvent) -> void:
 			else:
 				# Mouse released
 				is_touch_held = false
+				# Always hide tooltip on release
+				_hide_tooltip()
 				if skillshot_active:
 					_fire_skillshot()
 					_hide_aim_indicator()
