@@ -878,8 +878,10 @@ func _execute_slam_seismic(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_stun(enemy, ability.stun_duration)
 
-	# Spawn wave effects
-	_spawn_effect("seismic_wave", player.global_position)
+	# Spawn pixelated wave effect
+	var effect = _spawn_effect("seismic_wave", player.global_position)
+	if effect and effect.has_method("setup"):
+		effect.setup(ability.radius, ability.duration)
 	_play_sound("seismic_slam")
 	_screen_shake("medium")
 
@@ -887,8 +889,8 @@ func _execute_slam_earthquake(ability: ActiveAbilityData, player: Node2D) -> voi
 	"""Tier 3 SIGNATURE: Screen-wide seismic devastation"""
 	var damage = _get_damage(ability)
 
-	# SIGNATURE: Damage the entire battlefield over time
-	var earthquake_scene = load("res://scripts/active_abilities/effects/earthquake_effect.gd")
+	# SIGNATURE: Damage the entire battlefield over time - use pixelated earthquake effect
+	var earthquake_scene = load("res://scripts/active_abilities/effects/earthquake_pixel_effect.gd")
 	if earthquake_scene:
 		var quake = Node2D.new()
 		quake.set_script(earthquake_scene)
@@ -897,7 +899,6 @@ func _execute_slam_earthquake(ability: ActiveAbilityData, player: Node2D) -> voi
 		# Setup: damage, radius, duration, stun_duration
 		quake.setup(damage, ability.radius, ability.duration, ability.stun_duration)
 
-	_spawn_effect("ground_slam", player.global_position)  # Visual feedback
 	_play_sound("earthquake")
 	_screen_shake("large")
 	_impact_pause(0.2)
@@ -944,7 +945,10 @@ func _execute_slam_meteor(ability: ActiveAbilityData, player: Node2D) -> void:
 		_apply_stun(enemy, ability.stun_duration)
 		_apply_knockback(enemy, (enemy.global_position - target_pos).normalized(), ability.knockback_force)
 
-	_spawn_effect("meteor_slam", target_pos)
+	# Spawn pixelated meteor slam effect
+	var effect = _spawn_effect("meteor_slam", target_pos)
+	if effect and effect.has_method("setup"):
+		effect.setup(ability.radius, 0.8)
 	_play_sound("meteor_impact")
 	_screen_shake("large")
 	_impact_pause(0.25)

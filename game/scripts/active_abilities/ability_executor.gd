@@ -419,8 +419,20 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"whirlwind":
 			return "tornado"
 
+		# Ground Slam effects (pixelated)
+		"ground_slam":
+			return "ground_slam_pixel"
+		"seismic_wave":
+			return "seismic_wave"
+		"burning_crater":
+			return "burning_crater"
+		"earthquake":
+			return "earthquake_pixel"
+		"meteor_slam":
+			return "meteor_slam"
+
 		# Impact/Smoke effects
-		"ground_slam", "savage_leap_landing", "earthquake":
+		"savage_leap_landing":
 			return "impact_smoke"
 		"shield_bash", "punch":
 			return "punch_impact"
@@ -498,10 +510,7 @@ func _configure_spawned_effect(effect: Node, effect_id: String) -> void:
 			if effect.has_method("set_size_from_string"):
 				effect.set_size_from_string("small")
 
-		# Configure impact types
-		"ground_slam", "earthquake":
-			if effect.has_method("set_impact_type"):
-				effect.impact_type = 2  # BIG_SMOKE
+		# Configure impact types (legacy - ground_slam now uses pixel effect)
 		"savage_leap_landing":
 			if effect.has_method("set_impact_type"):
 				effect.impact_type = 3  # DUST_KICK
@@ -698,7 +707,9 @@ func _execute_ground_slam(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_slow_to_enemy(enemy, ability.slow_percent, ability.slow_duration)
 
-	_spawn_effect("ground_slam", player.global_position)
+	var effect = _spawn_effect("ground_slam", player.global_position)
+	if effect and effect.has_method("setup"):
+		effect.setup(ability.radius, 0.4)
 	_play_sound("ground_slam")
 	_screen_shake("medium")
 	_impact_pause()
