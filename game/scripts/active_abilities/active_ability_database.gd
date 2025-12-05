@@ -84,7 +84,7 @@ static func _register_all_abilities() -> void:
 	# MELEE - LEGENDARY
 	# ============================================
 	_register(_create_earthquake())
-	_register(_create_bladestorm())
+	# bladestorm removed - now part of spin_tree as spin_bladestorm (T3)
 	_register(_create_omnislash())
 	_register(_create_avatar_of_war())
 	_register(_create_divine_shield())
@@ -193,7 +193,7 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# NEW ABILITIES - CROWD CONTROL
 	# ============================================
-	_register(_create_vortex())
+	# vortex removed - now part of spin_tree as spin_vortex (T2)
 	_register(_create_repulsive())
 	_register(_create_dj_drop())
 
@@ -333,16 +333,7 @@ static func _create_earthquake() -> ActiveAbilityData:
 		38.0
 	).with_damage(50.0, 2.0).with_aoe(350.0).with_stun(1.8).with_duration(2.0).with_icon("res://assets/icons/abilities/earthquake.png")
 
-static func _create_bladestorm() -> ActiveAbilityData:
-	return ActiveAbilityData.new(
-		"bladestorm",
-		"Bladestorm",
-		"Spin at high speed for 4 seconds, dragging enemies in a vortex of blades.",
-		ActiveAbilityData.Rarity.EPIC,
-		ActiveAbilityData.ClassType.MELEE,
-		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
-		30.0
-	).with_damage(15.0, 1.8).with_aoe(160.0).with_duration(4.0).with_movement().with_icon("res://assets/sprites/icons/swordsmanskills/PNG/Icon30.png")
+# _create_bladestorm removed - now part of spin_tree as spin_bladestorm (T3)
 
 static func _create_omnislash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -1014,16 +1005,7 @@ static func _create_i_see_red() -> ActiveAbilityData:
 # NEW ABILITY CREATORS - CROWD CONTROL
 # ============================================
 
-static func _create_vortex() -> ActiveAbilityData:
-	return ActiveAbilityData.new(
-		"vortex",
-		"Vortex",
-		"Create a swirling vortex that pulls enemies toward the center for 4 seconds.",
-		ActiveAbilityData.Rarity.RARE,
-		ActiveAbilityData.ClassType.GLOBAL,
-		ActiveAbilityData.TargetType.CLUSTER,
-		16.0
-	).with_aoe(220.0).with_duration(4.0).with_damage(40.0, 1.5).with_icon("res://assets/icons/abilities/vortex.png")
+# _create_vortex removed - now part of spin_tree as spin_vortex (T2)
 
 static func _create_repulsive() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

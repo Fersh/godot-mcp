@@ -49,10 +49,10 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"quick_reflexes",
 			"Quick Reflexes",
-			"Active ability cooldowns reduced by 15%",
+			"Active ability cooldowns reduced by 10%",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.QUICK_REFLEXES, value = 0.15}]
+			[{effect_type = AbilityData.EffectType.QUICK_REFLEXES, value = 0.10}]
 		),
 		AbilityData.new(
 			"swift_dodge",

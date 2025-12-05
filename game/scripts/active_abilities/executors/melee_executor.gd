@@ -522,32 +522,41 @@ func _execute_spinning_attack(ability: ActiveAbilityData, player: Node2D) -> voi
 	_play_sound("swing")
 
 func _execute_spin_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Sustained spinning with pull - uses base spin effect"""
+	"""Tier 2: Sustained spinning with pull - creates a vortex that pulls enemies"""
 	var damage = _get_damage(ability)
-	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
-	for enemy in enemies:
-		_deal_damage_to_enemy(enemy, damage)
-		# Pull enemies toward player
-		var pull_dir = (player.global_position - enemy.global_position).normalized()
-		_apply_knockback(enemy, pull_dir, 50.0)
+	# Spawn sustained vortex effect that pulls enemies over time
+	var vortex_scene = load("res://scripts/active_abilities/effects/vortex_effect.gd")
+	if vortex_scene:
+		var vortex = Node2D.new()
+		vortex.set_script(vortex_scene)
+		vortex.global_position = player.global_position
+		player.get_parent().add_child(vortex)
+		# Setup: duration, radius, damage per second, pull strength, follow target (null = stationary)
+		vortex.setup(ability.duration, ability.radius, damage / ability.duration, 120.0, null)
 
-	# Use base spin effect
 	_spawn_effect("spin", player.global_position)
 	_play_sound("swing")
 
 func _execute_spin_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Move freely while spinning - enhanced spin effect"""
+	"""Tier 3 SIGNATURE: Move freely while spinning - vortex follows player"""
 	var damage = _get_damage(ability)
-	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
-	for enemy in enemies:
-		_deal_damage_to_enemy(enemy, damage)
-		# Pull enemies toward player (stronger pull than vortex)
-		var pull_dir = (player.global_position - enemy.global_position).normalized()
-		_apply_knockback(enemy, pull_dir, 80.0)
+	# Spawn sustained vortex effect that follows the player and pulls enemies
+	var vortex_scene = load("res://scripts/active_abilities/effects/vortex_effect.gd")
+	if vortex_scene:
+		var vortex = Node2D.new()
+		vortex.set_script(vortex_scene)
+		vortex.global_position = player.global_position
+		player.get_parent().add_child(vortex)
+		# Setup: duration, radius, damage per second, pull strength, follow target (player)
+		# Stronger pull and follows player for bladestorm
+		vortex.setup(ability.duration, ability.radius, damage / ability.duration, 180.0, player)
 
-	# Use base spin effect
+	# Trigger bladestorm animation on player if available
+	if player.has_method("start_bladestorm"):
+		player.start_bladestorm(ability.duration)
+
 	_spawn_effect("spin", player.global_position)
 	_play_sound("swing")
 	_screen_shake("small")

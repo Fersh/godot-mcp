@@ -399,15 +399,9 @@ func _style_button_for_ability(button: Button, ability) -> void:
 	var is_upgrade = _is_active_ability_upgrade(ability)
 
 	if is_upgrade:
-		# Upgrade cards get special styling
-		if ability.is_signature():
-			# Gold border/tint for T3 signatures
-			style.bg_color = Color(0.18, 0.15, 0.08, 0.98)
-			style.border_color = Color(1.0, 0.85, 0.3)
-		else:
-			# Green border/tint for T2 upgrades
-			style.bg_color = Color(0.08, 0.18, 0.1, 0.98)
-			style.border_color = Color(0.2, 0.9, 0.3)
+		# Upgrade cards get green styling (both T2 and T3)
+		style.bg_color = Color(0.08, 0.18, 0.1, 0.98)
+		style.border_color = Color(0.2, 0.9, 0.3)
 		style.set_border_width_all(4)  # Thicker border for upgrades
 	else:
 		# Standard passive ability styling
@@ -1313,14 +1307,15 @@ func _create_tier_diamond(tier_num: int, current_tier: int) -> Control:
 	diamond.pivot_offset = Vector2(6, 6)
 
 	var green = Color(0.2, 0.93, 0.35)  # Bright green
+	var yellow = Color(1.0, 0.85, 0.2)  # Yellow for flashing
 	var dark = Color(0.2, 0.2, 0.2)     # Dark/empty
 
 	if tier_num < current_tier:
 		# Filled diamond (previous tiers)
 		diamond.color = green
 	elif tier_num == current_tier:
-		# Flashing diamond (current upgrade tier)
-		diamond.color = green
+		# Flashing diamond (current upgrade tier) - yellow
+		diamond.color = yellow
 		diamond.name = "FlashingDiamond"
 		# Add flashing animation
 		var tween = container.create_tween()

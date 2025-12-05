@@ -148,7 +148,7 @@ enum EffectType {
 	PANDEMONIUM,        # Double spawns, double damage
 
 	# Active Ability Synergy Effects
-	QUICK_REFLEXES,     # Reduce all active ability cooldowns by 15%
+	QUICK_REFLEXES,     # Reduce all active ability cooldowns by 10%
 	ADRENALINE_SURGE,   # Taking damage reduces active cooldowns by 0.5s
 	EMPOWERED_ABILITIES, # Active abilities deal 20% more damage
 	ELEMENTAL_INFUSION, # Active abilities apply your elemental effects
