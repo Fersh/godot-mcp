@@ -93,9 +93,20 @@ func _on_duration_finished() -> void:
 func set_holy_type(type: HolyType) -> void:
 	holy_type = type
 
-func setup(ability_duration: float, ability_scale: float = 1.5) -> void:
-	duration = ability_duration
-	effect_scale = ability_scale
+func setup(arg1: float, arg2: float = 1.5, arg3: float = -1.0, arg4: float = -1.0) -> void:
+	# Support multiple call signatures:
+	# setup(duration, scale) - original
+	# setup(heal_per_tick, radius, duration) - healing aura
+	# setup(heal_per_tick, radius, duration, damage_reduction) - sanctuary
+	if arg3 > 0:
+		# Healing aura mode: arg1=heal, arg2=radius, arg3=duration, arg4=DR (optional)
+		duration = arg3
+		effect_scale = arg2 / 100.0  # Convert radius to scale
+	else:
+		# Original mode: arg1=duration, arg2=scale
+		duration = arg1
+		effect_scale = arg2
+
 	# If setup is called before _ready completes, mark as done and setup now
 	if not _setup_done:
 		_setup_done = true
