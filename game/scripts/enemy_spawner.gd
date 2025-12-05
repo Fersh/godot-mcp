@@ -40,6 +40,13 @@ const SCALING_START_TIME: float = 150.0  # 2.5 minutes
 const SCALING_INTERVAL: float = 150.0    # Every 2.5 minutes after that
 const SCALING_BONUS: float = 0.10        # 10% more spawns per interval
 
+# Time-based spawn curve - shifts intensity toward late game
+# Early game has fewer spawns, late game ramps up beyond base difficulty
+const SPAWN_CURVE_BASE: float = 0.5        # Start at 50% spawn rate
+const SPAWN_CURVE_FULL_TIME: float = 450.0 # 7.5 minutes to reach 100%
+const SPAWN_CURVE_EXPONENT: float = 2.0    # Quadratic curve (shifts intensity late)
+const SPAWN_CURVE_MAX: float = 1.5         # Cap at 150% in very late game
+
 var spawn_timer: float = 0.0
 var game_time: float = 0.0
 
@@ -228,8 +235,11 @@ func _process(delta: float) -> void:
 	var current_interval = lerp(initial_spawn_interval, final_spawn_interval, ramp_progress)
 
 	# Apply difficulty spawn rate multiplier (lower interval = faster spawns)
+	# Also apply time-based curve to shift intensity toward late game
 	if DifficultyManager:
-		current_interval /= DifficultyManager.get_spawn_rate_multiplier()
+		var difficulty_mult = DifficultyManager.get_spawn_rate_multiplier()
+		var time_mult = get_time_spawn_multiplier()
+		current_interval /= (difficulty_mult * time_mult)
 
 	# Apply Horde Mode curse (even faster spawns)
 	if CurseEffects:
@@ -278,6 +288,14 @@ func spawn_enemy() -> void:
 			scene = get_scene_for_type(enemy_type)
 			if scene == null:
 				continue
+
+func get_time_spawn_multiplier() -> float:
+	"""Time-based spawn rate curve - lower early game, higher late game.
+	Returns multiplier: 0.5 at start, 1.0 at 7.5 min, up to 1.5 in late game."""
+	var progress = game_time / SPAWN_CURVE_FULL_TIME
+	var curved = pow(min(progress, 1.5), SPAWN_CURVE_EXPONENT)
+	return clamp(SPAWN_CURVE_BASE + (1.0 - SPAWN_CURVE_BASE) * curved,
+				 SPAWN_CURVE_BASE, SPAWN_CURVE_MAX)
 
 func get_spawn_count() -> int:
 	"""Calculate how many enemies to spawn based on time scaling."""

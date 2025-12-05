@@ -2,6 +2,64 @@
 
 ---
 
+## Date: 2025-12-05 - Spawn Rate Curve & Options Updates
+
+### Summary
+Implemented time-based spawn rate curve to shift difficulty intensity toward late game. Added Damage Numbers toggle to options. Added summon prerequisite to Survivor's Guilt. Updated Rain of Arrows with falling arrow visuals.
+
+### 1. Time-Based Spawn Rate Curve
+
+**Problem:** On higher difficulties (Easy+), early game (~2.5 min) felt overwhelming while late game didn't scale further.
+
+**Solution:** Quadratic spawn curve that starts at 50% spawn rate and ramps to 100% at 7.5 minutes, then continues to 150% in late game.
+
+| Time | Spawn Rate Multiplier |
+|------|----------------------|
+| 0 min | 50% |
+| 2.5 min | ~60% |
+| 5 min | ~80% |
+| 7.5 min | 100% |
+| 10 min | ~125% |
+| 15 min | 150% (capped) |
+
+**Implementation:** Added `get_time_spawn_multiplier()` in `enemy_spawner.gd` using quadratic curve:
+```gdscript
+const SPAWN_CURVE_BASE: float = 0.5        # Start at 50%
+const SPAWN_CURVE_FULL_TIME: float = 450.0 # 7.5 min to reach 100%
+const SPAWN_CURVE_EXPONENT: float = 2.0    # Quadratic curve
+const SPAWN_CURVE_MAX: float = 1.5         # Cap at 150%
+```
+
+### 2. Damage Numbers Toggle
+
+Added new option to disable damage number popups for performance/preference.
+
+**Files Modified:**
+- `game_settings.gd` - Added `damage_numbers_enabled` setting
+- `pause_menu.gd` - Added toggle UI
+- `main_menu.gd` - Added toggle UI
+- `enemy_base.gd` - Check setting in `spawn_damage_number()`
+- `player.gd` - Check setting in `spawn_damage_number()` and `spawn_blocked_damage_number()`
+- `arrow.gd` - Check `status_text_enabled` for elemental status text (BURN, ZAP, etc.)
+
+### 3. Survivor's Guilt Prerequisite
+
+Added summon ability prerequisite to Survivor's Guilt passive. Now requires one of:
+- chicken_companion, summoner_aid, drone_support, blade_orbit, flame_orbit, frost_orbit
+
+**File Modified:** `chaos_passives.gd`
+
+### 4. Rain of Arrows Falling Arrow Visuals
+
+Applied satisfying falling arrow visual effect to all Rain of Arrows tree abilities:
+- Added `_spawn_falling_arrow_visual()` and `_spawn_arrow_impact_visual()` helpers
+- Updated `_spawn_storm_arrow()`, `_execute_rain_apocalypse()`, `_execute_rain_focused()`
+- Arrows fall from sky with rotation, golden tint, TRANS_QUAD acceleration, dust particle impacts
+
+**File Modified:** `ranged_executor.gd`
+
+---
+
 ## Date: 2025-12-05 - Passive Ability Prerequisite System
 
 ### Summary

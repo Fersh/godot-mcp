@@ -734,15 +734,22 @@ func _show_settings_panel() -> void:
 	title.add_theme_color_override("font_color", Color.WHITE)
 	settings_panel.add_child(title)
 
-	# Options container
+	# Scroll container for options
+	var scroll_container = ScrollContainer.new()
+	scroll_container.set_anchors_preset(Control.PRESET_CENTER)
+	scroll_container.offset_left = -170
+	scroll_container.offset_top = -230
+	scroll_container.offset_right = 170
+	scroll_container.offset_bottom = 200
+	scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	settings_panel.add_child(scroll_container)
+
+	# Options container inside scroll
 	var options_container = VBoxContainer.new()
-	options_container.set_anchors_preset(Control.PRESET_CENTER)
-	options_container.offset_left = -170
-	options_container.offset_top = -230
-	options_container.offset_right = 170
-	options_container.offset_bottom = 180
+	options_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	options_container.add_theme_constant_override("separation", 20)
-	settings_panel.add_child(options_container)
+	scroll_container.add_child(options_container)
 
 	# Music toggle
 	_create_toggle_option(options_container, "Music", GameSettings.music_enabled, func(toggled): GameSettings.set_music_enabled(toggled))
@@ -793,9 +800,9 @@ func _show_settings_panel() -> void:
 	close_button.custom_minimum_size = Vector2(200, 50)
 	close_button.set_anchors_preset(Control.PRESET_CENTER)
 	close_button.offset_left = -100
-	close_button.offset_top = 230
+	close_button.offset_top = 220
 	close_button.offset_right = 100
-	close_button.offset_bottom = 280
+	close_button.offset_bottom = 270
 	if pixel_font:
 		close_button.add_theme_font_override("font", pixel_font)
 	close_button.add_theme_font_size_override("font_size", 16)
