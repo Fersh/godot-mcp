@@ -412,9 +412,9 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Slash/Melee effects
 		"cleave":
 			return "cleave"
-		"slash", "omnislash":
+		"slash":
 			return "slash"
-		"spinning_attack", "bladestorm":
+		"spinning_attack":
 			return "firespin"
 		"whirlwind":
 			return "tornado"
@@ -628,7 +628,7 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Cleave T3
 		"guillotine":
 			return "guillotine_pixel"
-		"shockwave_cleave":
+		"shockwave_cleave", "shockwave":
 			return "shockwave_cleave_pixel"
 		# Charge T3
 		"stampede":
@@ -641,7 +641,7 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"inferno_tornado":
 			return "inferno_tornado_pixel"
 		# Spin T3
-		"bladestorm_pixel":
+		"bladestorm":
 			return "bladestorm_pixel"
 		"mirror_dance":
 			return "mirror_dance_pixel"
@@ -661,7 +661,7 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"unstoppable_force":
 			return "unstoppable_force_pixel"
 		# Dash T3
-		"omnislash_pixel":
+		"omnislash":
 			return "omnislash_pixel"
 		"shadow_legion":
 			return "shadow_legion_pixel"
@@ -705,6 +705,9 @@ func _get_mapped_effect(effect_id: String) -> String:
 			return "unstoppable_taunt_pixel"
 		"vengeance":
 			return "vengeance_pixel"
+		# Leap T3
+		"apex_predator":
+			return "apex_predator_pixel"
 
 		_:
 			return effect_id  # Return original if no mapping

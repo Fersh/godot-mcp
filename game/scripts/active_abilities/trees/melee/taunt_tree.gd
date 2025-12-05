@@ -67,7 +67,7 @@ static func _create_unstoppable() -> ActiveAbilityData:
 	 .with_aoe(300.0) \
 	 .with_duration(3.0) \
 	 .with_invulnerability(3.0) \
-	 .with_effect("unstoppable") \
+	 .with_effect("unstoppable_taunt") \
 	 .with_prerequisite("taunt_fortify", 0) \
 	 .with_signature("3 seconds of invulnerability, all enemies attack you") \
 	 .with_suffix("of Invincibility", BASE_NAME, "Fortified", BASE_ID)

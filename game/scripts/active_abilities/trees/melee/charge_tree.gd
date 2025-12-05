@@ -104,7 +104,7 @@ static func _create_unstoppable_force() -> ActiveAbilityData:
 	 .with_invulnerability(1.0) \
 	 .with_stun(2.0) \
 	 .with_knockback(300.0) \
-	 .with_effect("unstoppable") \
+	 .with_effect("unstoppable_charge") \
 	 .with_prerequisite("charge_shield", 1) \
 	 .with_signature("Destroys projectiles and stuns all in path") \
 	 .with_suffix("of Annihilation", BASE_NAME, "Shielded", BASE_ID)
