@@ -103,6 +103,18 @@ func _process(delta: float) -> void:
 
 func show_choices(abilities: Array) -> void:
 	## Show ability choices - can be mixed AbilityData (passives) and ActiveAbilityData (upgrades)
+	# Debug: print what we're receiving
+	print("[SHOW_CHOICES] Received ", abilities.size(), " abilities:")
+	for i in abilities.size():
+		var a = abilities[i]
+		if a is Dictionary:
+			print("  [", i, "] TRIGGER CARD for: ", a.get("ability", {}).get("name", "UNKNOWN"))
+		elif a is ActiveAbilityData:
+			print("  [", i, "] ActiveAbility: ", a.name)
+		elif a is AbilityData:
+			print("  [", i, "] Passive: ", a.name)
+		else:
+			print("  [", i, "] Unknown type: ", typeof(a))
 	current_choices = abilities
 
 	# Get all passive abilities for the slot machine pool (we only roll passives during animation)
@@ -161,12 +173,17 @@ func create_ability_card(ability, index: int) -> Button:
 	var is_upgrade: bool
 
 	if is_trigger:
-		# Extract the inner ability for display
-		display_ability = ability.ability
+		# Extract the inner ability for display - this is the CURRENT equipped ability
+		display_ability = ability.get("ability")
+		if display_ability == null:
+			push_error("Trigger card missing 'ability' key")
+			return Button.new()
 		# Always use the current ability name (what the player has equipped)
 		ability_name = display_ability.name
 		ability_desc = "Choose upgrade for " + ability_name
 		is_upgrade = true  # Trigger cards are styled as upgrades
+		# Debug: print to verify we're getting the right ability
+		print("[TRIGGER CARD] Current ability: ", ability_name, " | Upgrades: ", ability.get("upgrades", []).size())
 	else:
 		# Get ability properties (works for both types)
 		ability_name = ability.name
@@ -252,8 +269,16 @@ func create_ability_card(ability, index: int) -> Button:
 	var next_rank = 1
 	var is_passive_upgrade = false
 	if is_trigger:
-		# Trigger cards show rank 2 (upgrading to BRANCH tier)
-		next_rank = 2
+		# Trigger cards show the NEXT tier based on current ability
+		# BASE (tier 0) -> upgrading to BRANCH (tier 1) = rank 2
+		# BRANCH (tier 1) -> upgrading to SIGNATURE (tier 2) = rank 3
+		match display_ability.tier:
+			ActiveAbilityData.AbilityTier.BASE:
+				next_rank = 2  # Upgrading from T1 to T2
+			ActiveAbilityData.AbilityTier.BRANCH:
+				next_rank = 3  # Upgrading from T2 to T3
+			_:
+				next_rank = 2  # Default fallback
 	elif display_ability is AbilityData:
 		next_rank = AbilityManager.get_next_ability_rank(display_ability.id)
 		is_passive_upgrade = AbilityManager.get_ability_rank(display_ability.id) > 0
@@ -269,6 +294,11 @@ func create_ability_card(ability, index: int) -> Button:
 	var rank_circle = _create_rank_circle(display_ability, next_rank)
 	rank_container.add_child(rank_circle)
 	vbox.add_child(rank_container)
+
+	# Spacer above New/Upgrade label (10px margin)
+	var label_spacer = Control.new()
+	label_spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(label_spacer)
 
 	# New/Upgrade label at bottom
 	var new_upgrade_label = _create_new_upgrade_label(display_ability, is_passive_upgrade or is_upgrade)
@@ -1716,25 +1746,30 @@ func _on_branch_cancelled() -> void:
 # ============================================
 
 func _create_rank_circle(ability, next_rank: int) -> Control:
-	"""Create a circular rank indicator showing the rank number."""
+	"""Create a rank indicator with slight border radius showing the rank number."""
 	var container = Control.new()
 	container.custom_minimum_size = Vector2(32, 32)
 	container.name = "RankCircle"
 
-	# Create circle background
-	var circle = ColorRect.new()
-	circle.custom_minimum_size = Vector2(28, 28)
-	circle.size = Vector2(28, 28)
-	circle.position = Vector2(2, 2)
+	# Create rounded square background using Panel with StyleBoxFlat
+	var panel = Panel.new()
+	panel.custom_minimum_size = Vector2(28, 28)
+	panel.size = Vector2(28, 28)
+	panel.position = Vector2(2, 2)
 
+	var style = StyleBoxFlat.new()
 	# Color based on rank
 	var is_max_rank = next_rank >= 3
 	if is_max_rank:
-		circle.color = Color(1.0, 0.85, 0.2, 0.9)  # Gold for max rank
+		style.bg_color = Color(1.0, 0.85, 0.2, 0.9)  # Gold for max rank
 	elif next_rank > 1:
-		circle.color = Color(0.2, 0.8, 0.3, 0.9)  # Green for upgrade
+		style.bg_color = Color(0.2, 0.8, 0.3, 0.9)  # Green for upgrade
 	else:
-		circle.color = Color(0.3, 0.3, 0.35, 0.9)  # Gray for new
+		style.bg_color = Color(0.3, 0.3, 0.35, 0.9)  # Gray for new
+
+	# Add slight border radius
+	style.set_corner_radius_all(4)
+	panel.add_theme_stylebox_override("panel", style)
 
 	# Add rank number label
 	var label = Label.new()
@@ -1751,7 +1786,7 @@ func _create_rank_circle(ability, next_rank: int) -> Control:
 	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	label.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	container.add_child(circle)
+	container.add_child(panel)
 	container.add_child(label)
 	return container
 

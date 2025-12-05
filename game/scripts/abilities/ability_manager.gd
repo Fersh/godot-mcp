@@ -1088,6 +1088,7 @@ func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 		# Get ONE trigger card (first available upgradeable ability)
 		var trigger = _get_active_upgrade_trigger()
 		if trigger:
+			print("[ABILITY_MANAGER] Adding trigger card for: ", trigger.ability.name, " with ", trigger.upgrades.size(), " upgrade options")
 			choices.append(trigger)
 
 	# Fill remaining slots with passives
