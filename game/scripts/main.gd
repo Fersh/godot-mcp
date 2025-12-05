@@ -9,9 +9,9 @@ var active_ability_bar = null
 var active_ability_selection_ui = null
 var buff_bar = null
 
-# Ultimate ability UI components
-var ultimate_selection_ui = null
-var ultimate_activation_overlay = null
+# Ultimate ability UI components (commented out)
+#var ultimate_selection_ui = null
+#var ultimate_activation_overlay = null
 
 # Virtual joystick for movement
 var virtual_joystick = null
@@ -31,8 +31,8 @@ var nearby_item: Node2D = null
 # Levels that grant active abilities (not passive)
 const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
 
-# Level that grants ultimate ability
-const ULTIMATE_ABILITY_LEVEL: int = 15
+# Ultimate abilities commented out - level 15 is now a passive upgrade
+#const ULTIMATE_ABILITY_LEVEL: int = 15
 
 var kill_streak_ui = null
 
@@ -123,14 +123,15 @@ func _on_player_level_up(new_level: int) -> void:
 	if player and new_level >= player.MAX_LEVEL:
 		return
 
-	# Check if this level grants the ultimate ability
-	if new_level == ULTIMATE_ABILITY_LEVEL:
-		_show_ultimate_ability_selection()
+	# Ultimate abilities commented out - level 15 is now a passive upgrade
+	#if new_level == ULTIMATE_ABILITY_LEVEL:
+	#	_show_ultimate_ability_selection()
+
 	# Check if this level grants an active ability
-	elif new_level in ACTIVE_ABILITY_LEVELS:
+	if new_level in ACTIVE_ABILITY_LEVELS:
 		_show_active_ability_selection(new_level)
 	else:
-		# Regular passive ability selection
+		# Regular passive ability selection (includes level 15 now)
 		var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
 		var choices = AbilityManager.get_random_abilities(ability_count)
 		if choices.size() > 0:
@@ -403,24 +404,22 @@ func _setup_active_ability_system() -> void:
 		buff_bar.name = "BuffBar"
 		add_child(buff_bar)
 
-	# Create ultimate ability selection UI
-	var ultimate_selection_script = load("res://scripts/ultimate_abilities/ui/ultimate_selection_ui.gd")
-	if ultimate_selection_script:
-		ultimate_selection_ui = CanvasLayer.new()
-		ultimate_selection_ui.set_script(ultimate_selection_script)
-		ultimate_selection_ui.name = "UltimateSelectionUI"
-		add_child(ultimate_selection_ui)
+	# Ultimate abilities commented out
+	#var ultimate_selection_script = load("res://scripts/ultimate_abilities/ui/ultimate_selection_ui.gd")
+	#if ultimate_selection_script:
+	#	ultimate_selection_ui = CanvasLayer.new()
+	#	ultimate_selection_ui.set_script(ultimate_selection_script)
+	#	ultimate_selection_ui.name = "UltimateSelectionUI"
+	#	add_child(ultimate_selection_ui)
 
-	# Create ultimate activation overlay
-	var activation_overlay_script = load("res://scripts/ultimate_abilities/ultimate_activation_overlay.gd")
-	if activation_overlay_script:
-		ultimate_activation_overlay = CanvasLayer.new()
-		ultimate_activation_overlay.set_script(activation_overlay_script)
-		ultimate_activation_overlay.name = "UltimateActivationOverlay"
-		add_child(ultimate_activation_overlay)
-		# Register with manager
-		if UltimateAbilityManager:
-			UltimateAbilityManager.register_activation_overlay(ultimate_activation_overlay)
+	#var activation_overlay_script = load("res://scripts/ultimate_abilities/ultimate_activation_overlay.gd")
+	#if activation_overlay_script:
+	#	ultimate_activation_overlay = CanvasLayer.new()
+	#	ultimate_activation_overlay.set_script(activation_overlay_script)
+	#	ultimate_activation_overlay.name = "UltimateActivationOverlay"
+	#	add_child(ultimate_activation_overlay)
+	#	if UltimateAbilityManager:
+	#		UltimateAbilityManager.register_activation_overlay(ultimate_activation_overlay)
 
 func _show_initial_ability_selection() -> void:
 	"""Show the level 1 active ability selection at game start."""
@@ -455,40 +454,29 @@ func _show_active_ability_selection(level: int) -> void:
 		if passive_choices.size() > 0:
 			ability_selection.show_choices(passive_choices)
 
-func _show_ultimate_ability_selection() -> void:
-	"""Show the ultimate ability selection UI at level 5 (swapped for testing)."""
-	print("DEBUG: _show_ultimate_ability_selection called")
-	print("DEBUG: ultimate_selection_ui = ", ultimate_selection_ui)
-
-	var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
-
-	if not ultimate_selection_ui:
-		print("DEBUG: No ultimate_selection_ui, falling back to passive")
-		# Fallback to passive if UI not available
-		var choices = AbilityManager.get_random_abilities(ability_count)
-		if choices.size() > 0:
-			ability_selection.show_choices(choices)
-		return
-
-	# Get character ID for class-specific ultimates
-	var character_id = "archer"
-	if CharacterManager:
-		character_id = CharacterManager.selected_character_id
-	print("DEBUG: character_id = ", character_id)
-
-	# Get random ultimate abilities for this character
-	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, ability_count) if UltimateAbilityManager else []
-	print("DEBUG: choices.size() = ", choices.size())
-
-	if choices.size() > 0:
-		print("DEBUG: Showing ultimate selection UI")
-		ultimate_selection_ui.show_choices(choices, character_id)
-	else:
-		print("DEBUG: No ultimates available, falling back to passive")
-		# No ultimates available, fall back to passive
-		var passive_choices = AbilityManager.get_random_abilities(ability_count)
-		if passive_choices.size() > 0:
-			ability_selection.show_choices(passive_choices)
+# Ultimate abilities commented out - this function is no longer called
+#func _show_ultimate_ability_selection() -> void:
+#	"""Show the ultimate ability selection UI at level 15."""
+#	var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
+#
+#	if not ultimate_selection_ui:
+#		var choices = AbilityManager.get_random_abilities(ability_count)
+#		if choices.size() > 0:
+#			ability_selection.show_choices(choices)
+#		return
+#
+#	var character_id = "archer"
+#	if CharacterManager:
+#		character_id = CharacterManager.selected_character_id
+#
+#	var choices = UltimateAbilityManager.get_random_ultimates_for_selection(character_id, ability_count) if UltimateAbilityManager else []
+#
+#	if choices.size() > 0:
+#		ultimate_selection_ui.show_choices(choices, character_id)
+#	else:
+#		var passive_choices = AbilityManager.get_random_abilities(ability_count)
+#		if passive_choices.size() > 0:
+#			ability_selection.show_choices(passive_choices)
 
 # ============================================
 # KILL STREAK UI SETUP (#1)
