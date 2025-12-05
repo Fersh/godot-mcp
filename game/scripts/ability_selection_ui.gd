@@ -20,6 +20,12 @@ var roll_tick_timers: Array[float] = []
 # Particle effect containers for each card
 var particle_containers: Array[Control] = []
 
+# Branching UI state machine
+enum SelectionMode { NORMAL, BRANCH_SELECTION }
+var selection_mode: SelectionMode = SelectionMode.NORMAL
+var _branch_selector: BranchSelector = null
+var cancel_button: Button = null
+
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
@@ -41,6 +47,11 @@ func _ready() -> void:
 	# Apply pixel font to title
 	if pixel_font and title_label:
 		title_label.add_theme_font_override("font", pixel_font)
+
+	# Initialize branch selector
+	_branch_selector = BranchSelector.new()
+	_branch_selector.branch_selected.connect(_on_branch_selected)
+	_branch_selector.selection_cancelled.connect(_on_branch_cancelled)
 
 func _process(delta: float) -> void:
 	if not is_rolling:
@@ -207,34 +218,36 @@ func create_ability_card(ability, index: int) -> Button:
 		_populate_stat_changes(stats_container, ability)
 	vbox.add_child(stats_container)
 
-	# Tier diamonds container (for upgrades)
-	var tier_container = HBoxContainer.new()
-	tier_container.name = "TierContainer"
-	tier_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	tier_container.add_theme_constant_override("separation", 8)
-	if is_upgrade and ability is ActiveAbilityData:
-		_populate_tier_diamonds(tier_container, ability)
-	vbox.add_child(tier_container)
+	# Rank circle container (replaces tier diamonds)
+	var rank_container = HBoxContainer.new()
+	rank_container.name = "RankContainer"
+	rank_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	# Calculate the next rank for this ability
+	var next_rank = 1
+	var is_passive_upgrade = false
+	if ability is AbilityData:
+		next_rank = AbilityManager.get_next_ability_rank(ability.id)
+		is_passive_upgrade = AbilityManager.get_ability_rank(ability.id) > 0
+	elif ability is ActiveAbilityData:
+		# For active abilities, use tier as rank
+		match ability.tier:
+			ActiveAbilityData.AbilityTier.BASE:
+				next_rank = 1
+			ActiveAbilityData.AbilityTier.BRANCH:
+				next_rank = 2
+			ActiveAbilityData.AbilityTier.SIGNATURE:
+				next_rank = 3
+	var rank_circle = _create_rank_circle(ability, next_rank)
+	rank_container.add_child(rank_circle)
+	vbox.add_child(rank_container)
 
-	# Upgradeable indicator - shows for passive abilities that have upgrade paths
-	var upgradeable_label = Label.new()
-	upgradeable_label.name = "UpgradeableLabel"
-	upgradeable_label.text = "Upgradeable"
-	upgradeable_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	upgradeable_label.add_theme_font_size_override("font_size", 12)
-	upgradeable_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green
-	if pixel_font:
-		upgradeable_label.add_theme_font_override("font", pixel_font)
-	# Only show for passive abilities that have upgrades available
-	if ability is AbilityData and not is_upgrade:
-		upgradeable_label.visible = ability.has_available_upgrades()
-	else:
-		upgradeable_label.visible = false
-	vbox.add_child(upgradeable_label)
+	# New/Upgrade label at bottom
+	var new_upgrade_label = _create_new_upgrade_label(ability, is_passive_upgrade or is_upgrade)
+	vbox.add_child(new_upgrade_label)
 
 	# Bottom spacer
 	var bottom_spacer = Control.new()
-	bottom_spacer.custom_minimum_size = Vector2(0, 8)
+	bottom_spacer.custom_minimum_size = Vector2(0, 4)
 	vbox.add_child(bottom_spacer)
 
 	# Add margin container
@@ -914,22 +927,23 @@ func _on_ability_selected(index: int) -> void:
 
 		# Check if this is an active ability upgrade or a passive ability
 		if ability is ActiveAbilityData:
-			# Active ability upgrade - use ActiveAbilityManager
-			var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
-			if active_manager:
-				active_manager.acquire_ability(ability)
-			emit_signal("active_upgrade_selected", ability)
+			if selection_mode == SelectionMode.NORMAL:
+				# Enter branch selection mode to show upgrade options
+				_enter_branch_selection(ability)
+			else:
+				# In branch selection mode - finalize the upgrade
+				_finalize_branch_selection(ability)
 		else:
 			# Passive ability - use AbilityManager
 			AbilityManager.acquire_ability(ability)
 			emit_signal("ability_selected", ability)
 
-		# Play buff sound
-		if SoundManager:
-			SoundManager.play_buff()
+			# Play buff sound
+			if SoundManager:
+				SoundManager.play_buff()
 
-		# Hide and unpause
-		hide_selection()
+			# Hide and unpause
+			hide_selection()
 
 func hide_selection() -> void:
 	visible = false
@@ -1355,3 +1369,252 @@ func _create_tier_diamond(tier_num: int, current_tier: int) -> Control:
 
 	container.add_child(diamond)
 	return container
+
+# ============================================
+# BRANCHING UI FLOW
+# ============================================
+
+func _enter_branch_selection(trigger_ability: ActiveAbilityData) -> void:
+	"""Enter branch selection mode - show available upgrade branches."""
+	selection_mode = SelectionMode.BRANCH_SELECTION
+
+	# Get branch options from the branch selector
+	var branches = _branch_selector.start_branch_selection(trigger_ability, current_choices)
+
+	if branches.is_empty():
+		# No branches available - just acquire the ability directly
+		_finalize_branch_selection(trigger_ability)
+		return
+
+	# Animate out current cards
+	for i in range(ability_buttons.size()):
+		_animate_card_out(ability_buttons[i], i)
+
+	# Wait for animation then show branches
+	await get_tree().create_timer(0.3).timeout
+	_show_branch_cards(branches)
+
+func _show_branch_cards(branches: Array[ActiveAbilityData]) -> void:
+	"""Display branch upgrade cards."""
+	# Clear current buttons
+	for button in ability_buttons:
+		if is_instance_valid(button):
+			button.queue_free()
+	ability_buttons.clear()
+	particle_containers.clear()
+
+	# Update title
+	if title_label:
+		title_label.text = "CHOOSE UPGRADE"
+
+	# Update current choices to branches
+	current_choices.clear()
+	for branch in branches:
+		current_choices.append(branch)
+
+	# Create cards for each branch (skip slot machine animation)
+	for i in current_choices.size():
+		var card = create_ability_card(current_choices[i], i)
+		card.disabled = false  # Enable immediately (no rolling)
+		choices_container.add_child(card)
+		ability_buttons.append(card)
+		_animate_card_in(card, i)
+
+	# Show cancel button
+	_show_cancel_button()
+
+func _finalize_branch_selection(ability: ActiveAbilityData) -> void:
+	"""Finalize branch selection - acquire the selected upgrade."""
+	selection_mode = SelectionMode.NORMAL
+
+	# Acquire the ability
+	var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
+	if active_manager:
+		active_manager.acquire_ability(ability)
+	emit_signal("active_upgrade_selected", ability)
+
+	# Play buff sound
+	if SoundManager:
+		SoundManager.play_buff()
+
+	# Hide cancel button
+	_hide_cancel_button()
+
+	# Hide and unpause
+	hide_selection()
+
+func _animate_card_out(button: Button, index: int) -> void:
+	"""Animate a card sliding out and fading."""
+	var tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.set_parallel(true)
+	tween.tween_property(button, "modulate:a", 0.0, 0.2)
+	tween.tween_property(button, "position:y", button.position.y + 50, 0.2)
+
+func _animate_card_in(button: Button, index: int) -> void:
+	"""Animate a card sliding in."""
+	button.modulate.a = 0.0
+	var target_pos = button.position
+	button.position.y += 50
+
+	var tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_interval(0.1 * index)
+	tween.set_parallel(true)
+	tween.tween_property(button, "position:y", target_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(button, "modulate:a", 1.0, 0.2)
+
+func _show_cancel_button() -> void:
+	"""Show Cancel button for branch selection mode."""
+	if cancel_button == null:
+		cancel_button = Button.new()
+		cancel_button.text = "Cancel"
+		cancel_button.custom_minimum_size = Vector2(180, 44)
+
+		# Style the button
+		var style = StyleBoxFlat.new()
+		style.bg_color = Color(0.4, 0.4, 0.4)
+		style.border_color = Color(0.6, 0.6, 0.6)
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(6)
+		cancel_button.add_theme_stylebox_override("normal", style)
+
+		var hover_style = style.duplicate()
+		hover_style.bg_color = Color(0.5, 0.5, 0.5)
+		cancel_button.add_theme_stylebox_override("hover", hover_style)
+
+		cancel_button.add_theme_font_size_override("font_size", 14)
+		if pixel_font:
+			cancel_button.add_theme_font_override("font", pixel_font)
+
+		cancel_button.pressed.connect(_on_cancel_pressed)
+
+		# Add below the choices container
+		var parent = choices_container.get_parent()
+		if parent:
+			var spacer = Control.new()
+			spacer.custom_minimum_size = Vector2(0, 20)
+			spacer.name = "CancelSpacer"
+			parent.add_child(spacer)
+			parent.add_child(cancel_button)
+
+	cancel_button.visible = true
+	# Also show the spacer
+	var spacer = choices_container.get_parent().get_node_or_null("CancelSpacer")
+	if spacer:
+		spacer.visible = true
+
+func _hide_cancel_button() -> void:
+	"""Hide Cancel button."""
+	if cancel_button:
+		cancel_button.visible = false
+	var spacer = choices_container.get_parent().get_node_or_null("CancelSpacer")
+	if spacer:
+		spacer.visible = false
+
+func _on_cancel_pressed() -> void:
+	"""Handle Cancel button press - return to normal selection."""
+	if SoundManager:
+		SoundManager.play_click()
+
+	selection_mode = SelectionMode.NORMAL
+	var saved = _branch_selector.cancel()
+
+	# Hide cancel button
+	_hide_cancel_button()
+
+	# Clear current cards
+	for button in ability_buttons:
+		if is_instance_valid(button):
+			button.queue_free()
+	ability_buttons.clear()
+	particle_containers.clear()
+
+	# Restore title
+	if title_label:
+		title_label.text = "LEVEL UP!"
+
+	# Restore original choices
+	current_choices = saved
+	for i in current_choices.size():
+		var card = create_ability_card(current_choices[i], i)
+		card.disabled = false
+		choices_container.add_child(card)
+		ability_buttons.append(card)
+		_animate_card_in(card, i)
+
+func _on_branch_selected(branch: ActiveAbilityData) -> void:
+	"""Callback when branch is selected."""
+	_finalize_branch_selection(branch)
+
+func _on_branch_cancelled() -> void:
+	"""Callback when branch selection is cancelled."""
+	# Already handled by _on_cancel_pressed
+	pass
+
+# ============================================
+# RANK CIRCLE DISPLAY (Replaces Diamonds)
+# ============================================
+
+func _create_rank_circle(ability, next_rank: int) -> Control:
+	"""Create a circular rank indicator showing the rank number."""
+	var container = Control.new()
+	container.custom_minimum_size = Vector2(32, 32)
+	container.name = "RankCircle"
+
+	# Create circle background
+	var circle = ColorRect.new()
+	circle.custom_minimum_size = Vector2(28, 28)
+	circle.size = Vector2(28, 28)
+	circle.position = Vector2(2, 2)
+
+	# Color based on rank
+	var is_max_rank = next_rank >= 3
+	if is_max_rank:
+		circle.color = Color(1.0, 0.85, 0.2, 0.9)  # Gold for max rank
+	elif next_rank > 1:
+		circle.color = Color(0.2, 0.8, 0.3, 0.9)  # Green for upgrade
+	else:
+		circle.color = Color(0.3, 0.3, 0.35, 0.9)  # Gray for new
+
+	# Add rank number label
+	var label = Label.new()
+	label.text = str(next_rank)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+
+	# Center the label
+	label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	label.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+	container.add_child(circle)
+	container.add_child(label)
+	return container
+
+# ============================================
+# NEW/UPGRADE LABEL
+# ============================================
+
+func _create_new_upgrade_label(ability, is_upgrade: bool) -> Label:
+	"""Create 'New' or 'Upgrade' label for the card bottom."""
+	var label = Label.new()
+	label.name = "NewUpgradeLabel"
+	label.text = "Upgrade" if is_upgrade else "New"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 10)
+
+	# Color: green for upgrade, yellow for new
+	if is_upgrade:
+		label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))
+	else:
+		label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.3))
+
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+
+	return label

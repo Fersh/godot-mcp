@@ -31,6 +31,9 @@ var nearby_item: Node2D = null
 # Levels that grant active abilities (not passive)
 const ACTIVE_ABILITY_LEVELS: Array[int] = [1, 5, 10]
 
+# Levels that guarantee an active ability upgrade option in passive selection
+const ACTIVE_UPGRADE_LEVELS: Array[int] = [3, 7, 12]
+
 # Ultimate abilities commented out - level 15 is now a passive upgrade
 #const ULTIMATE_ABILITY_LEVEL: int = 15
 
@@ -131,9 +134,16 @@ func _on_player_level_up(new_level: int) -> void:
 	if new_level in ACTIVE_ABILITY_LEVELS:
 		_show_active_ability_selection(new_level)
 	else:
-		# Regular passive ability selection (includes level 15 now)
+		# Regular passive ability selection
 		var ability_count = CurseEffects.get_ability_choices() if CurseEffects else 3
-		var choices = AbilityManager.get_random_abilities(ability_count)
+
+		# At levels 3, 7, 12: include guaranteed active ability upgrade option
+		var choices: Array = []
+		if new_level in ACTIVE_UPGRADE_LEVELS:
+			choices = AbilityManager.get_passive_choices_with_active_upgrade(ability_count, new_level)
+		else:
+			choices = AbilityManager.get_random_abilities(ability_count)
+
 		if choices.size() > 0:
 			ability_selection.show_choices(choices)
 

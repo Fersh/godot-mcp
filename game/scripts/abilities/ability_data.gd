@@ -246,6 +246,17 @@ var synergy_ids: Array[String] = []
 # Whether this is an "upgrade" ability (enhances existing mechanics)
 var is_upgrade: bool = false
 
+# Rank-based effects system: defines different effect values for each rank (1, 2, 3)
+# If empty, falls back to base 'effects' array for all ranks
+# Format: [[rank1_effects], [rank2_effects], [rank3_effects]]
+# Each inner array matches the format of 'effects': [{effect_type, value}, ...]
+var rank_effects: Array = []
+
+# Rank-based descriptions: different descriptions for each rank
+# Format: ["Rank 1 desc", "Rank 2 desc", "Rank 3 desc"]
+# If empty, falls back to base 'description' for all ranks
+var rank_descriptions: Array[String] = []
+
 func _init(p_id: String, p_name: String, p_desc: String, p_rarity: Rarity, p_type: Type, p_effects: Array) -> void:
 	id = p_id
 	name = p_name
@@ -267,6 +278,34 @@ func with_synergies(ids: Array[String]) -> AbilityData:
 func as_upgrade() -> AbilityData:
 	is_upgrade = true
 	return self
+
+func with_rank_effects(rank1: Array, rank2: Array, rank3: Array) -> AbilityData:
+	"""Set different effects for each rank (1, 2, 3)."""
+	rank_effects = [rank1, rank2, rank3]
+	return self
+
+func with_rank_descriptions(desc1: String, desc2: String, desc3: String) -> AbilityData:
+	"""Set different descriptions for each rank (1, 2, 3)."""
+	rank_descriptions = [desc1, desc2, desc3]
+	return self
+
+func get_effects_for_rank(rank: int) -> Array:
+	"""Get effects array for a specific rank (1, 2, or 3)."""
+	if rank_effects.is_empty() or rank <= 0:
+		return effects  # Fallback to base effects
+	var index = clampi(rank - 1, 0, rank_effects.size() - 1)
+	return rank_effects[index]
+
+func get_description_for_rank(rank: int) -> String:
+	"""Get description for a specific rank (1, 2, or 3)."""
+	if rank_descriptions.is_empty() or rank <= 0:
+		return description  # Fallback to base description
+	var index = clampi(rank - 1, 0, rank_descriptions.size() - 1)
+	return rank_descriptions[index]
+
+func has_rank_scaling() -> bool:
+	"""Check if this ability has different effects per rank."""
+	return not rank_effects.is_empty()
 
 static func get_rarity_color(rarity: Rarity) -> Color:
 	match rarity:

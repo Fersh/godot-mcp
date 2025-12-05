@@ -60,7 +60,7 @@ const DIFFICULTY_DATA = {
 		"health_mult": 1.0,
 		"damage_mult": 1.0,
 		"speed_mult": 1.0,
-		"spawn_rate_mult": 1.375,
+		"spawn_rate_mult": 2.75,
 		"points_mult": 1.0,
 		"starting_hp": 1.0,
 		"healing_mult": 1.0,

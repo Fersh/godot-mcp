@@ -42,6 +42,9 @@ var acquired_ability_ids: Array[String] = []
 # Tree upgrade tracking - maps base_ability_id -> current_ability_id
 var acquired_tree_abilities: Dictionary = {}
 
+# Rank tracking - maps base_ability_id -> current rank/tier (1, 2, or 3)
+var ability_ranks: Dictionary = {}
+
 # Skillshot aiming - stores the current aim direction for the executor
 var current_aim_direction: Vector2 = Vector2.ZERO
 var is_aimed_shot: bool = false
@@ -124,6 +127,7 @@ func reset_for_new_run() -> void:
 	max_dodge_charges = 1
 	acquired_ability_ids.clear()
 	acquired_tree_abilities.clear()
+	ability_ranks.clear()
 
 	# Reset all ability trees for new run
 	AbilityTreeRegistry.reset_all_trees()
@@ -172,8 +176,9 @@ func acquire_ability(ability: ActiveAbilityData) -> bool:
 	cooldown_timers[slot] = 0.0
 	acquired_ability_ids.append(ability.id)
 
-	# Track tree progression
+	# Track tree progression and rank
 	_track_tree_ability(ability)
+	_update_ability_rank(ability)
 
 	emit_signal("ability_acquired", slot, ability)
 	return true
@@ -188,8 +193,9 @@ func _try_upgrade_existing_ability(upgrade: ActiveAbilityData) -> int:
 			cooldown_timers[i] = 0.0  # Reset cooldown on upgrade
 			acquired_ability_ids.append(upgrade.id)
 
-			# Update tree progression
+			# Update tree progression and rank
 			_track_tree_ability(upgrade)
+			_update_ability_rank(upgrade)
 
 			emit_signal("ability_acquired", i, upgrade)
 			return i
@@ -738,3 +744,28 @@ func reduce_all_cooldowns(amount: float) -> void:
 	# Also reduce dodge cooldown
 	if dodge_cooldown_timer > 0:
 		dodge_cooldown_timer = maxf(0.0, dodge_cooldown_timer - amount)
+
+# ============================================
+# RANK TRACKING (for UI display)
+# ============================================
+
+func get_ability_rank(base_ability_id: String) -> int:
+	"""Get current rank/tier of an active ability by its base ID (1, 2, or 3)."""
+	return ability_ranks.get(base_ability_id, 0)
+
+func _update_ability_rank(ability: ActiveAbilityData) -> void:
+	"""Update rank tracking when ability is acquired or upgraded."""
+	var base_id = ability.base_ability_id if not ability.base_ability_id.is_empty() else ability.id
+	var rank = 1
+	match ability.tier:
+		ActiveAbilityData.AbilityTier.BASE:
+			rank = 1
+		ActiveAbilityData.AbilityTier.BRANCH:
+			rank = 2
+		ActiveAbilityData.AbilityTier.SIGNATURE:
+			rank = 3
+	ability_ranks[base_id] = rank
+
+func is_ability_upgrade(base_ability_id: String) -> bool:
+	"""Check if this ability has been upgraded from base (rank > 1)."""
+	return get_ability_rank(base_ability_id) > 1

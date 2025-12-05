@@ -370,6 +370,7 @@ var _on_hit_effects: OnHitEffects = null
 var _on_kill_effects: OnKillEffects = null
 var _combat_effects: CombatEffects = null
 var _periodic_effects: PeriodicEffects = null
+var _rank_tracker: RankTracker = null
 
 func _ready() -> void:
 	all_abilities = AbilityDatabase.get_all_abilities()
@@ -380,6 +381,7 @@ func _ready() -> void:
 	_on_kill_effects = OnKillEffects.new(self)
 	_combat_effects = CombatEffects.new(self)
 	_periodic_effects = PeriodicEffects.new(self)
+	_rank_tracker = RankTracker.new(self)
 
 	# Connect equipment signals for real-time stat updates (deferred to ensure autoloads ready)
 	call_deferred("_connect_equipment_signals")
@@ -697,6 +699,10 @@ func reset() -> void:
 	ring_of_fire_timer = 0.0
 	lightning_timer = 0.0
 	toxic_timer = 0.0
+
+	# Reset rank tracking
+	if _rank_tracker:
+		_rank_tracker.reset()
 
 func _process(delta: float) -> void:
 	var player = get_tree().get_first_node_in_group("player")
@@ -1067,6 +1073,47 @@ func get_random_abilities(count: int = 3) -> Array:
 	# Track that we showed choices (counter will be incremented when ability is acquired)
 	return choices
 
+func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
+	"""
+	Get passive ability choices with one guaranteed active upgrade slot.
+	Used at levels 3, 7, 12 to offer active ability upgrade path.
+	Returns mixed array of AbilityData (passives) and ActiveAbilityData (upgrade trigger).
+	"""
+	var choices: Array = []
+	var available_passives = get_available_abilities()
+
+	# Check if this level should have guaranteed active upgrade
+	const ACTIVE_UPGRADE_LEVELS: Array[int] = [3, 7, 12]
+	if level in ACTIVE_UPGRADE_LEVELS:
+		var active_upgrade = _get_active_upgrade_trigger()
+		if active_upgrade:
+			choices.append(active_upgrade)
+
+	# Fill remaining slots with passives
+	var passive_count = count - choices.size()
+	for i in range(passive_count):
+		if available_passives.size() == 0:
+			break
+		var ability = pick_weighted_random(available_passives, true)
+		if ability:
+			choices.append(ability)
+			available_passives.erase(ability)
+
+	# Shuffle to randomize position of active upgrade card
+	choices.shuffle()
+	return choices
+
+func _get_active_upgrade_trigger():
+	"""
+	Get an active ability upgrade to use as trigger card.
+	When clicked, this will show the branching UI with all available branches.
+	"""
+	var upgrades = _get_active_ability_upgrades()
+	if upgrades.is_empty():
+		return null
+	# Return the first upgrade as the trigger card
+	return upgrades[0]
+
 func _get_available_passive_upgrades(from_pool: Array[AbilityData]) -> Array[AbilityData]:
 	"""Get only passive upgrade abilities from the available pool"""
 	var upgrades: Array[AbilityData] = []
@@ -1255,7 +1302,12 @@ func _check_implicit_synergies(ability: AbilityData) -> bool:
 
 func acquire_ability(ability: AbilityData) -> void:
 	acquired_abilities.append(ability)
-	apply_ability_effects(ability)
+
+	# Increment rank and apply effects for that rank
+	var new_rank = 1
+	if _rank_tracker:
+		new_rank = _rank_tracker.increment_passive_rank(ability.id)
+	apply_ability_effects_for_rank(ability, new_rank)
 
 	# Track passive selections for guaranteed upgrade logic
 	if ability.is_upgrade:
@@ -1267,8 +1319,48 @@ func acquire_ability(ability: AbilityData) -> void:
 
 	emit_signal("ability_acquired", ability)
 
+# ============================================
+# RANK TRACKING HELPERS
+# ============================================
+
+func get_ability_rank(ability_id: String) -> int:
+	"""Get current rank of a passive ability (0 if not acquired)."""
+	if _rank_tracker:
+		return _rank_tracker.get_passive_rank(ability_id)
+	return 0
+
+func is_ability_at_max_rank(ability_id: String) -> bool:
+	"""Check if passive has reached max rank (3)."""
+	if _rank_tracker:
+		return _rank_tracker.is_passive_at_max_rank(ability_id)
+	return false
+
+func get_next_ability_rank(ability_id: String) -> int:
+	"""Get what rank this ability would be if acquired next."""
+	if _rank_tracker:
+		return _rank_tracker.get_next_passive_rank(ability_id)
+	return 1
+
+func is_ability_upgrade(ability_id: String) -> bool:
+	"""Check if this ability would be an upgrade (already acquired at least once)."""
+	return get_ability_rank(ability_id) > 0
+
+# ============================================
+# EFFECT APPLICATION
+# ============================================
+
+func apply_ability_effects_for_rank(ability: AbilityData, rank: int) -> void:
+	"""Apply effects based on the ability's current rank."""
+	var effects_to_apply = ability.get_effects_for_rank(rank)
+	_apply_effects(effects_to_apply)
+
 func apply_ability_effects(ability: AbilityData) -> void:
-	for effect in ability.effects:
+	"""Apply base effects (backwards compatible)."""
+	_apply_effects(ability.effects)
+
+func _apply_effects(effects: Array) -> void:
+	"""Internal: Apply an array of effects."""
+	for effect in effects:
 		var effect_type = effect.effect_type
 		var value = effect.value
 

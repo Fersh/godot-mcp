@@ -427,18 +427,18 @@ func _animate_bar_fill_shake(fill_bar: Control) -> void:
 # ============================================
 
 func _create_missions_tracker() -> void:
-	"""Create the missions tracker UI below the pause button."""
+	"""Create the missions tracker UI on the right side, below killstreak."""
 	# Load saved expanded state
 	if GameSettings:
 		missions_expanded = GameSettings.get_setting("missions_expanded", true)
 
 	missions_container = VBoxContainer.new()
 	missions_container.name = "MissionsTracker"
-	missions_container.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	missions_container.offset_left = MARGIN + 80  # Shifted 80px right (40 + 40)
-	missions_container.offset_top = MARGIN + PAUSE_BUTTON_SIZE + 35  # Adjusted down 10px
-	missions_container.offset_right = MARGIN + 260
-	missions_container.offset_bottom = MARGIN + PAUSE_BUTTON_SIZE + 280
+	missions_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	missions_container.offset_left = -300  # Width of container from right edge (wider for title)
+	missions_container.offset_top = 168  # 30px below killstreak (98 + ~40px text + 30px)
+	missions_container.offset_right = -MARGIN - 40  # Shifted 40px left
+	missions_container.offset_bottom = 420
 	missions_container.add_theme_constant_override("separation", 8)
 	add_child(missions_container)
 
@@ -478,12 +478,12 @@ func _create_missions_tracker() -> void:
 	missions_content.add_theme_constant_override("separation", 24)
 	missions_content_margin.add_child(missions_content)
 
-	# Create 3 mission row slots with slight rotation (left side down)
+	# Create 3 mission row slots with slight rotation (right side down for right-aligned UI)
 	for i in range(3):
 		var row = _create_mission_row()
 		row.visible = false
-		row.pivot_offset = Vector2(0, 14)  # Pivot on left side
-		row.rotation = 0.02  # Very slight rotation (~1.1 degrees)
+		row.pivot_offset = Vector2(220, 14)  # Pivot on right side
+		row.rotation = -0.02  # Very slight rotation (~1.1 degrees, opposite for right side)
 		missions_content.add_child(row)
 		mission_rows.append(row)
 
@@ -506,7 +506,7 @@ func _on_missions_header_pressed() -> void:
 func _create_mission_row() -> Control:
 	"""Create a single mission row UI element - simplified with dropshadow."""
 	var container = Control.new()
-	container.custom_minimum_size = Vector2(200, 34)  # Increased height by 6px
+	container.custom_minimum_size = Vector2(220, 34)  # Wider for longer titles
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBox"
@@ -515,6 +515,11 @@ func _create_mission_row() -> Control:
 	# Mission description label (with dropshadow) - smaller and lighter
 	var title = Label.new()
 	title.name = "Title"
+	title.custom_minimum_size = Vector2(220, 0)  # Max width to prevent overflow
+	title.size = Vector2(220, 0)
+	title.clip_text = true  # Clip text that exceeds width
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS  # Show ... for overflow
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT  # Left align with header
 	title.add_theme_font_size_override("font_size", 12)  # Reduced by 2px
 	title.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))  # Slightly lighter
 	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -590,11 +595,8 @@ func _update_mission_row(row: Control, mission) -> void:
 	var bar_fill = bar_bg.get_node("ProgressFill")
 	var percent_label = bar_bg.get_node("PercentLabel")
 
-	# Show description instead of title, truncate if needed
-	var display_text = mission.description
-	if display_text.length() > 28:
-		display_text = display_text.substr(0, 26) + ".."
-	title.text = display_text
+	# Show description (label handles overflow with ellipsis)
+	title.text = mission.description
 
 	# Update progress bar
 	var progress_ratio = float(mission.current_progress) / float(mission.target_value) if mission.target_value > 0 else 0

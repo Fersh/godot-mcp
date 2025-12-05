@@ -30,10 +30,18 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"transcendence",
 			"Transcendence",
-			"Convert HP to regenerating shields",
+			"Convert 50% HP to regenerating shields",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
+			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 0.5}]
+		).with_rank_effects(
+			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 0.5}],
+			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 0.75}],
 			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 1.0}]
+		).with_rank_descriptions(
+			"Convert 50% HP to regenerating shields",
+			"Convert 75% HP to regenerating shields",
+			"Convert all HP to regenerating shields"
 		),
 
 		# Symbiosis - DISABLED: Not fully implemented
@@ -50,9 +58,17 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"pandemonium",
 			"Pandemonium",
-			"Double enemies and double damage",
+			"+50% enemies and +50% damage",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.PANDEMONIUM, value = 2.0}]
+			[{effect_type = AbilityData.EffectType.PANDEMONIUM, value = 1.5}]
+		).with_rank_effects(
+			[{effect_type = AbilityData.EffectType.PANDEMONIUM, value = 1.5}],
+			[{effect_type = AbilityData.EffectType.PANDEMONIUM, value = 2.0}],
+			[{effect_type = AbilityData.EffectType.PANDEMONIUM, value = 3.0}]
+		).with_rank_descriptions(
+			"+50% enemies and +50% damage",
+			"Double enemies and double damage",
+			"Triple enemies and triple damage"
 		),
 	]

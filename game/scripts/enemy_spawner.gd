@@ -43,7 +43,7 @@ const SCALING_BONUS: float = 0.10        # 10% more spawns per interval
 # Time-based spawn curve - shifts intensity toward late game
 # Early game has fewer spawns, late game ramps up beyond base difficulty
 const SPAWN_CURVE_BASE: float = 0.5        # Start at 50% spawn rate
-const SPAWN_CURVE_FULL_TIME: float = 450.0 # 7.5 minutes to reach 100%
+const SPAWN_CURVE_FULL_TIME: float = 360.0 # 6 minutes to reach 100%
 const SPAWN_CURVE_EXPONENT: float = 2.0    # Quadratic curve (shifts intensity late)
 const SPAWN_CURVE_MAX: float = 1.5         # Cap at 150% in very late game
 

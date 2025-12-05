@@ -17,6 +17,9 @@ const GUARANTEED_UPGRADE_INTERVAL: int = 4  # Guarantee upgrade every 4 passive 
 # Synergy weight boost (slight - 50% increase for synergistic abilities)
 const SYNERGY_WEIGHT_BOOST: float = 1.5
 
+# Levels that guarantee an active ability upgrade option
+const ACTIVE_UPGRADE_LEVELS: Array[int] = [3, 7, 12]
+
 func _init(manager: Node) -> void:
 	_manager = manager
 
@@ -85,8 +88,8 @@ func get_available_abilities() -> Array[AbilityData]:
 		if ability.type == AbilityData.Type.RANGED_ONLY and not _manager.is_ranged_character:
 			continue
 
-		# Check if already acquired (allow stacking for some abilities)
-		if not is_ability_stackable(ability) and has_ability(ability.id):
+		# Skip abilities at max rank (3) - they can't be upgraded further
+		if _manager.is_ability_at_max_rank(ability.id):
 			continue
 
 		# Check prerequisites - must have at least one prerequisite ability
@@ -118,18 +121,12 @@ func _get_available_upgrade_abilities(from_pool: Array[AbilityData]) -> Array[Ab
 			upgrades.append(ability)
 	return upgrades
 
-func is_ability_stackable(ability: AbilityData) -> bool:
-	"""Check if an ability can be acquired multiple times"""
-	# Most stat boost abilities can stack
-	if ability.type == AbilityData.Type.STAT_BOOST:
-		return true
-
-	# Some specific abilities can stack
-	match ability.id:
-		"split_shot", "laser_drill", "scattergun":
-			return true
-
-	return false
+func is_ability_stackable(_ability: AbilityData) -> bool:
+	"""Check if an ability can be acquired multiple times.
+	All abilities can now stack up to max rank (3)."""
+	# All abilities are stackable up to rank 3
+	# Max rank check is done in get_available_abilities()
+	return true
 
 func has_ability(id: String) -> bool:
 	"""Check if player already has this ability"""
@@ -179,15 +176,14 @@ func pick_weighted_random(abilities: Array[AbilityData], apply_synergy_boost: bo
 	if by_rarity.has(selected_rarity) and by_rarity[selected_rarity].size() > 0:
 		var rarity_pool = by_rarity[selected_rarity]
 
-		# Weight abilities by how many times they've been acquired (diversity bonus)
-		# Each acquisition reduces the weight by 40%, encouraging variety
+		# All abilities have equal weight (diversity penalty removed)
+		# Max rank filtering is done in get_available_abilities()
 		var weights: Array[float] = []
 		var total_weight: float = 0.0
 
 		for ability in rarity_pool:
-			var acquisition_count = get_ability_acquisition_count(ability.id)
-			# Base weight of 1.0, reduced by 40% for each time already acquired
-			var weight = pow(0.6, acquisition_count)
+			# Base weight of 1.0 for all abilities (no diversity penalty)
+			var weight = 1.0
 
 			# Apply synergy weight boost if enabled
 			if apply_synergy_boost and _has_synergy_with_current_build(ability):
@@ -317,3 +313,51 @@ func _pick_weighted_upgrade(upgrades: Array) -> Variant:
 
 	# For now, just pick random - can add rarity weighting later
 	return upgrades[randi() % upgrades.size()]
+
+# ============================================
+# GUARANTEED ACTIVE UPGRADE AT SPECIFIC LEVELS
+# ============================================
+
+func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
+	"""
+	Get passive ability choices with one guaranteed active upgrade slot.
+	Used at levels 3, 7, 12 to offer active ability upgrade path.
+	Returns mixed array of AbilityData (passives) and ActiveAbilityData (upgrade trigger).
+	"""
+	var choices: Array = []
+
+	# Check if this level should have guaranteed active upgrade
+	if level in ACTIVE_UPGRADE_LEVELS:
+		var active_upgrade = _get_active_upgrade_trigger()
+		if active_upgrade:
+			choices.append(active_upgrade)
+
+	# Fill remaining slots with passives
+	var passive_count = count - choices.size()
+	var passives = get_random_abilities(passive_count)
+	for passive in passives:
+		choices.append(passive)
+
+	# Shuffle to randomize position of active upgrade card
+	choices.shuffle()
+	return choices
+
+func _get_active_upgrade_trigger() -> Variant:
+	"""
+	Get an active ability upgrade to use as trigger card.
+	When clicked, this will show the branching UI with all available branches.
+	"""
+	if not ActiveAbilityManager:
+		return null
+
+	var upgrades = ActiveAbilityManager.get_available_upgrades()
+	if upgrades.is_empty():
+		return null
+
+	# Return the first upgrade as the trigger card
+	# The UI will show all branches when this is clicked
+	return upgrades[0]
+
+func should_offer_active_upgrade(level: int) -> bool:
+	"""Check if this level should offer an active ability upgrade."""
+	return level in ACTIVE_UPGRADE_LEVELS

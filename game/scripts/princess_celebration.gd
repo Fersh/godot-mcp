@@ -184,8 +184,8 @@ func _create_princess_sprite() -> void:
 		var region = PrincessManager.get_sprite_region(princess_data.sprite_character, "walk", 0)
 		princess_sprite.region_rect = region
 
-	# Scale up for visibility (32x32 is small) - reduced 70% from original 3.0
-	princess_sprite.scale = Vector2(0.9, 0.9)
+	# Scale up for visibility (32x32 is small) - 50% larger than previous 0.9
+	princess_sprite.scale = Vector2(1.35, 1.35)
 
 	# Position at top center
 	var viewport_rect = get_viewport_rect()
