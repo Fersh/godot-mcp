@@ -954,23 +954,41 @@ func _execute_slam_meteor(ability: ActiveAbilityData, player: Node2D) -> void:
 # ============================================
 
 func _execute_dash_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Chain 3 dashes"""
+	"""Tier 2: Chain 3 dashes in quick succession"""
 	var damage = _get_damage(ability)
 	var direction = _get_attack_direction(player)
+	var dash_duration = 0.12
+	var dash_distance = ability.range_distance
 
-	# Perform 3 quick dashes
+	# Chain 3 dashes using a tween for timing
+	var tween = player.create_tween()
+
 	for i in range(3):
-		var start = player.global_position
-		_dash_player(player, direction, ability.range_distance, 0.15)
+		# Capture current position at start of each dash
+		tween.tween_callback(func():
+			var start_pos = player.global_position
+			var end_pos = start_pos + direction * dash_distance
 
-		# Damage enemies in path
-		var enemies = _get_enemies_in_radius(start + direction * ability.range_distance * 0.5, ability.range_distance)
-		for enemy in enemies:
-			_deal_damage_to_enemy(enemy, damage)
+			# Clamp to arena bounds
+			end_pos.x = clamp(end_pos.x, -60, 1596)
+			end_pos.y = clamp(end_pos.y, 40, 1342)
 
-		_spawn_effect("blade_rush", start)
+			# Spawn effect at start
+			_spawn_effect("blade_rush", start_pos)
 
-	_play_sound("blade_rush")
+			# Damage enemies in dash path
+			var enemies = _get_enemies_in_radius(start_pos + direction * dash_distance * 0.5, dash_distance * 0.7)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage)
+
+			# Move player
+			var dash_tween = player.create_tween()
+			dash_tween.tween_property(player, "global_position", end_pos, dash_duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+			_play_sound("dash_strike")
+		)
+		# Wait for dash to complete before next one
+		tween.tween_interval(dash_duration + 0.05)
 
 func _execute_dash_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Teleport between enemies, massive damage"""
