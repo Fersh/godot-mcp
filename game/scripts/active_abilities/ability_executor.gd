@@ -2157,24 +2157,36 @@ func _start_periodic_damage(player: Node2D, ability: ActiveAbilityData, screen_w
 # ============================================
 
 func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Create a wall of fire that damages and burns enemies passing through."""
+	"""Create a wall of fire parallel between player and enemies - enemies walk through it."""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var wall_length = 350.0  # Much wider wall
-	var wall_width = 120.0   # Much wider hit area
+	var wall_length = 350.0  # Wide wall
+	var wall_width = 120.0   # Thick hit area for walking through
 
 	# Burn parameters
 	var burn_duration = 3.0
 	var burn_damage = damage * 0.5  # Burn deals 50% of hit damage over duration
 
-	# Calculate wall center position in front of player
-	var wall_center = player.global_position + direction * 100
+	# Find nearest enemy to determine wall orientation
+	var target = _get_nearest_enemy(player.global_position, 600.0)
+	var direction_to_enemy: Vector2
+	if target:
+		direction_to_enemy = (target.global_position - player.global_position).normalized()
+	else:
+		direction_to_enemy = _get_attack_direction(player)
+
+	# Calculate wall center - place it between player and enemy (closer to player)
+	var wall_distance = 150.0  # Distance from player
+	var wall_center = player.global_position + direction_to_enemy * wall_distance
+
+	# Wall is PERPENDICULAR to enemy direction - so enemies walk through it
+	# Rotate 90 degrees from the direction to enemy
+	var wall_angle = direction_to_enemy.angle() + PI / 2.0
 
 	# Create wall visual
 	var wall = Node2D.new()
 	wall.name = "FlameWall"
 	wall.global_position = wall_center
-	wall.rotation = direction.angle()
+	wall.rotation = wall_angle  # Perpendicular to enemy direction
 	wall.modulate.a = 0.9  # 90% opacity
 	get_tree().current_scene.add_child(wall)
 

@@ -103,18 +103,18 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	_register(_create_rain_of_arrows())
 	_register(_create_piercing_volley())
-	_register(_create_cluster_bomb())
-	_register(_create_fan_of_knives())
+	# _register(_create_cluster_bomb())  # Removed - now Explosive Arrow Tree T2
+	# _register(_create_fan_of_knives())  # Removed - now Multi Shot Tree T2
 	_register(_create_sentry_turret())
 
 	# ============================================
 	# RANGED - LEGENDARY
 	# ============================================
-	_register(_create_arrow_storm())
+	# _register(_create_arrow_storm())  # Removed - now Rain of Arrows Tree T2
 	_register(_create_ballista_strike())
-	_register(_create_sentry_network())
-	_register(_create_rain_of_vengeance())
-	_register(_create_explosive_decoy())
+	# _register(_create_sentry_network())  # Removed - now Turret Tree T3 (Gatling Network)
+	# _register(_create_rain_of_vengeance())  # Removed - now Rain of Arrows Tree T3 (Arrow Apocalypse)
+	# _register(_create_explosive_decoy())  # Removed - now Decoy Tree T2
 
 	# ============================================
 	# GLOBAL - COMMON
@@ -153,14 +153,14 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# NEW ABILITIES - TRAPS
 	# ============================================
-	_register(_create_bear_trap())
+	# _register(_create_bear_trap())  # Removed - now Trap Tree T2 (ranged)
 	_register(_create_glue_bomb())
 	_register(_create_pressure_mine())
 
 	# ============================================
 	# NEW ABILITIES - STEALTH & DECEPTION
 	# ============================================
-	_register(_create_smoke_bomb())
+	# _register(_create_smoke_bomb())  # Removed - now Smoke Tree BASE (ranged)
 	_register(_create_now_you_see_me())
 	_register(_create_pocket_sand())
 
@@ -175,7 +175,7 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	_register(_create_mirror_clone())
 	_register(_create_uno_reverse())
-	_register(_create_orbital_strike())
+	# _register(_create_orbital_strike())  # Removed - now Rain of Arrows Tree T3 Branch B (ranged)
 	_register(_create_summon_party())
 	_register(_create_panic_button())
 	_register(_create_pocket_healer())

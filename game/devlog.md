@@ -2,6 +2,48 @@
 
 ---
 
+## Date: 2025-12-04 - Ranged Standalone Ability Cleanup
+
+### Summary
+Removed 9 standalone ranged/global abilities that duplicate functionality now available through ability tree upgrades.
+
+### Abilities Removed (Commented Out)
+
+| Ability | Rarity | Tree Equivalent | Tree Position |
+|---------|--------|-----------------|---------------|
+| **cluster_bomb** | RARE | Cluster Bomb | Explosive Arrow T2 |
+| **fan_of_knives** | RARE | Fan of Knives | Multi Shot T2 |
+| **arrow_storm** | EPIC | Arrow Storm | Rain of Arrows T2 |
+| **sentry_network** | EPIC | Gatling Network | Turret Tree T3 |
+| **rain_of_vengeance** | EPIC | Arrow Apocalypse | Rain of Arrows T3 |
+| **explosive_decoy** | EPIC | Explosive Decoy | Decoy Tree T2 |
+| **bear_trap** | RARE | Bear Trap | Trap Tree T2 |
+| **smoke_bomb** | RARE | Smoke Bomb | Smoke Tree BASE |
+| **orbital_strike** | EPIC | Orbital Strike | Rain Tree T3 Branch B |
+
+### Abilities Kept
+- **ballista_strike** (EPIC) - Unique high single-target pierce damage, distinct from Snipe/Power Shot trees
+
+### Files Modified
+- `active_ability_database.gd` - Commented out 9 duplicate ability registrations
+
+---
+
+## Date: 2025-12-04 - Flame Wall Orientation Fix
+
+### Summary
+Updated Flame Wall to cast perpendicular to enemy direction, creating a barrier enemies walk through.
+
+### Change
+- Wall now finds nearest enemy and places itself between player and enemy
+- Wall orientation is 90 degrees perpendicular to enemy direction
+- Enemies walking toward player now walk through the wall (maximizing damage/burn)
+
+### Files Modified
+- `ability_executor.gd` - Updated `_execute_flame_wall()` positioning logic
+
+---
+
 ## Date: 2025-12-04 - Property Name & Parser Fixes
 
 ### Summary
