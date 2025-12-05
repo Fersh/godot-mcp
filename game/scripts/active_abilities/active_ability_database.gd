@@ -63,31 +63,32 @@ static func _ensure_initialized() -> void:
 
 static func _register_all_abilities() -> void:
 	# ============================================
-	# MELEE - COMMON
+	# MELEE - COMMON (from trees)
 	# ============================================
 	_register(_create_cleave())
 	_register(_create_shield_bash())
 	_register(_create_ground_slam())
-	# _register(_create_spinning_attack())  # Removed - renamed to Whirlwind (now tree base)
 	_register(_create_dash_strike())
+	# Additional melee trees - load base abilities from tree registry
+	_register_from_tree("whirlwind")      # Whirlwind (Spin Tree)
+	_register_from_tree("impale")         # Impale Tree
+	_register_from_tree("uppercut")       # Uppercut Tree
+	_register_from_tree("combo_strike")   # Combo Strike Tree
+	_register_from_tree("parry")          # Parry Tree
+	_register_from_tree("block")          # Block Tree
+	_register_from_tree("throw_weapon")   # Throw Weapon Tree
+	_register_from_tree("roar")           # Terrifying Roar Tree
+	_register_from_tree("stomp")          # Stomp Tree
+	_register_from_tree("charge")         # Charge Tree
+	_register_from_tree("taunt")          # Taunt Tree
 
 	# ============================================
-	# MELEE - RARE
+	# MELEE - RARE (from trees)
 	# ============================================
-	# _register(_create_whirlwind())  # Removed - now Whirlwind Tree base (COMMON)
-	# _register(_create_seismic_slam())  # Removed - now Slam Tree T2 (Seismic Ground Slam)
 	_register(_create_savage_leap())
-	# _register(_create_blade_rush())  # Removed - now Dash Tree T2 (Rushing Dash Strike)
 	_register(_create_battle_cry())
-
-	# ============================================
-	# MELEE - LEGENDARY
-	# ============================================
-	# _register(_create_earthquake())  # Removed - now Slam Tree T3 (Seismic Ground Slam of Cataclysm)
-	# bladestorm removed - now part of spin_tree as spin_bladestorm (T3)
-	# _register(_create_omnislash())  # Removed - now Dash Tree T3 (Rushing Dash Strike of Oblivion)
-	# _register(_create_avatar_of_war())  # Removed - needs Transform tree base ability
-	# _register(_create_divine_shield())  # Removed - now Block Tree T3 (Reflecting Block of Retribution)
+	_register_from_tree("execute")        # Execute Tree
+	_register_from_tree("rampage")        # Rampage Tree
 
 	# ============================================
 	# RANGED - COMMON
@@ -199,6 +200,14 @@ static func _register_all_abilities() -> void:
 
 static func _register(ability: ActiveAbilityData) -> void:
 	_abilities[ability.id] = ability
+
+static func _register_from_tree(base_id: String) -> void:
+	"""Register a base ability by loading it from the AbilityTreeRegistry."""
+	var tree = AbilityTreeRegistry.get_tree(base_id)
+	if tree and tree.base_ability:
+		_abilities[tree.base_ability.id] = tree.base_ability
+	else:
+		push_warning("ActiveAbilityDatabase: Could not find tree for base_id: " + base_id)
 
 # ============================================
 # MELEE ABILITY CREATORS - COMMON

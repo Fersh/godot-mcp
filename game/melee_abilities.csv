@@ -1,0 +1,131 @@
+Tree Name,Ability Name,Tier,Branch,Builds From,Description,Damage,Damage Multiplier,Cooldown (sec),Range,Radius (AoE),Stun (sec),Knockback,Duration (sec),Signature/Special
+
+# ==========================================
+# HOW TO READ THIS FILE:
+# ==========================================
+# - Tree Name: The ability family (e.g. "Shield Bash" tree)
+# - Tier: Base = starting ability, Upgrade = enhanced version, Ultimate = most powerful
+# - Branch: Each tree splits into two paths (A and B) after the Base
+# - Builds From: Which ability you need first to unlock this one
+# - Signature/Special: Ultimate abilities have unique bonus effects
+# ==========================================
+
+Shield Bash,Shield Bash,Base,-,None,Bash an enemy with your shield; stunning them briefly and knocking them back.,40,1.2,6,-,-,1.0,150,-,-
+Shield Bash,Shockwave Shield Bash,Upgrade,A,Shield Bash,Creates a shockwave that stuns all nearby enemies.,45,1.3,7,-,150,0.8,100,-,-
+Shield Bash,Shockwave Shield Bash of Destruction,Ultimate,A,Shockwave Shield Bash,Slam with devastating force. Enemies are launched airborne and stunned.,70,2.0,10,-,250,2.0,300,-,Launches enemies airborne with massive AoE stun
+Shield Bash,Lockdown Shield Bash,Upgrade,B,Shield Bash,A focused bash that stuns a single enemy for an extended duration.,50,1.5,6,-,-,3.0,50,-,-
+Shield Bash,Lockdown Shield Bash of Petrification,Ultimate,B,Lockdown Shield Bash,Turn your enemy to stone. Petrified enemies take double damage.,60,1.8,8,-,-,4.0,-,-,Petrified enemies take 2x damage
+
+Ground Slam,Ground Slam,Base,-,None,Slam the ground; damaging all nearby enemies.,40,1.2,6,-,100,0.3,-,-,-
+Ground Slam,Seismic Ground Slam,Upgrade,A,Ground Slam,Creates aftershock waves that travel outward.,50,1.4,7,-,150,0.5,-,1.5,-
+Ground Slam,Seismic Ground Slam of Cataclysm,Ultimate,A,Seismic Ground Slam,Devastate the entire battlefield with seismic fury.,80,2.0,18,-,400,1.5,-,3.0,Screen-wide damage over 3 seconds; stuns all
+Ground Slam,Crater Ground Slam,Upgrade,B,Ground Slam,Leave burning ground where you slam.,55,1.3,7,-,120,-,-,4.0,-
+Ground Slam,Crater Ground Slam of Meteors,Ultimate,B,Crater Ground Slam,Leap into the air and crash down like a meteor.,120,2.5,15,-,180,2.0,-,-,Leap to target; invulnerable; massive impact crater
+
+Stomp,Stomp,Base,-,None,Stomp the ground; creating a damaging shockwave.,40,1.1,5,-,120,-,-,-,-
+Stomp,Quake Stomp,Upgrade,A,Stomp,Shockwaves travel further and hit harder.,50,1.3,6,-,180,-,-,-,30% slow for 2s
+Stomp,Tectonic Shift,Ultimate,A,Quake Stomp,Reshape the ground itself; creating fissures that damage over time.,60,1.5,18,-,300,-,-,5.0,Creates ground fissures; DoT zone; knockback; terrain hazard
+Stomp,Thunder Stomp,Upgrade,B,Stomp,Stomp with enough force to stun enemies.,45,1.2,7,-,140,1.0,-,-,-
+Stomp,Thunderous Impact,Ultimate,B,Thunder Stomp,Leap and stomp with earth-shattering force.,100,2.0,15,300,200,2.5,-,-,Leap to target; massive stun; screen shake; knockback
+
+Savage Leap,Savage Leap,Base,-,None,Leap to target location; damaging enemies on impact.,50,1.3,7,300,100,-,-,-,-
+Savage Leap,Tremor Savage Leap,Upgrade,A,Savage Leap,Landing creates a shockwave that stuns enemies.,55,1.4,8,300,150,1.0,-,-,-
+Savage Leap,Tremor Savage Leap of Extinction,Ultimate,A,Tremor Savage Leap,Leap so hard meteors rain from the sky on impact.,80,2.0,18,350,250,2.0,-,2.0,4 meteors rain down around landing zone
+Savage Leap,Predator Savage Leap,Upgrade,B,Savage Leap,Gain 30% attack speed for 3 seconds after leaping.,45,1.2,6,300,100,-,-,3.0,-
+Savage Leap,Predator Savage Leap of the Apex,Ultimate,B,Predator Savage Leap,Chain leaps to 3 enemies; heal for each kill.,60,1.6,16,400,80,-,-,-,Chain to 3 enemies; heal 15% max HP per kill
+
+Cleave,Cleave,Base,-,None,Swing your weapon in a wide arc; damaging all enemies in front of you.,55,1.5,8,-,180,-,-,-,-
+Cleave,Executioner's Cleave,Upgrade,A,Cleave,Deals 2x damage to enemies below 50% HP.,60,1.8,8,-,180,-,-,-,-
+Cleave,Executioner's Cleave of Judgment,Ultimate,A,Executioner's Cleave,Execute enemies below 20% HP instantly. Deals massive damage to others.,80,2.5,10,-,200,-,-,-,Instant execute enemies below 20% HP
+Cleave,Sweeping Cleave,Upgrade,B,Cleave,Slows enemies by 60% for 2 seconds.,50,1.5,8,-,200,-,-,-,60% slow for 2s
+Cleave,Sweeping Cleave of Thunder,Ultimate,B,Sweeping Cleave,Unleash a devastating shockwave that knocks enemies back and stuns them.,65,2.0,10,-,250,1.5,300,-,Massive knockback wave that stuns enemies
+
+Whirlwind,Whirlwind,Base,-,None,Spin rapidly; damaging all enemies around you.,25,1.0,8,-,120,-,-,2.0,-
+Whirlwind,Vacuum Whirlwind,Upgrade,A,Whirlwind,Pull nearby enemies toward you while spinning.,30,1.1,9,-,180,-,-150 (pull),2.5,-
+Whirlwind,Vacuum Whirlwind of Singularity,Ultimate,A,Vacuum Whirlwind,Become a gravitational anomaly; shredding all who approach.,40,1.5,20,-,250,-,-300 (pull),4.0,Massive pull radius; damage scales with proximity
+Whirlwind,Fiery Whirlwind,Upgrade,B,Whirlwind,Leaves trails of fire while spinning.,30,1.2,9,-,130,-,-,2.5,-
+Whirlwind,Fiery Whirlwind of Inferno,Ultimate,B,Fiery Whirlwind,Transform into a massive fire tornado that scorches everything.,50,1.8,22,-,200,-,-,5.0,Leave burning ground; enemies take 50% more fire damage
+
+Whirlwind (Spin),Whirlwind,Base,-,None,Spin rapidly; damaging all enemies around you.,30,1.0,6,-,120,-,-,1.5,-
+Whirlwind (Spin),Vortex Whirlwind,Upgrade,A,Whirlwind,Creates a vortex that pulls enemies toward you while dealing damage.,10,0.5,25,-,150,-,-,3.0,-
+Whirlwind (Spin),Vortex Whirlwind of Storms,Ultimate,A,Vortex Whirlwind,Become a whirlwind of death. Move freely while constantly damaging enemies.,15,0.8,30,-,180,-,-,5.0,Move freely while spinning; pulls enemies in
+Whirlwind (Spin),Deflecting Whirlwind,Upgrade,B,Whirlwind,Deflects incoming projectiles back at enemies.,30,1.1,6,-,130,-,-,1.5,-
+Whirlwind (Spin),Deflecting Whirlwind of Mirrors,Ultimate,B,Deflecting Whirlwind,Reflects all projectiles. Reflected projectiles home in on enemies.,35,1.3,10,-,150,-,-,2.5,Reflected projectiles become homing missiles (2.5s invulnerable)
+
+Uppercut,Uppercut,Base,-,None,Launch an enemy into the air with a powerful uppercut.,45,1.2,6,100,-,-,200,-,-
+Uppercut,Juggle,Upgrade,A,Uppercut,Keep airborne enemies in the air with follow-up attacks.,35,1.0,7,120,-,-,150,2.0,-
+Uppercut,Air Combo,Ultimate,A,Juggle,Launch into air and deliver a devastating combo.,30,0.9,15,150,-,-,-,3.0,10-hit air combo; invulnerable during; finisher slams down
+Uppercut,Grab,Upgrade,B,Uppercut,Grab an airborne enemy and slam them down.,60,1.4,8,100,80,1.0,-,-,-
+Uppercut,Piledriver,Ultimate,B,Grab,Leap up; grab enemy; and suplex them into the ground.,150,2.2,16,150,150,2.0,-,-,Invulnerable grab; massive slam AoE; earthquake on impact
+
+Execute,Execute,Base,-,None,Strike a wounded enemy for bonus damage. +100% damage below 30% HP.,60,1.4,8,150,-,-,-,-,-
+Execute,Reaper's Touch,Upgrade,A,Execute,Enemies below 20% HP are instantly killed.,50,1.2,10,150,-,-,-,-,-
+Execute,Soul Harvest,Ultimate,A,Reaper's Touch,Executions restore health and extend the kill threshold.,55,1.3,12,180,-,-,-,-,Kill below 25% HP; heal 20% max HP per kill; resets cooldown on kill
+Execute,Brutal Strike,Upgrade,B,Execute,Massive overhead strike. Ignores armor on low HP targets.,100,1.8,10,120,-,-,-,-,-
+Execute,Decapitate,Ultimate,B,Brutal Strike,Guaranteed critical hit. Targets below 40% HP take triple damage.,120,2.0,15,150,-,-,-,-,Always crits; 3x damage below 40% HP; brief slow-mo on kill
+
+Rampage,Rampage,Base,-,None,Enter a rampage; increasing attack speed.,0,0,15,-,-,-,-,5.0,Self-buff
+Rampage,Frenzy,Upgrade,A,Rampage,Attacks build frenzy stacks; each increasing speed further.,0,0,15,-,-,-,-,6.0,Self-buff with stacking
+Rampage,Bloodlust,Ultimate,A,Frenzy,Each kill during rampage extends duration and increases power.,0,0,18,-,-,-,-,8.0,Kills extend duration by 2s; +10% damage per kill; lifesteal during rampage
+Rampage,Fury,Upgrade,B,Rampage,Rampage now also increases damage dealt.,0,0,16,-,-,-,-,5.0,Self-buff
+Rampage,Unstoppable Force,Ultimate,B,Fury,Become an unstoppable force of destruction.,0,0,25,-,-,-,-,6.0,Immune to CC; +100% damage; move through enemies dealing damage
+
+Dash Strike,Dash Strike,Base,-,None,Dash forward; damaging enemies in your path.,35,1.0,4,200,-,-,-,-,-
+Dash Strike,Rushing Dash Strike,Upgrade,A,Dash Strike,Chain up to 3 dashes in quick succession.,30,1.1,6,150,-,-,-,-,3 dashes
+Dash Strike,Rushing Dash Strike of Oblivion,Ultimate,A,Rushing Dash Strike,Teleport between enemies; striking each one multiple times.,50,1.8,20,400,-,-,-,2.0,Invulnerable; teleport to 8 enemies; hit each 3 times
+Dash Strike,Shadow Dash Strike,Upgrade,B,Dash Strike,Leave a damaging clone at your start position.,40,1.2,5,200,-,-,-,2.0,-
+Dash Strike,Shadow Dash Strike of Shadows,Ultimate,B,Shadow Dash Strike,Create 4 shadow clones that mimic your attacks.,25,1.0,18,-,-,-,-,8.0,4 shadow clones follow you; each dealing 25% of your damage
+
+Combo Strike,Combo Strike,Base,-,None,Execute a 3-hit combo attack.,25,0.9,4,100,-,-,-,-,3 hits
+Combo Strike,Chain Combo,Upgrade,A,Combo Strike,5-hit combo. Each hit builds attack speed.,22,0.8,5,100,-,-,-,-,5 hits
+Combo Strike,Infinite Combo,Ultimate,A,Chain Combo,Rapid attacks until you run out of stamina or miss.,18,0.7,12,120,-,-,-,5.0,Attack until interrupted; +5% damage per hit; lifesteal on hit
+Combo Strike,Combo Finisher,Upgrade,B,Combo Strike,3-hit combo with powerful final strike.,30,1.0,5,100,-,-,-,-,3 hits
+Combo Strike,Ultimate Finisher,Ultimate,B,Combo Finisher,5-hit combo building to devastating final attack.,25,0.9,10,120,100,1.0,-,-,5th hit deals 400% damage; AoE shockwave; brief slow-mo
+
+Impale,Impale,Base,-,None,Thrust forward; impaling an enemy for bonus damage.,55,1.4,5,180,-,-,-,-,-
+Impale,Skewer,Upgrade,A,Impale,Pierce through up to 3 enemies in a line.,45,1.2,6,250,-,-,-,-,Pierces 3 enemies
+Impale,Shish Kebab,Ultimate,A,Skewer,Skewer enemies and carry them; then slam them down.,40,1.1,12,300,120,1.5,-,-,Carry up to 5 enemies; slam deals AoE + stuns; move while carrying
+Impale,Pinning Strike,Upgrade,B,Impale,Pin an enemy in place for 2 seconds.,50,1.3,7,150,-,2.0,-,-,-
+Impale,Crucify,Ultimate,B,Pinning Strike,Thrust enemy into nearest wall; dealing massive bonus damage.,100,2.0,14,200,-,3.0,-,-,Push to wall for 3x damage; pinned for 3 seconds; bleed effect
+
+Parry,Parry,Base,-,None,Parry the next incoming attack.,0,0,4,-,-,-,-,0.5,Defensive
+Parry,Counter Strike,Upgrade,A,Parry,Successful parry triggers a powerful counter attack.,60,1.5,5,100,-,-,-,0.6,-
+Parry,Perfect Riposte,Ultimate,A,Counter Strike,A perfectly timed parry deals devastating counter damage.,150,3.0,6,150,-,1.5,-,0.8,Parry window extended; counter crits guaranteed; stuns attacker
+Parry,Deflection,Upgrade,B,Parry,Parry can also deflect projectiles back at enemies.,40,1.0,5,-,-,-,-,0.7,-
+Parry,Mirror Guard,Ultimate,B,Deflection,Become invulnerable briefly; reflecting all damage back.,0,0,12,-,200,-,-,1.5,100% damage reflection; immunity during duration; AoE reflect burst
+
+Block,Block,Base,-,None,Raise your guard; reducing incoming damage by 50%.,0,0,6,-,-,-,-,1.5,Defensive
+Block,Reflecting Block,Upgrade,A,Block,Also reflects projectiles back at enemies.,0,0,8,-,-,-,-,2.0,-
+Block,Reflecting Block of Retribution,Ultimate,A,Reflecting Block,All blocked damage is reflected back to attackers.,0,0,15,-,-,-,-,3.0,100% damage reflection; projectiles return at 2x speed
+Block,Parrying Block,Upgrade,B,Block,Brief window to negate damage and stun attacker.,0,0,6,-,-,1.0,-,0.4,-
+Block,Parrying Block of Vengeance,Ultimate,B,Parrying Block,Perfect parry triggers devastating counter-attack.,150,2.5,8,-,-,2.0,-,0.3,Tiny parry window; success deals 250% damage + 2s stun
+
+Throw Weapon,Throw Weapon,Base,-,None,Hurl your weapon at an enemy; dealing heavy damage.,50,1.3,5,350,-,-,-,-,Projectile
+Throw Weapon,Bouncing Throw Weapon,Upgrade,A,Throw Weapon,Weapon bounces between up to 4 enemies.,40,1.1,6,400,-,-,-,-,Bounces to 4 targets
+Throw Weapon,Bouncing Throw Weapon of Storms,Ultimate,A,Bouncing Throw Weapon,Summon 6 blades that orbit you; shredding nearby enemies.,25,0.8,18,-,120,-,-,8.0,6 orbiting blades for 8 seconds; can throw them at will
+Throw Weapon,Grappling Throw Weapon,Upgrade,B,Throw Weapon,Throw weapon then pull yourself to its location.,45,1.2,7,400,-,-,-,-,Movement ability
+Throw Weapon,Grappling Throw Weapon of Impalement,Ultimate,B,Grappling Throw Weapon,Throw a massive spear that pins enemies and pierces infinitely.,80,1.8,15,600,-,2.0,-,-,Infinite pierce; enemies pinned for 2s; pull yourself to end point
+
+Terrifying Roar,Terrifying Roar,Base,-,None,Let out a roar that causes enemies to flee briefly.,0,0,10,-,200,-,-,2.0,Fear effect
+Terrifying Roar,Intimidating Roar,Upgrade,A,Terrifying Roar,Feared enemies deal 30% less damage for 5 seconds.,0,0,12,-,250,-,-,5.0,-30% enemy damage
+Terrifying Roar,Crushing Presence,Ultimate,A,Intimidating Roar,Your presence permanently weakens nearby enemies.,0,0,30,-,300,-,-,15.0,Aura: -40% enemy damage; -30% enemy speed; fear on first contact
+Terrifying Roar,Enraging Roar,Upgrade,B,Terrifying Roar,Roar buffs your damage by 40% for 6 seconds.,0,0,14,-,200,-,-,6.0,+40% damage buff
+Terrifying Roar,Blood Rage,Ultimate,B,Enraging Roar,Enter blood rage. Each hit increases your power.,0,0,25,-,200,-,-,10.0,+10% damage per hit (max 100%); lifesteal; attack speed boost
+
+Battle Cry,Battle Cry,Base,-,None,Let out a fearsome cry; boosting your attack speed.,0,0,12,-,-,-,-,5.0,Self-buff
+Battle Cry,Rallying Battle Cry,Upgrade,A,Battle Cry,Inspire nearby allies; granting damage and speed.,0,0,15,-,200,-,-,6.0,Team buff
+Battle Cry,Rallying Battle Cry of Command,Ultimate,A,Rallying Battle Cry,Your presence commands the battlefield. Allies empowered; enemies flee.,0,0,25,-,350,-,-,8.0,50% damage boost to allies; enemies feared for 2s
+Battle Cry,Berserk Battle Cry,Upgrade,B,Battle Cry,Enter a frenzy. Deal 50% more damage but take 25% more.,0,0,12,-,-,-,-,6.0,+50% damage; +25% damage taken
+Battle Cry,Berserk Battle Cry of Rage,Ultimate,B,Berserk Battle Cry,Transform into pure rage. Unstoppable; but burns your life force.,0,0,30,-,-,-,-,10.0,100% damage; immune to CC; but lose 3% HP/sec
+
+Charge,Charge,Base,-,None,Rush forward and slam into the first enemy; dealing damage.,60,1.5,8,200,-,-,-,-,Movement
+Charge,Trampling Charge,Upgrade,A,Charge,Charge through enemies; damaging everyone in your path.,50,1.3,8,250,-,-,-,-,Hits all enemies
+Charge,Trampling Charge of Inferno,Ultimate,A,Trampling Charge,An unstoppable charge that covers triple distance and leaves a trail of fire.,70,1.8,10,600,-,-,-,-,3x charge distance with fire trail
+Charge,Shielded Charge,Upgrade,B,Charge,Raise your shield while charging; becoming immune to damage.,55,1.4,9,200,-,-,200,-,Invulnerable during
+Charge,Shielded Charge of Annihilation,Ultimate,B,Shielded Charge,Nothing can stop you. Stun all enemies in path and destroy projectiles.,80,2.0,12,300,-,2.0,300,-,Destroys projectiles and stuns all in path
+
+Taunt,Taunt,Base,-,None,Force nearby enemies to attack you for 3 seconds.,0,0,12,-,200,-,-,3.0,Aggro control
+Taunt,Fortifying Taunt,Upgrade,A,Taunt,Gain 40% damage reduction while enemies are taunted.,0,0,14,-,250,-,-,4.0,+40% damage reduction
+Taunt,Unstoppable,Ultimate,A,Fortifying Taunt,Become immune to damage and CC. Enemies forced to attack you.,0,0,30,-,300,-,-,3.0,3 seconds of invulnerability; all enemies attack you
+Taunt,Counter Stance,Upgrade,B,Taunt,When hit during taunt; automatically counter-attack.,30,1.0,12,-,200,-,-,4.0,Auto counter-attack
+Taunt,Vengeance,Ultimate,B,Counter Stance,Every hit you take causes an explosion damaging nearby enemies.,50,1.5,25,-,150,-,-,5.0,Each hit triggers AoE explosion; gain 10% lifesteal
