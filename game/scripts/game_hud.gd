@@ -435,31 +435,37 @@ func _create_missions_tracker() -> void:
 	missions_container = VBoxContainer.new()
 	missions_container.name = "MissionsTracker"
 	missions_container.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	missions_container.offset_left = -300  # Width of container from right edge (wider for title)
+	missions_container.offset_left = -320  # Width of container from right edge (wider for title)
 	missions_container.offset_top = 168  # 30px below killstreak (98 + ~40px text + 30px)
-	missions_container.offset_right = -MARGIN - 40  # Shifted 40px left
+	missions_container.offset_right = -MARGIN - 20  # Shifted 20px left
 	missions_container.offset_bottom = 420
 	missions_container.add_theme_constant_override("separation", 8)
 	add_child(missions_container)
 
-	# Create header button
+	# Create header button with larger touch area
 	missions_header = Button.new()
 	missions_header.name = "MissionsHeader"
 	missions_header.flat = true
 	missions_header.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	missions_header.text = ("v " if missions_expanded else "> ") + "MISSIONS"
+	missions_header.custom_minimum_size = Vector2(260, 40)  # Larger touch target
 	missions_header.add_theme_font_size_override("font_size", 12)
 	missions_header.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	missions_header.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
 	if pixel_font:
 		missions_header.add_theme_font_override("font", pixel_font)
-	# Remove all borders/backgrounds
-	var empty_style = StyleBoxEmpty.new()
-	missions_header.add_theme_stylebox_override("focus", empty_style)
-	missions_header.add_theme_stylebox_override("normal", empty_style)
-	missions_header.add_theme_stylebox_override("hover", empty_style)
-	missions_header.add_theme_stylebox_override("pressed", empty_style)
-	missions_header.add_theme_stylebox_override("disabled", empty_style)
+	# Transparent style with padding for larger click area
+	var header_style = StyleBoxFlat.new()
+	header_style.bg_color = Color(0, 0, 0, 0)  # Fully transparent
+	header_style.content_margin_top = 10
+	header_style.content_margin_bottom = 10
+	header_style.content_margin_left = 0  # Align with mission names
+	header_style.content_margin_right = 30  # Extra right padding for touch area
+	missions_header.add_theme_stylebox_override("focus", header_style)
+	missions_header.add_theme_stylebox_override("normal", header_style)
+	missions_header.add_theme_stylebox_override("hover", header_style)
+	missions_header.add_theme_stylebox_override("pressed", header_style)
+	missions_header.add_theme_stylebox_override("disabled", header_style)
 	missions_header.focus_mode = Control.FOCUS_NONE
 	missions_header.pressed.connect(_on_missions_header_pressed)
 	# Set initial transparency based on collapsed state
@@ -482,7 +488,7 @@ func _create_missions_tracker() -> void:
 	for i in range(3):
 		var row = _create_mission_row()
 		row.visible = false
-		row.pivot_offset = Vector2(220, 14)  # Pivot on right side
+		row.pivot_offset = Vector2(260, 14)  # Pivot on right side
 		row.rotation = -0.02  # Very slight rotation (~1.1 degrees, opposite for right side)
 		missions_content.add_child(row)
 		mission_rows.append(row)
@@ -506,7 +512,7 @@ func _on_missions_header_pressed() -> void:
 func _create_mission_row() -> Control:
 	"""Create a single mission row UI element - simplified with dropshadow."""
 	var container = Control.new()
-	container.custom_minimum_size = Vector2(220, 34)  # Wider for longer titles
+	container.custom_minimum_size = Vector2(260, 34)  # Wider for longer titles
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "VBox"
@@ -515,8 +521,8 @@ func _create_mission_row() -> Control:
 	# Mission description label (with dropshadow) - smaller and lighter
 	var title = Label.new()
 	title.name = "Title"
-	title.custom_minimum_size = Vector2(220, 0)  # Max width to prevent overflow
-	title.size = Vector2(220, 0)
+	title.custom_minimum_size = Vector2(260, 0)  # Max width to prevent overflow
+	title.size = Vector2(260, 0)
 	title.clip_text = true  # Clip text that exceeds width
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS  # Show ... for overflow
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT  # Left align with header

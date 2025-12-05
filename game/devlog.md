@@ -2,6 +2,114 @@
 
 ---
 
+## Date: 2025-12-05 - Passive & Active Ability Upgrade System Redesign
+
+### Summary
+Complete overhaul of the passive and active ability upgrade system to be more fluid, varied, and intuitive. Guaranteed active ability upgrades at specific levels, branching UI for active upgrades within passive selection, all passives now stackable with per-rank values, and visual UI improvements.
+
+### Key Features
+
+#### 1. Guaranteed Active Upgrades at Levels 3, 7, 12
+One of the 3 passive choices at these levels is now guaranteed to be an upgrade to an existing active ability. Players can click it to see branch options or skip it for a passive.
+
+#### 2. Branching UI Flow
+When clicking an active upgrade card:
+- Other passive cards animate out
+- 1-3 branch options appear (e.g., Executioner's Cleave vs Sweeping Cleave)
+- Cancel button replaces Reroll to return to original choices
+
+#### 3. All Passives Stackable (Max Rank 3)
+- Removed 40% diversity penalty that reduced same-ability selection weight
+- Every passive can now be acquired up to 3 times
+- Each passive defines unique rank 1/2/3 values (not just additive stacking)
+- Passives at max rank no longer appear in selection pool
+
+#### 4. Rank Display (Replaces Diamonds)
+- Tier diamonds replaced with numbered circles (1, 2, 3)
+- Gray outline for "new" (rank 0 → 1)
+- Green for ranks 1-2
+- Gold for max rank 3
+
+#### 5. New/Upgrade Labels
+- "New" label (yellow) at bottom of cards for first-time abilities
+- "Upgrade" label (green) for abilities player already has
+
+### Passive Rank Values (Examples)
+
+| Passive | Rank 1 | Rank 2 | Rank 3 |
+|---------|--------|--------|--------|
+| Berserker's Fury | +3% dmg when hit | +5% dmg when hit | +7% dmg when hit |
+| Executioner | +30% dmg <30% HP | +50% dmg <30% HP | +75% dmg <30% HP |
+| Blade Orbit | 1 sword | 2 swords | 3 swords |
+| Static Charge | Stun every 7s | Stun every 5s | Stun every 3s |
+| Mirror Shield | Reflect every 7s | Reflect every 5s | Reflect every 3s |
+| Ceremonial Dagger | 1 dagger on kill | 2 daggers on kill | 3 daggers on kill |
+
+### Files Created
+- `game/scripts/abilities/rank_tracker.gd` - Central rank tracking module
+- `game/scripts/abilities/ui/branch_selector.gd` - Branch selection UI state handler
+
+### Files Modified
+
+**Core Systems:**
+- `ability_data.gd` - Added `rank_effects`, `rank_descriptions`, builder methods
+- `ability_manager.gd` - Integrated RankTracker, `get_ability_rank()`, `is_ability_at_max_rank()`, `get_passive_choices_with_active_upgrade()`
+- `active_ability_manager.gd` - Added tier-based rank tracking for actives
+- `ability_pool.gd` - Removed diversity penalty, added max rank filter, equal weight for all
+
+**Level-Up Handler:**
+- `main.gd` - Updated `_on_player_level_up()` to inject active upgrades at levels 3, 7, 12
+
+**UI:**
+- `ability_selection_ui.gd` - Added `SelectionMode` state machine, branch selection flow, rank circles, New/Upgrade labels
+
+**Passive Definitions (10 files):**
+- `combat_passives.gd` - 16 passives with rank values
+- `defensive_passives.gd` - 7 passives with rank values
+- `elemental_passives.gd` - 7 passives with rank values
+- `legendary_passives.gd` - 11 passives with rank values
+- `conditional_passives.gd` - 3 passives with rank values
+- `orbital_passives.gd` - 5 passives with rank values
+- `synergy_passives.gd` - 4 passives with rank values
+- `summon_passives.gd` - 2 passives with rank values
+- `chaos_passives.gd` - 17 passives with rank values
+- `mythic_passives.gd` - 2 passives with rank values
+
+### Technical Details
+
+**RankTracker Module:**
+```gdscript
+const MAX_PASSIVE_RANK: int = 3
+var _passive_ranks: Dictionary = {}  # ability_id -> rank (1-3)
+var _active_ranks: Dictionary = {}   # base_ability_id -> tier (1-3)
+
+func increment_passive_rank(ability_id: String) -> int
+func is_passive_at_max_rank(ability_id: String) -> bool
+```
+
+**Rank Effects Builder Pattern:**
+```gdscript
+AbilityData.new(...)
+    .with_rank_effects(
+        [{effect_type = ..., value = 0.03}],  # Rank 1
+        [{effect_type = ..., value = 0.05}],  # Rank 2
+        [{effect_type = ..., value = 0.07}]   # Rank 3
+    )
+    .with_rank_descriptions(
+        "Rank 1 description",
+        "Rank 2 description",
+        "Rank 3 description"
+    )
+```
+
+**Branch Selection State Machine:**
+```gdscript
+enum SelectionMode { NORMAL, BRANCH_SELECTION }
+var _branch_selector: BranchSelector = null
+```
+
+---
+
 ## Date: 2025-12-05 - Execute Tree Migration to Passive Upgrade Chain
 
 ### Summary
