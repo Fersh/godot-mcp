@@ -75,7 +75,7 @@ enum EffectType {
 	GIANT_SLAYER,       # Bonus damage to high HP enemies
 	BACKSTAB,           # Bonus crit chance
 	PARRY,              # Chance to block damage entirely
-	SEISMIC_SLAM,       # Chance to stun enemies
+	STUNNER_SHADES,     # Chance to stun enemies
 	BLOODTHIRST,        # Attack speed boost on kill
 	DOUBLE_TAP,         # Chance to fire twice
 	POINT_BLANK,        # Bonus damage at close range

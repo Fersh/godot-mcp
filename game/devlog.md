@@ -2,6 +2,93 @@
 
 ---
 
+## Date: 2025-12-05 - Melee Ability Roster Consolidation
+
+### Summary
+Consolidated the melee ability roster from 19 to 11 active trees by removing redundant abilities and adding new branches to existing trees. Changed Battle Cry from offensive to defensive buff. Migrated Fiery Whirlwind into the main Whirlwind tree. Added Stun-focused branch to Ground Slam.
+
+### Trees Commented Out (8 total)
+
+| Tree | Reason |
+|------|--------|
+| **Charge** | Consolidating roster - gap close covered by Dash/Leap |
+| **Stomp** | Redundant with Ground Slam (both ground AoE) |
+| **Shield Bash** | Stun functionality migrated to Ground Slam Branch C |
+| **Taunt** | Redundant with defensive Battle Cry |
+| **Impale** | Overlaps with Charge (gap close + pin) |
+| **Uppercut** | Overlaps with Shield Bash (single-target CC) |
+| **Whirlwind (duplicate)** | Merged into SpinTree |
+| **Fireball** | Temporarily disabled |
+
+### Active Melee Trees (11 remaining)
+
+| Tree | Identity |
+|------|----------|
+| **Cleave** | Wide frontal damage |
+| **Whirlwind** | Sustained spinning AoE (3 branches: Vortex/Deflect/Fiery) |
+| **Ground Slam** | Ground pound AoE (3 branches: Seismic/Crater/Concussive) |
+| **Dash** | Evasive mobility |
+| **Leap** | Aerial engage/disengage |
+| **Battle Cry** | Defensive buff (damage reduction, CC immunity) |
+| **Throw** | Ranged melee option |
+| **Execute** | Finisher vs low HP |
+| **Block** | Active damage mitigation |
+| **Combo** | Multi-hit chain DPS |
+| **War Cry (Roar)** | Offensive buff (attack speed, damage) |
+| **Parry** | Timed counter-attack |
+| **Rampage** | Berserker mode sustained damage |
+
+### Battle Cry Rework (Defensive)
+
+Changed from offensive attack speed buff to defensive damage reduction:
+
+| Ability | Tier | Effect |
+|---------|------|--------|
+| **Battle Cry** | BASE | 40% damage reduction for 5 seconds |
+| **Rallying Battle Cry** | T2-A | 30% damage reduction to all nearby allies |
+| **Iron Battle Cry** | T2-B | CC immunity + 50% damage reduction |
+| **Rallying Battle Cry of the Fortress** | T3-A | 50% DR aura + 25% damage reflection |
+| **Iron Battle Cry of the Unbreakable** | T3-B | 3 seconds of total invulnerability |
+
+### Ground Slam Branch C (Concussive/Stun Focus)
+
+Added new branch for single-target stun builds (replacing Shield Bash functionality):
+
+| Ability | Tier | Effect |
+|---------|------|--------|
+| **Concussive Ground Slam** | T2-C | Reduced radius (60), 2 second stun |
+| **Concussive Ground Slam of Devastation** | T3-C | 3.5 second stun, enemies take 50% more damage while stunned |
+
+### Whirlwind Branch C (Fiery)
+
+Migrated from deprecated WhirlwindTree:
+
+| Ability | Tier | Effect |
+|---------|------|--------|
+| **Fiery Whirlwind** | T2-C | Fire trails while spinning, burns enemies |
+| **Fiery Whirlwind of Inferno** | T3-C | Massive fire tornado, burning ground, +50% fire damage |
+
+### Passive Ability Rename
+
+- **Seismic Slam** → **Stunner Shades** (attacks have chance to stun)
+
+### Bug Fix
+
+- Fixed tornado_effect.gd setup error - changed argument order from `(player, damage, radius, duration)` to `(duration, radius, damage, multiplier)`
+
+### Files Modified
+
+- `ability_tree_registry.gd` - Commented out 8 trees
+- `slam_tree.gd` - Added Branch C (Concussive/Devastation)
+- `spin_tree.gd` - Added Branch C (Fiery/Inferno)
+- `shout_tree.gd` - Rewrote as defensive buff tree
+- `ability_data.gd` - Renamed SEISMIC_SLAM to STUNNER_SHADES
+- `ability_database.gd` - Renamed passive ability
+- `ability_manager.gd` - Updated effect type reference
+- `melee_executor.gd` - Fixed tornado setup calls
+
+---
+
 ## Date: 2025-12-05 - Complete Melee Ability Pixel Effect System
 
 ### Summary

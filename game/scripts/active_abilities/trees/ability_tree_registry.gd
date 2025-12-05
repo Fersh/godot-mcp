@@ -26,23 +26,23 @@ static func _register_all_trees() -> void:
 
 	# Register melee trees
 	_register_tree(CleaveTree.create())
-	_register_tree(BashTree.create())
-	_register_tree(ChargeTree.create())
-	_register_tree(SpinTree.create())  # Now "Whirlwind" tree (base renamed from Spinning Attack)
+	# _register_tree(BashTree.create())  # Commented out - stun functionality moved to Ground Slam Branch C
+	# _register_tree(ChargeTree.create())  # Commented out - consolidating melee roster
+	_register_tree(SpinTree.create())  # Whirlwind tree (Vortex/Deflecting/Fiery branches)
 	_register_tree(SlamTree.create())
 	_register_tree(DashTree.create())
-	# _register_tree(WhirlwindTree.create())  # Merged into SpinTree (now Whirlwind Tree)
+	# _register_tree(WhirlwindTree.create())  # Merged into SpinTree
 	_register_tree(LeapTree.create())
 	_register_tree(ShoutTree.create())
 	_register_tree(ThrowTree.create())
-	_register_tree(TauntTree.create())
+	# _register_tree(TauntTree.create())  # Commented out - redundant with defensive Battle Cry
 	_register_tree(ExecuteTree.create())
 	_register_tree(BlockTree.create())
-	_register_tree(ImpaleTree.create())
-	_register_tree(UppercutTree.create())
+	# _register_tree(ImpaleTree.create())  # Commented out - consolidating melee roster
+	# _register_tree(UppercutTree.create())  # Commented out - consolidating melee roster
 	_register_tree(ComboTree.create())
 	_register_tree(RoarTree.create())
-	_register_tree(StompTree.create())
+	# _register_tree(StompTree.create())  # Commented out - consolidating melee roster (Ground Slam covers AoE)
 	_register_tree(ParryTree.create())
 	_register_tree(RampageTree.create())
 

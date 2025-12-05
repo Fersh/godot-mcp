@@ -71,8 +71,8 @@ static func _register_all_abilities() -> void:
 	_register(_create_dash_strike())
 	# Additional melee trees - load base abilities from tree registry
 	_register_from_tree("whirlwind")      # Whirlwind (Spin Tree)
-	_register_from_tree("impale")         # Impale Tree
-	_register_from_tree("uppercut")       # Uppercut Tree
+	# _register_from_tree("impale")       # Commented out - consolidating melee roster
+	# _register_from_tree("uppercut")     # Commented out - consolidating melee roster
 	_register_from_tree("combo_strike")   # Combo Strike Tree
 	_register_from_tree("parry")          # Parry Tree
 	_register_from_tree("block")          # Block Tree
@@ -80,13 +80,13 @@ static func _register_all_abilities() -> void:
 	_register_from_tree("roar")           # Terrifying Roar Tree
 	_register_from_tree("stomp")          # Stomp Tree
 	_register_from_tree("charge")         # Charge Tree
-	_register_from_tree("taunt")          # Taunt Tree
+	# _register_from_tree("taunt")        # Commented out - redundant with defensive Battle Cry
+	_register_from_tree("battle_cry")     # Battle Cry Tree (now defensive)
 
 	# ============================================
 	# MELEE - RARE (from trees)
 	# ============================================
 	_register(_create_savage_leap())
-	_register(_create_battle_cry())
 	_register_from_tree("execute")        # Execute Tree
 	_register_from_tree("rampage")        # Rampage Tree
 

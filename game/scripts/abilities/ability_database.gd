@@ -679,12 +679,12 @@ static func get_melee_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.PARRY, value = 0.2}]
 		),
 		AbilityData.new(
-			"seismic_slam",
-			"Seismic Slam",
+			"stunner_shades",
+			"Stunner Shades",
 			"Attacks have a chance to Stun enemies",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.MELEE_ONLY,
-			[{effect_type = AbilityData.EffectType.SEISMIC_SLAM, value = 0.15}]  # 15% stun chance
+			[{effect_type = AbilityData.EffectType.STUNNER_SHADES, value = 0.15}]  # 15% stun chance
 		),
 		AbilityData.new(
 			"bloodthirst",

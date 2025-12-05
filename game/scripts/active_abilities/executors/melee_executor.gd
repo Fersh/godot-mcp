@@ -738,7 +738,7 @@ func _execute_whirlwind_base(ability: ActiveAbilityData, player: Node2D) -> void
 	# Spawn whirlwind effect that follows player and deals damage over time
 	var whirlwind = _spawn_effect("whirlwind", player.global_position)
 	if whirlwind and whirlwind.has_method("setup"):
-		whirlwind.setup(player, damage, ability.radius, ability.duration)
+		whirlwind.setup(ability.duration, ability.radius, damage, 1.0)
 	else:
 		# Fallback: instant damage to all enemies in radius
 		var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
@@ -1105,7 +1105,7 @@ func _execute_whirlwind_inferno(ability: ActiveAbilityData, player: Node2D) -> v
 	# SIGNATURE: Fire tornado with burning ground
 	var tornado = _spawn_effect("inferno_tornado", player.global_position)
 	if tornado and tornado.has_method("setup"):
-		tornado.setup(player, damage, ability.radius, ability.duration)
+		tornado.setup(ability.duration, ability.radius, damage, 1.0)
 
 	_play_sound("inferno_tornado")
 	_screen_shake("medium")

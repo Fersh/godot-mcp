@@ -1404,7 +1404,7 @@ func apply_ability_effects(ability: AbilityData) -> void:
 			AbilityData.EffectType.PARRY:
 				has_parry = true
 				parry_chance += value
-			AbilityData.EffectType.SEISMIC_SLAM:
+			AbilityData.EffectType.STUNNER_SHADES:
 				has_seismic_slam = true
 				seismic_stun_chance += value
 			AbilityData.EffectType.BLOODTHIRST:

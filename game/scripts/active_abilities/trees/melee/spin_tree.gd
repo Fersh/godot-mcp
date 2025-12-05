@@ -5,6 +5,7 @@ class_name SpinTree
 # Base: Spin rapidly damaging all nearby enemies
 # Branch A (Vortex): Sustained spinning with pull -> of Storms
 # Branch B (Deflecting): Reflects projectiles -> of Mirrors
+# Branch C (Fiery): Fire trails while spinning -> of Inferno
 
 const BASE_NAME = "Whirlwind"
 const BASE_ID = "whirlwind"
@@ -20,6 +21,11 @@ static func create() -> AbilityTreeNode:
 	tree.add_branch(
 		_create_deflecting_spin(),
 		_create_mirror_dance()
+	)
+
+	tree.add_branch(
+		_create_fiery_whirlwind(),
+		_create_inferno_tornado()
 	)
 
 	return tree
@@ -106,8 +112,43 @@ static func _create_mirror_dance() -> ActiveAbilityData:
 	 .with_signature("Reflected projectiles become homing missiles") \
 	 .with_suffix("of Mirrors", BASE_NAME, "Deflecting", BASE_ID)
 
+static func _create_fiery_whirlwind() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"spin_fiery",
+		"Fiery Whirlwind",
+		"Leaves trails of fire while spinning. Burns enemies caught in the flames.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		9.0
+	).with_damage(30.0, 1.2) \
+	 .with_aoe(130.0) \
+	 .with_duration(2.5) \
+	 .with_movement() \
+	 .with_effect("flame_whirlwind") \
+	 .with_prerequisite("whirlwind", 2) \
+	 .with_prefix("Fiery", BASE_NAME, BASE_ID)
+
+static func _create_inferno_tornado() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"spin_inferno",
+		"Fiery Whirlwind of Inferno",
+		"Transform into a massive fire tornado that scorches everything.",
+		ActiveAbilityData.Rarity.EPIC,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
+		22.0
+	).with_damage(50.0, 1.8) \
+	 .with_aoe(200.0) \
+	 .with_duration(5.0) \
+	 .with_movement() \
+	 .with_effect("inferno_tornado") \
+	 .with_prerequisite("spin_fiery", 2) \
+	 .with_signature("Leave burning ground, enemies take 50% more fire damage") \
+	 .with_suffix("of Inferno", BASE_NAME, "Fiery", BASE_ID)
+
 static func get_all_ability_ids() -> Array[String]:
-	return ["whirlwind", "spin_vortex", "spin_bladestorm", "spin_deflect", "spin_mirror"]
+	return ["whirlwind", "spin_vortex", "spin_bladestorm", "spin_deflect", "spin_mirror", "spin_fiery", "spin_inferno"]
 
 static func get_tree_name() -> String:
 	return "Whirlwind"
