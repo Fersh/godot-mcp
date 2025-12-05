@@ -1130,6 +1130,8 @@ func _execute_leap_tremor(ability: ActiveAbilityData, player: Node2D) -> void:
 		_deal_damage_to_enemy(enemy, damage)
 		_apply_stun(enemy, ability.stun_duration)
 
+	# Spawn base landing effect first, then tremor effect on top
+	_spawn_effect("savage_leap", target_pos)
 	_spawn_effect("tremor_leap", target_pos)
 	_play_sound("savage_leap")
 	_screen_shake("medium")
@@ -1159,6 +1161,9 @@ func _execute_leap_extinction(ability: ActiveAbilityData, player: Node2D) -> voi
 		var offset = Vector2(cos(i * TAU / 4), sin(i * TAU / 4)) * 100.0
 		_spawn_effect("meteor_strike", target_pos + offset)
 
+	# Layer effects: base landing + tremor shockwave + extinction event
+	_spawn_effect("savage_leap", target_pos)
+	_spawn_effect("tremor_leap", target_pos)
 	_spawn_effect("extinction_event", target_pos)
 	_play_sound("extinction_event")
 	_screen_shake("large")
@@ -1185,6 +1190,8 @@ func _execute_leap_predator(ability: ActiveAbilityData, player: Node2D) -> void:
 			"attack_speed_bonus": 0.3
 		})
 
+	# Spawn base landing effect first, then predator effect on top
+	_spawn_effect("savage_leap", target_pos)
 	_spawn_effect("predator_leap", target_pos)
 	_play_sound("savage_leap")
 
@@ -1202,6 +1209,8 @@ func _execute_leap_apex(ability: ActiveAbilityData, player: Node2D) -> void:
 				player.global_position.distance_to(enemy.global_position), 0.2)
 
 			_deal_damage_to_enemy(enemy, damage)
+			# Layer effects: predator pounce + apex strike for each hit
+			_spawn_effect("predator_leap", enemy.global_position)
 			_spawn_effect("apex_strike", enemy.global_position)
 
 			# Check for kill (simplified)

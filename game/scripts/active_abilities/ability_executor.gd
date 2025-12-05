@@ -443,9 +443,19 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"bash_petrify":
 			return "bash_petrify"
 
+		# Savage Leap effects (pixelated)
+		"savage_leap", "savage_leap_landing":
+			return "savage_leap_pixel"
+		"tremor_leap":
+			return "tremor_leap"
+		"predator_leap":
+			return "predator_leap"
+		"extinction_event":
+			return "extinction_event"
+		"apex_strike":
+			return "apex_strike"
+
 		# Impact/Smoke effects
-		"savage_leap_landing":
-			return "impact_smoke"
 		"punch":
 			return "punch_impact"
 		"dash_strike", "blade_rush", "quick_roll", "dash":
@@ -522,10 +532,22 @@ func _configure_spawned_effect(effect: Node, effect_id: String) -> void:
 			if effect.has_method("set_size_from_string"):
 				effect.set_size_from_string("small")
 
-		# Configure impact types (legacy - ground_slam now uses pixel effect)
-		"savage_leap_landing":
-			if effect.has_method("set_impact_type"):
-				effect.impact_type = 3  # DUST_KICK
+		# Configure Savage Leap effects
+		"savage_leap", "savage_leap_landing":
+			if effect.has_method("setup"):
+				effect.setup(100.0, 0.4)
+		"tremor_leap":
+			if effect.has_method("setup"):
+				effect.setup(150.0, 0.5)
+		"predator_leap":
+			if effect.has_method("setup"):
+				effect.setup(100.0, 0.45)
+		"extinction_event":
+			if effect.has_method("setup"):
+				effect.setup(250.0, 0.7)
+		"apex_strike":
+			if effect.has_method("setup"):
+				effect.setup(80.0, 0.35)
 
 		# Configure holy types
 		"healing_light":
