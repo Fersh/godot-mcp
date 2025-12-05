@@ -2,6 +2,145 @@
 
 ---
 
+## Date: 2025-12-05 - Complete Melee Ability Pixel Effect System
+
+### Summary
+Created procedural pixelated visual effects for all 17 melee ability trees across all 3 tiers (T1/T2/T3), totaling 84 new effect scripts. Each effect uses Godot's `_draw()` API for retro pixel art aesthetic matching the existing ground slam effects.
+
+### Effect Overview
+
+| Tier | Count | Style |
+|------|-------|-------|
+| T1 Base | 16 | Core ability visuals (stomp rings, slash arcs, charge trails) |
+| T2 Branch | 34 | Enhanced versions (elemental additions, larger particles) |
+| T3 Signature | 34 | Epic ultimate effects (screen shake, multi-layer particles, complex animations) |
+
+### T1 Base Effects Created
+
+| Tree | Effect | Description |
+|------|--------|-------------|
+| Stomp | stomp_pixel | Ground impact rings, dust clouds, debris |
+| Cleave | cleave_pixel | Wide slash arc with blood particles |
+| Charge | charge_pixel | Speed lines, impact burst, momentum trail |
+| Whirlwind | whirlwind_pixel | Spinning wind particles, circular motion |
+| Uppercut | uppercut_pixel | Upward arc, rising impact stars |
+| Execute | execute_pixel | Deadly downward strike, death mark |
+| Rampage | rampage_pixel | Fury aura, multiple rapid hits |
+| Dash | dash_strike_pixel | Afterimage trail, speed blur |
+| Combo | combo_strike_pixel | Multi-hit indicators, combo counter |
+| Impale | impale_pixel | Piercing thrust, blood splatter |
+| Parry | parry_pixel | Deflection spark, counter flash |
+| Block | block_pixel | Shield raise, impact absorption |
+| Throw | throw_weapon_pixel | Spinning projectile, return arc |
+| Roar | roar_pixel | Sound wave rings, fear effect |
+| Shout | battle_cry_pixel | Rally aura, buff indicators |
+| Taunt | taunt_pixel | Aggro pull, enemy focus marks |
+
+### T2 Branch Effects Created (34 total)
+
+**Stomp:** quake_stomp (seismic), thunder_stomp (lightning)
+**Cleave:** cleave_executioner (bloody), cleave_frost (icy)
+**Charge:** trample (multi-hit), shield_charge (defensive)
+**Whirlwind:** vacuum_spin (pull), flame_whirlwind (fire)
+**Spin:** vortex (suction), deflect_spin (reflect)
+**Uppercut:** juggle (air combo), grab_slam (grapple)
+**Execute:** reaper_touch (soul), brutal_strike (overkill)
+**Rampage:** frenzy (speed), fury (damage stack)
+**Dash:** blade_rush (slashing), afterimage (clones)
+**Combo:** chain_combo (linking), combo_finisher (finisher)
+**Impale:** skewer (pierce), pinning_strike (immobilize)
+**Parry:** counter_strike (riposte), deflection (redirect)
+**Block:** reflect_shield (mirror), block_parry (counter)
+**Throw:** ricochet_blade (bounce), grapple_throw (pull)
+**Roar:** intimidate (weaken), enrage (buff)
+**Shout:** rallying_cry (ally buff), berserker_rage (self buff)
+**Taunt:** fortify_taunt (armor), counter_stance (reflect)
+
+### T3 Signature Effects Created (34 total)
+
+| Tree | Effect A | Effect B |
+|------|----------|----------|
+| Stomp | tectonic_shift (earth pillars, massive cracks) | thunderous_impact (lightning storm, chain zaps) |
+| Cleave | guillotine (execution blade, death sentence) | shockwave_cleave (expanding force wave) |
+| Charge | stampede (army charge, dust storm) | unstoppable_charge (immunity aura, battering ram) |
+| Whirlwind | singularity (black hole pull, void energy) | inferno_tornado (fire vortex, ember storm) |
+| Spin | bladestorm (orbiting blades, razor wind) | mirror_dance (clone army, synchronized strikes) |
+| Uppercut | air_combo (aerial juggle, rising strikes) | piledriver (grab and slam, crater impact) |
+| Execute | soul_harvest (spirit extraction, dark energy) | decapitate (swift kill, blood fountain) |
+| Rampage | bloodlust (life steal veins, heartbeat pulse) | unstoppable_force (power eruption, tremor cracks) |
+| Dash | omnislash (rapid teleport slashes, afterimages) | shadow_legion (shadow clone army, coordinated attacks) |
+| Combo | infinite_combo (endless hits, energy buildup) | ultimate_finisher (charged devastation, shatter) |
+| Impale | shish_kebab (multi-target skewer, blood drips) | crucify (cross formation pins, doom aura) |
+| Parry | perfect_riposte (time slow, flawless counter) | mirror_guard (full reflection, shattered glass) |
+| Block | mirror_shield (projectile reflect, shimmer) | riposte (block-counter sequence, energy transfer) |
+| Throw | orbital_blades (circling storm, vortex) | impaler (giant spear, pinning impact) |
+| Roar | crushing_presence (domination aura, crown) | blood_rage (berserker veins, burning eyes) |
+| Shout | warlords_command (war banner, soldier spirits) | rage_incarnate (demon transform, fire form) |
+| Taunt | unstoppable_taunt (immunity barrier, deflections) | vengeance (damage absorb, explosive release) |
+
+### Technical Implementation
+
+**Effect Pattern:**
+```gdscript
+extends Node2D
+
+var pixel_size := 4
+var duration := 0.8
+var elapsed := 0.0
+
+func _ready() -> void:
+    # Initialize particles/effects
+    await get_tree().create_timer(duration).timeout
+    queue_free()
+
+func _process(delta: float) -> void:
+    elapsed += delta
+    # Update animations
+    queue_redraw()
+
+func _draw() -> void:
+    # Pixelated rendering using draw_rect()
+```
+
+**Common Features:**
+- 4px pixel grid for retro aesthetic
+- Alpha fading for smooth transitions
+- Screen shake via `camera.shake()` for T3 impacts
+- Layered particle systems (trails, auras, debris)
+- Color-coded by ability type (red=damage, blue=ice, gold=buff)
+
+### Files Created
+
+**Scripts (84 files):**
+`game/scripts/active_abilities/effects/`
+- 16 T1 base effects (*_pixel_effect.gd)
+- 34 T2 branch effects (*_pixel_effect.gd)
+- 34 T3 signature effects (*_pixel_effect.gd)
+
+**Scenes (84 files):**
+`game/scenes/effects/ability_effects/`
+- 16 T1 scenes (*_pixel.tscn)
+- 34 T2 scenes (*_pixel.tscn)
+- 34 T3 scenes (*_pixel.tscn)
+
+### Files Modified
+
+- `ability_executor.gd` - Added effect ID mappings for all 84 effects in `_get_mapped_effect()`
+- `block_tree.gd` - Fixed cooldowns (block_parry 4.0→6.0, block_riposte 5.0→8.0)
+- `shout_tree.gd` - Fixed cooldown (shout_berserk 10.0→12.0)
+
+### Cooldown Balance Fixes
+
+T2/T3 upgrades should maintain or increase cooldown from T1 (not decrease):
+
+| Ability | Before | After |
+|---------|--------|-------|
+| block_parry (Block T2) | 4.0s | 6.0s |
+| block_riposte (Block T3) | 5.0s | 8.0s |
+| shout_berserk (Shout T2) | 10.0s | 12.0s |
+
+---
+
 ## Date: 2025-12-05 - UI Polish, Visual Effects & Ability Improvements
 
 ### Summary
