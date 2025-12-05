@@ -27,6 +27,10 @@ var is_dodging: bool = false
 var dodge_charges: int = 1  # Default 1 charge, can be 2 with Double Charge
 var max_dodge_charges: int = 1
 
+# Channeling state - locks player movement during certain abilities
+var is_channeling: bool = false
+var channeling_timer: float = 0.0
+
 # Keyboard input state (to prevent holding key = spam)
 var _dodge_key_held: bool = false
 var _ability1_key_held: bool = false
@@ -81,6 +85,12 @@ func _process(delta: float) -> void:
 		# Both charges recharge together over 10s
 		if dodge_cooldown_timer <= 0 and max_dodge_charges > 1 and dodge_charges < max_dodge_charges:
 			dodge_charges = max_dodge_charges  # Restore all charges at once
+
+	# Update channeling timer
+	if is_channeling and channeling_timer > 0:
+		channeling_timer -= delta
+		if channeling_timer <= 0:
+			stop_channeling()
 
 	# Keyboard shortcuts for abilities
 	if not get_tree().paused:
@@ -142,6 +152,24 @@ func _mark_all_keys_held() -> void:
 func register_player(p: Node2D) -> void:
 	"""Register the player reference for ability execution."""
 	player = p
+
+# ============================================
+# CHANNELING (Movement Lock)
+# ============================================
+
+func start_channeling(duration: float) -> void:
+	"""Lock player movement for the specified duration."""
+	is_channeling = true
+	channeling_timer = duration
+
+func stop_channeling() -> void:
+	"""Unlock player movement."""
+	is_channeling = false
+	channeling_timer = 0.0
+
+func is_movement_locked() -> bool:
+	"""Check if player movement is currently locked."""
+	return is_channeling or is_dodging
 
 # ============================================
 # ABILITY SLOT MANAGEMENT

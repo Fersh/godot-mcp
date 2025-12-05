@@ -1013,19 +1013,23 @@ func _physics_process(delta: float) -> void:
 
 	var direction := Vector2.ZERO
 
-	# Joystick input for mobile
-	if joystick_direction.length() > 0:
-		direction = joystick_direction
+	# Check if movement is locked (channeling ability)
+	var movement_locked = ActiveAbilityManager and ActiveAbilityManager.is_movement_locked()
 
-	# Keyboard input for testing (Arrow keys + WASD)
-	if Input.is_action_pressed("ui_left") or Input.is_key_pressed(KEY_A):
-		direction.x -= 1
-	if Input.is_action_pressed("ui_right") or Input.is_key_pressed(KEY_D):
-		direction.x += 1
-	if Input.is_action_pressed("ui_up") or Input.is_key_pressed(KEY_W):
-		direction.y -= 1
-	if Input.is_action_pressed("ui_down") or Input.is_key_pressed(KEY_S):
-		direction.y += 1
+	if not movement_locked:
+		# Joystick input for mobile
+		if joystick_direction.length() > 0:
+			direction = joystick_direction
+
+		# Keyboard input for testing (Arrow keys + WASD)
+		if Input.is_action_pressed("ui_left") or Input.is_key_pressed(KEY_A):
+			direction.x -= 1
+		if Input.is_action_pressed("ui_right") or Input.is_key_pressed(KEY_D):
+			direction.x += 1
+		if Input.is_action_pressed("ui_up") or Input.is_key_pressed(KEY_W):
+			direction.y -= 1
+		if Input.is_action_pressed("ui_down") or Input.is_key_pressed(KEY_S):
+			direction.y += 1
 
 	if direction.length() > 0:
 		direction = direction.normalized()

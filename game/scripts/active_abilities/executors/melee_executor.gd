@@ -82,6 +82,12 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 		"spin_mirror":
 			_execute_spin_mirror(ability, player)
 			return true
+		"spin_fiery":
+			_execute_spin_fiery(ability, player)
+			return true
+		"spin_inferno":
+			_execute_spin_inferno(ability, player)
+			return true
 
 		# ============================================
 		# SLAM TREE
@@ -735,6 +741,10 @@ func _execute_whirlwind_base(ability: ActiveAbilityData, player: Node2D) -> void
 	"""Base Whirlwind - sustained spinning attack"""
 	var damage = _get_damage(ability)
 
+	# Lock player movement during whirlwind
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
+
 	# Spawn whirlwind effect that follows player and deals damage over time
 	var whirlwind = _spawn_effect("whirlwind", player.global_position)
 	if whirlwind and whirlwind.has_method("setup"):
@@ -751,6 +761,10 @@ func _execute_whirlwind_base(ability: ActiveAbilityData, player: Node2D) -> void
 func _execute_spin_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Sustained spinning with pull - creates a vortex that pulls enemies"""
 	var damage = _get_damage(ability)
+
+	# Lock player movement during vortex
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
 
 	# Spawn sustained vortex effect that pulls enemies over time
 	var vortex_scene = load("res://scripts/active_abilities/effects/vortex_effect.gd")
@@ -791,6 +805,11 @@ func _execute_spin_bladestorm(ability: ActiveAbilityData, player: Node2D) -> voi
 func _execute_spin_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Deflect projectiles - uses base spin effect"""
 	var damage = _get_damage(ability)
+
+	# Lock player movement during deflect
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
+
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
 	for enemy in enemies:
@@ -807,6 +826,11 @@ func _execute_spin_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_spin_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Reflected projectiles home in - uses base spin effect"""
 	var damage = _get_damage(ability)
+
+	# Lock player movement during mirror dance
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
+
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
 	for enemy in enemies:
@@ -823,6 +847,47 @@ func _execute_spin_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Use base spin effect
 	_spawn_effect("spin", player.global_position)
 	_play_sound("swing")
+	_screen_shake("medium")
+
+func _execute_spin_fiery(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Fire trail whirlwind"""
+	var damage = _get_damage(ability)
+
+	# Lock player movement during fiery whirlwind
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
+
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+
+	# Spawn flame effect
+	var whirl = _spawn_effect("flame_whirlwind", player.global_position)
+	if whirl and whirl.has_method("setup"):
+		whirl.setup(player, damage, ability.radius, ability.duration)
+
+	_play_sound("whirlwind")
+
+func _execute_spin_inferno(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Massive fire tornado"""
+	var damage = _get_damage(ability)
+
+	# Lock player movement during inferno
+	if ActiveAbilityManager:
+		ActiveAbilityManager.start_channeling(ability.duration)
+
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+
+	# SIGNATURE: Fire tornado with burning ground
+	var tornado = _spawn_effect("inferno_tornado", player.global_position)
+	if tornado and tornado.has_method("setup"):
+		tornado.setup(ability.duration, ability.radius, damage, 1.0)
+
+	_play_sound("inferno_tornado")
 	_screen_shake("medium")
 
 # ============================================
@@ -1070,6 +1135,12 @@ func _execute_whirlwind_vacuum(ability: ActiveAbilityData, player: Node2D) -> vo
 	"""Tier 2: Pull enemies while spinning"""
 	var damage = _get_damage(ability)
 
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+
+	# Spawn vacuum effect
 	var whirl = _spawn_effect("vacuum_spin", player.global_position)
 	if whirl and whirl.has_method("setup"):
 		whirl.setup(player, damage, ability.radius, ability.duration, ability.knockback_force)
@@ -1079,6 +1150,11 @@ func _execute_whirlwind_vacuum(ability: ActiveAbilityData, player: Node2D) -> vo
 func _execute_whirlwind_singularity(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Become a black hole"""
 	var damage = _get_damage(ability)
+
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
 
 	# SIGNATURE: Massive pull, damage increases as enemies get closer
 	var singularity = _spawn_effect("singularity", player.global_position)
@@ -1092,6 +1168,12 @@ func _execute_whirlwind_flame(ability: ActiveAbilityData, player: Node2D) -> voi
 	"""Tier 2: Fire trail whirlwind"""
 	var damage = _get_damage(ability)
 
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+
+	# Spawn flame effect
 	var whirl = _spawn_effect("flame_whirlwind", player.global_position)
 	if whirl and whirl.has_method("setup"):
 		whirl.setup(player, damage, ability.radius, ability.duration)
@@ -1101,6 +1183,11 @@ func _execute_whirlwind_flame(ability: ActiveAbilityData, player: Node2D) -> voi
 func _execute_whirlwind_inferno(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Massive fire tornado"""
 	var damage = _get_damage(ability)
+
+	# Spawn base whirlwind effect
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
 
 	# SIGNATURE: Fire tornado with burning ground
 	var tornado = _spawn_effect("inferno_tornado", player.global_position)

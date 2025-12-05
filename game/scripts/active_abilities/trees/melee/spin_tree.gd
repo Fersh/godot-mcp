@@ -124,7 +124,6 @@ static func _create_fiery_whirlwind() -> ActiveAbilityData:
 	).with_damage(30.0, 1.2) \
 	 .with_aoe(130.0) \
 	 .with_duration(2.5) \
-	 .with_movement() \
 	 .with_effect("flame_whirlwind") \
 	 .with_prerequisite("whirlwind", 2) \
 	 .with_prefix("Fiery", BASE_NAME, BASE_ID)
@@ -141,7 +140,6 @@ static func _create_inferno_tornado() -> ActiveAbilityData:
 	).with_damage(50.0, 1.8) \
 	 .with_aoe(200.0) \
 	 .with_duration(5.0) \
-	 .with_movement() \
 	 .with_effect("inferno_tornado") \
 	 .with_prerequisite("spin_fiery", 2) \
 	 .with_signature("Leave burning ground, enemies take 50% more fire damage") \

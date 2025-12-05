@@ -36,7 +36,6 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(25.0, 1.0) \
 	 .with_aoe(120.0) \
 	 .with_duration(2.0) \
-	 .with_movement() \
 	 .with_effect("whirlwind_pixel")
 
 static func _create_vacuum_spin() -> ActiveAbilityData:
@@ -52,7 +51,6 @@ static func _create_vacuum_spin() -> ActiveAbilityData:
 	 .with_aoe(180.0) \
 	 .with_duration(2.5) \
 	 .with_knockback(-150.0) \
-	 .with_movement() \
 	 .with_effect("vacuum_spin") \
 	 .with_prerequisite("whirlwind", 0) \
 	 .with_prefix("Vacuum", BASE_NAME, BASE_ID)
@@ -70,7 +68,6 @@ static func _create_singularity() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(4.0) \
 	 .with_knockback(-300.0) \
-	 .with_movement() \
 	 .with_effect("singularity") \
 	 .with_prerequisite("whirlwind_vacuum", 0) \
 	 .with_signature("Massive pull radius, damage scales with proximity") \
@@ -88,7 +85,6 @@ static func _create_flame_spin() -> ActiveAbilityData:
 	).with_damage(30.0, 1.2) \
 	 .with_aoe(130.0) \
 	 .with_duration(2.5) \
-	 .with_movement() \
 	 .with_effect("flame_whirlwind") \
 	 .with_prerequisite("whirlwind", 1) \
 	 .with_prefix("Fiery", BASE_NAME, BASE_ID)
@@ -105,7 +101,6 @@ static func _create_inferno_tornado() -> ActiveAbilityData:
 	).with_damage(50.0, 1.8) \
 	 .with_aoe(200.0) \
 	 .with_duration(5.0) \
-	 .with_movement() \
 	 .with_effect("inferno_tornado") \
 	 .with_prerequisite("whirlwind_flame", 1) \
 	 .with_signature("Leave burning ground, enemies take 50% more fire damage") \

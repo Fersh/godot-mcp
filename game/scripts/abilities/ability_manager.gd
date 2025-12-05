@@ -1075,9 +1075,9 @@ func get_random_abilities(count: int = 3) -> Array:
 
 func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 	"""
-	Get passive ability choices with one guaranteed active upgrade slot.
+	Get passive ability choices with ONE guaranteed active upgrade trigger card.
 	Used at levels 3, 7, 12 to offer active ability upgrade path.
-	Returns mixed array of AbilityData (passives) and ActiveAbilityData (upgrade trigger).
+	Returns mixed array of AbilityData (passives) and ONE trigger card Dictionary.
 	"""
 	var choices: Array = []
 	var available_passives = get_available_abilities()
@@ -1085,9 +1085,10 @@ func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 	# Check if this level should have guaranteed active upgrade
 	const ACTIVE_UPGRADE_LEVELS: Array[int] = [3, 7, 12]
 	if level in ACTIVE_UPGRADE_LEVELS:
-		var active_upgrade = _get_active_upgrade_trigger()
-		if active_upgrade:
-			choices.append(active_upgrade)
+		# Get ONE trigger card (first available upgradeable ability)
+		var trigger = _get_active_upgrade_trigger()
+		if trigger:
+			choices.append(trigger)
 
 	# Fill remaining slots with passives
 	var passive_count = count - choices.size()
@@ -1103,16 +1104,43 @@ func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 	choices.shuffle()
 	return choices
 
+func _get_all_active_upgrade_triggers() -> Array:
+	"""
+	Get ALL active ability upgrade TRIGGER cards (one per upgradeable ability).
+	Returns an Array of Dictionaries, each with the current ability and its available upgrade branches.
+	"""
+	var triggers: Array = []
+
+	if not ActiveAbilityManager:
+		return triggers
+
+	# Find ALL equipped abilities that have upgrades available
+	for i in ActiveAbilityManager.MAX_ABILITY_SLOTS:
+		var current = ActiveAbilityManager.ability_slots[i]
+		if current == null:
+			continue
+
+		# Get available upgrades for this ability
+		var upgrades = AbilityTreeRegistry.get_available_upgrades_for_ability(current.id)
+		if upgrades.size() > 0:
+			# Create a trigger card dictionary (not individual upgrades)
+			triggers.append({
+				"is_trigger": true,
+				"ability": current,  # The current equipped ability
+				"upgrades": upgrades  # Available upgrade branches
+			})
+
+	return triggers
+
 func _get_active_upgrade_trigger():
 	"""
-	Get an active ability upgrade to use as trigger card.
-	When clicked, this will show the branching UI with all available branches.
+	Get ONE active ability upgrade TRIGGER card (for backwards compatibility).
+	Returns a Dictionary with the current ability and its available upgrade branches.
 	"""
-	var upgrades = _get_active_ability_upgrades()
-	if upgrades.is_empty():
+	var triggers = _get_all_active_upgrade_triggers()
+	if triggers.is_empty():
 		return null
-	# Return the first upgrade as the trigger card
-	return upgrades[0]
+	return triggers[0]
 
 func _get_available_passive_upgrades(from_pool: Array[AbilityData]) -> Array[AbilityData]:
 	"""Get only passive upgrade abilities from the available pool"""

@@ -40,7 +40,7 @@ static func _register_all_trees() -> void:
 	_register_tree(BlockTree.create())
 	# _register_tree(ImpaleTree.create())  # Commented out - consolidating melee roster
 	# _register_tree(UppercutTree.create())  # Commented out - consolidating melee roster
-	_register_tree(ComboTree.create())
+	# _register_tree(ComboTree.create())  # Commented out - temporarily disabled
 	_register_tree(RoarTree.create())
 	# _register_tree(StompTree.create())  # Commented out - consolidating melee roster (Ground Slam covers AoE)
 	_register_tree(ParryTree.create())

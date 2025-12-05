@@ -163,8 +163,9 @@ func create_ability_card(ability, index: int) -> Button:
 	if is_trigger:
 		# Extract the inner ability for display
 		display_ability = ability.ability
+		# Always use the current ability name (what the player has equipped)
 		ability_name = display_ability.name
-		ability_desc = "Choose upgrade path for " + ability_name
+		ability_desc = "Choose upgrade for " + ability_name
 		is_upgrade = true  # Trigger cards are styled as upgrades
 	else:
 		# Get ability properties (works for both types)
@@ -183,13 +184,13 @@ func create_ability_card(ability, index: int) -> Button:
 
 	# Ability name - use RichTextLabel for upgrades with prefix, or trigger cards
 	if is_trigger:
-		# Trigger cards show simple ability name in green
+		# Trigger cards show simple ability name in white (not green)
 		var name_label = Label.new()
 		name_label.name = "NameLabel"
 		name_label.text = ability_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
-		name_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green for upgrade
+		name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White text
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
@@ -236,12 +237,11 @@ func create_ability_card(ability, index: int) -> Button:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
-	# Stat changes container (for upgrades, but not trigger cards)
+	# Stat changes container (no longer used for active ability upgrades per design)
 	var stats_container = VBoxContainer.new()
 	stats_container.name = "StatsContainer"
 	stats_container.add_theme_constant_override("separation", 2)
-	if is_upgrade and not is_trigger and display_ability is ActiveAbilityData:
-		_populate_stat_changes(stats_container, display_ability)
+	# Stats removed from all upgrade cards - players see ability description instead
 	vbox.add_child(stats_container)
 
 	# Rank circle container (replaces tier diamonds)
@@ -326,12 +326,22 @@ func _is_trigger_card(ability) -> bool:
 
 func _get_rarity_color(ability) -> Color:
 	## Get rarity color for either AbilityData or ActiveAbilityData
+	if ability is Dictionary:
+		# Trigger card - use the ability inside it
+		if ability.has("ability") and ability.ability:
+			return ActiveAbilityData.get_rarity_color(ability.ability.rarity)
+		return Color(0.2, 0.9, 0.3)  # Green for upgrade triggers
 	if ability is ActiveAbilityData:
 		return ActiveAbilityData.get_rarity_color(ability.rarity)
 	return AbilityData.get_rarity_color(ability.rarity)
 
 func _get_rarity_name(ability) -> String:
 	## Get rarity name for either AbilityData or ActiveAbilityData
+	if ability is Dictionary:
+		# Trigger card - use the ability inside it
+		if ability.has("ability") and ability.ability:
+			return "Upgrade"
+		return "Upgrade"
 	if ability is ActiveAbilityData:
 		return ActiveAbilityData.get_rarity_name(ability.rarity)
 	return AbilityData.get_rarity_name(ability.rarity)
@@ -461,6 +471,10 @@ func _create_particle_container_for_ability(ability) -> Control:
 		var is_signature = ability is ActiveAbilityData and ability.is_signature()
 		return _create_upgrade_particle_container(is_signature)
 
+	# Handle Dictionary trigger cards
+	if ability is Dictionary:
+		return _create_upgrade_particle_container(false)
+
 	if ability is ActiveAbilityData:
 		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
 		var passive_rarity = _map_active_to_passive_rarity(ability.rarity)
@@ -485,12 +499,19 @@ func _map_active_to_passive_rarity(active_rarity) -> AbilityData.Rarity:
 
 func _is_common_rarity(ability) -> bool:
 	## Check if ability is common rarity (works for both types)
+	if ability is Dictionary:
+		return false  # Trigger cards are never common
 	if ability is ActiveAbilityData:
 		return ability.rarity == ActiveAbilityData.Rarity.COMMON
 	return ability.rarity == AbilityData.Rarity.COMMON
 
 func _get_passive_rarity(ability) -> AbilityData.Rarity:
 	## Get passive rarity enum (maps ActiveAbilityData rarity if needed)
+	if ability is Dictionary:
+		# Trigger card - use ability inside or default to RARE
+		if ability.has("ability") and ability.ability:
+			return _map_active_to_passive_rarity(ability.ability.rarity)
+		return AbilityData.Rarity.RARE
 	if ability is ActiveAbilityData:
 		return _map_active_to_passive_rarity(ability.rarity)
 	return ability.rarity
@@ -499,8 +520,9 @@ func _style_button_for_ability(button: Button, ability) -> void:
 	## Style button for either AbilityData or ActiveAbilityData (with upgrade styling)
 	var style = StyleBoxFlat.new()
 	var is_upgrade = _is_active_ability_upgrade(ability)
+	var is_trigger = ability is Dictionary
 
-	if is_upgrade:
+	if is_upgrade or is_trigger:
 		# Upgrade cards get green styling (both T2 and T3)
 		style.bg_color = Color(0.08, 0.18, 0.1, 0.98)
 		style.border_color = Color(0.2, 0.9, 0.3)
@@ -857,7 +879,7 @@ func create_separator_style(rarity: AbilityData.Rarity) -> StyleBoxLine:
 	return style
 
 func update_card_content(button: Button, ability, is_final_reveal: bool = false) -> void:
-	## Update card content - handles both AbilityData and ActiveAbilityData
+	## Update card content - handles AbilityData, ActiveAbilityData, and trigger cards
 	# Find the margin container and vbox inside the button
 	var margin = button.get_child(0) as MarginContainer
 	if not margin:
@@ -866,17 +888,53 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 	if not vbox:
 		return
 
-	var is_upgrade = _is_active_ability_upgrade(ability)
+	# Handle trigger cards (Dictionary with ability + upgrades)
+	var is_trigger = _is_trigger_card(ability)
+	var display_ability = ability
+	var ability_name: String
+	var ability_desc: String
+	var is_upgrade: bool
 
-	# Children: 0=top_spacer, 1=name, 2=desc, 3=stats_container, 4=bottom_spacer
+	if is_trigger:
+		display_ability = ability.ability
+		# Always use the current ability name (what the player has equipped)
+		ability_name = display_ability.name
+		ability_desc = "Choose upgrade for " + ability_name
+		is_upgrade = true
+	else:
+		ability_name = ability.name if ability else ""
+		ability_desc = ability.description if ability else ""
+		is_upgrade = _is_active_ability_upgrade(ability)
+
+	# Children: 0=top_spacer, 1=name, 2=desc, 3=stats_container, 4=rank_container, 5=new_upgrade_label, 6=bottom_spacer
 	# Update name (child 1) - could be Label or RichTextLabel
 	var name_node = vbox.get_child(1)
 	if name_node:
-		if is_upgrade and ability is ActiveAbilityData and not ability.name_prefix.is_empty():
+		if is_trigger:
+			# Trigger cards show current ability name in white
+			if name_node is Label:
+				name_node.text = ability_name
+				name_node.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White text
+			elif name_node is RichTextLabel:
+				# Replace with Label for trigger cards
+				var name_label = Label.new()
+				name_label.name = "NameLabel"
+				name_label.text = ability_name
+				name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				name_label.add_theme_font_size_override("font_size", 18)
+				name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White text
+				name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				if pixel_font:
+					name_label.add_theme_font_override("font", pixel_font)
+				vbox.remove_child(name_node)
+				name_node.queue_free()
+				vbox.add_child(name_label)
+				vbox.move_child(name_label, 1)
+		elif is_upgrade and display_ability is ActiveAbilityData and not display_ability.name_prefix.is_empty():
 			# Need RichTextLabel for compound name
-			var base_rarity_color = _get_base_ability_rarity_color(ability)
-			var suffix = ability.name_suffix if ability.is_signature() else ""
-			var formatted_name = _format_compound_name_full(ability.name_prefix, ability.base_name, suffix, base_rarity_color, ability.is_signature())
+			var base_rarity_color = _get_base_ability_rarity_color(display_ability)
+			var suffix = display_ability.name_suffix if display_ability.is_signature() else ""
+			var formatted_name = _format_compound_name_full(display_ability.name_prefix, display_ability.base_name, suffix, base_rarity_color, display_ability.is_signature())
 
 			if name_node is RichTextLabel:
 				name_node.text = formatted_name
@@ -899,16 +957,16 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		else:
 			# Regular label
 			if name_node is Label:
-				name_node.text = ability.name
-				name_node.add_theme_color_override("font_color", _get_rarity_color(ability))
+				name_node.text = ability_name
+				name_node.add_theme_color_override("font_color", _get_rarity_color(display_ability))
 			elif name_node is RichTextLabel:
 				# Replace RichTextLabel with Label
 				var name_label = Label.new()
 				name_label.name = "NameLabel"
-				name_label.text = ability.name
+				name_label.text = ability_name
 				name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				name_label.add_theme_font_size_override("font_size", 18)
-				name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
+				name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
 				name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 				if pixel_font:
 					name_label.add_theme_font_override("font", pixel_font)
@@ -920,31 +978,29 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 	# Update description label (child 2)
 	var desc_label = vbox.get_child(2) as Label
 	if desc_label:
-		desc_label.text = ability.description
+		desc_label.text = ability_desc
 
-	# Update stats container (child 3)
+	# Update stats container (child 3) - stats removed from all upgrade cards per design
 	var stats_container = vbox.get_node_or_null("StatsContainer") as VBoxContainer
 	if stats_container:
-		# Clear and repopulate
+		# Clear any existing stats - we no longer show stats on upgrade cards
 		for child in stats_container.get_children():
 			child.queue_free()
-		if is_upgrade and ability is ActiveAbilityData:
-			_populate_stat_changes(stats_container, ability)
 
-	# Update tier diamonds container
+	# Update tier diamonds container - skip for trigger cards
 	var tier_container = vbox.get_node_or_null("TierContainer") as HBoxContainer
 	if tier_container:
 		# Clear and repopulate
 		for child in tier_container.get_children():
 			child.queue_free()
-		if is_upgrade and ability is ActiveAbilityData:
-			_populate_tier_diamonds(tier_container, ability)
+		if is_upgrade and not is_trigger and display_ability is ActiveAbilityData:
+			_populate_tier_diamonds(tier_container, display_ability)
 
 	# Update upgradeable indicator - only show on final reveal for passive abilities with upgrades
 	var upgradeable_label = vbox.get_node_or_null("UpgradeableLabel") as Label
 	if upgradeable_label:
-		if is_final_reveal and ability is AbilityData and not is_upgrade:
-			upgradeable_label.visible = ability.has_available_upgrades()
+		if is_final_reveal and display_ability is AbilityData and not is_upgrade:
+			upgradeable_label.visible = display_ability.has_available_upgrades()
 		else:
 			upgradeable_label.visible = false
 
@@ -955,17 +1011,17 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		if rarity_tag:
 			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 			if is_upgrade:
-				# All upgrades get green tag
+				# All upgrades (including triggers) get green tag
 				tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
 			else:
-				tag_style.bg_color = _get_rarity_color(ability)
+				tag_style.bg_color = _get_rarity_color(display_ability)
 			rarity_tag.add_theme_stylebox_override("panel", tag_style)
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
 				if is_upgrade:
-					rarity_label.text = "Upgrade"  # Same for T2 and T3
+					rarity_label.text = "Upgrade"  # Same for T2, T3, and triggers
 				else:
-					rarity_label.text = _get_rarity_name(ability)
+					rarity_label.text = _get_rarity_name(display_ability)
 
 	# Update particle container (child 2 of button) - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control
@@ -975,14 +1031,14 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 				# Green flames for upgrades - update existing container to green
 				_update_particle_container_to_upgrade(particle_container)
 			else:
-				var passive_rarity = ability.rarity if ability is AbilityData else _map_active_to_passive_rarity(ability.rarity)
+				var passive_rarity = display_ability.rarity if display_ability is AbilityData else _map_active_to_passive_rarity(display_ability.rarity)
 				_update_particle_container(particle_container, passive_rarity)
 		else:
 			# Keep particles hidden during rolling
 			particle_container.visible = false
 
 	# Update button style
-	_style_button_for_ability(button, ability)
+	_style_button_for_ability(button, display_ability)
 
 func _on_ability_selected(index: int) -> void:
 	# Don't allow selection while rolling
@@ -1267,31 +1323,20 @@ func _spawn_sparkles_count(button: Button, color: Color, count: int) -> void:
 # ============================================
 
 func _format_compound_name_full(prefix: String, base_name: String, suffix: String, base_rarity_color: Color, is_signature: bool) -> String:
-	## Format compound name:
-	## T2: prefix (green) + base name (rarity color)
-	## T3: prefix (white) + base name (white) + suffix (green)
-	var green_hex = "33ee55"  # Bright green
-	var white_hex = "ffffff"  # White for T3 prefix and base
-	var rarity_hex = base_rarity_color.to_html(false)
+	## Format compound name - all parts in white (no green coloring)
+	var white_hex = "ffffff"
 
 	var result = "[center]"
-	if is_signature:
-		# T3: prefix and base in white, suffix in green
-		if not prefix.is_empty():
-			result += "[color=#%s]%s[/color] " % [white_hex, prefix]
-		result += "[color=#%s]%s[/color]" % [white_hex, base_name]
-		if not suffix.is_empty():
-			result += " [color=#%s]%s[/color]" % [green_hex, suffix]
-	else:
-		# T2: prefix in green, base in rarity color
-		if not prefix.is_empty():
-			result += "[color=#%s]%s[/color] " % [green_hex, prefix]
-		result += "[color=#%s]%s[/color]" % [rarity_hex, base_name]
+	if not prefix.is_empty():
+		result += "[color=#%s]%s[/color] " % [white_hex, prefix]
+	result += "[color=#%s]%s[/color]" % [white_hex, base_name]
+	if not suffix.is_empty():
+		result += " [color=#%s]%s[/color]" % [white_hex, suffix]
 	result += "[/center]"
 	return result
 
 func _format_compound_name(prefix: String, base_name: String, base_rarity_color: Color) -> String:
-	## Format compound name with prefix in green and base name in rarity color (T2 abilities)
+	## Format compound name in white (for T2 abilities)
 	return _format_compound_name_full(prefix, base_name, "", base_rarity_color, false)
 
 func _get_base_ability_rarity_color(ability: ActiveAbilityData) -> Color:
