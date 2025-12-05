@@ -197,6 +197,196 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
+		# THROW TREE
+		# ============================================
+		"throw_weapon":
+			_execute_throw_weapon(ability, player)
+			return true
+		"throw_ricochet":
+			_execute_throw_ricochet(ability, player)
+			return true
+		"throw_bladestorm":
+			_execute_throw_bladestorm(ability, player)
+			return true
+		"throw_grapple":
+			_execute_throw_grapple(ability, player)
+			return true
+		"throw_impaler":
+			_execute_throw_impaler(ability, player)
+			return true
+
+		# ============================================
+		# TAUNT TREE
+		# ============================================
+		"taunt":
+			_execute_taunt(ability, player)
+			return true
+		"taunt_fortify":
+			_execute_taunt_fortify(ability, player)
+			return true
+		"taunt_unstoppable":
+			_execute_taunt_unstoppable(ability, player)
+			return true
+		"taunt_counter":
+			_execute_taunt_counter(ability, player)
+			return true
+		"taunt_vengeance":
+			_execute_taunt_vengeance(ability, player)
+			return true
+
+		# ============================================
+		# EXECUTE TREE
+		# ============================================
+		"execute":
+			_execute_execute(ability, player)
+			return true
+		"execute_reaper":
+			_execute_execute_reaper(ability, player)
+			return true
+		"execute_harvest":
+			_execute_execute_harvest(ability, player)
+			return true
+		"execute_brutal":
+			_execute_execute_brutal(ability, player)
+			return true
+		"execute_decapitate":
+			_execute_execute_decapitate(ability, player)
+			return true
+
+		# ============================================
+		# BLOCK TREE
+		# ============================================
+		"block":
+			_execute_block(ability, player)
+			return true
+		"block_reflect":
+			_execute_block_reflect(ability, player)
+			return true
+		"block_mirror":
+			_execute_block_mirror(ability, player)
+			return true
+		"block_parry":
+			_execute_block_parry(ability, player)
+			return true
+		"block_riposte":
+			_execute_block_riposte(ability, player)
+			return true
+
+		# ============================================
+		# IMPALE TREE
+		# ============================================
+		"impale":
+			_execute_impale(ability, player)
+			return true
+		"impale_skewer":
+			_execute_impale_skewer(ability, player)
+			return true
+		"impale_kebab":
+			_execute_impale_kebab(ability, player)
+			return true
+		"impale_pin":
+			_execute_impale_pin(ability, player)
+			return true
+		"impale_crucify":
+			_execute_impale_crucify(ability, player)
+			return true
+
+		# ============================================
+		# UPPERCUT TREE
+		# ============================================
+		"uppercut":
+			_execute_uppercut(ability, player)
+			return true
+		"uppercut_juggle":
+			_execute_uppercut_juggle(ability, player)
+			return true
+		"uppercut_air_combo":
+			_execute_uppercut_air_combo(ability, player)
+			return true
+		"uppercut_grab":
+			_execute_uppercut_grab(ability, player)
+			return true
+		"uppercut_piledriver":
+			_execute_uppercut_piledriver(ability, player)
+			return true
+
+		# ============================================
+		# COMBO TREE
+		# ============================================
+		"combo_strike":
+			_execute_combo_strike(ability, player)
+			return true
+		"combo_chain":
+			_execute_combo_chain(ability, player)
+			return true
+		"combo_infinite":
+			_execute_combo_infinite(ability, player)
+			return true
+		"combo_finisher":
+			_execute_combo_finisher(ability, player)
+			return true
+		"combo_ultimate":
+			_execute_combo_ultimate(ability, player)
+			return true
+
+		# ============================================
+		# STOMP TREE
+		# ============================================
+		"stomp":
+			_execute_stomp(ability, player)
+			return true
+		"stomp_quake":
+			_execute_stomp_quake(ability, player)
+			return true
+		"stomp_tectonic":
+			_execute_stomp_tectonic(ability, player)
+			return true
+		"stomp_thunder":
+			_execute_stomp_thunder(ability, player)
+			return true
+		"stomp_thunderous":
+			_execute_stomp_thunderous(ability, player)
+			return true
+
+		# ============================================
+		# PARRY TREE
+		# ============================================
+		"parry":
+			_execute_parry(ability, player)
+			return true
+		"parry_counter":
+			_execute_parry_counter(ability, player)
+			return true
+		"parry_riposte":
+			_execute_parry_riposte(ability, player)
+			return true
+		"parry_deflect":
+			_execute_parry_deflect(ability, player)
+			return true
+		"parry_mirror":
+			_execute_parry_mirror(ability, player)
+			return true
+
+		# ============================================
+		# RAMPAGE TREE
+		# ============================================
+		"rampage":
+			_execute_rampage(ability, player)
+			return true
+		"rampage_frenzy":
+			_execute_rampage_frenzy(ability, player)
+			return true
+		"rampage_bloodlust":
+			_execute_rampage_bloodlust(ability, player)
+			return true
+		"rampage_fury":
+			_execute_rampage_fury(ability, player)
+			return true
+		"rampage_unstoppable":
+			_execute_rampage_unstoppable(ability, player)
+			return true
+
+		# ============================================
 		# LEGACY MELEE (for backwards compatibility)
 		# ============================================
 		"seismic_slam":
@@ -1179,3 +1369,879 @@ func _execute_roar_blood_rage(ability: ActiveAbilityData, player: Node2D) -> voi
 	_play_sound("blood_rage")
 	_screen_shake("large")
 	_impact_pause(0.2)
+
+# ============================================
+# THROW TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_throw_weapon(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Throw weapon at enemy for heavy damage"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	# Spawn thrown weapon projectile
+	var proj = _spawn_effect("throw_weapon", player.global_position)
+	if proj and proj.has_method("setup"):
+		proj.setup(direction, ability.projectile_speed, damage, 1)
+	else:
+		# Fallback: instant damage to nearest
+		if target:
+			_deal_damage_to_enemy(target, damage)
+
+	_play_sound("throw")
+	_screen_shake("small")
+
+func _execute_throw_ricochet(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Weapon bounces between 4 enemies"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_effect("ricochet_blade", player.global_position)
+	if proj and proj.has_method("setup"):
+		proj.setup(direction, ability.projectile_speed, damage, 4)  # 4 bounces
+	else:
+		# Fallback: hit up to 4 enemies
+		var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
+		enemies = enemies.slice(0, 4)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage)
+
+	_play_sound("throw")
+
+func _execute_throw_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 6 orbiting blades for 8 seconds"""
+	var damage = _get_damage(ability)
+
+	# Spawn 6 orbiting blades
+	for i in range(6):
+		var angle = i * TAU / 6
+		var blade = _spawn_effect("orbital_blades", player.global_position)
+		if blade and blade.has_method("setup"):
+			blade.setup(player, damage, ability.radius, ability.duration, angle)
+
+	_play_sound("bladestorm")
+	_screen_shake("medium")
+
+func _execute_throw_grapple(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Throw weapon then pull yourself to it"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	var target_pos = player.global_position + direction * ability.range_distance
+	if target:
+		target_pos = target.global_position
+		_deal_damage_to_enemy(target, damage)
+
+	# Pull player to weapon location
+	_dash_player(player, (target_pos - player.global_position).normalized(),
+		player.global_position.distance_to(target_pos), 0.3)
+
+	_spawn_effect("grapple_throw", player.global_position)
+	_play_sound("grapple")
+
+func _execute_throw_impaler(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Massive spear that pins enemies infinitely"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	# Get all enemies in line
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.15)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+
+	# Pull player to end point
+	var end_pos = player.global_position + direction * ability.range_distance
+	_dash_player(player, direction, ability.range_distance, 0.4)
+
+	_spawn_effect("impaler", player.global_position)
+	_play_sound("impale")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+# ============================================
+# TAUNT TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_taunt(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Force enemies to attack you for 3 seconds"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		if enemy.has_method("apply_taunt"):
+			enemy.apply_taunt(player, ability.duration)
+		elif enemy.has_method("set_target"):
+			enemy.set_target(player)
+
+	_spawn_effect("taunt", player.global_position)
+	_play_sound("taunt")
+
+func _execute_taunt_fortify(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Gain 40% damage reduction while taunted"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		if enemy.has_method("apply_taunt"):
+			enemy.apply_taunt(player, ability.duration)
+		elif enemy.has_method("set_target"):
+			enemy.set_target(player)
+
+	# Grant damage reduction
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("fortify", ability.duration, {
+			"damage_reduction": 0.4
+		})
+
+	_spawn_effect("fortify_taunt", player.global_position)
+	_play_sound("taunt")
+
+func _execute_taunt_unstoppable(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Become immune to damage and CC"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		if enemy.has_method("apply_taunt"):
+			enemy.apply_taunt(player, ability.duration)
+		elif enemy.has_method("set_target"):
+			enemy.set_target(player)
+
+	# SIGNATURE: Full invulnerability
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(ability.invulnerability_duration)
+
+	_spawn_effect("unstoppable", player.global_position)
+	_play_sound("taunt")
+	_screen_shake("medium")
+
+func _execute_taunt_counter(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Auto-counter when hit during taunt"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		if enemy.has_method("apply_taunt"):
+			enemy.apply_taunt(player, ability.duration)
+
+	# Grant counter buff
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("counter_stance", ability.duration, {
+			"counter_damage": damage,
+			"counter_radius": ability.radius
+		})
+
+	_spawn_effect("counter_stance", player.global_position)
+	_play_sound("taunt")
+
+func _execute_taunt_vengeance(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Every hit causes explosion + lifesteal"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		if enemy.has_method("apply_taunt"):
+			enemy.apply_taunt(player, ability.duration)
+
+	# SIGNATURE: Vengeance buff
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("vengeance", ability.duration, {
+			"explosion_damage": damage,
+			"explosion_radius": ability.radius,
+			"lifesteal_percent": 0.1
+		})
+
+	_spawn_effect("vengeance", player.global_position)
+	_play_sound("vengeance")
+	_screen_shake("medium")
+
+# ============================================
+# EXECUTE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_execute(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: +100% damage to enemies below 30% HP"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var final_damage = damage
+		# Execute bonus
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.3:
+			final_damage *= 2.0
+		_deal_damage_to_enemy(target, final_damage)
+
+	_spawn_effect("execute", player.global_position)
+	_play_sound("execute")
+	_screen_shake("small")
+
+func _execute_execute_reaper(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Instant kill enemies below 20% HP"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.2:
+			# Instant kill
+			if target.has_method("take_damage"):
+				target.take_damage(99999.0)
+		else:
+			_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("reaper_touch", player.global_position)
+	_play_sound("execute")
+	_screen_shake("medium")
+
+func _execute_execute_harvest(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Kill below 25%, heal 20% per kill, reset CD"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var killed = false
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.25:
+			if target.has_method("take_damage"):
+				target.take_damage(99999.0)
+				killed = true
+		else:
+			_deal_damage_to_enemy(target, damage)
+			if target.has_method("is_dead") and target.is_dead():
+				killed = true
+
+		# SIGNATURE: Heal on kill
+		if killed and player.has_method("heal"):
+			var max_hp = player.max_hp if "max_hp" in player else 100.0
+			player.heal(max_hp * 0.2)
+
+	_spawn_effect("soul_harvest", player.global_position)
+	_play_sound("soul_harvest")
+	_screen_shake("medium")
+
+func _execute_execute_brutal(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Massive damage, ignores armor on low HP"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.5:
+			# Ignore armor
+			if target.has_method("take_pure_damage"):
+				target.take_pure_damage(damage)
+			else:
+				_deal_damage_to_enemy(target, damage * 1.5)
+		else:
+			_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("brutal_strike", player.global_position)
+	_play_sound("execute")
+	_screen_shake("medium")
+
+func _execute_execute_decapitate(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Guaranteed crit, 3x damage below 40%"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var final_damage = damage * 2.0  # Guaranteed crit
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.4:
+			final_damage *= 3.0
+		_deal_damage_to_enemy(target, final_damage)
+
+	_spawn_effect("decapitate", player.global_position)
+	_play_sound("decapitate")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+# ============================================
+# BLOCK TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_block(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Reduce incoming damage by 50%"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("block", ability.duration, {
+			"damage_reduction": 0.5
+		})
+
+	_spawn_effect("block", player.global_position)
+	_play_sound("block")
+
+func _execute_block_reflect(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Also reflect projectiles"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("reflect_shield", ability.duration, {
+			"damage_reduction": 0.5,
+			"reflect_projectiles": true
+		})
+
+	_spawn_effect("reflect_shield", player.global_position)
+	_play_sound("block")
+
+func _execute_block_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 100% damage reflection"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("mirror_shield", ability.duration, {
+			"damage_reduction": 1.0,
+			"damage_reflection": 1.0,
+			"reflect_projectiles": true,
+			"projectile_speed_multiplier": 2.0
+		})
+
+	_spawn_effect("mirror_shield", player.global_position)
+	_play_sound("mirror_shield")
+	_screen_shake("small")
+
+func _execute_block_parry(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Brief window to negate damage and stun attacker"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("parry_block", ability.duration, {
+			"damage_reduction": 1.0,
+			"parry_stun": ability.stun_duration
+		})
+
+	_spawn_effect("parry", player.global_position)
+	_play_sound("parry")
+
+func _execute_block_riposte(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Perfect parry triggers devastating counter"""
+	var damage = _get_damage(ability)
+
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("riposte", ability.duration, {
+			"damage_reduction": 1.0,
+			"counter_damage": damage,
+			"counter_stun": ability.stun_duration
+		})
+
+	_spawn_effect("riposte", player.global_position)
+	_play_sound("riposte")
+	_screen_shake("small")
+
+# ============================================
+# IMPALE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_impale(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Thrust forward, impaling an enemy"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	# Get first enemy in thrust direction
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.2)
+	if enemies.size() > 0:
+		_deal_damage_to_enemy(enemies[0], damage)
+
+	_spawn_effect("impale", player.global_position)
+	_play_sound("impale")
+	_screen_shake("small")
+
+func _execute_impale_skewer(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Pierce through up to 3 enemies"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.15)
+	enemies = enemies.slice(0, 3)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_effect("skewer", player.global_position)
+	_play_sound("impale")
+	_screen_shake("small")
+
+func _execute_impale_kebab(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Carry enemies and slam them"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	var enemies = _get_enemies_in_arc(player.global_position, direction, ability.range_distance, PI * 0.2)
+	enemies = enemies.slice(0, 5)
+
+	# Move player forward (carrying enemies)
+	_dash_player(player, direction, ability.range_distance * 0.5, 0.3)
+
+	# Slam damage to all
+	var slam_pos = player.global_position
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+		# Move enemy to slam position
+		if is_instance_valid(enemy):
+			enemy.global_position = slam_pos + Vector2(randf_range(-50, 50), randf_range(-50, 50))
+
+	# AoE at slam location
+	var aoe_enemies = _get_enemies_in_radius(slam_pos, ability.radius)
+	for enemy in aoe_enemies:
+		if not enemies.has(enemy):
+			_deal_damage_to_enemy(enemy, damage * 0.5)
+
+	_spawn_effect("shish_kebab", slam_pos)
+	_play_sound("slam")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+func _execute_impale_pin(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Pin enemy in place for 2 seconds"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		_apply_stun(target, ability.stun_duration)
+
+	_spawn_effect("pinning_strike", player.global_position)
+	_play_sound("impale")
+	_screen_shake("small")
+
+func _execute_impale_crucify(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Thrust enemy into wall for 3x damage"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var direction = (target.global_position - player.global_position).normalized()
+		var final_damage = damage
+
+		# SIGNATURE: 3x damage against wall (simplified - always apply bonus)
+		final_damage *= 3.0
+
+		_deal_damage_to_enemy(target, final_damage)
+		_apply_stun(target, ability.stun_duration)
+
+		# Knockback
+		_apply_knockback(target, direction, 500.0)
+
+		# Apply bleed
+		if target.has_method("apply_bleed"):
+			target.apply_bleed(damage * 0.2, 5.0)
+
+	_spawn_effect("crucify", player.global_position)
+	_play_sound("crucify")
+	_screen_shake("large")
+	_impact_pause(0.2)
+
+# ============================================
+# UPPERCUT TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_uppercut(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Launch enemy into the air"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		# Launch upward (knockback with upward bias)
+		var knockback_dir = Vector2(0, -1).normalized()
+		_apply_knockback(target, knockback_dir, ability.knockback_force)
+
+	_spawn_effect("uppercut", player.global_position)
+	_play_sound("punch")
+	_screen_shake("small")
+
+func _execute_uppercut_juggle(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Keep airborne enemies in the air"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# Multiple hits
+		for i in range(3):
+			_deal_damage_to_enemy(target, damage)
+			var knockback_dir = Vector2(randf_range(-0.3, 0.3), -1).normalized()
+			_apply_knockback(target, knockback_dir, ability.knockback_force)
+
+	_spawn_effect("juggle", player.global_position)
+	_play_sound("punch")
+	_screen_shake("small")
+
+func _execute_uppercut_air_combo(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 10-hit air combo, invulnerable"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	# SIGNATURE: Invulnerable during combo
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(ability.invulnerability_duration)
+
+	if target:
+		# 10 hits
+		for i in range(10):
+			_deal_damage_to_enemy(target, damage)
+
+		# Final slam
+		_deal_damage_to_enemy(target, damage * 2.0)
+		_apply_stun(target, 1.0)
+
+	_spawn_effect("air_combo", player.global_position)
+	_play_sound("combo")
+	_screen_shake("large")
+	_impact_pause(0.2)
+
+func _execute_uppercut_grab(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Grab and slam down"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		_apply_stun(target, ability.stun_duration)
+
+		# AoE on slam
+		var enemies = _get_enemies_in_radius(target.global_position, ability.radius)
+		for enemy in enemies:
+			if enemy != target:
+				_deal_damage_to_enemy(enemy, damage * 0.5)
+
+	_spawn_effect("grab_slam", player.global_position)
+	_play_sound("slam")
+	_screen_shake("medium")
+
+func _execute_uppercut_piledriver(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Leap, grab, suplex into ground"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	# SIGNATURE: Invulnerable
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(ability.invulnerability_duration)
+
+	if target:
+		# Leap to target
+		_dash_player(player, (target.global_position - player.global_position).normalized(),
+			player.global_position.distance_to(target.global_position), 0.3)
+
+		# Massive damage
+		_deal_damage_to_enemy(target, damage)
+		_apply_stun(target, ability.stun_duration)
+
+		# AoE earthquake
+		var enemies = _get_enemies_in_radius(target.global_position, ability.radius)
+		for enemy in enemies:
+			if enemy != target:
+				_deal_damage_to_enemy(enemy, damage * 0.7)
+				_apply_stun(enemy, ability.stun_duration * 0.5)
+
+	_spawn_effect("piledriver", player.global_position)
+	_play_sound("earthquake")
+	_screen_shake("large")
+	_impact_pause(0.25)
+
+# ============================================
+# COMBO TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_combo_strike(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: 3-hit combo attack"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		for i in range(3):
+			_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("combo_strike", player.global_position)
+	_play_sound("combo")
+	_screen_shake("small")
+
+func _execute_combo_chain(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: 5-hit combo, each hit builds attack speed"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		for i in range(5):
+			var hit_damage = damage * (1.0 + i * 0.1)  # Each hit does more
+			_deal_damage_to_enemy(target, hit_damage)
+
+	_spawn_effect("chain_combo", player.global_position)
+	_play_sound("combo")
+	_screen_shake("small")
+
+func _execute_combo_infinite(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Rapid attacks with lifesteal"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# Simulate rapid hits (15 hits for duration)
+		var hits = 15
+		for i in range(hits):
+			var hit_damage = damage * (1.0 + i * 0.05)  # +5% per hit
+			_deal_damage_to_enemy(target, hit_damage)
+
+			# Lifesteal
+			if player.has_method("heal"):
+				player.heal(hit_damage * 0.05)
+
+	_spawn_effect("infinite_combo", player.global_position)
+	_play_sound("combo")
+	_screen_shake("medium")
+	_impact_pause(0.1)
+
+func _execute_combo_finisher(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: 3-hit combo with powerful final strike"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		_deal_damage_to_enemy(target, damage)
+		_deal_damage_to_enemy(target, damage * 2.0)  # Final hit does 2x
+
+	_spawn_effect("combo_finisher", player.global_position)
+	_play_sound("combo")
+	_screen_shake("medium")
+
+func _execute_combo_ultimate(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 5-hit combo, 5th hit does 400% damage AoE"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# First 4 hits
+		for i in range(4):
+			_deal_damage_to_enemy(target, damage)
+
+		# 5th hit - massive AoE
+		var enemies = _get_enemies_in_radius(target.global_position, ability.radius)
+		for enemy in enemies:
+			_deal_damage_to_enemy(enemy, damage * 4.0)
+			_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_effect("ultimate_finisher", player.global_position)
+	_play_sound("ultimate")
+	_screen_shake("large")
+	_impact_pause(0.2)
+
+# ============================================
+# STOMP TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_stomp(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Stomp creating shockwave"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_effect("stomp", player.global_position)
+	_play_sound("stomp")
+	_screen_shake("small")
+
+func _execute_stomp_quake(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Larger waves with slow"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("quake_stomp", player.global_position)
+	_play_sound("earthquake")
+	_screen_shake("medium")
+
+func _execute_stomp_tectonic(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Create fissures, DoT zone"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_knockback(enemy, (enemy.global_position - player.global_position).normalized(), 200.0)
+
+	# Create DoT zone
+	var fissure = _spawn_effect("tectonic_shift", player.global_position)
+	if fissure and fissure.has_method("setup"):
+		fissure.setup(damage * 0.2, ability.radius, ability.duration)
+
+	_play_sound("earthquake")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+func _execute_stomp_thunder(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Stun enemies"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_effect("thunder_stomp", player.global_position)
+	_play_sound("thunder")
+	_screen_shake("medium")
+
+func _execute_stomp_thunderous(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Leap and stomp with massive stun"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	var target_pos = player.global_position + direction * ability.range_distance
+	if target:
+		target_pos = target.global_position
+
+	# Leap to target
+	_dash_player(player, (target_pos - player.global_position).normalized(),
+		player.global_position.distance_to(target_pos), 0.4)
+
+	# Massive impact
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+		_apply_knockback(enemy, (enemy.global_position - target_pos).normalized(), 300.0)
+
+	_spawn_effect("thunderous_impact", target_pos)
+	_play_sound("thunder")
+	_screen_shake("large")
+	_impact_pause(0.2)
+
+# ============================================
+# PARRY TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_parry(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Parry the next incoming attack"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("parry", ability.duration, {
+			"parry_active": true
+		})
+
+	_spawn_effect("parry", player.global_position)
+	_play_sound("parry")
+
+func _execute_parry_counter(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Successful parry triggers counter attack"""
+	var damage = _get_damage(ability)
+
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("counter_parry", ability.duration, {
+			"parry_active": true,
+			"counter_damage": damage,
+			"counter_range": ability.range_distance
+		})
+
+	_spawn_effect("counter_strike", player.global_position)
+	_play_sound("parry")
+
+func _execute_parry_riposte(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Perfect parry deals massive damage + stun"""
+	var damage = _get_damage(ability)
+
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("perfect_riposte", ability.duration, {
+			"parry_active": true,
+			"counter_damage": damage,
+			"counter_crit": true,
+			"counter_stun": ability.stun_duration,
+			"counter_range": ability.range_distance
+		})
+
+	_spawn_effect("perfect_riposte", player.global_position)
+	_play_sound("parry")
+	_screen_shake("small")
+
+func _execute_parry_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Also deflect projectiles"""
+	var damage = _get_damage(ability)
+
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("deflection", ability.duration, {
+			"parry_active": true,
+			"deflect_projectiles": true,
+			"deflect_damage": damage
+		})
+
+	_spawn_effect("deflection", player.global_position)
+	_play_sound("parry")
+
+func _execute_parry_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Invulnerable, reflect all damage"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("mirror_guard", ability.duration, {
+			"invulnerable": true,
+			"damage_reflection": 1.0,
+			"reflect_aoe_radius": ability.radius
+		})
+
+	_spawn_effect("mirror_guard", player.global_position)
+	_play_sound("mirror")
+	_screen_shake("medium")
+
+# ============================================
+# RAMPAGE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_rampage(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Enter rampage, increase attack speed"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("rampage", ability.duration, {
+			"attack_speed_bonus": 0.4
+		})
+
+	_spawn_effect("rampage", player.global_position)
+	_play_sound("roar")
+
+func _execute_rampage_frenzy(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Attacks build frenzy stacks"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("frenzy", ability.duration, {
+			"attack_speed_bonus": 0.5,
+			"attack_speed_per_hit": 0.05,
+			"max_attack_speed_bonus": 1.0
+		})
+
+	_spawn_effect("frenzy", player.global_position)
+	_play_sound("roar")
+
+func _execute_rampage_bloodlust(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Kills extend duration, increase power, lifesteal"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("bloodlust", ability.duration, {
+			"attack_speed_bonus": 0.6,
+			"damage_bonus": 0.3,
+			"lifesteal_percent": 0.15,
+			"duration_on_kill": 2.0,
+			"damage_per_kill": 0.1
+		})
+
+	_spawn_effect("bloodlust", player.global_position)
+	_play_sound("blood_rage")
+	_screen_shake("medium")
+
+func _execute_rampage_fury(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Also increases damage"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("fury", ability.duration, {
+			"attack_speed_bonus": 0.4,
+			"damage_bonus": 0.4
+		})
+
+	_spawn_effect("fury", player.global_position)
+	_play_sound("roar")
+
+func _execute_rampage_unstoppable(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Immune to CC, +100% damage, move through enemies"""
+	if player.has_method("add_temporary_buff"):
+		player.add_temporary_buff("unstoppable_force", ability.duration, {
+			"attack_speed_bonus": 0.5,
+			"damage_bonus": 1.0,
+			"cc_immune": true,
+			"collision_damage": true
+		})
+
+	_spawn_effect("unstoppable_force", player.global_position)
+	_play_sound("unstoppable")
+	_screen_shake("large")
+	_impact_pause(0.1)

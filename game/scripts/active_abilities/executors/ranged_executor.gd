@@ -179,9 +179,218 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
-		# LEGACY RANGED (for backwards compatibility)
+		# EXPLOSIVE TREE
 		# ============================================
 		"explosive_arrow":
+			_execute_explosive_arrow_new(ability, player)
+			return true
+		"explosive_cluster":
+			_execute_explosive_cluster(ability, player)
+			return true
+		"explosive_carpet":
+			_execute_explosive_carpet(ability, player)
+			return true
+		"explosive_sticky":
+			_execute_explosive_sticky(ability, player)
+			return true
+		"explosive_walking":
+			_execute_explosive_walking(ability, player)
+			return true
+
+		# ============================================
+		# POISON TREE
+		# ============================================
+		"poison_arrow":
+			_execute_poison_arrow(ability, player)
+			return true
+		"poison_plague":
+			_execute_poison_plague(ability, player)
+			return true
+		"poison_pandemic":
+			_execute_poison_pandemic(ability, player)
+			return true
+		"poison_toxic":
+			_execute_poison_toxic(ability, player)
+			return true
+		"poison_venom":
+			_execute_poison_venom(ability, player)
+			return true
+
+		# ============================================
+		# FROST ARROW TREE
+		# ============================================
+		"frost_arrow":
+			_execute_frost_arrow(ability, player)
+			return true
+		"frost_freezing":
+			_execute_frost_freezing(ability, player)
+			return true
+		"frost_ice_age":
+			_execute_frost_ice_age(ability, player)
+			return true
+		"frost_chilling":
+			_execute_frost_chilling(ability, player)
+			return true
+		"frost_frostbite":
+			_execute_frost_frostbite(ability, player)
+			return true
+
+		# ============================================
+		# MARK TREE
+		# ============================================
+		"mark_target":
+			_execute_mark_target(ability, player)
+			return true
+		"mark_hunter":
+			_execute_mark_hunter(ability, player)
+			return true
+		"mark_death":
+			_execute_mark_death(ability, player)
+			return true
+		"mark_focus":
+			_execute_mark_focus(ability, player)
+			return true
+		"mark_kill_order":
+			_execute_mark_kill_order(ability, player)
+			return true
+
+		# ============================================
+		# SNIPE TREE
+		# ============================================
+		"snipe":
+			_execute_snipe(ability, player)
+			return true
+		"snipe_headshot":
+			_execute_snipe_headshot(ability, player)
+			return true
+		"snipe_assassinate":
+			_execute_snipe_assassinate(ability, player)
+			return true
+		"snipe_pierce":
+			_execute_snipe_pierce(ability, player)
+			return true
+		"snipe_obliterate":
+			_execute_snipe_obliterate(ability, player)
+			return true
+
+		# ============================================
+		# GRAPPLE TREE
+		# ============================================
+		"grapple":
+			_execute_grapple(ability, player)
+			return true
+		"grapple_pull":
+			_execute_grapple_pull(ability, player)
+			return true
+		"grapple_scorpion":
+			_execute_grapple_scorpion(ability, player)
+			return true
+		"grapple_swing":
+			_execute_grapple_swing(ability, player)
+			return true
+		"grapple_spider":
+			_execute_grapple_spider(ability, player)
+			return true
+
+		# ============================================
+		# BOOMERANG TREE
+		# ============================================
+		"boomerang":
+			_execute_boomerang(ability, player)
+			return true
+		"boomerang_multi":
+			_execute_boomerang_multi(ability, player)
+			return true
+		"boomerang_storm":
+			_execute_boomerang_storm(ability, player)
+			return true
+		"boomerang_track":
+			_execute_boomerang_track(ability, player)
+			return true
+		"boomerang_predator":
+			_execute_boomerang_predator(ability, player)
+			return true
+
+		# ============================================
+		# NET TREE
+		# ============================================
+		"net":
+			_execute_net(ability, player)
+			return true
+		"net_electric":
+			_execute_net_electric(ability, player)
+			return true
+		"net_tesla":
+			_execute_net_tesla(ability, player)
+			return true
+		"net_barbed":
+			_execute_net_barbed(ability, player)
+			return true
+		"net_razor":
+			_execute_net_razor(ability, player)
+			return true
+
+		# ============================================
+		# RICOCHET TREE
+		# ============================================
+		"ricochet":
+			_execute_ricochet(ability, player)
+			return true
+		"ricochet_chain":
+			_execute_ricochet_chain(ability, player)
+			return true
+		"ricochet_infinite":
+			_execute_ricochet_infinite(ability, player)
+			return true
+		"ricochet_split":
+			_execute_ricochet_split(ability, player)
+			return true
+		"ricochet_cascade":
+			_execute_ricochet_cascade(ability, player)
+			return true
+
+		# ============================================
+		# BARRAGE TREE
+		# ============================================
+		"barrage":
+			_execute_barrage(ability, player)
+			return true
+		"barrage_focused":
+			_execute_barrage_focused(ability, player)
+			return true
+		"barrage_bullet_storm":
+			_execute_barrage_bullet_storm(ability, player)
+			return true
+		"barrage_spread":
+			_execute_barrage_spread(ability, player)
+			return true
+		"barrage_lead_rain":
+			_execute_barrage_lead_rain(ability, player)
+			return true
+
+		# ============================================
+		# QUICKDRAW TREE
+		# ============================================
+		"quickdraw":
+			_execute_quickdraw(ability, player)
+			return true
+		"quickdraw_reflex":
+			_execute_quickdraw_reflex(ability, player)
+			return true
+		"quickdraw_gunslinger":
+			_execute_quickdraw_gunslinger(ability, player)
+			return true
+		"quickdraw_execute":
+			_execute_quickdraw_execute(ability, player)
+			return true
+		"quickdraw_deadeye":
+			_execute_quickdraw_deadeye(ability, player)
+			return true
+
+		# ============================================
+		# LEGACY RANGED (for backwards compatibility)
+		# ============================================
+		"explosive_arrow_legacy":
 			_execute_explosive_arrow(ability, player)
 			return true
 		"cluster_bomb":
@@ -1456,3 +1665,1003 @@ func _spawn_projectile_at(pos: Vector2, direction: Vector2, speed: float) -> Nod
 	if _main_executor and _main_executor.has_method("_spawn_projectile_at_position"):
 		return _main_executor._spawn_projectile_at_position(pos, direction, speed)
 	return null
+
+# ============================================
+# EXPLOSIVE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_explosive_arrow_new(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Fire arrow that explodes on impact"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "explosion_radius" in proj:
+			proj.explosion_radius = ability.radius
+		if "explodes" in proj:
+			proj.explodes = true
+
+	_spawn_effect("explosive_arrow", player.global_position)
+	_play_sound("power_shot")
+
+func _execute_explosive_cluster(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Spawns 4 mini bombs"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+	var target_pos = target.global_position if target else player.global_position + direction * 300.0
+
+	# Impact at target, spawn cluster
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius * 0.5)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage * 0.5)
+
+	# Spawn 4 mini explosions around impact
+	for i in range(4):
+		var offset = Vector2(cos(i * TAU / 4), sin(i * TAU / 4)) * 60.0
+		var mini_pos = target_pos + offset
+		if _main_executor:
+			_main_executor.get_tree().create_timer(0.3).timeout.connect(func():
+				var mini_enemies = _get_enemies_in_radius(mini_pos, ability.radius * 0.3)
+				for enemy in mini_enemies:
+					_deal_damage_to_enemy(enemy, damage * 0.3)
+				_spawn_effect("explosion", mini_pos)
+			)
+
+	_spawn_effect("explosion", target_pos)
+	_play_sound("explosion")
+
+func _execute_explosive_carpet(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Line of explosions"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	# Fire 8 explosions in a line
+	for i in range(8):
+		var bomb_pos = player.global_position + direction * (50.0 + i * 70.0)
+		if _main_executor:
+			_main_executor.get_tree().create_timer(i * 0.15).timeout.connect(func():
+				var enemies = _get_enemies_in_radius(bomb_pos, ability.radius)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage)
+				_spawn_effect("explosion", bomb_pos)
+				_play_sound("explosion")
+			)
+
+	_screen_shake("large")
+
+func _execute_explosive_sticky(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Sticks to enemies, explodes after delay"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# Stick bomb to enemy
+		if _main_executor:
+			_main_executor.get_tree().create_timer(2.0).timeout.connect(func():
+				if is_instance_valid(target):
+					var enemies = _get_enemies_in_radius(target.global_position, ability.radius)
+					for enemy in enemies:
+						_deal_damage_to_enemy(enemy, damage)
+					_spawn_effect("explosion", target.global_position)
+					_play_sound("explosion")
+			)
+
+	_spawn_effect("sticky_bomb", player.global_position)
+	_play_sound("deploy")
+
+func _execute_explosive_walking(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Walking bomb chases enemies"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var bomb_pos = [player.global_position + direction * 50.0]
+
+	# Bomb walks toward nearest enemy
+	var ticks = 30
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(i * 0.2).timeout.connect(func():
+				var target = _get_nearest_enemy(bomb_pos[0], 400.0)
+				if target and is_instance_valid(target):
+					var to_target = (target.global_position - bomb_pos[0]).normalized()
+					bomb_pos[0] += to_target * 30.0
+
+					# Check if close enough to explode
+					if bomb_pos[0].distance_to(target.global_position) < 50.0:
+						var enemies = _get_enemies_in_radius(bomb_pos[0], ability.radius)
+						for enemy in enemies:
+							_deal_damage_to_enemy(enemy, damage)
+						_spawn_effect("explosion", bomb_pos[0])
+						_play_sound("explosion")
+						_screen_shake("medium")
+			)
+
+	_spawn_effect("walking_bomb", player.global_position)
+	_play_sound("deploy")
+
+# ============================================
+# POISON TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_poison_arrow(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Arrow that applies poison DoT"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+		_deal_damage_to_enemy(target, damage)
+		if target.has_method("apply_poison"):
+			target.apply_poison(damage * 0.3, ability.duration)
+
+	_spawn_effect("poison_arrow", player.global_position)
+	_play_sound("power_shot")
+
+func _execute_poison_plague(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Poison spreads to nearby enemies"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		# Spread poison to nearby enemies
+		var nearby = _get_enemies_in_radius(target.global_position, 150.0)
+		for enemy in nearby:
+			if enemy.has_method("apply_poison"):
+				enemy.apply_poison(damage * 0.2, ability.duration)
+
+	_spawn_effect("plague", player.global_position)
+	_play_sound("poison")
+
+func _execute_poison_pandemic(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Infinite poison spread on death"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		# Mark for pandemic spread
+		if target.has_method("apply_pandemic"):
+			target.apply_pandemic(damage * 0.5, ability.duration)
+
+	_spawn_effect("pandemic", player.global_position)
+	_play_sound("poison")
+	_screen_shake("small")
+
+func _execute_poison_toxic(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Stronger poison with slow"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		if target.has_method("apply_poison"):
+			target.apply_poison(damage * 0.5, ability.duration)
+		_apply_slow(target, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("toxic_shot", player.global_position)
+	_play_sound("poison")
+
+func _execute_poison_venom(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Stacking venom, instant kill at 10 stacks"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		if target.has_method("apply_venom_stack"):
+			target.apply_venom_stack()
+
+	_spawn_effect("venom", player.global_position)
+	_play_sound("poison")
+	_screen_shake("small")
+
+# ============================================
+# FROST ARROW TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_frost_arrow(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Arrow that slows enemy"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+		_deal_damage_to_enemy(target, damage)
+		_apply_slow(target, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("frost_arrow", player.global_position)
+	_play_sound("ice")
+
+func _execute_frost_freezing(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Chance to freeze solid"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		# 30% chance to freeze
+		if randf() < 0.3:
+			_apply_stun(target, ability.stun_duration)
+		else:
+			_apply_slow(target, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("freezing_arrow", player.global_position)
+	_play_sound("ice")
+
+func _execute_frost_ice_age(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Freeze all enemies in area"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_effect("ice_age", player.global_position)
+	_play_sound("ice")
+	_screen_shake("large")
+	_impact_pause(0.2)
+
+func _execute_frost_chilling(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Creates chilling ground"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+	# Create chilling zone
+	var zone = _spawn_effect("frost_zone", target_pos)
+	if zone and zone.has_method("setup"):
+		zone.setup(damage * 0.1, ability.radius, ability.duration)
+
+	_play_sound("ice")
+
+func _execute_frost_frostbite(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Stacking chill, frozen enemies shatter for bonus damage"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, 500.0)
+
+	if target:
+		var final_damage = damage
+		# Check for shatter bonus
+		if target.has_method("is_frozen") and target.is_frozen():
+			final_damage *= 3.0  # Shatter bonus
+		_deal_damage_to_enemy(target, final_damage)
+		_apply_stun(target, ability.stun_duration)
+
+	_spawn_effect("frostbite", player.global_position)
+	_play_sound("ice")
+	_screen_shake("medium")
+
+# ============================================
+# MARK TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_mark_target(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Mark enemy for bonus damage"""
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target and target.has_method("apply_mark"):
+		target.apply_mark(ability.duration, 1.3)  # 30% bonus damage
+
+	_spawn_effect("mark", target.global_position if target else player.global_position)
+	_play_sound("mark")
+
+func _execute_mark_hunter(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Mark increases damage taken by 50%"""
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("apply_mark"):
+			target.apply_mark(ability.duration, 1.5)  # 50% bonus damage
+		# Also reveal hidden enemies
+		if target.has_method("reveal"):
+			target.reveal(ability.duration)
+
+	_spawn_effect("hunter_mark", target.global_position if target else player.global_position)
+	_play_sound("mark")
+
+func _execute_mark_death(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Mark of death - instant kill on timer"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# After delay, deal massive damage or instant kill low HP
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+				if is_instance_valid(target):
+					if target.has_method("get_health_percent") and target.get_health_percent() < 0.3:
+						if target.has_method("take_damage"):
+							target.take_damage(99999.0)
+					else:
+						_deal_damage_to_enemy(target, damage * 2.0)
+					_spawn_effect("death_mark_trigger", target.global_position)
+			)
+
+	_spawn_effect("death_mark", target.global_position if target else player.global_position)
+	_play_sound("mark")
+	_screen_shake("small")
+
+func _execute_mark_focus(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: All attacks home to marked target"""
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target and target.has_method("apply_focus_mark"):
+		target.apply_focus_mark(ability.duration)
+
+	_spawn_effect("focus_mark", target.global_position if target else player.global_position)
+	_play_sound("mark")
+
+func _execute_mark_kill_order(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Mark enemy, all damage doubled, allies focus"""
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("apply_mark"):
+			target.apply_mark(ability.duration, 2.0)  # Double damage
+		if target.has_method("set_priority_target"):
+			target.set_priority_target(true)
+
+	_spawn_effect("kill_order", target.global_position if target else player.global_position)
+	_play_sound("mark")
+	_screen_shake("medium")
+
+# ============================================
+# SNIPE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_snipe(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Long range precision shot"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("snipe", player.global_position)
+	_play_sound("sniper_shot")
+
+func _execute_snipe_headshot(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: 50% chance for critical headshot"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var is_crit = randf() < 0.5
+		var final_damage = damage * (2.0 if is_crit else 1.0)
+		_deal_damage_to_enemy(target, final_damage, is_crit)
+
+	_spawn_effect("headshot", player.global_position)
+	_play_sound("sniper_shot")
+
+func _execute_snipe_assassinate(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Guaranteed kill on low HP, resets on kill"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.4:
+			if target.has_method("take_damage"):
+				target.take_damage(99999.0)
+		else:
+			_deal_damage_to_enemy(target, damage, true)  # Always crit
+
+	_spawn_effect("assassinate", player.global_position)
+	_play_sound("sniper_shot")
+	_screen_shake("medium")
+	_impact_pause(0.1)
+
+func _execute_snipe_pierce(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Shot pierces through enemies"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	# Hit all enemies in line
+	var start = player.global_position
+	var end = start + direction * ability.range_distance
+	var all_enemies = player.get_tree().get_nodes_in_group("enemies")
+	for enemy in all_enemies:
+		if is_instance_valid(enemy):
+			var to_enemy = enemy.global_position - start
+			var proj_len = to_enemy.dot(direction)
+			if proj_len > 0 and proj_len < ability.range_distance:
+				var closest = start + direction * proj_len
+				if enemy.global_position.distance_to(closest) < 40.0:
+					_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_effect("piercing_snipe", player.global_position)
+	_play_sound("sniper_shot")
+
+func _execute_snipe_obliterate(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Massive damage, ignores all armor"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		if target.has_method("take_pure_damage"):
+			target.take_pure_damage(damage)
+		else:
+			_deal_damage_to_enemy(target, damage, true)
+
+	_spawn_effect("obliterate", player.global_position)
+	_play_sound("railgun")
+	_screen_shake("large")
+	_impact_pause(0.15)
+
+# ============================================
+# GRAPPLE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_grapple(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Pull enemy to you"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# Pull enemy to player
+		target.global_position = player.global_position + (target.global_position - player.global_position).normalized() * 50.0
+		_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("grapple", player.global_position)
+	_play_sound("grapple")
+
+func _execute_grapple_pull(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Pull multiple enemies"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
+	enemies = enemies.slice(0, 4)
+
+	for enemy in enemies:
+		# Pull to player
+		enemy.global_position = player.global_position + (enemy.global_position - player.global_position).normalized() * 60.0
+		_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_effect("mass_pull", player.global_position)
+	_play_sound("grapple")
+
+func _execute_grapple_scorpion(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Pull and impale"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		# Pull enemy
+		target.global_position = player.global_position + Vector2(50, 0)
+		# Massive damage + stun
+		_deal_damage_to_enemy(target, damage)
+		_apply_stun(target, ability.stun_duration)
+
+	_spawn_effect("scorpion_pull", player.global_position)
+	_play_sound("grapple")
+	_screen_shake("medium")
+
+func _execute_grapple_swing(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Pull yourself to enemy"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if target:
+		var target_pos = target.global_position
+		_dash_player(player, (target_pos - player.global_position).normalized(),
+			player.global_position.distance_to(target_pos) - 30.0, 0.3)
+		_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("swing", player.global_position)
+	_play_sound("grapple")
+
+func _execute_grapple_spider(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Web all enemies in area, immobilize"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_effect("spider_web", player.global_position)
+	_play_sound("grapple")
+	_screen_shake("medium")
+
+# ============================================
+# BOOMERANG TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_boomerang(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Throw returning projectile"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "returns" in proj:
+			proj.returns = true
+
+	_spawn_effect("boomerang", player.global_position)
+	_play_sound("throw")
+
+func _execute_boomerang_multi(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Throw 3 boomerangs"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	for i in range(3):
+		var offset = (i - 1) * 0.3
+		var proj = _spawn_projectile(player, direction.rotated(offset), ability.projectile_speed)
+		if proj:
+			if "damage" in proj:
+				proj.damage = damage
+			if "returns" in proj:
+				proj.returns = true
+
+	_spawn_effect("multi_boomerang", player.global_position)
+	_play_sound("throw")
+
+func _execute_boomerang_storm(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 6 orbiting blades"""
+	var damage = _get_damage(ability)
+
+	for i in range(6):
+		var angle = i * TAU / 6
+		var blade = _spawn_effect("orbital_blade", player.global_position)
+		if blade and blade.has_method("setup"):
+			blade.setup(player, damage, ability.radius, ability.duration, angle)
+
+	_play_sound("bladestorm")
+	_screen_shake("medium")
+
+func _execute_boomerang_track(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Homing boomerang"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var direction = (target.global_position - player.global_position).normalized() if target else _get_attack_direction(player)
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "homing" in proj:
+			proj.homing = true
+		if "target" in proj:
+			proj.target = target
+
+	_spawn_effect("tracking_boomerang", player.global_position)
+	_play_sound("throw")
+
+func _execute_boomerang_predator(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Hunts enemies until 5 kills"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "predator_mode" in proj:
+			proj.predator_mode = true
+			proj.kills_remaining = 5
+
+	_spawn_effect("predator_disc", player.global_position)
+	_play_sound("throw")
+	_screen_shake("small")
+
+# ============================================
+# NET TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_net(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Throw net to slow enemies"""
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		target_pos = target.global_position
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+	_spawn_effect("net", target_pos)
+	_play_sound("net")
+
+func _execute_net_electric(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Electrified net, damages and stuns"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		target_pos = target.global_position
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+		_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_effect("electric_net", target_pos)
+	_play_sound("lightning")
+
+func _execute_net_tesla(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Chains lightning between trapped enemies"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		target_pos = target.global_position
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+		_apply_stun(enemy, ability.stun_duration)
+
+	# Chain lightning DoT
+	var ticks = int(ability.duration / 0.5)
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(i * 0.5).timeout.connect(func():
+				var trapped = _get_enemies_in_radius(target_pos, ability.radius)
+				for enemy in trapped:
+					_deal_damage_to_enemy(enemy, damage * 0.2)
+				_spawn_effect("chain_lightning", target_pos)
+			)
+
+	_spawn_effect("tesla_net", target_pos)
+	_play_sound("lightning")
+	_screen_shake("medium")
+
+func _execute_net_barbed(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Net damages when enemies move"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		target_pos = target.global_position
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+		if enemy.has_method("apply_barbed"):
+			enemy.apply_barbed(damage * 0.1, ability.duration)
+
+	_spawn_effect("barbed_net", target_pos)
+	_play_sound("net")
+
+func _execute_net_razor(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Constricting net, increasing damage"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target_pos = player.global_position + direction * 200.0
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		target_pos = target.global_position
+
+	var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+	for enemy in enemies:
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+	# Increasing damage over time
+	var ticks = int(ability.duration / 0.4)
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(i * 0.4).timeout.connect(func():
+				var trapped = _get_enemies_in_radius(target_pos, ability.radius)
+				var tick_damage = damage * (0.1 + i * 0.05)  # Increasing damage
+				for enemy in trapped:
+					_deal_damage_to_enemy(enemy, tick_damage)
+			)
+
+	_spawn_effect("razor_net", target_pos)
+	_play_sound("net")
+	_screen_shake("small")
+
+# ============================================
+# RICOCHET TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_ricochet(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Bouncing projectile"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "bounce_count" in proj:
+			proj.bounce_count = 3
+
+	_spawn_effect("ricochet", player.global_position)
+	_play_sound("ricochet")
+
+func _execute_ricochet_chain(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: More bounces"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "bounce_count" in proj:
+			proj.bounce_count = 6
+
+	_spawn_effect("chain_ricochet", player.global_position)
+	_play_sound("ricochet")
+
+func _execute_ricochet_infinite(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Infinite bounces"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "bounce_count" in proj:
+			proj.bounce_count = 999
+		if "damage_increase_per_bounce" in proj:
+			proj.damage_increase_per_bounce = 0.05
+
+	_spawn_effect("endless_ricochet", player.global_position)
+	_play_sound("ricochet")
+	_screen_shake("small")
+
+func _execute_ricochet_split(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Splits on bounce"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "splits_on_bounce" in proj:
+			proj.splits_on_bounce = true
+
+	_spawn_effect("splitting_shot", player.global_position)
+	_play_sound("ricochet")
+
+func _execute_ricochet_cascade(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Exponential splitting"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
+	if proj:
+		if "damage" in proj:
+			proj.damage = damage
+		if "cascade_mode" in proj:
+			proj.cascade_mode = true
+
+	_spawn_effect("cascade", player.global_position)
+	_play_sound("ricochet")
+	_screen_shake("medium")
+
+# ============================================
+# BARRAGE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_barrage(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Rapid fire barrage"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		direction = (target.global_position - player.global_position).normalized()
+
+	var shots = 10
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * i / shots).timeout.connect(func():
+				var proj = _spawn_projectile(player, direction + Vector2(randf_range(-0.1, 0.1), randf_range(-0.1, 0.1)), ability.projectile_speed)
+				if proj and "damage" in proj:
+					proj.damage = damage / shots
+			)
+
+	_play_sound("barrage")
+
+func _execute_barrage_focused(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: All shots on single target"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if not target:
+		return
+
+	var shots = 15
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * i / shots).timeout.connect(func():
+				if is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage / shots)
+					_spawn_effect("hit", target.global_position)
+			)
+
+	_play_sound("barrage")
+
+func _execute_barrage_bullet_storm(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 50+ projectiles"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if not target:
+		return
+
+	var shots = 50
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * i / shots).timeout.connect(func():
+				if is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage / shots)
+					_spawn_effect("hit", target.global_position)
+			)
+
+	_play_sound("barrage")
+	_screen_shake("medium")
+
+func _execute_barrage_spread(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Wide spread of projectiles"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+
+	var shots = 15
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * i / shots).timeout.connect(func():
+				var spread = randf_range(-0.5, 0.5)
+				var proj = _spawn_projectile(player, direction.rotated(spread), ability.projectile_speed)
+				if proj and "damage" in proj:
+					proj.damage = damage / shots
+			)
+
+	_play_sound("barrage")
+
+func _execute_barrage_lead_rain(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Suppression zone"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var center = player.global_position + direction * 200.0
+
+	var shots = 40
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * i / shots).timeout.connect(func():
+				var offset = Vector2(randf_range(-ability.radius, ability.radius), randf_range(-ability.radius, ability.radius))
+				var hit_pos = center + offset
+				var enemies = _get_enemies_in_radius(hit_pos, 30.0)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage / shots)
+					_apply_slow(enemy, ability.slow_percent, 0.5)
+				_spawn_effect("bullet_impact", hit_pos)
+			)
+
+	_play_sound("barrage")
+	_screen_shake("large")
+
+# ============================================
+# QUICKDRAW TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_quickdraw(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Instant shot with brief invulnerability"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(0.3)
+
+	if target:
+		_deal_damage_to_enemy(target, damage)
+
+	_spawn_effect("quickdraw", player.global_position)
+	_play_sound("quickdraw")
+
+func _execute_quickdraw_reflex(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Two quick shots"""
+	var damage = _get_damage(ability)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(0.4)
+
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if target:
+		_deal_damage_to_enemy(target, damage)
+		if _main_executor:
+			_main_executor.get_tree().create_timer(0.15).timeout.connect(func():
+				if is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage)
+			)
+
+	_spawn_effect("reflex_shot", player.global_position)
+	_play_sound("quickdraw")
+
+func _execute_quickdraw_gunslinger(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: 6 instant shots at different targets"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
+	enemies = enemies.slice(0, 6)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(0.6)
+
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+		_spawn_effect("quickdraw_hit", enemy.global_position)
+
+	_spawn_effect("gunslinger", player.global_position)
+	_play_sound("quickdraw")
+	_screen_shake("medium")
+
+func _execute_quickdraw_execute(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Massive damage to low HP"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(0.3)
+
+	if target:
+		var final_damage = damage
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.5:
+			final_damage *= 2.0
+		_deal_damage_to_enemy(target, final_damage)
+
+	_spawn_effect("execution_shot", player.global_position)
+	_play_sound("quickdraw")
+
+func _execute_quickdraw_deadeye(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Time slow, guaranteed crit, instant kill low HP"""
+	var damage = _get_damage(ability)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(1.0)
+
+	if player.has_method("trigger_time_slow"):
+		player.trigger_time_slow(0.5, 0.2)
+
+	if target:
+		if target.has_method("get_health_percent") and target.get_health_percent() < 0.3:
+			if target.has_method("take_damage"):
+				target.take_damage(99999.0)
+		else:
+			_deal_damage_to_enemy(target, damage, true)  # Guaranteed crit
+
+	_spawn_effect("deadeye", player.global_position)
+	_play_sound("quickdraw")
+	_screen_shake("large")
+	_impact_pause(0.2)
