@@ -129,19 +129,19 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	_register(_create_frost_nova())  # Upgraded - merged with Throw Net
 	_register(_create_chain_lightning())
-	_register(_create_meteor_strike())
+	# _register(_create_meteor_strike())  # Removed - now Fireball Tree T2 (fireball_meteor)
 	_register(_create_totem_of_frost())
-	_register(_create_shadowstep())
+	# _register(_create_shadowstep())  # Removed - now Teleport Tree T2 B (teleport_shadow)
 	_register(_create_time_slow())
 
 	# ============================================
 	# GLOBAL - LEGENDARY
 	# ============================================
-	_register(_create_black_hole())
-	_register(_create_time_stop())
-	_register(_create_thunderstorm())
-	_register(_create_summon_golem())
-	_register(_create_army_of_the_dead())
+	# _register(_create_black_hole())  # Removed - now Gravity Tree T3 A (gravity_singularity)
+	# _register(_create_time_stop())  # Removed - now Time Tree T2 A (time_stop)
+	# _register(_create_thunderstorm())  # Removed - now Lightning Tree T2 A (chain_lightning_storm)
+	# _register(_create_summon_golem())  # Removed - now Summon Tree T2 A (summon_golem)
+	# _register(_create_army_of_the_dead())  # Removed - now Summon Tree T3 B (summon_army)
 
 	# ============================================
 	# NEW ABILITIES - ZONE & WALL
@@ -194,7 +194,7 @@ static func _register_all_abilities() -> void:
 	# NEW ABILITIES - CROWD CONTROL
 	# ============================================
 	# vortex removed - now part of spin_tree as spin_vortex (T2)
-	_register(_create_repulsive())
+	# _register(_create_repulsive())  # Removed - now Gravity Tree T2 B (gravity_repulse)
 	_register(_create_dj_drop())
 
 static func _register(ability: ActiveAbilityData) -> void:

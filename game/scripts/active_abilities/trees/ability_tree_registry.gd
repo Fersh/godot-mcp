@@ -69,7 +69,7 @@ static func _register_all_trees() -> void:
 	_register_tree(QuickdrawTree.create())
 
 	# Register global trees
-	_register_tree(FireballTree.create())
+	# _register_tree(FireballTree.create())  # Commented out - temporarily disabled
 	_register_tree(FrostNovaTree.create())
 	_register_tree(LightningTree.create())
 	_register_tree(HealTree.create())

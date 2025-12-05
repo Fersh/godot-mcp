@@ -2,6 +2,97 @@
 
 ---
 
+## Date: 2025-12-05 - Global Tree Implementations & Ability Cleanup
+
+### Summary
+Added complete implementations for Time, Teleport, Summon, and Gravity ability trees. Fixed ranged executor issues. Cleaned up duplicate global abilities. Upgraded Multi-Shot damage.
+
+### New Global Tree Implementations (global_executor.gd)
+
+**Time Tree (5 abilities):**
+| Ability | Effect |
+|---------|--------|
+| time_slow | Slow enemies in radius (does NOT affect player), pixelated time bubble |
+| time_stop | Freeze all enemies in radius completely |
+| time_prison | Trap single enemy in time stasis, massive damage on release |
+| time_rewind | Reset player position to 3 seconds ago, heal 30% of damage taken |
+| chronoshift | Complete time freeze, player acts freely, massive damage on unfreeze |
+
+**Teleport Tree (5 abilities):**
+| Ability | Effect |
+|---------|--------|
+| teleport | Basic blink to target location |
+| blink | Longer range blink with brief invulnerability |
+| dimension_shift | Swap positions with nearest enemy |
+| shadowstep | Teleport behind enemy, deal backstab damage |
+| shadow_swap | Swap with enemy and deal massive damage to all enemies near both positions |
+
+**Summon Tree (5 abilities):**
+| Ability | Effect |
+|---------|--------|
+| summon_minion | Spawn basic minion that fights for you |
+| summon_golem | Spawn tanky golem with high health |
+| summon_titan | Spawn massive titan with ground slam attacks |
+| summon_swarm | Spawn 5 small fast minions |
+| army_of_the_dead | Spawn 8 skeleton warriors |
+
+**Gravity Tree (5 abilities):**
+| Ability | Effect |
+|---------|--------|
+| gravity_well | Pull enemies to center, deal damage over time |
+| crushing_gravity | Intense gravity field, heavy damage + slow |
+| singularity | Black hole that pulls and damages all enemies |
+| repulse | Push all enemies away from player |
+| supernova | Massive explosion after gravity collapse |
+
+### Ranged Executor Fixes
+
+| Fix | Details |
+|-----|---------|
+| multi_fan 360° | Fixed to use full TAU spread instead of 60° |
+| trap_bear inline | Added full inline implementation with Polygon2D visuals |
+| rain_storm/apocalypse | Added inline implementations with damage ticks |
+| rain_orbital | Added orbital strike effect |
+| turret fallbacks | Added _start_turret_shooting and _start_artillery_shooting |
+| Smoke Tree | Added all 5 abilities (smoke_bomb through smoke_sanctuary) |
+| Decoy Tree | Added all 5 abilities (decoy through decoy_horde) |
+
+### Global Ability Duplicates Removed
+
+8 standalone global abilities commented out (now available through trees):
+
+| Ability | Tree Equivalent |
+|---------|-----------------|
+| meteor_strike | Fireball Tree T2 (fireball_meteor) |
+| shadowstep | Teleport Tree T2 B (teleport_shadow) |
+| black_hole | Gravity Tree T3 A (gravity_singularity) |
+| time_stop | Time Tree T2 A (time_stop) |
+| thunderstorm | Lightning Tree T2 A (chain_lightning_storm) |
+| summon_golem | Summon Tree T2 A (summon_golem) |
+| army_of_the_dead | Summon Tree T3 B (summon_army) |
+| repulsive | Gravity Tree T2 B (gravity_repulse) |
+
+### Multi-Shot Damage Upgrade
+
+| Stat | Before | After | Change |
+|------|--------|-------|--------|
+| Base Damage | 30 | 45 | +50% |
+| Damage Scaling | 1.0x | 1.2x | +20% |
+| Effective Damage | 30 | 54 | +80% |
+
+### Fireball Tree Disabled
+
+Fireball tree registration commented out in `ability_tree_registry.gd` for temporary disabling.
+
+### Files Modified
+- `global_executor.gd` - Added Time, Teleport, Summon, Gravity tree implementations (~400 lines)
+- `ranged_executor.gd` - Fixed multi_fan, added trap_bear, rain, turret, smoke, decoy implementations
+- `active_ability_database.gd` - Commented out 8 duplicate global abilities
+- `multi_shot_tree.gd` - Upgraded damage from 30/1.0x to 45/1.2x
+- `ability_tree_registry.gd` - Commented out FireballTree registration
+
+---
+
 ## Date: 2025-12-04 - Ranged Standalone Ability Cleanup
 
 ### Summary

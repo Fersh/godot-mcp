@@ -33,7 +33,7 @@ static func _create_base() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.DIRECTION,
 		6.0
-	).with_damage(30.0, 1.0) \
+	).with_damage(45.0, 1.2) \
 	 .with_projectiles(3, 500.0) \
 	 .with_effect("multi_shot")
 

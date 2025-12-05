@@ -65,9 +65,9 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
-		# HEAL TREE (placeholder for future)
+		# HEAL TREE
 		# ============================================
-		"heal":
+		"healing_light":
 			_execute_heal(ability, player)
 			return true
 		"heal_regen":
@@ -81,6 +81,82 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 		"heal_martyr":
 			_execute_martyrdom(ability, player)
+			return true
+
+		# ============================================
+		# TIME TREE
+		# ============================================
+		"time_slow":
+			_execute_time_slow(ability, player)
+			return true
+		"time_stop":
+			_execute_time_stop(ability, player)
+			return true
+		"time_prison":
+			_execute_time_prison(ability, player)
+			return true
+		"time_rewind":
+			_execute_time_rewind(ability, player)
+			return true
+		"time_chronoshift":
+			_execute_chronoshift(ability, player)
+			return true
+
+		# ============================================
+		# TELEPORT TREE
+		# ============================================
+		"teleport":
+			_execute_teleport(ability, player)
+			return true
+		"teleport_blink":
+			_execute_blink(ability, player)
+			return true
+		"teleport_dimension":
+			_execute_dimension_shift(ability, player)
+			return true
+		"teleport_shadow":
+			_execute_shadowstep(ability, player)
+			return true
+		"teleport_swap":
+			_execute_shadow_swap(ability, player)
+			return true
+
+		# ============================================
+		# SUMMON TREE
+		# ============================================
+		"summon":
+			_execute_summon_minion(ability, player)
+			return true
+		"summon_golem":
+			_execute_summon_golem(ability, player)
+			return true
+		"summon_titan":
+			_execute_summon_titan(ability, player)
+			return true
+		"summon_swarm":
+			_execute_summon_swarm(ability, player)
+			return true
+		"summon_army":
+			_execute_army_of_the_dead(ability, player)
+			return true
+
+		# ============================================
+		# GRAVITY TREE
+		# ============================================
+		"gravity_well":
+			_execute_gravity_well(ability, player)
+			return true
+		"gravity_crush":
+			_execute_crushing_gravity(ability, player)
+			return true
+		"gravity_singularity":
+			_execute_singularity(ability, player)
+			return true
+		"gravity_repulse":
+			_execute_repulse(ability, player)
+			return true
+		"gravity_supernova":
+			_execute_supernova(ability, player)
 			return true
 
 		# ============================================
@@ -453,6 +529,692 @@ func _execute_martyrdom(ability: ActiveAbilityData, player: Node2D) -> void:
 	_spawn_effect("healing_light", player.global_position)
 	_play_sound("martyrdom")
 	_screen_shake("medium")
+
+# ============================================
+# TIME TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_time_slow(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Slow enemies in radius (not the player)"""
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+	# Create time bubble visual
+	_spawn_time_bubble(player.global_position, ability.radius, ability.duration, Color(0.3, 0.5, 0.8, 0.3))
+
+	_play_sound("time_slow")
+	_screen_shake("small")
+
+func _execute_time_stop(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Freeze all enemies completely"""
+	var enemies = _main_executor.get_tree().get_nodes_in_group("enemies") if _main_executor else []
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			_apply_stun(enemy, ability.stun_duration)
+
+	_spawn_time_bubble(player.global_position, 800.0, ability.stun_duration, Color(0.2, 0.3, 0.9, 0.5))
+	_play_sound("time_stop")
+	_screen_shake("large")
+
+func _execute_time_prison(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Trap enemies in time, damage when released"""
+	var damage = _get_damage(ability)
+	var enemies = _main_executor.get_tree().get_nodes_in_group("enemies") if _main_executor else []
+	var trapped_enemies: Array = []
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			_apply_stun(enemy, ability.stun_duration)
+			trapped_enemies.append(enemy)
+
+	# SIGNATURE: Damage when time resumes
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.stun_duration).timeout.connect(func():
+			for enemy in trapped_enemies:
+				if is_instance_valid(enemy):
+					_deal_damage_to_enemy(enemy, damage)
+			_screen_shake("large")
+		)
+
+	_spawn_time_bubble(player.global_position, 800.0, ability.stun_duration, Color(0.5, 0.2, 0.8, 0.6))
+	_play_sound("time_stop")
+	_screen_shake("medium")
+
+func _execute_time_rewind(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Restore player HP to value from 3 seconds ago"""
+	# Store current HP, restore to higher of current or "past" HP
+	var current_hp = player.current_hp if "current_hp" in player else 100
+	var max_hp = player.max_hp if "max_hp" in player else 100
+	var heal_amount = max_hp * 0.3  # Restore 30% HP
+
+	if player.has_method("heal"):
+		player.heal(heal_amount)
+
+	_spawn_time_bubble(player.global_position, 100.0, 1.0, Color(0.8, 0.8, 0.2, 0.5))
+	_play_sound("time_rewind")
+
+func _execute_chronoshift(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Reset all ability cooldowns"""
+	# SIGNATURE: Reset cooldowns
+	if player.has_method("reset_all_cooldowns"):
+		player.reset_all_cooldowns()
+
+	# Also heal and grant brief invulnerability
+	if player.has_method("heal"):
+		player.heal(player.max_hp * 0.2 if "max_hp" in player else 20)
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(ability.invulnerability_duration)
+
+	_spawn_time_bubble(player.global_position, 150.0, 1.5, Color(1.0, 0.8, 0.2, 0.7))
+	_play_sound("chronoshift")
+	_screen_shake("medium")
+
+func _spawn_time_bubble(pos: Vector2, radius: float, duration: float, color: Color) -> void:
+	"""Create pixelated time bubble effect"""
+	var bubble = Node2D.new()
+	bubble.global_position = pos
+	bubble.z_index = 5
+	bubble.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(bubble)
+
+	# Pixelated circle effect
+	var circle = Polygon2D.new()
+	var points: PackedVector2Array = []
+	var segments = 12  # Low poly for pixelated look
+	for i in range(segments):
+		var angle = TAU * i / segments
+		points.append(Vector2(cos(angle), sin(angle)) * radius)
+	circle.polygon = points
+	circle.color = color
+	bubble.add_child(circle)
+
+	# Fade out
+	var tween = bubble.create_tween()
+	tween.tween_property(bubble, "modulate:a", 0.0, duration)
+	tween.tween_callback(bubble.queue_free)
+
+# ============================================
+# TELEPORT TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_teleport(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Short range teleport"""
+	var direction = _get_attack_direction(player)
+	var start_pos = player.global_position
+	var target_pos = start_pos + direction * ability.range_distance
+
+	target_pos.x = clamp(target_pos.x, -60, 1596)
+	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+
+	_spawn_teleport_effect(start_pos, Color(0.5, 0.5, 1.0, 0.7))
+	player.global_position = target_pos
+	_spawn_teleport_effect(target_pos, Color(0.5, 0.5, 1.0, 0.7))
+
+	_play_sound("teleport")
+
+func _execute_blink(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Instant blink with no telegraph"""
+	var direction = _get_attack_direction(player)
+	var start_pos = player.global_position
+	var target_pos = start_pos + direction * ability.range_distance
+
+	target_pos.x = clamp(target_pos.x, -60, 1596)
+	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+
+	player.global_position = target_pos
+	_spawn_teleport_effect(target_pos, Color(0.3, 0.8, 1.0, 0.8))
+
+	if player.has_method("set_invulnerable"):
+		player.set_invulnerable(ability.invulnerability_duration)
+
+	_play_sound("blink")
+
+func _execute_dimension_shift(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Phase through enemies, damaging all in path"""
+	var damage = _get_damage(ability)
+	var direction = _get_attack_direction(player)
+	var start_pos = player.global_position
+	var target_pos = start_pos + direction * ability.range_distance
+
+	target_pos.x = clamp(target_pos.x, -60, 1596)
+	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+
+	# SIGNATURE: Damage enemies in path
+	var enemies = _main_executor.get_tree().get_nodes_in_group("enemies") if _main_executor else []
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var to_enemy = enemy.global_position - start_pos
+			var proj_length = to_enemy.dot(direction)
+			if proj_length > 0 and proj_length < ability.range_distance:
+				var closest_point = start_pos + direction * proj_length
+				if enemy.global_position.distance_to(closest_point) < 60.0:
+					_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_teleport_effect(start_pos, Color(0.8, 0.2, 1.0, 0.8))
+	player.global_position = target_pos
+	_spawn_teleport_effect(target_pos, Color(0.8, 0.2, 1.0, 0.8))
+
+	_play_sound("dimension_shift")
+	_screen_shake("small")
+
+func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Teleport to enemy with damage boost"""
+	var start_pos = player.global_position
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var target_pos: Vector2
+
+	if target:
+		var dir_to_player = (player.global_position - target.global_position).normalized()
+		target_pos = target.global_position + dir_to_player * 50
+	else:
+		var direction = _get_attack_direction(player)
+		target_pos = player.global_position + direction * ability.range_distance
+
+	target_pos.x = clamp(target_pos.x, -60, 1596)
+	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+
+	_spawn_teleport_effect(start_pos, Color(0.2, 0.2, 0.3, 0.8))
+	player.global_position = target_pos
+	_spawn_teleport_effect(target_pos, Color(0.2, 0.2, 0.3, 0.8))
+
+	if player.has_method("apply_damage_boost"):
+		player.apply_damage_boost(1.5, 3.0)
+
+	_play_sound("shadowstep")
+	_screen_shake("small")
+
+func _execute_shadow_swap(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Swap positions with enemy"""
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	if not target:
+		_execute_shadowstep(ability, player)
+		return
+
+	# SIGNATURE: Swap positions
+	var player_pos = player.global_position
+	var enemy_pos = target.global_position
+
+	_spawn_teleport_effect(player_pos, Color(0.1, 0.1, 0.2, 0.9))
+	_spawn_teleport_effect(enemy_pos, Color(0.1, 0.1, 0.2, 0.9))
+
+	player.global_position = enemy_pos
+	if target.has_method("set_position"):
+		target.global_position = player_pos
+
+	# Confuse the swapped enemy
+	_apply_stun(target, ability.stun_duration)
+
+	_play_sound("shadow_swap")
+	_screen_shake("medium")
+
+func _spawn_teleport_effect(pos: Vector2, color: Color) -> void:
+	"""Create pixelated teleport effect"""
+	var effect = Node2D.new()
+	effect.global_position = pos
+	effect.z_index = 10
+	effect.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(effect)
+
+	# Pixelated burst
+	for i in range(8):
+		var particle = Polygon2D.new()
+		var angle = TAU * i / 8
+		var offset = Vector2(cos(angle), sin(angle)) * 20
+		particle.polygon = PackedVector2Array([
+			Vector2(-4, -4), Vector2(4, -4), Vector2(4, 4), Vector2(-4, 4)
+		])
+		particle.position = offset
+		particle.color = color
+		effect.add_child(particle)
+
+		# Animate outward
+		var tween = particle.create_tween()
+		tween.tween_property(particle, "position", offset * 3, 0.3)
+		tween.parallel().tween_property(particle, "modulate:a", 0.0, 0.3)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(0.4).timeout.connect(func():
+			if is_instance_valid(effect):
+				effect.queue_free()
+		)
+
+# ============================================
+# SUMMON TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_summon_minion(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Summon a basic minion"""
+	var spawn_pos = player.global_position + Vector2(50, 0)
+	spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
+	spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+
+	_spawn_summon_visual(spawn_pos, ability.duration, _get_damage(ability), Color(0.6, 0.4, 0.8, 0.7))
+	_play_sound("summon")
+
+func _execute_summon_golem(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Summon a tanky golem"""
+	var damage = _get_damage(ability)
+	var golem_pos = player.global_position + Vector2(60, 0)
+	golem_pos.x = clamp(golem_pos.x, -60, 1596)
+	golem_pos.y = clamp(golem_pos.y, 40, 1382 - 40)
+
+	# Create golem visual
+	var golem = Node2D.new()
+	golem.name = "SummonedGolem"
+	golem.global_position = golem_pos
+	golem.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(golem)
+
+	# Chunky golem shape
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-25, -35), Vector2(25, -35), Vector2(30, 35), Vector2(-30, 35)
+	])
+	body.color = Color(0.5, 0.4, 0.3, 0.8)
+	golem.add_child(body)
+
+	# Golem attacks
+	var attack_interval = 1.0
+	var attacks = int(ability.duration / attack_interval)
+	for i in range(attacks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(attack_interval * i).timeout.connect(func():
+				if not is_instance_valid(golem):
+					return
+				var target = _get_nearest_enemy(golem.global_position, 150.0)
+				if target and is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage / attacks)
+					_spawn_effect("explosion", target.global_position)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(golem):
+				golem.queue_free()
+		)
+
+	_spawn_effect("summon_burst", golem_pos)
+	_play_sound("summon")
+	_screen_shake("small")
+
+func _execute_summon_titan(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Massive titan with AoE attacks"""
+	var damage = _get_damage(ability)
+	var titan_pos = player.global_position + Vector2(80, 0)
+	titan_pos.x = clamp(titan_pos.x, -60, 1596)
+	titan_pos.y = clamp(titan_pos.y, 40, 1382 - 40)
+
+	var titan = Node2D.new()
+	titan.name = "SummonedTitan"
+	titan.global_position = titan_pos
+	titan.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(titan)
+
+	# SIGNATURE: Huge titan
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-40, -50), Vector2(40, -50), Vector2(45, 50), Vector2(-45, 50)
+	])
+	body.color = Color(0.7, 0.5, 0.2, 0.9)
+	titan.add_child(body)
+
+	# Titan AoE slam attacks
+	var attack_interval = 1.5
+	var attacks = int(ability.duration / attack_interval)
+	for i in range(attacks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(attack_interval * i).timeout.connect(func():
+				if not is_instance_valid(titan):
+					return
+				var enemies = _get_enemies_in_radius(titan.global_position, ability.radius)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage / attacks)
+					_apply_stun(enemy, 0.3)
+				_spawn_effect("explosion", titan.global_position)
+				_screen_shake("small")
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(titan):
+				titan.queue_free()
+		)
+
+	_play_sound("summon")
+	_screen_shake("medium")
+
+func _execute_summon_swarm(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Summon multiple small minions"""
+	var damage = _get_damage(ability)
+	var count = 4
+
+	for i in range(count):
+		var angle = TAU * i / count
+		var offset = Vector2(cos(angle), sin(angle)) * 50
+		var spawn_pos = player.global_position + offset
+		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
+		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+
+		_spawn_swarm_minion(spawn_pos, ability.duration, damage / count, i)
+
+	_play_sound("summon")
+
+func _spawn_swarm_minion(pos: Vector2, duration: float, damage: float, index: int) -> void:
+	"""Helper to spawn small swarm minion"""
+	var minion = Node2D.new()
+	minion.name = "SwarmMinion" + str(index)
+	minion.global_position = pos
+	minion.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(minion)
+
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-8, -12), Vector2(8, -12), Vector2(8, 12), Vector2(-8, 12)
+	])
+	body.color = Color(0.4, 0.6, 0.3, 0.8)
+	minion.add_child(body)
+
+	var attack_interval = 0.6
+	var attacks = int(duration / attack_interval)
+	for i in range(attacks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(attack_interval * i + index * 0.1).timeout.connect(func():
+				if not is_instance_valid(minion):
+					return
+				var target = _get_nearest_enemy(minion.global_position, 200.0)
+				if target and is_instance_valid(target):
+					minion.global_position = minion.global_position.lerp(target.global_position, 0.3)
+					_deal_damage_to_enemy(target, damage / attacks)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(duration).timeout.connect(func():
+			if is_instance_valid(minion):
+				minion.queue_free()
+		)
+
+func _execute_army_of_the_dead(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Summon skeleton army"""
+	var damage = _get_damage(ability)
+	var skeleton_count = 5
+
+	for i in range(skeleton_count):
+		var angle = TAU * i / skeleton_count
+		var offset = Vector2(cos(angle), sin(angle)) * 80
+		var spawn_pos = player.global_position + offset
+		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
+		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+
+		_spawn_skeleton(spawn_pos, ability.duration, damage / skeleton_count, i)
+
+	_spawn_effect("dark_summon", player.global_position)
+	_play_sound("summon")
+	_screen_shake("large")
+
+func _spawn_skeleton(pos: Vector2, duration: float, damage: float, index: int) -> void:
+	"""Helper to spawn skeleton warrior"""
+	var skeleton = Node2D.new()
+	skeleton.name = "SkeletonWarrior" + str(index)
+	skeleton.global_position = pos
+	skeleton.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(skeleton)
+
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-10, -18), Vector2(10, -18), Vector2(10, 18), Vector2(-10, 18)
+	])
+	body.color = Color(0.8, 0.8, 0.7, 0.8)
+	skeleton.add_child(body)
+
+	var attack_interval = 0.8
+	var attacks = int(duration / attack_interval)
+	for i in range(attacks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(attack_interval * i + index * 0.1).timeout.connect(func():
+				if not is_instance_valid(skeleton):
+					return
+				var target = _get_nearest_enemy(skeleton.global_position, 200.0)
+				if target and is_instance_valid(target):
+					skeleton.global_position = skeleton.global_position.lerp(target.global_position, 0.4)
+					_deal_damage_to_enemy(target, damage / attacks)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(duration).timeout.connect(func():
+			if is_instance_valid(skeleton):
+				skeleton.queue_free()
+		)
+
+func _spawn_summon_visual(pos: Vector2, duration: float, damage: float, color: Color) -> void:
+	"""Create basic summon visual with attacks"""
+	var summon = Node2D.new()
+	summon.global_position = pos
+	summon.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(summon)
+
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-12, -18), Vector2(12, -18), Vector2(12, 18), Vector2(-12, 18)
+	])
+	body.color = color
+	summon.add_child(body)
+
+	var attack_interval = 1.0
+	var attacks = int(duration / attack_interval)
+	for i in range(attacks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(attack_interval * i).timeout.connect(func():
+				if not is_instance_valid(summon):
+					return
+				var target = _get_nearest_enemy(summon.global_position, 180.0)
+				if target and is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage / attacks)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(duration).timeout.connect(func():
+			if is_instance_valid(summon):
+				summon.queue_free()
+		)
+
+# ============================================
+# GRAVITY TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_gravity_well(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Pull enemies toward a point"""
+	var target_pos = _get_enemy_cluster_center(player.global_position, 300.0)
+	var pull_force = 150.0
+
+	_spawn_gravity_effect(target_pos, ability.radius, ability.duration, Color(0.3, 0.2, 0.5, 0.5), pull_force)
+	_play_sound("gravity")
+	_screen_shake("small")
+
+func _execute_crushing_gravity(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Pull + damage over time"""
+	var damage = _get_damage(ability)
+	var target_pos = _get_enemy_cluster_center(player.global_position, 300.0)
+
+	_spawn_gravity_effect(target_pos, ability.radius, ability.duration, Color(0.4, 0.1, 0.6, 0.6), 200.0, damage)
+	_play_sound("gravity")
+	_screen_shake("small")
+
+func _execute_singularity(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Black hole - pull then explode"""
+	var damage = _get_damage(ability)
+	var target_pos = _get_enemy_cluster_center(player.global_position, 300.0)
+
+	# Create black hole visual
+	var hole = Node2D.new()
+	hole.global_position = target_pos
+	hole.z_index = 5
+	hole.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(hole)
+
+	var core = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(8):
+		var angle = TAU * i / 8
+		points.append(Vector2(cos(angle), sin(angle)) * 30)
+	core.polygon = points
+	core.color = Color(0.1, 0.0, 0.2, 0.9)
+	hole.add_child(core)
+
+	# Pull enemies
+	var pull_interval = 0.1
+	var pull_ticks = int(ability.duration / pull_interval)
+	for i in range(pull_ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(pull_interval * i).timeout.connect(func():
+				if not is_instance_valid(hole):
+					return
+				var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+				for enemy in enemies:
+					if is_instance_valid(enemy):
+						var to_center = (target_pos - enemy.global_position).normalized()
+						if enemy.has_method("apply_knockback"):
+							enemy.apply_knockback(to_center * 200.0 * pull_interval)
+			)
+
+	# SIGNATURE: Explode at end
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage)
+			_spawn_effect("explosion", target_pos)
+			_screen_shake("large")
+			if is_instance_valid(hole):
+				hole.queue_free()
+		)
+
+	_play_sound("black_hole")
+	_screen_shake("medium")
+
+func _execute_repulse(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Push all enemies away"""
+	var damage = _get_damage(ability)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
+
+	for enemy in enemies:
+		var away_dir = (enemy.global_position - player.global_position).normalized()
+		if enemy.has_method("apply_knockback"):
+			enemy.apply_knockback(away_dir * ability.knockback_force)
+		_deal_damage_to_enemy(enemy, damage)
+
+	# Expanding ring visual
+	_spawn_repulse_wave(player.global_position, ability.radius, Color(0.6, 0.4, 0.8, 0.6))
+	_play_sound("repulse")
+	_screen_shake("medium")
+
+func _execute_supernova(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Massive explosion pushing everything away"""
+	var damage = _get_damage(ability)
+	var enemies = _main_executor.get_tree().get_nodes_in_group("enemies") if _main_executor else []
+
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			var away_dir = (enemy.global_position - player.global_position).normalized()
+			if enemy.has_method("apply_knockback"):
+				enemy.apply_knockback(away_dir * ability.knockback_force * 2.0)
+			_deal_damage_to_enemy(enemy, damage)
+			_apply_stun(enemy, ability.stun_duration)
+
+	# SIGNATURE: Screen-wide explosion
+	_spawn_repulse_wave(player.global_position, 800.0, Color(1.0, 0.8, 0.3, 0.7))
+	_spawn_effect("explosion", player.global_position)
+	_play_sound("supernova")
+	_screen_shake("large")
+
+func _spawn_gravity_effect(pos: Vector2, radius: float, duration: float, color: Color, pull_force: float, damage: float = 0.0) -> void:
+	"""Create gravity well effect with pull"""
+	var well = Node2D.new()
+	well.global_position = pos
+	well.z_index = 5
+	well.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(well)
+
+	var circle = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(10):
+		var angle = TAU * i / 10
+		points.append(Vector2(cos(angle), sin(angle)) * radius * 0.5)
+	circle.polygon = points
+	circle.color = color
+	well.add_child(circle)
+
+	# Pull + optional damage
+	var tick_interval = 0.1
+	var ticks = int(duration / tick_interval)
+	var damage_per_tick = damage / ticks if damage > 0 else 0.0
+
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(tick_interval * i).timeout.connect(func():
+				if not is_instance_valid(well):
+					return
+				var enemies = _get_enemies_in_radius(pos, radius)
+				for enemy in enemies:
+					if is_instance_valid(enemy):
+						var to_center = (pos - enemy.global_position).normalized()
+						if enemy.has_method("apply_knockback"):
+							enemy.apply_knockback(to_center * pull_force * tick_interval)
+						if damage_per_tick > 0:
+							_deal_damage_to_enemy(enemy, damage_per_tick)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(duration).timeout.connect(func():
+			if is_instance_valid(well):
+				well.queue_free()
+		)
+
+func _spawn_repulse_wave(pos: Vector2, radius: float, color: Color) -> void:
+	"""Create expanding ring for repulse effect"""
+	var wave = Node2D.new()
+	wave.global_position = pos
+	wave.z_index = 10
+	wave.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(wave)
+
+	var ring = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		points.append(Vector2(cos(angle), sin(angle)) * 20)
+	ring.polygon = points
+	ring.color = color
+	wave.add_child(ring)
+
+	var tween = wave.create_tween()
+	tween.tween_property(wave, "scale", Vector2(radius / 20, radius / 20), 0.4)
+	tween.parallel().tween_property(wave, "modulate:a", 0.0, 0.4)
+	tween.tween_callback(wave.queue_free)
+
+func _get_enemy_cluster_center(from_pos: Vector2, max_range: float) -> Vector2:
+	"""Find center of enemy cluster"""
+	var enemies = _get_enemies_in_radius(from_pos, max_range)
+	if enemies.is_empty():
+		return from_pos + _get_attack_direction(_get_player()) * 150.0
+
+	var center = Vector2.ZERO
+	for enemy in enemies:
+		center += enemy.global_position
+	return center / enemies.size()
 
 # ============================================
 # HELPER FUNCTIONS
