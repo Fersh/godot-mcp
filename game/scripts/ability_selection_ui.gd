@@ -207,6 +207,15 @@ func create_ability_card(ability, index: int) -> Button:
 		_populate_stat_changes(stats_container, ability)
 	vbox.add_child(stats_container)
 
+	# Tier diamonds container (for upgrades)
+	var tier_container = HBoxContainer.new()
+	tier_container.name = "TierContainer"
+	tier_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	tier_container.add_theme_constant_override("separation", 8)
+	if is_upgrade and ability is ActiveAbilityData:
+		_populate_tier_diamonds(tier_container, ability)
+	vbox.add_child(tier_container)
+
 	# Bottom spacer
 	var bottom_spacer = Control.new()
 	bottom_spacer.custom_minimum_size = Vector2(0, 8)
@@ -278,11 +287,8 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 	var is_upgrade = _is_active_ability_upgrade(ability)
 
 	if is_upgrade:
-		# Upgrade cards get green (T2) or gold (T3) tag
-		if ability.is_signature():
-			tag_style.bg_color = Color(1.0, 0.85, 0.3)  # Gold for signature
-		else:
-			tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+		# All upgrade cards get green tag
+		tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
 	else:
 		tag_style.bg_color = _get_rarity_color(ability)
 
@@ -296,7 +302,7 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 	var label = Label.new()
 	label.name = "RarityLabel"
 	if is_upgrade:
-		label.text = "SIGNATURE" if ability.is_signature() else "UPGRADE"
+		label.text = "Upgrade"  # Same text for T2 and T3
 	else:
 		label.text = _get_rarity_name(ability)
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -346,6 +352,13 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 
 func _create_particle_container_for_ability(ability) -> Control:
 	## Create particle container for either type
+	## Upgrades get green flame particles
+	var is_upgrade = _is_active_ability_upgrade(ability)
+
+	if is_upgrade:
+		# Green flames for all upgrade abilities
+		return _create_upgrade_particle_container()
+
 	if ability is ActiveAbilityData:
 		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
 		var passive_rarity = _map_active_to_passive_rarity(ability.rarity)
@@ -559,6 +572,101 @@ func _get_particle_density(rarity: AbilityData.Rarity) -> float:
 		_:
 			return 0.0
 
+func _create_upgrade_particle_container() -> Control:
+	## Create green flame particles for upgrade abilities
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.z_index = -1  # Render behind card content
+	container.clip_contents = false
+
+	var green_color = Color(0.2, 0.93, 0.35)  # Bright green
+	var intensity = 1.5
+	var density = 14.0
+
+	# Create main top particle strip (behind card, rising above)
+	var top_particles = ColorRect.new()
+	top_particles.custom_minimum_size = Vector2(200, 130)
+	top_particles.anchor_left = 0.5
+	top_particles.anchor_right = 0.5
+	top_particles.anchor_top = 0.0
+	top_particles.anchor_bottom = 0.0
+	top_particles.offset_left = -100
+	top_particles.offset_right = 100
+	top_particles.offset_top = -100
+	top_particles.offset_bottom = 30
+	top_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var top_mat = ShaderMaterial.new()
+		top_mat.shader = rarity_particle_shader
+		top_mat.set_shader_parameter("rarity_color", green_color)
+		top_mat.set_shader_parameter("intensity", intensity)
+		top_mat.set_shader_parameter("speed", 1.2)
+		top_mat.set_shader_parameter("particle_density", density)
+		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_particles.material = top_mat
+	else:
+		top_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)
+
+	container.add_child(top_particles)
+
+	# Create top-left corner particle effect
+	var top_left_particles = ColorRect.new()
+	top_left_particles.custom_minimum_size = Vector2(80, 130)
+	top_left_particles.anchor_left = 0.0
+	top_left_particles.anchor_right = 0.0
+	top_left_particles.anchor_top = 0.0
+	top_left_particles.anchor_bottom = 0.0
+	top_left_particles.offset_left = -30
+	top_left_particles.offset_right = 50
+	top_left_particles.offset_top = -80
+	top_left_particles.offset_bottom = 50
+	top_left_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tl_mat = ShaderMaterial.new()
+		tl_mat.shader = rarity_particle_shader
+		tl_mat.set_shader_parameter("rarity_color", green_color)
+		tl_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tl_mat.set_shader_parameter("speed", 1.0)
+		tl_mat.set_shader_parameter("particle_density", density * 0.5)
+		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		top_left_particles.material = tl_mat
+	else:
+		top_left_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)
+
+	container.add_child(top_left_particles)
+
+	# Create top-right corner particle effect
+	var top_right_particles = ColorRect.new()
+	top_right_particles.custom_minimum_size = Vector2(80, 130)
+	top_right_particles.anchor_left = 1.0
+	top_right_particles.anchor_right = 1.0
+	top_right_particles.anchor_top = 0.0
+	top_right_particles.anchor_bottom = 0.0
+	top_right_particles.offset_left = -50
+	top_right_particles.offset_right = 30
+	top_right_particles.offset_top = -80
+	top_right_particles.offset_bottom = 50
+	top_right_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tr_mat = ShaderMaterial.new()
+		tr_mat.shader = rarity_particle_shader
+		tr_mat.set_shader_parameter("rarity_color", green_color)
+		tr_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tr_mat.set_shader_parameter("speed", 1.1)
+		tr_mat.set_shader_parameter("particle_density", density * 0.5)
+		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		top_right_particles.material = tr_mat
+	else:
+		top_right_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)
+
+	container.add_child(top_right_particles)
+
+	return container
+
 func _update_particle_container(container: Control, rarity: AbilityData.Rarity) -> void:
 	if rarity == AbilityData.Rarity.COMMON:
 		container.visible = false
@@ -574,6 +682,27 @@ func _update_particle_container(container: Control, rarity: AbilityData.Rarity) 
 	for child in container.get_children():
 		if child is ColorRect and child.material is ShaderMaterial:
 			child.material.set_shader_parameter("rarity_color", rarity_color)
+			# Top center strip gets full intensity, corners get reduced
+			if child_index == 0:
+				child.material.set_shader_parameter("intensity", intensity)
+				child.material.set_shader_parameter("particle_density", density)
+			else:
+				child.material.set_shader_parameter("intensity", intensity * 0.8)
+				child.material.set_shader_parameter("particle_density", density * 0.5)
+			child_index += 1
+
+func _update_particle_container_to_upgrade(container: Control) -> void:
+	## Update an existing particle container to use green upgrade colors
+	container.visible = true
+	var green_color = Color(0.2, 0.93, 0.35)  # Bright green
+	var intensity = 1.5
+	var density = 14.0
+
+	# Update all particle strips to green
+	var child_index = 0
+	for child in container.get_children():
+		if child is ColorRect and child.material is ShaderMaterial:
+			child.material.set_shader_parameter("rarity_color", green_color)
 			# Top center strip gets full intensity, corners get reduced
 			if child_index == 0:
 				child.material.set_shader_parameter("intensity", intensity)
@@ -704,6 +833,15 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		if is_upgrade and ability is ActiveAbilityData:
 			_populate_stat_changes(stats_container, ability)
 
+	# Update tier diamonds container
+	var tier_container = vbox.get_node_or_null("TierContainer") as HBoxContainer
+	if tier_container:
+		# Clear and repopulate
+		for child in tier_container.get_children():
+			child.queue_free()
+		if is_upgrade and ability is ActiveAbilityData:
+			_populate_tier_diamonds(tier_container, ability)
+
 	# Update rarity tag (child 1 of button is CenterContainer, which contains PanelContainer)
 	var center_container = button.get_child(1) as CenterContainer
 	if center_container:
@@ -711,17 +849,15 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		if rarity_tag:
 			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 			if is_upgrade:
-				if ability.is_signature():
-					tag_style.bg_color = Color(1.0, 0.85, 0.3)  # Gold for signature
-				else:
-					tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+				# All upgrades get green tag
+				tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
 			else:
 				tag_style.bg_color = _get_rarity_color(ability)
 			rarity_tag.add_theme_stylebox_override("panel", tag_style)
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
 				if is_upgrade:
-					rarity_label.text = "SIGNATURE" if ability.is_signature() else "UPGRADE"
+					rarity_label.text = "Upgrade"  # Same for T2 and T3
 				else:
 					rarity_label.text = _get_rarity_name(ability)
 
@@ -729,8 +865,12 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control
 	if particle_container:
 		if is_final_reveal:
-			var passive_rarity = ability.rarity if ability is AbilityData else _map_active_to_passive_rarity(ability.rarity)
-			_update_particle_container(particle_container, passive_rarity)
+			if is_upgrade:
+				# Green flames for upgrades - update existing container to green
+				_update_particle_container_to_upgrade(particle_container)
+			else:
+				var passive_rarity = ability.rarity if ability is AbilityData else _map_active_to_passive_rarity(ability.rarity)
+				_update_particle_container(particle_container, passive_rarity)
 		else:
 			# Keep particles hidden during rolling
 			particle_container.visible = false
@@ -1016,17 +1156,26 @@ func _spawn_sparkles_count(button: Button, color: Color, count: int) -> void:
 # ============================================
 
 func _format_compound_name_full(prefix: String, base_name: String, suffix: String, base_rarity_color: Color, is_signature: bool) -> String:
-	## Format compound name with prefix in green, base name in rarity color, suffix in gold
-	var green_hex = "33ee55"  # Bright green for prefix
-	var gold_hex = "ffdd44"   # Gold for suffix (signature)
+	## Format compound name:
+	## T2: prefix (green) + base name (rarity color)
+	## T3: prefix (white) + base name (white) + suffix (green)
+	var green_hex = "33ee55"  # Bright green
+	var white_hex = "ffffff"  # White for T3 prefix and base
 	var rarity_hex = base_rarity_color.to_html(false)
 
 	var result = "[center]"
-	if not prefix.is_empty():
-		result += "[color=#%s]%s[/color] " % [green_hex, prefix]
-	result += "[color=#%s]%s[/color]" % [rarity_hex, base_name]
-	if not suffix.is_empty():
-		result += " [color=#%s]%s[/color]" % [gold_hex, suffix]
+	if is_signature:
+		# T3: prefix and base in white, suffix in green
+		if not prefix.is_empty():
+			result += "[color=#%s]%s[/color] " % [white_hex, prefix]
+		result += "[color=#%s]%s[/color]" % [white_hex, base_name]
+		if not suffix.is_empty():
+			result += " [color=#%s]%s[/color]" % [green_hex, suffix]
+	else:
+		# T2: prefix in green, base in rarity color
+		if not prefix.is_empty():
+			result += "[color=#%s]%s[/color] " % [green_hex, prefix]
+		result += "[color=#%s]%s[/color]" % [rarity_hex, base_name]
 	result += "[/center]"
 	return result
 
@@ -1136,3 +1285,51 @@ func _populate_stat_changes(container: VBoxContainer, ability: ActiveAbilityData
 			change_label.add_theme_font_override("normal_font", pixel_font)
 		change_label.text = "[center]%s[/center]" % changes[i]
 		container.add_child(change_label)
+
+func _populate_tier_diamonds(container: HBoxContainer, ability: ActiveAbilityData) -> void:
+	## Create 3 tier diamonds showing progression:
+	## T2 upgrade: first filled, second flashing
+	## T3 upgrade: first and second filled, third flashing
+	var is_t3 = ability.is_signature()
+	var current_tier = 3 if is_t3 else 2
+
+	for i in range(3):
+		var tier_num = i + 1
+		var diamond = _create_tier_diamond(tier_num, current_tier)
+		container.add_child(diamond)
+
+func _create_tier_diamond(tier_num: int, current_tier: int) -> Control:
+	## Create a single diamond indicator
+	## tier_num: 1, 2, or 3
+	## current_tier: the tier being upgraded TO (2 for T2 upgrade, 3 for T3 upgrade)
+	var container = Control.new()
+	container.custom_minimum_size = Vector2(16, 16)
+
+	var diamond = ColorRect.new()
+	diamond.custom_minimum_size = Vector2(12, 12)
+	diamond.size = Vector2(12, 12)
+	diamond.position = Vector2(2, 2)
+	diamond.rotation = PI / 4  # 45 degrees to make it a diamond
+	diamond.pivot_offset = Vector2(6, 6)
+
+	var green = Color(0.2, 0.93, 0.35)  # Bright green
+	var dark = Color(0.2, 0.2, 0.2)     # Dark/empty
+
+	if tier_num < current_tier:
+		# Filled diamond (previous tiers)
+		diamond.color = green
+	elif tier_num == current_tier:
+		# Flashing diamond (current upgrade tier)
+		diamond.color = green
+		diamond.name = "FlashingDiamond"
+		# Add flashing animation
+		var tween = container.create_tween()
+		tween.set_loops()
+		tween.tween_property(diamond, "color:a", 0.3, 0.4)
+		tween.tween_property(diamond, "color:a", 1.0, 0.4)
+	else:
+		# Empty diamond (future tiers)
+		diamond.color = dark
+
+	container.add_child(diamond)
+	return container

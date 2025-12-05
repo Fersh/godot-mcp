@@ -570,19 +570,22 @@ func take_damage(amount: float) -> void:
 	var damage_after_shields = modified_amount
 
 	if not is_posthumous_damage:
-		# Check for dodge first
-		if AbilityManager:
+		# Check for dodge first (with cooldown to prevent spam from continuous damage)
+		# Cooldown prevents hundreds of dodge checks per second from DOT effects
+		if AbilityManager and dodge_chance_cooldown <= 0:
 			var dodge_chance = AbilityManager.get_dodge_chance()
 			if randf() < dodge_chance:
-				# Dodged the attack!
+				# Dodged the attack! Set cooldown to prevent spam
+				dodge_chance_cooldown = DODGE_CHANCE_COOLDOWN_TIME
 				spawn_dodge_text()
 				return
 
-		# Check for block
-		if AbilityManager:
+		# Check for block (also uses the dodge cooldown to prevent spam)
+		if AbilityManager and dodge_chance_cooldown <= 0:
 			var block_chance = AbilityManager.get_block_chance()
 			if randf() < block_chance:
 				was_blocked = true
+				dodge_chance_cooldown = DODGE_CHANCE_COOLDOWN_TIME
 
 		# Transcendence shields absorb damage first
 		if AbilityManager:
@@ -810,6 +813,10 @@ func _physics_process(delta: float) -> void:
 				buffs_changed = true
 		elif active_buffs.has("chilling_touch"):
 			active_buffs["chilling_touch"].timer = difficulty_slow_timer
+
+	# Update dodge/block chance cooldown (prevents spam from continuous damage)
+	if dodge_chance_cooldown > 0:
+		dodge_chance_cooldown -= delta
 
 	# Bladestorm animation - rapid left/right attacking
 	if is_bladestorming:
@@ -2571,6 +2578,10 @@ func get_pickup_range() -> float:
 # Invulnerability state
 var is_invulnerable: bool = false
 var invulnerability_timer: float = 0.0
+
+# Dodge/block chance cooldown (prevents spam from continuous damage effects)
+var dodge_chance_cooldown: float = 0.0
+const DODGE_CHANCE_COOLDOWN_TIME: float = 0.5  # Can only proc dodge/block every 0.5s
 
 # Damage boost state
 var damage_boost_multiplier: float = 1.0
