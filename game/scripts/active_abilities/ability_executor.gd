@@ -434,14 +434,14 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Shield Bash effects (pixelated)
 		"shield_bash":
 			return "shield_bash_pixel"
-		"bash_shockwave":
-			return "bash_shockwave"
-		"bash_lockdown":
-			return "bash_lockdown"
+		"shockwave_bash", "bash_shockwave":
+			return "bash_shockwave_pixel"
+		"lockdown_bash", "bash_lockdown":
+			return "bash_lockdown_pixel"
 		"bash_earthquake":
-			return "bash_earthquake"
-		"bash_petrify":
-			return "bash_petrify"
+			return "bash_earthquake_pixel"
+		"petrify", "bash_petrify":
+			return "bash_petrify_pixel"
 
 		# Savage Leap effects (pixelated)
 		"savage_leap", "savage_leap_landing":
