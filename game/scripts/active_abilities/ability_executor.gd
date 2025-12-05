@@ -294,7 +294,14 @@ func _get_nearest_enemy(origin: Vector2, max_range: float = INF) -> Node2D:
 	return nearest
 
 func _get_enemy_cluster_center(origin: Vector2, search_radius: float = 300.0) -> Vector2:
-	"""Find the center of the largest enemy cluster."""
+	"""Find the center of the largest enemy cluster, or use skillshot aim direction."""
+	# Check if using skillshot aiming
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			# Return a point in the aimed direction at the search radius distance
+			return origin + aim_dir * search_radius
+
 	var enemies = _get_enemies_in_radius(origin, search_radius)
 	if enemies.is_empty():
 		return origin
@@ -306,7 +313,14 @@ func _get_enemy_cluster_center(origin: Vector2, search_radius: float = 300.0) ->
 	return sum / enemies.size()
 
 func _get_attack_direction(player: Node2D) -> Vector2:
-	"""Get the direction the player is attacking/facing."""
+	"""Get the direction the player is attacking/facing, or use skillshot aim direction."""
+	# Check if using skillshot aiming - this takes priority
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			return aim_dir
+
+	# Fall back to normal targeting
 	if player.has_method("get_attack_direction"):
 		return player.get_attack_direction()
 	if "attack_direction" in player:
@@ -314,6 +328,25 @@ func _get_attack_direction(player: Node2D) -> Vector2:
 	if "facing_right" in player:
 		return Vector2.RIGHT if player.facing_right else Vector2.LEFT
 	return Vector2.RIGHT
+
+func _get_aimed_target_position(player: Node2D, ability: ActiveAbilityData) -> Vector2:
+	"""Get the target position for aimed abilities (projectiles/location-based)."""
+	# Check if using skillshot aiming
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			var range_dist = ability.range_distance if ability.range_distance > 0 else 300.0
+			return player.global_position + aim_dir * range_dist
+
+	# Fall back to auto-targeting nearest enemy
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance if ability.range_distance > 0 else INF)
+	if target:
+		return target.global_position
+
+	# No target found, use attack direction
+	var direction = _get_attack_direction(player)
+	var range_dist = ability.range_distance if ability.range_distance > 0 else 300.0
+	return player.global_position + direction * range_dist
 
 func _deal_damage_to_enemy(enemy: Node2D, damage: float, is_crit: bool = false) -> void:
 	"""Apply damage to an enemy. Mark for flying head effect if this kill them."""
@@ -1237,22 +1270,34 @@ func _execute_divine_shield(ability: ActiveAbilityData, player: Node2D) -> void:
 # ============================================
 
 func _execute_power_shot(ability: ActiveAbilityData, player: Node2D) -> void:
-	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
-	if not target:
-		return
+	var direction: Vector2
 
-	var direction = (target.global_position - player.global_position).normalized()
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+		if not target:
+			return
+		direction = (target.global_position - player.global_position).normalized()
+
 	_spawn_projectile("power_shot", player.global_position, direction, ability)
 
 	_play_sound("arrow")
 	_screen_shake("small")
 
 func _execute_explosive_arrow(ability: ActiveAbilityData, player: Node2D) -> void:
-	var target = _get_nearest_enemy(player.global_position)
-	if not target:
-		return
+	var direction: Vector2
 
-	var direction = (target.global_position - player.global_position).normalized()
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		var target = _get_nearest_enemy(player.global_position)
+		if not target:
+			return
+		direction = (target.global_position - player.global_position).normalized()
+
 	_spawn_projectile("explosive_arrow", player.global_position, direction, ability)
 
 	_play_sound("arrow")
@@ -1602,11 +1647,17 @@ func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 	)
 
 func _execute_ballista_strike(ability: ActiveAbilityData, player: Node2D) -> void:
-	var target = _get_nearest_enemy(player.global_position)
-	if not target:
-		return
+	var direction: Vector2
 
-	var direction = (target.global_position - player.global_position).normalized()
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		var target = _get_nearest_enemy(player.global_position)
+		if not target:
+			return
+		direction = (target.global_position - player.global_position).normalized()
+
 	_spawn_projectile("ballista_strike", player.global_position, direction, ability, true)
 
 	_play_sound("ballista")
@@ -1748,11 +1799,17 @@ func _execute_explosive_decoy(ability: ActiveAbilityData, player: Node2D) -> voi
 # ============================================
 
 func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
-	var target = _get_nearest_enemy(player.global_position)
-	if not target:
-		return
+	var direction: Vector2
 
-	var direction = (target.global_position - player.global_position).normalized()
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		var target = _get_nearest_enemy(player.global_position)
+		if not target:
+			return
+		direction = (target.global_position - player.global_position).normalized()
+
 	_spawn_projectile("fireball", player.global_position, direction, ability)
 
 	_play_sound("fireball")

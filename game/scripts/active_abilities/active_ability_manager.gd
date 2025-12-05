@@ -42,6 +42,10 @@ var acquired_ability_ids: Array[String] = []
 # Tree upgrade tracking - maps base_ability_id -> current_ability_id
 var acquired_tree_abilities: Dictionary = {}
 
+# Skillshot aiming - stores the current aim direction for the executor
+var current_aim_direction: Vector2 = Vector2.ZERO
+var is_aimed_shot: bool = false
+
 # Chance for upgrades to appear in selection (50%)
 const UPGRADE_CHANCE: float = 0.50
 
@@ -252,6 +256,10 @@ func use_ability(slot: int) -> bool:
 	if ability == null:
 		return false
 
+	# Clear any previous aim direction (auto-targeting)
+	is_aimed_shot = false
+	current_aim_direction = Vector2.ZERO
+
 	# Start cooldown (apply cooldown reduction from permanent upgrades)
 	var cooldown = ability.cooldown * get_cooldown_multiplier()
 	cooldown_timers[slot] = cooldown
@@ -274,6 +282,61 @@ func use_ability(slot: int) -> bool:
 
 	emit_signal("ability_used", slot, ability)
 	return true
+
+func use_ability_aimed(slot: int, aim_direction: Vector2) -> bool:
+	"""Attempt to use the ability with a specific aim direction (skillshot). Returns true if successful."""
+	if not can_use_ability(slot):
+		return false
+
+	var ability = ability_slots[slot]
+	if ability == null:
+		return false
+
+	# Store aim direction for executor
+	is_aimed_shot = true
+	current_aim_direction = aim_direction.normalized() if aim_direction.length() > 0 else Vector2.ZERO
+
+	# Start cooldown (apply cooldown reduction from permanent upgrades)
+	var cooldown = ability.cooldown * get_cooldown_multiplier()
+	cooldown_timers[slot] = cooldown
+
+	# Execute the ability
+	_execute_ability(ability)
+
+	# Clear aim state after execution
+	is_aimed_shot = false
+	current_aim_direction = Vector2.ZERO
+
+	# Trigger Combo Master (grants damage buff)
+	if AbilityManager:
+		AbilityManager.on_active_ability_used()
+
+	# Check for Ability Echo (10% chance to trigger twice)
+	if AbilityManager and AbilityManager.should_echo_ability():
+		# Execute ability again with slight delay (uses same aim direction)
+		var saved_direction = aim_direction
+		get_tree().create_timer(0.1).timeout.connect(func():
+			is_aimed_shot = true
+			current_aim_direction = saved_direction
+			_execute_ability(ability)
+			is_aimed_shot = false
+			current_aim_direction = Vector2.ZERO
+		)
+
+	# Check for Ability Cascade (chance to reset another ability cooldown)
+	if AbilityManager:
+		AbilityManager.try_ability_cascade()
+
+	emit_signal("ability_used", slot, ability)
+	return true
+
+func get_current_aim_direction() -> Vector2:
+	"""Get the current aim direction for skillshot abilities."""
+	return current_aim_direction
+
+func is_using_aimed_shot() -> bool:
+	"""Check if the current ability use is an aimed skillshot."""
+	return is_aimed_shot
 
 func get_cooldown_multiplier() -> float:
 	"""Get the cooldown multiplier from permanent upgrades and abilities."""

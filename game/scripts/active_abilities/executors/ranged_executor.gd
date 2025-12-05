@@ -423,10 +423,7 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 
 func _execute_power_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction = _get_projectile_direction(player, 500.0)
 
 	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
 	if proj:
@@ -441,10 +438,7 @@ func _execute_power_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_power_shot_pierce(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Pierces through 5 enemies"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction = _get_projectile_direction(player, 500.0)
 
 	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
 	if proj:
@@ -488,10 +482,7 @@ func _execute_power_shot_railgun(ability: ActiveAbilityData, player: Node2D) -> 
 func _execute_power_shot_explosive(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Explodes on impact"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction = _get_projectile_direction(player, 500.0)
 
 	var proj = _spawn_projectile(player, direction, ability.projectile_speed)
 	if proj:
@@ -508,10 +499,7 @@ func _execute_power_shot_explosive(ability: ActiveAbilityData, player: Node2D) -
 func _execute_power_shot_nuke(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Massive explosion with stun and knockback"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 600.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction = _get_projectile_direction(player, 600.0)
 
 	# Spawn nuke projectile
 	var proj = _spawn_projectile(player, direction, ability.projectile_speed)

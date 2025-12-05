@@ -11,6 +11,8 @@ const PRESSED_SCALE := 0.9
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
 const BORDER_WIDTH := 3
 const LONG_PRESS_TIME := 0.4  # Time to hold before showing tooltip on touch
+const SKILLSHOT_DRAG_THRESHOLD := 50.0  # Minimum drag distance to activate skillshot aiming
+const SKILLSHOT_AIM_LINE_LENGTH := 100.0  # Length of the aim indicator line (halved to stay on screen)
 
 var ability: ActiveAbilityData = null
 var slot_index: int = -1
@@ -33,6 +35,13 @@ var tooltip_visible: bool = false
 var touch_hold_timer: float = 0.0
 var is_touch_held: bool = false
 var touch_triggered_tooltip: bool = false
+
+# Skillshot aiming state
+var skillshot_active: bool = false
+var skillshot_start_pos: Vector2 = Vector2.ZERO
+var skillshot_current_pos: Vector2 = Vector2.ZERO
+var skillshot_aim_direction: Vector2 = Vector2.ZERO
+var aim_indicator: Node2D = null
 
 var pixel_font: Font = null
 
@@ -375,27 +384,88 @@ func _get_remaining_cooldown() -> float:
 	return 0.0
 
 func _on_gui_input(event: InputEvent) -> void:
-	# Handle touch events for long-press tooltip
+	# Handle touch events for skillshot aiming and long-press tooltip
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			is_touch_held = true
 			touch_hold_timer = 0.0
 			touch_triggered_tooltip = false
+			# Start tracking for potential skillshot
+			if _can_skillshot():
+				skillshot_start_pos = event.position
+				skillshot_current_pos = event.position
+				skillshot_active = false
+				skillshot_aim_direction = Vector2.ZERO
 		else:
 			# Touch released
 			is_touch_held = false
-			if touch_triggered_tooltip:
+			if skillshot_active:
+				# Skillshot was active - fire with aim direction
+				_fire_skillshot()
+				_hide_aim_indicator()
+				skillshot_active = false
+			elif touch_triggered_tooltip:
 				# Was showing tooltip, hide it and don't trigger ability
 				_hide_tooltip()
 				touch_triggered_tooltip = false
 			else:
-				# Quick tap, trigger ability
+				# Quick tap, trigger ability with auto-aim
 				_on_button_pressed()
+
+	# Handle touch drag for skillshot aiming
+	elif event is InputEventScreenDrag:
+		if is_touch_held and _can_skillshot():
+			skillshot_current_pos = event.position
+			var drag_vector = skillshot_current_pos - skillshot_start_pos
+			var drag_distance = drag_vector.length()
+
+			if drag_distance >= SKILLSHOT_DRAG_THRESHOLD:
+				# Activate skillshot aiming mode
+				if not skillshot_active:
+					skillshot_active = true
+					touch_triggered_tooltip = false  # Cancel tooltip if we're aiming
+					_hide_tooltip()
+					_show_aim_indicator()
+
+				# Update aim direction (inverted - drag away to aim that direction)
+				skillshot_aim_direction = drag_vector.normalized()
+				_update_aim_indicator()
 
 	# Handle mouse clicks (immediate action, tooltip handled by hover)
 	elif event is InputEventMouseButton:
-		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			_on_button_pressed()
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				# Start tracking for potential skillshot
+				if _can_skillshot():
+					skillshot_start_pos = get_global_mouse_position()
+					skillshot_current_pos = skillshot_start_pos
+					skillshot_active = false
+					skillshot_aim_direction = Vector2.ZERO
+					is_touch_held = true
+			else:
+				# Mouse released
+				is_touch_held = false
+				if skillshot_active:
+					_fire_skillshot()
+					_hide_aim_indicator()
+					skillshot_active = false
+				else:
+					_on_button_pressed()
+
+	# Handle mouse motion for skillshot aiming
+	elif event is InputEventMouseMotion:
+		if is_touch_held and _can_skillshot():
+			skillshot_current_pos = get_global_mouse_position()
+			var drag_vector = skillshot_current_pos - skillshot_start_pos
+			var drag_distance = drag_vector.length()
+
+			if drag_distance >= SKILLSHOT_DRAG_THRESHOLD:
+				if not skillshot_active:
+					skillshot_active = true
+					_show_aim_indicator()
+
+				skillshot_aim_direction = drag_vector.normalized()
+				_update_aim_indicator()
 
 func _on_button_pressed() -> void:
 	if not is_ready:
@@ -743,3 +813,161 @@ func _flash_ability_ready() -> void:
 	# Light haptic feedback
 	if HapticManager:
 		HapticManager.light()
+
+# ============================================
+# SKILLSHOT AIMING FUNCTIONS
+# ============================================
+
+func _can_skillshot() -> bool:
+	"""Check if this button's ability supports skillshot aiming."""
+	if is_dodge:
+		return false
+	if not ability:
+		return false
+	if not is_ready:
+		return false
+	return ability.supports_skillshot()
+
+func _fire_skillshot() -> void:
+	"""Fire the ability with the current aim direction."""
+	if not is_ready or not ability:
+		return
+
+	# Visual feedback
+	_animate_press()
+
+	# Haptic feedback
+	if HapticManager:
+		HapticManager.light()
+
+	# Emit signal
+	emit_signal("pressed")
+
+	# Execute ability with aim direction
+	if slot_index >= 0:
+		ActiveAbilityManager.use_ability_aimed(slot_index, skillshot_aim_direction)
+
+func _show_aim_indicator() -> void:
+	"""Create and show the aim indicator."""
+	if aim_indicator:
+		return
+
+	# Create the aim indicator as a child of the scene root (below player sprite)
+	aim_indicator = Node2D.new()
+	aim_indicator.name = "SkillshotAimIndicator"
+	aim_indicator.z_index = -1  # Below player sprite
+
+	# Add to scene tree at root level
+	var scene_root = get_tree().current_scene
+	if scene_root:
+		scene_root.add_child(aim_indicator)
+
+	# Light haptic when entering aim mode
+	if HapticManager:
+		HapticManager.light()
+
+func _update_aim_indicator() -> void:
+	"""Update the aim indicator position and direction."""
+	if not aim_indicator:
+		return
+
+	# Get player position for aim origin
+	var player = ActiveAbilityManager.player
+	if not player:
+		return
+
+	var start_pos = player.global_position
+
+	# Calculate end position based on aim direction
+	var line_length = SKILLSHOT_AIM_LINE_LENGTH
+	if ability and ability.range_distance > 0:
+		line_length = min(ability.range_distance, 200.0)  # Cap at 200 to stay on screen
+
+	var end_pos = start_pos + skillshot_aim_direction * line_length
+
+	# Redraw the indicator
+	aim_indicator.queue_redraw()
+
+	# Connect draw signal if not already connected
+	if not aim_indicator.draw.is_connected(_draw_aim_indicator):
+		aim_indicator.draw.connect(_draw_aim_indicator)
+
+	# Store data for drawing
+	aim_indicator.set_meta("start_pos", start_pos)
+	aim_indicator.set_meta("end_pos", end_pos)
+	aim_indicator.set_meta("direction", skillshot_aim_direction)
+
+func _draw_aim_indicator() -> void:
+	"""Draw the aim line with arrow - gradient from transparent to opaque."""
+	if not aim_indicator:
+		return
+
+	var start_pos: Vector2 = aim_indicator.get_meta("start_pos", Vector2.ZERO)
+	var end_pos: Vector2 = aim_indicator.get_meta("end_pos", Vector2.ZERO)
+	var direction: Vector2 = aim_indicator.get_meta("direction", Vector2.RIGHT)
+
+	if start_pos == Vector2.ZERO or end_pos == Vector2.ZERO:
+		return
+
+	# Draw settings
+	var line_width = 3.0
+	var arrow_size = 20.0  # 10% bigger than 18
+	var arrow_extension = 12.0  # How far past the line the arrow tip extends
+
+	# Offset start position down 10px (below player sprite)
+	start_pos = start_pos + Vector2(0, 10)
+
+	# Draw gradient line as a polygon with smooth color interpolation
+	# Line width grows from thin at player to thick at arrow
+	var start_width = 1.0  # Thin at player
+	var end_width = line_width  # Full width at arrow end
+	var perpendicular_dir = Vector2(-direction.y, direction.x)
+
+	# Build a quad strip for smooth gradient (no visible segments)
+	var points = PackedVector2Array()
+	var colors = PackedColorArray()
+	var segments = 64  # High segment count for smooth gradient
+
+	for i in range(segments + 1):
+		var t = float(i) / segments
+		var pos = start_pos.lerp(end_pos, t)
+		var alpha = lerp(0.2, 1.0, t)
+		var color = Color(1.0, 1.0, 1.0, alpha)
+
+		# Interpolate width from thin to thick
+		var current_width = lerp(start_width, end_width, t) / 2.0
+		var perpendicular = perpendicular_dir * current_width
+
+		# Add two points (top and bottom of line width)
+		points.append(pos + perpendicular)
+		points.append(pos - perpendicular)
+		colors.append(color)
+		colors.append(color)
+
+	# Draw as triangle strip by building triangles
+	for i in range(segments):
+		var idx = i * 2
+		var tri1_points = PackedVector2Array([points[idx], points[idx + 1], points[idx + 2]])
+		var tri1_colors = PackedColorArray([colors[idx], colors[idx + 1], colors[idx + 2]])
+		var tri2_points = PackedVector2Array([points[idx + 1], points[idx + 3], points[idx + 2]])
+		var tri2_colors = PackedColorArray([colors[idx + 1], colors[idx + 3], colors[idx + 2]])
+
+		aim_indicator.draw_polygon(tri1_points, tri1_colors)
+		aim_indicator.draw_polygon(tri2_points, tri2_colors)
+
+	# Arrow tip extends PAST the line end
+	var arrow_tip = end_pos + direction * arrow_extension
+	var arrow_angle = direction.angle()
+	var arrow_point1 = arrow_tip + Vector2(cos(arrow_angle + PI * 0.8), sin(arrow_angle + PI * 0.8)) * arrow_size
+	var arrow_point2 = arrow_tip + Vector2(cos(arrow_angle - PI * 0.8), sin(arrow_angle - PI * 0.8)) * arrow_size
+
+	# Draw filled arrow head at full opacity
+	var arrow_color = Color(1.0, 1.0, 1.0, 1.0)
+	var arrow_points = PackedVector2Array([arrow_tip, arrow_point1, arrow_point2])
+	aim_indicator.draw_colored_polygon(arrow_points, arrow_color)
+
+func _hide_aim_indicator() -> void:
+	"""Hide and remove the aim indicator."""
+	if aim_indicator:
+		aim_indicator.queue_free()
+		aim_indicator = null

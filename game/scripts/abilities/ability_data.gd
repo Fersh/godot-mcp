@@ -291,3 +291,12 @@ static func get_rarity_name(rarity: Rarity) -> String:
 		Rarity.MYTHIC:
 			return "Mythic"
 	return "Unknown"
+
+func has_available_upgrades() -> bool:
+	## Check if this ability has upgrades available in the database.
+	## An ability is upgradeable if another ability has this ID in its prerequisite_ids.
+	var all_abilities = AbilityDatabase.get_all_abilities()
+	for ability in all_abilities:
+		if id in ability.prerequisite_ids:
+			return true
+	return false

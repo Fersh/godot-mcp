@@ -304,10 +304,18 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 
 func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Base Fireball - projectile that explodes on impact with AoE burn damage"""
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction: Vector2
+
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		# Auto-target nearest enemy
+		var target = _get_nearest_enemy(player.global_position, 500.0)
+		if target:
+			direction = (target.global_position - player.global_position).normalized()
+		else:
+			direction = _get_attack_direction(player)
 
 	# Use main executor's projectile spawner for proper fireball projectile
 	if _main_executor and _main_executor.has_method("_spawn_projectile"):
@@ -319,12 +327,20 @@ func _execute_fireball(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_meteor_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Call down a meteor at target location after delay"""
 	var damage = _get_damage(ability)
-	var target_pos = player.global_position
+	var target_pos: Vector2
 
-	# Find cluster of enemies
-	var target = _get_nearest_enemy(player.global_position, 600.0)
-	if target:
-		target_pos = target.global_position
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		var range_dist = ability.range_distance if ability.range_distance > 0 else 300.0
+		target_pos = player.global_position + aim_dir * range_dist
+	else:
+		# Auto-target nearest enemy
+		var target = _get_nearest_enemy(player.global_position, 600.0)
+		if target:
+			target_pos = target.global_position
+		else:
+			target_pos = player.global_position
 
 	# Spawn warning indicator
 	_spawn_effect("fireball", target_pos)
@@ -353,10 +369,18 @@ func _execute_meteor_shower(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_phoenix_flame(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Fire that heals you for damage dealt"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
+	var direction: Vector2
+
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction = ActiveAbilityManager.get_current_aim_direction()
+	else:
+		# Auto-target nearest enemy
+		var target = _get_nearest_enemy(player.global_position, 500.0)
+		if target:
+			direction = (target.global_position - player.global_position).normalized()
+		else:
+			direction = _get_attack_direction(player)
 
 	# Use main executor's projectile spawner for proper fireball projectile
 	if _main_executor and _main_executor.has_method("_spawn_projectile"):
@@ -1338,8 +1362,14 @@ func _spawn_repulse_wave(pos: Vector2, radius: float, color: Color) -> void:
 	tween.parallel().tween_property(wave, "modulate:a", 0.0, 0.4)
 	tween.tween_callback(wave.queue_free)
 
-func _get_enemy_cluster_center(from_pos: Vector2, max_range: float) -> Vector2:
-	"""Find center of enemy cluster"""
+func _get_enemy_cluster_center(from_pos: Vector2, max_range: float = 300.0) -> Vector2:
+	"""Find center of enemy cluster, or use skillshot aim direction"""
+	# Check if using skillshot aiming
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			return from_pos + aim_dir * max_range
+
 	var enemies = _get_enemies_in_radius(from_pos, max_range)
 	if enemies.is_empty():
 		return from_pos + _get_attack_direction(_get_player()) * 150.0

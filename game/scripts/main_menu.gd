@@ -32,7 +32,7 @@ var button_animation_timer: Timer = null
 var current_sweep_rect: ColorRect = null
 
 const VERSION = "1.0.0"
-const BUILD = 14
+const BUILD = 15
 
 func _ready() -> void:
 	# Load pixel font

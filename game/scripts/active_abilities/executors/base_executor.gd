@@ -112,7 +112,14 @@ func _get_enemies_in_arc(center: Vector2, direction: Vector2, radius: float, arc
 	return in_arc
 
 func _get_attack_direction(player: Node2D) -> Vector2:
-	"""Get the direction the player is attacking"""
+	"""Get the direction the player is attacking, or use skillshot aim direction"""
+	# Check if using skillshot aiming - this takes priority
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			return aim_dir
+
+	# Fall back to normal targeting
 	if player.has_method("get_attack_direction"):
 		return player.get_attack_direction()
 	elif player.has_method("get_facing"):
@@ -120,6 +127,41 @@ func _get_attack_direction(player: Node2D) -> Vector2:
 	elif "facing" in player:
 		return player.facing
 	return Vector2.RIGHT
+
+func _get_enemy_cluster_center(origin: Vector2, search_radius: float = 300.0) -> Vector2:
+	"""Find the center of the largest enemy cluster, or use skillshot aim direction"""
+	# Check if using skillshot aiming
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			# Return a point in the aimed direction at the search radius distance
+			return origin + aim_dir * search_radius
+
+	var enemies = _get_enemies_in_radius(origin, search_radius)
+	if enemies.is_empty():
+		return origin
+
+	# Simple: return average position of all enemies in range
+	var sum = Vector2.ZERO
+	for enemy in enemies:
+		sum += enemy.global_position
+	return sum / enemies.size()
+
+func _get_projectile_direction(player: Node2D, max_range: float = 500.0) -> Vector2:
+	"""Get direction for projectile abilities - uses skillshot aim if active, otherwise auto-targets."""
+	# Check for skillshot aim direction first
+	if ActiveAbilityManager.is_using_aimed_shot():
+		var aim_dir = ActiveAbilityManager.get_current_aim_direction()
+		if aim_dir.length() > 0:
+			return aim_dir
+
+	# Auto-target nearest enemy
+	var target = _get_nearest_enemy(player.global_position, max_range)
+	if target:
+		return (target.global_position - player.global_position).normalized()
+
+	# Fall back to attack direction
+	return _get_attack_direction(player)
 
 # ============================================
 # EFFECTS AND FEEDBACK

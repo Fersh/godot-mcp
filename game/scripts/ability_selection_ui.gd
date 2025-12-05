@@ -216,6 +216,22 @@ func create_ability_card(ability, index: int) -> Button:
 		_populate_tier_diamonds(tier_container, ability)
 	vbox.add_child(tier_container)
 
+	# Upgradeable indicator - shows for passive abilities that have upgrade paths
+	var upgradeable_label = Label.new()
+	upgradeable_label.name = "UpgradeableLabel"
+	upgradeable_label.text = "Upgradeable"
+	upgradeable_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	upgradeable_label.add_theme_font_size_override("font_size", 12)
+	upgradeable_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green
+	if pixel_font:
+		upgradeable_label.add_theme_font_override("font", pixel_font)
+	# Only show for passive abilities that have upgrades available
+	if ability is AbilityData and not is_upgrade:
+		upgradeable_label.visible = ability.has_available_upgrades()
+	else:
+		upgradeable_label.visible = false
+	vbox.add_child(upgradeable_label)
+
 	# Bottom spacer
 	var bottom_spacer = Control.new()
 	bottom_spacer.custom_minimum_size = Vector2(0, 8)
@@ -835,6 +851,14 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 			child.queue_free()
 		if is_upgrade and ability is ActiveAbilityData:
 			_populate_tier_diamonds(tier_container, ability)
+
+	# Update upgradeable indicator - only show on final reveal for passive abilities with upgrades
+	var upgradeable_label = vbox.get_node_or_null("UpgradeableLabel") as Label
+	if upgradeable_label:
+		if is_final_reveal and ability is AbilityData and not is_upgrade:
+			upgradeable_label.visible = ability.has_available_upgrades()
+		else:
+			upgradeable_label.visible = false
 
 	# Update rarity tag (child 1 of button is CenterContainer, which contains PanelContainer)
 	var center_container = button.get_child(1) as CenterContainer

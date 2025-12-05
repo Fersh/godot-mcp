@@ -257,6 +257,41 @@ func is_upgrade() -> bool:
 	## Returns true if this is a Tier 2 or Tier 3 ability (not base)
 	return tier != AbilityTier.BASE
 
+func supports_skillshot() -> bool:
+	## Determines if this ability can be aimed via skillshot (hold + drag).
+	## Returns true for projectiles, location-based effects, and directional abilities.
+	## Returns false for self-buffs, summons, orbitals, and non-directional melee.
+
+	# Self-targeting abilities (buffs, heals, transforms) - NO skillshot
+	if target_type == TargetType.SELF:
+		return false
+
+	# AoE around self without projectile or direction - NO skillshot
+	# (e.g., cleave, frost_nova, ground_slam, whirlwind)
+	if target_type == TargetType.AREA_AROUND_SELF:
+		# Check if it's a movement ability (like quick_roll) - those don't need aiming
+		if is_movement_ability:
+			return false
+		# Non-movement AoE around self = no aiming needed
+		return false
+
+	# Direction-based abilities - YES skillshot (dash_strike, multi_shot, flame_wall, etc.)
+	if target_type == TargetType.DIRECTION:
+		return true
+
+	# Nearest enemy targeting with projectiles - YES skillshot (fireball, power_shot, etc.)
+	if target_type == TargetType.NEAREST_ENEMY:
+		if projectile_count > 0 and projectile_speed > 0:
+			return true
+		# Chain lightning, shadowstep-like abilities without projectiles - NO
+		return false
+
+	# Cluster targeting (location-based like rain_of_arrows, throwing_bomb, glue_bomb) - YES skillshot
+	if target_type == TargetType.CLUSTER:
+		return true
+
+	return false
+
 func has_prerequisite() -> bool:
 	return prerequisite_id != ""
 

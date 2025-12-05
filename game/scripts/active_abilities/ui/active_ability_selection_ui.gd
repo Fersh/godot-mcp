@@ -385,6 +385,19 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
+	# Upgradeable indicator - shows for base abilities that have upgrade paths (above cooldown)
+	var upgradeable_label = Label.new()
+	upgradeable_label.name = "UpgradeableLabel"
+	upgradeable_label.text = "Upgradeable"
+	upgradeable_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	upgradeable_label.add_theme_font_size_override("font_size", 12)
+	upgradeable_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green
+	if pixel_font:
+		upgradeable_label.add_theme_font_override("font", pixel_font)
+	# Only show for base abilities that are part of a tree
+	upgradeable_label.visible = not ability.is_upgrade() and AbilityTreeRegistry.is_ability_in_tree(ability.id)
+	vbox.add_child(upgradeable_label)
+
 	# Cooldown info
 	var cooldown_label = Label.new()
 	cooldown_label.name = "CooldownLabel"
@@ -663,7 +676,7 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if not vbox:
 		return
 
-	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=desc, 5=cooldown, 6=bottom_spacer
+	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=desc, 5=upgradeable, 6=cooldown, 7=bottom_spacer
 	# Update icon circle (child 1 is icon_container)
 	var icon_container = vbox.get_child(1) as CenterContainer
 	if icon_container and icon_container.get_child_count() > 0:
@@ -692,8 +705,16 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if desc_label:
 		desc_label.text = ability.description
 
-	# Update cooldown (child 5)
-	var cooldown_label = vbox.get_child(5) as Label
+	# Update upgradeable indicator (child 5) - only show on final reveal for base abilities in trees
+	var upgradeable_label = vbox.get_child(5) as Label
+	if upgradeable_label:
+		if is_final_reveal:
+			upgradeable_label.visible = not ability.is_upgrade() and AbilityTreeRegistry.is_ability_in_tree(ability.id)
+		else:
+			upgradeable_label.visible = false
+
+	# Update cooldown (child 6)
+	var cooldown_label = vbox.get_child(6) as Label
 	if cooldown_label:
 		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
 
