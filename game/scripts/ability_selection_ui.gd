@@ -1,10 +1,11 @@
 extends CanvasLayer
 
 signal ability_selected(ability: AbilityData)
+signal active_upgrade_selected(ability)  # For ActiveAbilityData upgrades
 
-var current_choices: Array[AbilityData] = []
+var current_choices: Array = []  # Mixed: AbilityData (passives) + ActiveAbilityData (upgrades)
 var ability_buttons: Array[Button] = []
-var all_abilities_pool: Array[AbilityData] = []  # For slot machine effect
+var all_abilities_pool: Array[AbilityData] = []  # For slot machine effect (passives only)
 
 # Slot machine state
 var is_rolling: bool = false
@@ -61,10 +62,11 @@ func _process(delta: float) -> void:
 			if SoundManager:
 				SoundManager.play_ding()
 			# Play flash effect and frame freeze for non-common rarities
-			if current_choices[i].rarity != AbilityData.Rarity.COMMON:
-				_play_rarity_reveal_effect(ability_buttons[i], current_choices[i].rarity)
+			if not _is_common_rarity(current_choices[i]):
+				var passive_rarity = _get_passive_rarity(current_choices[i])
+				_play_rarity_reveal_effect(ability_buttons[i], passive_rarity)
 				# Frame freeze based on rarity (more frames for higher rarity)
-				var freeze_frames = _get_rarity_freeze_frames(current_choices[i].rarity)
+				var freeze_frames = _get_rarity_freeze_frames(passive_rarity)
 				if freeze_frames > 0:
 					_do_frame_freeze(freeze_frames)
 		else:
@@ -88,13 +90,17 @@ func _process(delta: float) -> void:
 		for button in ability_buttons:
 			button.disabled = false
 
-func show_choices(abilities: Array[AbilityData]) -> void:
+func show_choices(abilities: Array) -> void:
+	## Show ability choices - can be mixed AbilityData (passives) and ActiveAbilityData (upgrades)
 	current_choices = abilities
 
-	# Get all abilities for the slot machine pool
+	# Get all passive abilities for the slot machine pool (we only roll passives during animation)
 	all_abilities_pool = AbilityManager.get_available_abilities()
 	if all_abilities_pool.is_empty():
-		all_abilities_pool = abilities  # Fallback
+		# Fallback: filter to only AbilityData types
+		for a in abilities:
+			if a is AbilityData:
+				all_abilities_pool.append(a)
 
 	# Clear previous buttons and particle containers
 	for button in ability_buttons:
@@ -129,28 +135,34 @@ func show_choices(abilities: Array[AbilityData]) -> void:
 	# Animate entrance
 	_animate_entrance()
 
-func create_ability_card(ability: AbilityData, index: int) -> Button:
+func create_ability_card(ability, index: int) -> Button:
+	## Create a card for either AbilityData (passive) or ActiveAbilityData (upgrade)
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(312, 360)  # Increased by 20%
+	button.custom_minimum_size = Vector2(312, 360)
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
+	# Get ability properties (works for both types)
+	var ability_name = ability.name
+	var ability_desc = ability.description
+	var is_upgrade = _is_active_ability_upgrade(ability)
+
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 0)  # Reduced margin between elements
+	vbox.add_theme_constant_override("separation", 0)
 
-	# Spacer above ability name (for rarity tag)
+	# Spacer above ability name (for rarity tag + upgrade indicator)
 	var top_spacer = Control.new()
-	top_spacer.custom_minimum_size = Vector2(0, 8)
+	top_spacer.custom_minimum_size = Vector2(0, 8 if not is_upgrade else 24)
 	vbox.add_child(top_spacer)
 
 	# Ability name - colored by rarity
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
-	name_label.text = ability.name
+	name_label.text = ability_name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
+	name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
@@ -159,7 +171,7 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 	# Description
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
-	desc_label.text = ability.description
+	desc_label.text = ability_desc
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	desc_label.add_theme_font_size_override("font_size", 14)
@@ -186,40 +198,105 @@ func create_ability_card(ability: AbilityData, index: int) -> Button:
 
 	button.add_child(margin)
 
-	# Rarity tag pinned to top (half above, half inside card)
-	var rarity_tag = _create_rarity_tag(ability.rarity)
+	# Rarity tag pinned to top
+	var rarity_tag = _create_rarity_tag_for_ability(ability)
 	rarity_tag.name = "RarityTag"
 	button.add_child(rarity_tag)
 
-	# Add particle effect container (starts hidden, shown after card settles)
-	var particle_container = _create_particle_container(ability.rarity)
+	# Add particle effect container
+	var particle_container = _create_particle_container_for_ability(ability)
 	particle_container.name = "ParticleContainer"
-	particle_container.visible = false  # Hide until card is revealed
+	particle_container.visible = false
 	button.add_child(particle_container)
 	particle_containers.append(particle_container)
 
-	# Style the button
-	style_button(button, ability.rarity)
+	# Style the button (upgrade-aware)
+	_style_button_for_ability(button, ability)
 
 	# Connect click
 	button.pressed.connect(_on_ability_selected.bind(index))
 
 	return button
 
-func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
-	# Use CenterContainer to properly center the tag
+func _is_active_ability_upgrade(ability) -> bool:
+	## Check if this is an ActiveAbilityData upgrade (not a passive)
+	if ability is ActiveAbilityData:
+		return ability.is_upgrade()
+	return false
+
+func _get_rarity_color(ability) -> Color:
+	## Get rarity color for either AbilityData or ActiveAbilityData
+	if ability is ActiveAbilityData:
+		return ActiveAbilityData.get_rarity_color(ability.rarity)
+	return AbilityData.get_rarity_color(ability.rarity)
+
+func _get_rarity_name(ability) -> String:
+	## Get rarity name for either AbilityData or ActiveAbilityData
+	if ability is ActiveAbilityData:
+		return ActiveAbilityData.get_rarity_name(ability.rarity)
+	return AbilityData.get_rarity_name(ability.rarity)
+
+func _create_rarity_tag_for_ability(ability) -> CenterContainer:
+	## Create rarity tag that works for both AbilityData and ActiveAbilityData
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	center.anchor_left = 0
 	center.anchor_right = 1
 	center.anchor_top = 0
 	center.anchor_bottom = 0
-	center.offset_top = -12  # Half above the card
+	center.offset_top = -12
 	center.offset_bottom = 12
 
 	var tag = PanelContainer.new()
 
-	# Style the tag
+	var tag_style = StyleBoxFlat.new()
+	var is_upgrade = _is_active_ability_upgrade(ability)
+
+	if is_upgrade:
+		# Upgrade cards get green (T2) or gold (T3) tag
+		if ability.is_signature():
+			tag_style.bg_color = Color(1.0, 0.85, 0.3)  # Gold for signature
+		else:
+			tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+	else:
+		tag_style.bg_color = _get_rarity_color(ability)
+
+	tag_style.set_corner_radius_all(4)
+	tag_style.content_margin_left = 10
+	tag_style.content_margin_right = 10
+	tag_style.content_margin_top = 4
+	tag_style.content_margin_bottom = 4
+	tag.add_theme_stylebox_override("panel", tag_style)
+
+	var label = Label.new()
+	label.name = "RarityLabel"
+	if is_upgrade:
+		label.text = "SIGNATURE" if ability.is_signature() else "UPGRADE"
+	else:
+		label.text = _get_rarity_name(ability)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	tag.add_child(label)
+
+	center.add_child(tag)
+	return center
+
+func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
+	## Legacy function for passive abilities only
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	center.anchor_left = 0
+	center.anchor_right = 1
+	center.anchor_top = 0
+	center.anchor_bottom = 0
+	center.offset_top = -12
+	center.offset_bottom = 12
+
+	var tag = PanelContainer.new()
+
 	var tag_style = StyleBoxFlat.new()
 	tag_style.bg_color = AbilityData.get_rarity_color(rarity)
 	tag_style.set_corner_radius_all(4)
@@ -229,7 +306,6 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 	tag_style.content_margin_bottom = 4
 	tag.add_theme_stylebox_override("panel", tag_style)
 
-	# Rarity label inside tag
 	var label = Label.new()
 	label.name = "RarityLabel"
 	label.text = AbilityData.get_rarity_name(rarity)
@@ -242,6 +318,95 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 
 	center.add_child(tag)
 	return center
+
+func _create_particle_container_for_ability(ability) -> Control:
+	## Create particle container for either type
+	if ability is ActiveAbilityData:
+		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
+		var passive_rarity = _map_active_to_passive_rarity(ability.rarity)
+		return _create_particle_container(passive_rarity)
+	return _create_particle_container(ability.rarity)
+
+func _map_active_to_passive_rarity(active_rarity) -> AbilityData.Rarity:
+	## Map ActiveAbilityData rarity to AbilityData rarity for particle effects
+	match active_rarity:
+		ActiveAbilityData.Rarity.COMMON:
+			return AbilityData.Rarity.COMMON
+		ActiveAbilityData.Rarity.RARE:
+			return AbilityData.Rarity.RARE
+		ActiveAbilityData.Rarity.EPIC:
+			return AbilityData.Rarity.EPIC
+		ActiveAbilityData.Rarity.LEGENDARY:
+			return AbilityData.Rarity.LEGENDARY
+		ActiveAbilityData.Rarity.MYTHIC:
+			return AbilityData.Rarity.MYTHIC
+		_:
+			return AbilityData.Rarity.COMMON
+
+func _is_common_rarity(ability) -> bool:
+	## Check if ability is common rarity (works for both types)
+	if ability is ActiveAbilityData:
+		return ability.rarity == ActiveAbilityData.Rarity.COMMON
+	return ability.rarity == AbilityData.Rarity.COMMON
+
+func _get_passive_rarity(ability) -> AbilityData.Rarity:
+	## Get passive rarity enum (maps ActiveAbilityData rarity if needed)
+	if ability is ActiveAbilityData:
+		return _map_active_to_passive_rarity(ability.rarity)
+	return ability.rarity
+
+func _style_button_for_ability(button: Button, ability) -> void:
+	## Style button for either AbilityData or ActiveAbilityData (with upgrade styling)
+	var style = StyleBoxFlat.new()
+	var is_upgrade = _is_active_ability_upgrade(ability)
+
+	if is_upgrade:
+		# Upgrade cards get special styling
+		if ability.is_signature():
+			# Gold border/tint for T3 signatures
+			style.bg_color = Color(0.18, 0.15, 0.08, 0.98)
+			style.border_color = Color(1.0, 0.85, 0.3)
+		else:
+			# Green border/tint for T2 upgrades
+			style.bg_color = Color(0.08, 0.18, 0.1, 0.98)
+			style.border_color = Color(0.2, 0.9, 0.3)
+		style.set_border_width_all(4)  # Thicker border for upgrades
+	else:
+		# Standard passive ability styling
+		var rarity = ability.rarity
+		if ability is AbilityData:
+			match rarity:
+				AbilityData.Rarity.COMMON:
+					style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
+					style.border_color = Color(0.4, 0.4, 0.4)
+				AbilityData.Rarity.RARE:
+					style.bg_color = Color(0.1, 0.15, 0.25, 0.98)
+					style.border_color = Color(0.3, 0.5, 1.0)
+				AbilityData.Rarity.EPIC:
+					style.bg_color = Color(0.15, 0.1, 0.2, 0.98)
+					style.border_color = AbilityData.get_rarity_color(rarity)
+				AbilityData.Rarity.LEGENDARY:
+					style.bg_color = Color(0.2, 0.18, 0.1, 0.98)
+					style.border_color = AbilityData.get_rarity_color(rarity)
+				AbilityData.Rarity.MYTHIC:
+					style.bg_color = Color(0.18, 0.08, 0.1, 0.98)
+					style.border_color = AbilityData.get_rarity_color(rarity)
+				_:
+					style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
+					style.border_color = Color(0.4, 0.4, 0.4)
+		style.set_border_width_all(3)
+
+	style.set_corner_radius_all(12)
+
+	button.add_theme_stylebox_override("normal", style)
+
+	var hover_style = style.duplicate()
+	hover_style.bg_color = hover_style.bg_color.lightened(0.1)
+	button.add_theme_stylebox_override("hover", hover_style)
+
+	var pressed_style = style.duplicate()
+	pressed_style.bg_color = pressed_style.bg_color.darkened(0.1)
+	button.add_theme_stylebox_override("pressed", pressed_style)
 
 func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
 	var container = Control.new()
@@ -439,7 +604,8 @@ func create_separator_style(rarity: AbilityData.Rarity) -> StyleBoxLine:
 	style.thickness = 2
 	return style
 
-func update_card_content(button: Button, ability: AbilityData, is_final_reveal: bool = false) -> void:
+func update_card_content(button: Button, ability, is_final_reveal: bool = false) -> void:
+	## Update card content - handles both AbilityData and ActiveAbilityData
 	# Find the margin container and vbox inside the button
 	var margin = button.get_child(0) as MarginContainer
 	if not margin:
@@ -448,12 +614,14 @@ func update_card_content(button: Button, ability: AbilityData, is_final_reveal: 
 	if not vbox:
 		return
 
+	var is_upgrade = _is_active_ability_upgrade(ability)
+
 	# Children: 0=top_spacer, 1=name, 2=desc, 3=bottom_spacer
 	# Update name label (child 1) - set color to rarity
 	var name_label = vbox.get_child(1) as Label
 	if name_label:
 		name_label.text = ability.name
-		name_label.add_theme_color_override("font_color", AbilityData.get_rarity_color(ability.rarity))
+		name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
 
 	# Update description label (child 2)
 	var desc_label = vbox.get_child(2) as Label
@@ -466,23 +634,33 @@ func update_card_content(button: Button, ability: AbilityData, is_final_reveal: 
 		var rarity_tag = center_container.get_child(0) as PanelContainer
 		if rarity_tag:
 			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-			tag_style.bg_color = AbilityData.get_rarity_color(ability.rarity)
+			if is_upgrade:
+				if ability.is_signature():
+					tag_style.bg_color = Color(1.0, 0.85, 0.3)  # Gold for signature
+				else:
+					tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+			else:
+				tag_style.bg_color = _get_rarity_color(ability)
 			rarity_tag.add_theme_stylebox_override("panel", tag_style)
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
-				rarity_label.text = AbilityData.get_rarity_name(ability.rarity)
+				if is_upgrade:
+					rarity_label.text = "SIGNATURE" if ability.is_signature() else "UPGRADE"
+				else:
+					rarity_label.text = _get_rarity_name(ability)
 
 	# Update particle container (child 2 of button) - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control
 	if particle_container:
 		if is_final_reveal:
-			_update_particle_container(particle_container, ability.rarity)
+			var passive_rarity = ability.rarity if ability is AbilityData else _map_active_to_passive_rarity(ability.rarity)
+			_update_particle_container(particle_container, passive_rarity)
 		else:
 			# Keep particles hidden during rolling
 			particle_container.visible = false
 
 	# Update button style
-	style_button(button, ability.rarity)
+	_style_button_for_ability(button, ability)
 
 func _on_ability_selected(index: int) -> void:
 	# Don't allow selection while rolling
@@ -497,15 +675,21 @@ func _on_ability_selected(index: int) -> void:
 	if index >= 0 and index < current_choices.size():
 		var ability = current_choices[index]
 
-		# Acquire the ability
-		AbilityManager.acquire_ability(ability)
+		# Check if this is an active ability upgrade or a passive ability
+		if ability is ActiveAbilityData:
+			# Active ability upgrade - use ActiveAbilityManager
+			var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
+			if active_manager:
+				active_manager.acquire_ability(ability)
+			emit_signal("active_upgrade_selected", ability)
+		else:
+			# Passive ability - use AbilityManager
+			AbilityManager.acquire_ability(ability)
+			emit_signal("ability_selected", ability)
 
 		# Play buff sound
 		if SoundManager:
 			SoundManager.play_buff()
-
-		# Emit signal
-		emit_signal("ability_selected", ability)
 
 		# Hide and unpause
 		hide_selection()

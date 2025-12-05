@@ -515,12 +515,11 @@ func _on_dodge_complete() -> void:
 # ============================================
 
 func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) -> Array[ActiveAbilityData]:
-	"""Get random active abilities for the level-up selection screen.
-	Includes upgrades for acquired abilities with UPGRADE_CHANCE probability."""
+	## Get random BASE active abilities for the level-up selection screen.
+	## Only returns new base abilities - upgrades are mixed into passive selection instead.
 	var available = _get_available_abilities(is_melee)
-	var upgrades = _get_available_upgrades()
 
-	if available.is_empty() and upgrades.is_empty():
+	if available.is_empty():
 		return []
 
 	# Get rarity weights for this level
@@ -534,21 +533,12 @@ func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) 
 	while selected.size() < count and attempts < max_attempts:
 		attempts += 1
 
-		# Roll to see if this slot should be an upgrade (40% chance if upgrades available)
-		var use_upgrade = not upgrades.is_empty() and randf() < UPGRADE_CHANCE
-
-		var ability: ActiveAbilityData = null
-
-		if use_upgrade:
-			# Pick a random upgrade
-			ability = upgrades[randi() % upgrades.size()]
-		else:
-			# Roll for rarity and pick from available base abilities
-			var rarity = _roll_rarity(weights)
-			var rarity_abilities = available.filter(func(a): return a.rarity == rarity)
-			if rarity_abilities.is_empty():
-				continue
-			ability = rarity_abilities[randi() % rarity_abilities.size()]
+		# Roll for rarity and pick from available base abilities
+		var rarity = _roll_rarity(weights)
+		var rarity_abilities = available.filter(func(a): return a.rarity == rarity)
+		if rarity_abilities.is_empty():
+			continue
+		var ability = rarity_abilities[randi() % rarity_abilities.size()]
 
 		if ability == null:
 			continue
@@ -562,14 +552,14 @@ func get_random_abilities_for_level(level: int, is_melee: bool, count: int = 3) 
 
 		if not already_selected:
 			selected.append(ability)
-
-			# Remove from pools to prevent duplicates
-			if use_upgrade:
-				upgrades = upgrades.filter(func(a): return a.id != ability.id)
-			else:
-				available = available.filter(func(a): return a.id != ability.id)
+			available = available.filter(func(a): return a.id != ability.id)
 
 	return selected
+
+func get_available_upgrades() -> Array[ActiveAbilityData]:
+	## Public: Get all available upgrades for currently equipped abilities.
+	## Called by AbilityManager to mix into passive selection.
+	return _get_available_upgrades()
 
 func _get_available_upgrades() -> Array[ActiveAbilityData]:
 	"""Get all available upgrades for currently equipped abilities."""

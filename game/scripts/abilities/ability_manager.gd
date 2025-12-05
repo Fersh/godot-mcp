@@ -1006,21 +1006,45 @@ func spawn_shield_gain_number(player: Node2D, amount: float) -> void:
 	if dmg_num.has_method("set_shield_gain"):
 		dmg_num.set_shield_gain(amount)
 
-# Get random abilities for level up selection
-func get_random_abilities(count: int = 3) -> Array[AbilityData]:
-	var available = get_available_abilities()
-	var choices: Array[AbilityData] = []
+# Get random abilities for level up selection (passives + active upgrades mixed)
+func get_random_abilities(count: int = 3) -> Array:
+	## Returns mixed array of AbilityData (passives) and ActiveAbilityData (upgrades)
+	var available_passives = get_available_abilities()
+	var available_upgrades = _get_active_ability_upgrades()
+	var choices: Array = []
 
 	for i in count:
-		if available.size() == 0:
+		if available_passives.size() == 0 and available_upgrades.size() == 0:
 			break
 
-		var ability = pick_weighted_random(available)
-		if ability:
-			choices.append(ability)
-			available.erase(ability)
+		# Roll for upgrade (50% chance if upgrades available)
+		var use_upgrade = available_upgrades.size() > 0 and randf() < 0.50
+
+		if use_upgrade:
+			# Pick random upgrade
+			var upgrade = available_upgrades[randi() % available_upgrades.size()]
+			choices.append(upgrade)
+			available_upgrades.erase(upgrade)
+		elif available_passives.size() > 0:
+			# Pick weighted passive
+			var ability = pick_weighted_random(available_passives)
+			if ability:
+				choices.append(ability)
+				available_passives.erase(ability)
+		elif available_upgrades.size() > 0:
+			# Fallback to upgrade if no passives left
+			var upgrade = available_upgrades[randi() % available_upgrades.size()]
+			choices.append(upgrade)
+			available_upgrades.erase(upgrade)
 
 	return choices
+
+func _get_active_ability_upgrades() -> Array:
+	## Get available active ability upgrades from ActiveAbilityManager
+	var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
+	if active_manager and active_manager.has_method("get_available_upgrades"):
+		return active_manager.get_available_upgrades()
+	return []
 
 func get_available_abilities() -> Array[AbilityData]:
 	var available: Array[AbilityData] = []
