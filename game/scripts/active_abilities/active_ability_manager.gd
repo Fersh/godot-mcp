@@ -124,6 +124,13 @@ func reset_for_new_run() -> void:
 	# Reset all ability trees for new run
 	AbilityTreeRegistry.reset_all_trees()
 
+func _mark_all_keys_held() -> void:
+	"""Mark all ability keys as held to prevent immediate triggering after UI selection."""
+	_dodge_key_held = true
+	_ability1_key_held = true
+	_ability2_key_held = true
+	_ability3_key_held = true
+
 func register_player(p: Node2D) -> void:
 	"""Register the player reference for ability execution."""
 	player = p
@@ -141,6 +148,10 @@ func get_next_empty_slot() -> int:
 
 func acquire_ability(ability: ActiveAbilityData) -> bool:
 	"""Add an ability to the next available slot, or upgrade an existing slot. Returns true if successful."""
+
+	# Mark all ability keys as "held" to prevent immediate triggering after selection
+	# This prevents the key used to select the ability from also triggering it
+	_mark_all_keys_held()
 
 	# Check if this is an upgrade to an existing ability
 	if ability.tier != ActiveAbilityData.AbilityTier.BASE:
