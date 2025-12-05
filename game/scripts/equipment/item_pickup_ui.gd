@@ -369,6 +369,10 @@ func _create_stat_row(stat_line: String, show_arrows: bool, comparison: Dictiona
 	container.add_child(row)
 	return container
 
+func _is_mobile() -> bool:
+	var os_name = OS.get_name()
+	return os_name == "Android" or os_name == "iOS"
+
 func _update_buttons() -> void:
 	if current_item == null:
 		return
@@ -379,12 +383,17 @@ func _update_buttons() -> void:
 
 	equip_button.disabled = not can_equip
 
+	# Only show keybinds on desktop
+	var show_keybinds = not _is_mobile()
+
 	if not can_equip:
 		equip_button.text = "WRONG CLASS"
 		equip_button.tooltip_text = "This item cannot be used by your current character"
 	else:
-		equip_button.text = "EQUIP [E]"
+		equip_button.text = "EQUIP [E]" if show_keybinds else "EQUIP"
 		equip_button.tooltip_text = ""
+
+	pickup_button.text = "TAKE [P]" if show_keybinds else "TAKE"
 
 func _on_equip_pressed() -> void:
 	if SoundManager:

@@ -58,9 +58,9 @@ theme_override_constants/separation = 20
 [node name="EquipButton" type="Button" parent="CenterContainer/ButtonContainer"]
 custom_minimum_size = Vector2(140, 48)
 layout_mode = 2
-text = "EQUIP [E]"
+text = "EQUIP"
 
 [node name="PickupButton" type="Button" parent="CenterContainer/ButtonContainer"]
 custom_minimum_size = Vector2(140, 48)
 layout_mode = 2
-text = "TAKE [P]"
+text = "TAKE"

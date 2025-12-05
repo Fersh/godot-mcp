@@ -10,7 +10,7 @@ const READY_COLOR := Color(1.0, 1.0, 1.0, 1.0)
 const PRESSED_SCALE := 0.9
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
 const BORDER_WIDTH := 3
-const LONG_PRESS_TIME := 0.4  # Time to hold before showing tooltip on touch
+const LONG_PRESS_TIME := 2.0  # Time to hold before showing tooltip on touch
 const SKILLSHOT_DRAG_THRESHOLD := 50.0  # Minimum drag distance to activate skillshot aiming
 const SKILLSHOT_AIM_LINE_LENGTH := 100.0  # Length of the aim indicator line (halved to stay on screen)
 
@@ -501,8 +501,8 @@ func _process(delta: float) -> void:
 	elif slot_index >= 0 and ability:
 		update_cooldown(ActiveAbilityManager.get_cooldown_percent(slot_index))
 
-	# Handle touch hold for tooltip
-	if is_touch_held and not touch_triggered_tooltip:
+	# Handle touch hold for tooltip (only if not dragging for skillshot)
+	if is_touch_held and not touch_triggered_tooltip and not skillshot_active:
 		touch_hold_timer += delta
 		if touch_hold_timer >= LONG_PRESS_TIME:
 			touch_triggered_tooltip = true
