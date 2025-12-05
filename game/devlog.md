@@ -2,6 +2,29 @@
 
 ---
 
+## Date: 2025-12-04 - Property Name & Parser Fixes
+
+### Summary
+Fixed two critical bugs preventing tier 3 abilities from working properly.
+
+### Bug Fixes
+
+**1. FireballTree Parser Error**
+- **Issue:** Line continuation `\` with comments after it caused parser error in GDScript
+- **Fix:** Moved comments above the method chain and removed backslash line continuations
+
+**2. Invalid Property Access (`range_value`)**
+- **Issue:** All executors were using `ability.range_value` but the correct property name is `ability.range_distance` (defined in `ActiveAbilityData`)
+- **Fix:** Replaced all 27 occurrences across 3 executor files
+
+### Files Modified
+- `fireball_tree.gd` - Fixed parser error (removed comments after `\`)
+- `global_executor.gd` - Fixed 5 occurrences of `range_value` → `range_distance`
+- `ranged_executor.gd` - Fixed 10 occurrences of `range_value` → `range_distance`
+- `melee_executor.gd` - Fixed 12 occurrences of `range_value` → `range_distance`
+
+---
+
 ## Date: 2025-12-04 - Fireball Fix & Buff
 
 ### Summary

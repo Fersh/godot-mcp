@@ -733,9 +733,9 @@ func _execute_slam_meteor(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Leap and crash like a meteor"""
 	var damage = _get_damage(ability)
 	var direction = _get_attack_direction(player)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
 
-	var target_pos = player.global_position + direction * ability.range_value
+	var target_pos = player.global_position + direction * ability.range_distance
 	if target:
 		target_pos = target.global_position
 
@@ -771,10 +771,10 @@ func _execute_dash_blade_rush(ability: ActiveAbilityData, player: Node2D) -> voi
 	# Perform 3 quick dashes
 	for i in range(3):
 		var start = player.global_position
-		_dash_player(player, direction, ability.range_value, 0.15)
+		_dash_player(player, direction, ability.range_distance, 0.15)
 
 		# Damage enemies in path
-		var enemies = _get_enemies_in_radius(start + direction * ability.range_value * 0.5, ability.range_value)
+		var enemies = _get_enemies_in_radius(start + direction * ability.range_distance * 0.5, ability.range_distance)
 		for enemy in enemies:
 			_deal_damage_to_enemy(enemy, damage)
 
@@ -791,7 +791,7 @@ func _execute_dash_omnislash(ability: ActiveAbilityData, player: Node2D) -> void
 		player.set_invulnerable(ability.invulnerability_duration)
 
 	# Get up to 8 enemies
-	var enemies = _get_enemies_in_radius(player.global_position, ability.range_value)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
 	enemies = enemies.slice(0, 8)
 
 	for enemy in enemies:
@@ -814,7 +814,7 @@ func _execute_dash_afterimage(ability: ActiveAbilityData, player: Node2D) -> voi
 	var start_pos = player.global_position
 
 	# Dash
-	_dash_player(player, direction, ability.range_value, 0.2)
+	_dash_player(player, direction, ability.range_distance, 0.2)
 
 	# Spawn exploding clone at start
 	var clone = _spawn_effect("afterimage", start_pos)
@@ -893,8 +893,8 @@ func _execute_whirlwind_inferno(ability: ActiveAbilityData, player: Node2D) -> v
 func _execute_leap_tremor(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Stun on landing"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
-	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_value
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_distance
 
 	# Leap
 	_dash_player(player, (target_pos - player.global_position).normalized(),
@@ -913,8 +913,8 @@ func _execute_leap_tremor(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_leap_extinction(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Meteors on landing"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
-	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_value
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_distance
 
 	# SIGNATURE: Invulnerable leap
 	if player.has_method("set_invulnerable"):
@@ -943,8 +943,8 @@ func _execute_leap_extinction(ability: ActiveAbilityData, player: Node2D) -> voi
 func _execute_leap_predator(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Gain attack speed after leap"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
-	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_value
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
+	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * ability.range_distance
 
 	# Leap
 	_dash_player(player, (target_pos - player.global_position).normalized(),
@@ -967,7 +967,7 @@ func _execute_leap_predator(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_leap_apex(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Chain leaps with healing"""
 	var damage = _get_damage(ability)
-	var enemies = _get_enemies_in_radius(player.global_position, ability.range_value)
+	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
 	enemies = enemies.slice(0, 3)  # Max 3 targets
 
 	var kills = 0

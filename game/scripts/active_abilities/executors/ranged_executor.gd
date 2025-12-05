@@ -558,7 +558,7 @@ func _execute_turret_rapid(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	var turret = _spawn_effect("rapid_sentry", player.global_position)
 	if turret and turret.has_method("setup"):
-		turret.setup(damage, ability.range_value, ability.duration, 0.2)  # 0.2s between shots
+		turret.setup(damage, ability.range_distance, ability.duration, 0.2)  # 0.2s between shots
 
 	_play_sound("sentry_deploy")
 
@@ -571,7 +571,7 @@ func _execute_turret_gatling(ability: ActiveAbilityData, player: Node2D) -> void
 		var offset = Vector2(cos(i * TAU / 3), sin(i * TAU / 3)) * 60.0
 		var turret = _spawn_effect("gatling_turret", player.global_position + offset)
 		if turret and turret.has_method("setup"):
-			turret.setup(damage, ability.range_value, ability.duration, ability.slow_percent)
+			turret.setup(damage, ability.range_distance, ability.duration, ability.slow_percent)
 
 	_play_sound("gatling_deploy")
 	_screen_shake("small")
@@ -582,7 +582,7 @@ func _execute_turret_heavy(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	var turret = _spawn_effect("heavy_sentry", player.global_position)
 	if turret and turret.has_method("setup"):
-		turret.setup(damage, ability.range_value, ability.duration, 1.5)  # 1.5s between shots
+		turret.setup(damage, ability.range_distance, ability.duration, 1.5)  # 1.5s between shots
 
 	_play_sound("sentry_deploy")
 
@@ -593,7 +593,7 @@ func _execute_turret_artillery(ability: ActiveAbilityData, player: Node2D) -> vo
 	# SIGNATURE: Massive artillery cannon
 	var cannon = _spawn_effect("artillery_cannon", player.global_position)
 	if cannon and cannon.has_method("setup"):
-		cannon.setup(damage, ability.range_value, ability.duration, ability.radius, ability.stun_duration)
+		cannon.setup(damage, ability.range_distance, ability.duration, ability.radius, ability.stun_duration)
 
 	_play_sound("artillery_deploy")
 	_screen_shake("medium")
@@ -669,7 +669,7 @@ func _execute_volley_rail(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	# SIGNATURE: Instant hitscan across screen
 	var start_pos = player.global_position
-	var end_pos = start_pos + direction * ability.range_value
+	var end_pos = start_pos + direction * ability.range_distance
 
 	# Hit all enemies in line
 	var all_enemies = player.get_tree().get_nodes_in_group("enemies")
@@ -677,7 +677,7 @@ func _execute_volley_rail(ability: ActiveAbilityData, player: Node2D) -> void:
 		if is_instance_valid(enemy):
 			var to_enemy = enemy.global_position - start_pos
 			var proj_length = to_enemy.dot(direction)
-			if proj_length > 0 and proj_length < ability.range_value:
+			if proj_length > 0 and proj_length < ability.range_distance:
 				var closest_point = start_pos + direction * proj_length
 				if enemy.global_position.distance_to(closest_point) < 50.0:
 					# SIGNATURE: +25% crit chance
@@ -705,7 +705,7 @@ func _execute_roll_shadow(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(ability.invulnerability_duration)
 
 	# Dash
-	_dash_player(player, direction, ability.range_value, 0.2)
+	_dash_player(player, direction, ability.range_distance, 0.2)
 
 	# Spawn exploding decoy
 	var decoy = _spawn_effect("shadow_decoy", start_pos)
@@ -726,7 +726,7 @@ func _execute_roll_dance(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Perform 3 rolls with clones
 	for i in range(3):
 		var start_pos = player.global_position
-		_dash_player(player, direction, ability.range_value, 0.15)
+		_dash_player(player, direction, ability.range_distance, 0.15)
 
 		# Spawn attacking clone
 		var clone = _spawn_effect("shadow_dancer", start_pos)
@@ -750,7 +750,7 @@ func _execute_roll_counter(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(ability.invulnerability_duration)
 
 	# Dash
-	_dash_player(player, direction, ability.range_value, 0.2)
+	_dash_player(player, direction, ability.range_distance, 0.2)
 
 	# Counter-attack nearest enemy
 	var target = _get_nearest_enemy(player.global_position, 200.0)
@@ -774,7 +774,7 @@ func _execute_roll_perfect(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(ability.invulnerability_duration)
 
 	# Dash
-	_dash_player(player, direction, ability.range_value, 0.3)
+	_dash_player(player, direction, ability.range_distance, 0.3)
 
 	# SIGNATURE: Guaranteed crit counter
 	var target = _get_nearest_enemy(player.global_position, 250.0)

@@ -25,6 +25,7 @@ static func create() -> AbilityTreeNode:
 	return tree
 
 static func _create_base() -> ActiveAbilityData:
+	# Buffed stats: 60 damage x1.5 (was 45 x1.3), 4s cooldown (was 5s), 100 AoE (was 80)
 	return ActiveAbilityData.new(
 		"fireball",
 		"Fireball",
@@ -32,11 +33,8 @@ static func _create_base() -> ActiveAbilityData:
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.DIRECTION,
-		4.0  # Reduced cooldown from 5s
-	).with_damage(60.0, 1.5) \  # Buffed from 45 x 1.3
-	 .with_projectiles(1, 500.0) \  # Faster projectile
-	 .with_aoe(100.0) \  # Bigger explosion from 80
-	 .with_effect("fireball")
+		4.0
+	).with_damage(60.0, 1.5).with_projectiles(1, 500.0).with_aoe(100.0).with_effect("fireball")
 
 static func _create_meteor_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -173,7 +173,7 @@ func _execute_phoenix_dive(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Invulnerable dash, heal 10% max HP per enemy hit"""
 	var damage = _get_damage(ability)
 	var direction = _get_attack_direction(player)
-	var distance = ability.range_value
+	var distance = ability.range_distance
 
 	# SIGNATURE: Invulnerability during dash
 	if player.has_method("set_invulnerable"):
@@ -261,7 +261,7 @@ func _execute_absolute_zero(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_ice_prison(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Trap enemies in ice, damage when broken"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
 
 	if target:
 		var prison = _spawn_effect("frost_nova", target.global_position)
@@ -274,7 +274,7 @@ func _execute_ice_prison(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_shatter(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Imprisoned enemies explode, chaining to others"""
 	var damage = _get_damage(ability)
-	var targets = _get_enemies_in_radius(player.global_position, ability.range_value)
+	var targets = _get_enemies_in_radius(player.global_position, ability.range_distance)
 
 	# SIGNATURE: Each frozen enemy shatters and damages nearby
 	for target in targets:
@@ -292,7 +292,7 @@ func _execute_shatter(ability: ActiveAbilityData, player: Node2D) -> void:
 
 func _execute_chain_lightning(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
 
 	if not target:
 		_play_sound("lightning_fizzle")
@@ -333,7 +333,7 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_overload(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Massive lightning strike, stunned enemies chain further"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, ability.range_value)
+	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
 
 	if not target:
 		return
