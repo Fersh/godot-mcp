@@ -2268,21 +2268,24 @@ func _execute_flame_wall(ability: ActiveAbilityData, player: Node2D) -> void:
 	var burn_duration = 3.0
 	var burn_damage = damage * 0.5  # Burn deals 50% of hit damage over duration
 
-	# Find nearest enemy to determine wall orientation
-	var target = _get_nearest_enemy(player.global_position, 600.0)
-	var direction_to_enemy: Vector2
-	if target:
-		direction_to_enemy = (target.global_position - player.global_position).normalized()
+	# Get direction - use skillshot aim if available, otherwise find nearest enemy
+	var direction_to_target: Vector2
+	if ActiveAbilityManager.is_using_aimed_shot():
+		direction_to_target = ActiveAbilityManager.get_current_aim_direction()
 	else:
-		direction_to_enemy = _get_attack_direction(player)
+		var target = _get_nearest_enemy(player.global_position, 600.0)
+		if target:
+			direction_to_target = (target.global_position - player.global_position).normalized()
+		else:
+			direction_to_target = _get_attack_direction(player)
 
-	# Calculate wall center - place it between player and enemy (closer to player)
+	# Calculate wall center - place it in the aimed direction from the player
 	var wall_distance = 150.0  # Distance from player
-	var wall_center = player.global_position + direction_to_enemy * wall_distance
+	var wall_center = player.global_position + direction_to_target * wall_distance
 
-	# Wall is PERPENDICULAR to enemy direction - so enemies walk through it
-	# Rotate 90 degrees from the direction to enemy
-	var wall_angle = direction_to_enemy.angle() + PI / 2.0
+	# Wall is PERPENDICULAR to aim direction - so enemies walk through it
+	# Rotate 90 degrees from the aimed direction
+	var wall_angle = direction_to_target.angle() + PI / 2.0
 
 	# Create wall visual
 	var wall = Node2D.new()
