@@ -2,6 +2,40 @@
 
 ---
 
+## Date: 2025-12-04 - Standalone Active Ability Cleanup
+
+### Summary
+Removed standalone active abilities that duplicate functionality now available through the tiered ability tree upgrade system. Players should experience these abilities by upgrading base abilities rather than finding them as separate drops.
+
+### Abilities Removed (Commented Out)
+
+| Ability | Rarity | Now Available As | Tree Path |
+|---------|--------|------------------|-----------|
+| **Seismic Slam** | RARE | Seismic Ground Slam | Slam Tree T2 |
+| **Blade Rush** | RARE | Rushing Dash Strike | Dash Tree T2 |
+| **Terrifying Shout** | RARE | Terrifying Roar | Roar Tree BASE |
+| **Demoralizing Shout** | RARE | Intimidating Roar | Roar Tree T2 |
+| **Earthquake** | EPIC | Seismic Ground Slam of Cataclysm | Slam Tree T3 |
+| **Divine Shield** | EPIC | Reflecting Block of Retribution | Block Tree T3 |
+| **Omnislash** | EPIC | Rushing Dash Strike of Oblivion | Dash Tree T3 |
+| **Avatar of War** | EPIC | *(needs Transform tree base)* | Pending |
+
+### Rationale
+These abilities were available as standalone drops at their rarity tier, bypassing the upgrade progression. Now players must:
+1. Acquire the base ability (e.g., Ground Slam, Dash Strike, Roar, Block)
+2. Upgrade through T2 to unlock enhanced versions
+3. Reach T3 for the signature variants
+
+This creates a more satisfying progression where powerful abilities feel earned through investment.
+
+### Files Modified
+- `game/scripts/active_abilities/active_ability_database.gd` - Commented out 8 ability registrations
+
+### Note
+**Avatar of War** commented out pending creation of a "Transform" or "War Form" base ability tree.
+
+---
+
 ## Date: 2025-12-04 - Ability Tree System Implementation
 
 ### Summary

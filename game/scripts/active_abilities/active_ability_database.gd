@@ -75,19 +75,19 @@ static func _register_all_abilities() -> void:
 	# MELEE - RARE
 	# ============================================
 	_register(_create_whirlwind())
-	_register(_create_seismic_slam())
+	# _register(_create_seismic_slam())  # Removed - now Slam Tree T2 (Seismic Ground Slam)
 	_register(_create_savage_leap())
-	_register(_create_blade_rush())
+	# _register(_create_blade_rush())  # Removed - now Dash Tree T2 (Rushing Dash Strike)
 	_register(_create_battle_cry())
 
 	# ============================================
 	# MELEE - LEGENDARY
 	# ============================================
-	_register(_create_earthquake())
+	# _register(_create_earthquake())  # Removed - now Slam Tree T3 (Seismic Ground Slam of Cataclysm)
 	# bladestorm removed - now part of spin_tree as spin_bladestorm (T3)
-	_register(_create_omnislash())
-	_register(_create_avatar_of_war())
-	_register(_create_divine_shield())
+	# _register(_create_omnislash())  # Removed - now Dash Tree T3 (Rushing Dash Strike of Oblivion)
+	# _register(_create_avatar_of_war())  # Removed - needs Transform tree base ability
+	# _register(_create_divine_shield())  # Removed - now Block Tree T3 (Reflecting Block of Retribution)
 
 	# ============================================
 	# RANGED - COMMON
@@ -167,8 +167,8 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# NEW ABILITIES - SHOUTS
 	# ============================================
-	_register(_create_terrifying_shout())
-	_register(_create_demoralizing_shout())
+	# _register(_create_terrifying_shout())  # Removed - now Roar Tree base (Terrifying Roar)
+	# _register(_create_demoralizing_shout())  # Removed - now Roar Tree T2 (Intimidating Roar)
 
 	# ============================================
 	# NEW ABILITIES - CHAOS & UTILITY
