@@ -1088,12 +1088,23 @@ func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 
 	# Check if this level should have guaranteed active upgrade
 	const ACTIVE_UPGRADE_LEVELS: Array[int] = [3, 7, 12]
+	print("[ABILITY_MANAGER] get_passive_choices_with_active_upgrade called for level ", level)
 	if level in ACTIVE_UPGRADE_LEVELS:
 		# Get ONE trigger card (first available upgradeable ability)
 		var trigger = _get_active_upgrade_trigger()
 		if trigger:
-			print("[ABILITY_MANAGER] Adding trigger card for: ", trigger.ability.name, " with ", trigger.upgrades.size(), " upgrade options")
+			print("[ABILITY_MANAGER] Adding GUARANTEED trigger card for: ", trigger.ability.name, " with ", trigger.upgrades.size(), " upgrade options")
 			choices.append(trigger)
+		else:
+			print("[ABILITY_MANAGER] WARNING: No trigger card available! Checking why...")
+			print("  - ActiveAbilityManager exists: ", ActiveAbilityManager != null)
+			if ActiveAbilityManager:
+				print("  - Ability slots: ", ActiveAbilityManager.ability_slots)
+				for i in ActiveAbilityManager.MAX_ABILITY_SLOTS:
+					var current = ActiveAbilityManager.ability_slots[i]
+					if current:
+						var upgrades = AbilityTreeRegistry.get_available_upgrades_for_ability(current.id)
+						print("  - Slot ", i, ": ", current.name, " (id: ", current.id, ") has ", upgrades.size(), " upgrades")
 
 	# Fill remaining slots with passives
 	var passive_count = count - choices.size()
