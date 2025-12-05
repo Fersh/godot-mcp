@@ -565,17 +565,24 @@ func _get_available_upgrades() -> Array[ActiveAbilityData]:
 	"""Get all available upgrades for currently equipped abilities."""
 	var upgrades: Array[ActiveAbilityData] = []
 
+	print("[DEBUG] _get_available_upgrades checking ", MAX_ABILITY_SLOTS, " slots")
 	for i in MAX_ABILITY_SLOTS:
 		var current = ability_slots[i]
 		if current == null:
+			print("[DEBUG]   Slot ", i, ": empty")
 			continue
 
+		print("[DEBUG]   Slot ", i, ": ", current.id)
 		# Get upgrades for this ability from the tree registry
 		var ability_upgrades = AbilityTreeRegistry.get_available_upgrades_for_ability(current.id)
+		print("[DEBUG]     Registry returned ", ability_upgrades.size(), " upgrades")
 		for upgrade in ability_upgrades:
 			# Don't include already acquired abilities
 			if upgrade.id not in acquired_ability_ids:
 				upgrades.append(upgrade)
+				print("[DEBUG]     + ", upgrade.id)
+			else:
+				print("[DEBUG]     (already acquired: ", upgrade.id, ")")
 
 	return upgrades
 

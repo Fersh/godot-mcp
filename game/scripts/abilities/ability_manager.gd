@@ -1043,7 +1043,12 @@ func _get_active_ability_upgrades() -> Array:
 	## Get available active ability upgrades from ActiveAbilityManager
 	var active_manager = get_tree().get_first_node_in_group("active_ability_manager")
 	if active_manager and active_manager.has_method("get_available_upgrades"):
-		return active_manager.get_available_upgrades()
+		var upgrades = active_manager.get_available_upgrades()
+		print("[DEBUG] _get_active_ability_upgrades: Found ", upgrades.size(), " upgrades")
+		for u in upgrades:
+			print("[DEBUG]   - ", u.id, " (", u.name, ")")
+		return upgrades
+	print("[DEBUG] _get_active_ability_upgrades: active_manager not found or no method")
 	return []
 
 func get_available_abilities() -> Array[AbilityData]:
