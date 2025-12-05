@@ -141,6 +141,44 @@ func execute(ability: ActiveAbilityData, player: Node2D) -> bool:
 			return true
 
 		# ============================================
+		# SMOKE TREE
+		# ============================================
+		"smoke_bomb":
+			_execute_smoke_bomb(ability, player)
+			return true
+		"smoke_blind":
+			_execute_smoke_blind(ability, player)
+			return true
+		"smoke_darkness":
+			_execute_smoke_darkness(ability, player)
+			return true
+		"smoke_poison":
+			_execute_smoke_poison(ability, player)
+			return true
+		"smoke_plague":
+			_execute_smoke_plague(ability, player)
+			return true
+
+		# ============================================
+		# DECOY TREE
+		# ============================================
+		"decoy":
+			_execute_decoy(ability, player)
+			return true
+		"decoy_explosive":
+			_execute_decoy_explosive(ability, player)
+			return true
+		"decoy_chain":
+			_execute_decoy_chain(ability, player)
+			return true
+		"decoy_mirror":
+			_execute_decoy_mirror(ability, player)
+			return true
+		"decoy_army":
+			_execute_decoy_army(ability, player)
+			return true
+
+		# ============================================
 		# LEGACY RANGED (for backwards compatibility)
 		# ============================================
 		"explosive_arrow":
@@ -304,21 +342,20 @@ func _execute_multi_shot(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("multi_shot")
 
 func _execute_multi_fan(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: 5 projectiles in wider spread"""
+	"""Tier 2: Fan of Knives - 360-degree spray of projectiles"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
-	var spread_angle = PI / 3.0  # 60 degrees spread
+	var angle_step = TAU / ability.projectile_count  # Full 360 degrees
 
+	# Fire in ALL directions like original fan_of_knives
 	for i in range(ability.projectile_count):
-		var t = float(i) / float(ability.projectile_count - 1) - 0.5
-		var offset = t * spread_angle
-		var proj_dir = direction.rotated(offset)
-		var proj = _spawn_projectile(player, proj_dir, ability.projectile_speed)
+		var direction = Vector2.RIGHT.rotated(angle_step * i)
+		var proj = _spawn_projectile(player, direction, ability.projectile_speed)
 		if proj and "damage" in proj:
 			proj.damage = damage
 
 	_spawn_effect("fan_of_knives", player.global_position)
-	_play_sound("multi_shot")
+	_play_sound("throw")
+	_screen_shake("small")
 
 func _execute_multi_tornado(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: 360-degree blade storm, 12 projectiles"""
@@ -396,12 +433,65 @@ func _execute_trap(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("trap_place")
 
 func _execute_trap_bear(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Root + heavy damage"""
+	"""Tier 2: Bear Trap - Root + heavy damage with visual trap"""
 	var damage = _get_damage(ability)
+	var trap_pos = player.global_position
 
-	var trap = _spawn_effect("bear_trap", player.global_position)
-	if trap and trap.has_method("setup"):
-		trap.setup(damage, ability.stun_duration)
+	# Create trap visual inline (no external scene dependency)
+	var trap = Node2D.new()
+	trap.name = "BearTrap"
+	trap.global_position = trap_pos
+	trap.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(trap)
+
+	# Visual - metal trap jaws
+	var base = Polygon2D.new()
+	base.polygon = PackedVector2Array([
+		Vector2(-20, -5), Vector2(20, -5), Vector2(15, 5), Vector2(-15, 5)
+	])
+	base.color = Color(0.4, 0.4, 0.4, 0.9)
+	trap.add_child(base)
+
+	# Teeth
+	for i in range(5):
+		var tooth = Polygon2D.new()
+		var x_offset = (i - 2) * 8
+		tooth.polygon = PackedVector2Array([
+			Vector2(x_offset - 2, -5), Vector2(x_offset + 2, -5), Vector2(x_offset, -15)
+		])
+		tooth.color = Color(0.5, 0.5, 0.5, 0.9)
+		trap.add_child(tooth)
+
+	# Check for enemies stepping on trap
+	var check_interval = 0.1
+	var max_duration = 30.0
+	var checks = int(max_duration / check_interval)
+	var triggered = [false]
+
+	for i in range(checks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(check_interval * i).timeout.connect(func():
+				if triggered[0] or not is_instance_valid(trap):
+					return
+				var enemies = _main_executor.get_tree().get_nodes_in_group("enemies")
+				for enemy in enemies:
+					if is_instance_valid(enemy) and trap_pos.distance_to(enemy.global_position) < 30:
+						triggered[0] = true
+						_deal_damage_to_enemy(enemy, damage)
+						_apply_stun(enemy, ability.stun_duration)
+						_spawn_effect("explosion", trap_pos)
+						_play_sound("trap_trigger")
+						trap.queue_free()
+						return
+			)
+
+	# Remove trap after max duration
+	if _main_executor:
+		_main_executor.get_tree().create_timer(max_duration).timeout.connect(func():
+			if is_instance_valid(trap):
+				trap.queue_free()
+		)
 
 	_play_sound("trap_place")
 
@@ -496,56 +586,139 @@ func _execute_explosive_decoy(ability: ActiveAbilityData, player: Node2D) -> voi
 # ============================================
 
 func _execute_rain_storm(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Larger area, more arrows"""
+	"""Tier 2: Arrow Storm - Raining arrows over duration"""
 	var damage = _get_damage(ability)
-	var target = _get_nearest_enemy(player.global_position, 500.0)
-	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * 200.0
+	var duration = ability.duration
+	var radius = ability.radius
 
-	var storm = _spawn_effect("arrow_storm", target_pos)
-	if storm and storm.has_method("setup"):
-		storm.setup(damage, ability.radius, ability.duration)
+	# Spawn raining arrows for the duration (like standalone arrow_storm)
+	var arrows_per_second = 15
+	var total_arrows = int(duration * arrows_per_second)
 
-	_play_sound("rain_of_arrows")
+	for i in range(total_arrows):
+		var delay = duration * float(i) / float(total_arrows)
+		if _main_executor:
+			_main_executor.get_tree().create_timer(delay).timeout.connect(func():
+				if not is_instance_valid(player):
+					return
+				_spawn_storm_arrow(player.global_position, radius, damage / 3.0)
+			)
+
+	_play_sound("arrow_storm")
+	_screen_shake("large")
+
+func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
+	"""Helper: Spawn a single storm arrow at random position in radius"""
+	var target_pos = center + Vector2(randf_range(-radius, radius), randf_range(-radius, radius))
+	target_pos.x = clamp(target_pos.x, -60, 1596)
+	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+
+	# Deal damage to enemies near landing spot
+	var enemies = _get_enemies_in_radius(target_pos, 40.0)
+	for enemy in enemies:
+		_deal_damage_to_enemy(enemy, damage)
+
+	_spawn_effect("arrow_impact", target_pos)
 
 func _execute_rain_apocalypse(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Screen-wide arrow rain"""
+	"""Tier 3 SIGNATURE: Rain of Vengeance - Screen-wide arrow rain with slow"""
 	var damage = _get_damage(ability)
 
-	# SIGNATURE: Cover entire battlefield
-	var apocalypse = _spawn_effect("arrow_apocalypse", player.global_position)
-	if apocalypse and apocalypse.has_method("setup"):
-		apocalypse.setup(damage, ability.radius, ability.duration, ability.slow_percent)
+	# Massive arrow storm covering most of the screen (like standalone rain_of_vengeance)
+	var waves = 10
+	var arrows_per_wave = 15
 
-	_play_sound("arrow_apocalypse")
+	for wave in range(waves):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration * wave / waves).timeout.connect(func():
+				for i in range(arrows_per_wave):
+					var random_offset = Vector2(
+						randf_range(-ability.radius, ability.radius),
+						randf_range(-ability.radius, ability.radius)
+					)
+					var arrow_pos = player.global_position + random_offset
+					arrow_pos.x = clamp(arrow_pos.x, -60, 1596)
+					arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
+
+					# Deal damage and apply slow
+					var enemies = _get_enemies_in_radius(arrow_pos, 50.0)
+					for enemy in enemies:
+						_deal_damage_to_enemy(enemy, damage / (waves * 2))
+						_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
+
+					_spawn_effect("arrow_impact", arrow_pos)
+			)
+
+	_play_sound("arrow_storm")
 	_screen_shake("large")
 
 func _execute_rain_focused(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Concentrated barrage"""
+	"""Tier 2: Concentrated barrage on target area"""
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, 500.0)
 	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * 200.0
 
-	var barrage = _spawn_effect("focused_barrage", target_pos)
-	if barrage and barrage.has_method("setup"):
-		barrage.setup(damage, ability.radius, ability.duration)
+	# Focused barrage on single area
+	var arrows = 20
+	for i in range(arrows):
+		var delay = ability.duration * float(i) / float(arrows)
+		if _main_executor:
+			_main_executor.get_tree().create_timer(delay).timeout.connect(func():
+				var offset = Vector2(randf_range(-ability.radius * 0.5, ability.radius * 0.5),
+									 randf_range(-ability.radius * 0.5, ability.radius * 0.5))
+				var arrow_pos = target_pos + offset
+				var enemies = _get_enemies_in_radius(arrow_pos, 30.0)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage / 5.0)
+				_spawn_effect("arrow_impact", arrow_pos)
+			)
 
 	_play_sound("rain_of_arrows")
 
 func _execute_rain_orbital(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Massive orbital strike"""
+	"""Tier 3 SIGNATURE: Orbital Strike - Devastating delayed strike"""
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, 600.0)
 	var target_pos = target.global_position if target else player.global_position + _get_attack_direction(player) * 200.0
 
-	# SIGNATURE: Delayed massive strike
-	_spawn_effect("orbital_warning", target_pos)
+	# Warning indicator (like standalone orbital_strike)
+	var warning = Node2D.new()
+	warning.global_position = target_pos
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(warning)
+
+	var indicator = Polygon2D.new()
+	var points: PackedVector2Array = []
+	for i in range(16):
+		var angle = TAU * i / 16
+		points.append(Vector2(cos(angle), sin(angle)) * ability.radius)
+	indicator.polygon = points
+	indicator.color = Color(1.0, 0.0, 0.0, 0.3)
+	warning.add_child(indicator)
+
+	# Blink warning
+	var blink = warning.create_tween().set_loops(int(ability.cast_time * 4))
+	blink.tween_property(indicator, "modulate:a", 0.1, 0.125)
+	blink.tween_property(indicator, "modulate:a", 1.0, 0.125)
+
 	_play_sound("orbital_incoming")
 
-	var strike = _spawn_effect("orbital_strike", target_pos)
-	if strike and strike.has_method("setup"):
-		strike.setup(damage, ability.radius, ability.cast_time, ability.stun_duration)
+	# Strike after cast time
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.cast_time).timeout.connect(func():
+			if is_instance_valid(warning):
+				warning.queue_free()
 
-	_screen_shake("large")
+			# Massive damage in area
+			var enemies = _get_enemies_in_radius(target_pos, ability.radius)
+			for enemy in enemies:
+				_deal_damage_to_enemy(enemy, damage)
+				_apply_stun(enemy, ability.stun_duration)
+
+			_spawn_effect("explosion", target_pos)
+			_screen_shake("large")
+		)
+
 	_impact_pause(0.2)
 
 # ============================================
@@ -555,48 +728,108 @@ func _execute_rain_orbital(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_turret_rapid(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Fast-firing turret"""
 	var damage = _get_damage(ability)
+	var turret_pos = player.global_position
+	turret_pos.x = clamp(turret_pos.x, -60, 1596)
+	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
 
-	var turret = _spawn_effect("rapid_sentry", player.global_position)
+	var turret = _spawn_effect("sentry_turret", turret_pos)
 	if turret and turret.has_method("setup"):
-		turret.setup(damage, ability.range_distance, ability.duration, 0.2)  # 0.2s between shots
+		turret.setup(ability.duration, damage)
+	else:
+		# Fallback: faster shooting (0.2s interval)
+		_start_turret_shooting(turret_pos, damage, ability.duration, 0.2)
 
-	_play_sound("sentry_deploy")
+	_play_sound("deploy")
 
 func _execute_turret_gatling(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: 3 synced rapid-fire turrets"""
+	"""Tier 3 SIGNATURE: Sentry Network - 3 synced rapid-fire turrets"""
 	var damage = _get_damage(ability)
 
-	# SIGNATURE: Deploy 3 turrets in triangle formation
-	for i in range(3):
-		var offset = Vector2(cos(i * TAU / 3), sin(i * TAU / 3)) * 60.0
-		var turret = _spawn_effect("gatling_turret", player.global_position + offset)
-		if turret and turret.has_method("setup"):
-			turret.setup(damage, ability.range_distance, ability.duration, ability.slow_percent)
+	# Deploy 3 turrets in triangle formation (like standalone sentry_network)
+	var turret_positions = [
+		player.global_position + Vector2(-80, 0),
+		player.global_position + Vector2(80, 0),
+		player.global_position + Vector2(0, -80)
+	]
 
-	_play_sound("gatling_deploy")
+	for pos in turret_positions:
+		pos.x = clamp(pos.x, -60, 1596)
+		pos.y = clamp(pos.y, 40, 1382 - 40)
+		var turret = _spawn_effect("sentry_turret", pos)
+		if turret and turret.has_method("setup"):
+			turret.setup(ability.duration, damage)
+		else:
+			# Fallback: manual turret shooting
+			_start_turret_shooting(pos, damage, ability.duration, 0.3)
+
+	_play_sound("deploy")
 	_screen_shake("small")
 
 func _execute_turret_heavy(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Slow but powerful shots"""
 	var damage = _get_damage(ability)
+	var turret_pos = player.global_position
+	turret_pos.x = clamp(turret_pos.x, -60, 1596)
+	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
 
-	var turret = _spawn_effect("heavy_sentry", player.global_position)
+	var turret = _spawn_effect("sentry_turret", turret_pos)
 	if turret and turret.has_method("setup"):
-		turret.setup(damage, ability.range_distance, ability.duration, 1.5)  # 1.5s between shots
+		turret.setup(ability.duration, damage * 2.0)  # Double damage
+	else:
+		# Fallback: slower but stronger shots (1.5s interval)
+		_start_turret_shooting(turret_pos, damage * 2.0, ability.duration, 1.5)
 
-	_play_sound("sentry_deploy")
+	_play_sound("deploy")
 
 func _execute_turret_artillery(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Explosive cannon"""
+	"""Tier 3 SIGNATURE: Explosive cannon with AoE"""
 	var damage = _get_damage(ability)
+	var turret_pos = player.global_position
+	turret_pos.x = clamp(turret_pos.x, -60, 1596)
+	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
 
-	# SIGNATURE: Massive artillery cannon
-	var cannon = _spawn_effect("artillery_cannon", player.global_position)
-	if cannon and cannon.has_method("setup"):
-		cannon.setup(damage, ability.range_distance, ability.duration, ability.radius, ability.stun_duration)
+	var turret = _spawn_effect("sentry_turret", turret_pos)
+	if turret and turret.has_method("setup"):
+		turret.setup(ability.duration, damage)
+	else:
+		# Fallback: AoE turret shots
+		_start_artillery_shooting(turret_pos, damage, ability.duration, ability.radius, ability.stun_duration)
 
-	_play_sound("artillery_deploy")
+	_play_sound("deploy")
 	_screen_shake("medium")
+
+func _start_turret_shooting(position: Vector2, damage: float, duration: float, interval: float) -> void:
+	"""Manual turret shooting fallback"""
+	var shots = int(duration / interval)
+	var damage_per_shot = damage / shots
+
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(interval * i).timeout.connect(func():
+				var target = _get_nearest_enemy(position, 300.0)
+				if target and is_instance_valid(target):
+					_deal_damage_to_enemy(target, damage_per_shot)
+					_spawn_effect("turret_shot", position)
+			)
+
+func _start_artillery_shooting(position: Vector2, damage: float, duration: float, radius: float, stun_duration: float) -> void:
+	"""Manual artillery shooting with AoE"""
+	var interval = 2.0  # Slow but powerful
+	var shots = int(duration / interval)
+	var damage_per_shot = damage / shots
+
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(interval * i).timeout.connect(func():
+				var target = _get_nearest_enemy(position, 400.0)
+				if target and is_instance_valid(target):
+					# AoE damage at target position
+					var enemies = _get_enemies_in_radius(target.global_position, radius)
+					for enemy in enemies:
+						_deal_damage_to_enemy(enemy, damage_per_shot)
+						_apply_stun(enemy, stun_duration * 0.5)
+					_spawn_effect("explosion", target.global_position)
+			)
 
 # ============================================
 # VOLLEY TREE IMPLEMENTATIONS
@@ -786,3 +1019,440 @@ func _execute_roll_perfect(ability: ActiveAbilityData, player: Node2D) -> void:
 	_play_sound("perfect_dodge")
 	_screen_shake("medium")
 	_impact_pause(0.15)
+
+# ============================================
+# SMOKE TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_smoke_bomb(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Create smoke cloud for cover (like standalone smoke_bomb)"""
+	var smoke_pos = player.global_position
+
+	# Create smoke cloud
+	var smoke = Node2D.new()
+	smoke.name = "SmokeCloud"
+	smoke.global_position = smoke_pos
+	smoke.z_index = 10
+	smoke.modulate.a = 0.9
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(smoke)
+
+	# Visual - multiple semi-transparent circles
+	for i in range(5):
+		var cloud = Polygon2D.new()
+		var radius = ability.radius * (0.5 + randf() * 0.5)
+		var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		var points: PackedVector2Array = []
+		for j in range(12):
+			var angle = TAU * j / 12
+			points.append(Vector2(cos(angle), sin(angle)) * radius + offset)
+		cloud.polygon = points
+		cloud.color = Color(0.3, 0.3, 0.3, 0.4)
+		smoke.add_child(cloud)
+
+	# Make player semi-invisible
+	if player.has_node("Sprite2D"):
+		var sprite = player.get_node("Sprite2D")
+		sprite.modulate.a = 0.3
+		if _main_executor:
+			_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+				if is_instance_valid(sprite):
+					sprite.modulate.a = 1.0
+			)
+
+	# Slow enemies inside
+	var tick_interval = 0.5
+	var ticks = int(ability.duration / tick_interval)
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(tick_interval * i).timeout.connect(func():
+				if not is_instance_valid(smoke):
+					return
+				var enemies = _get_enemies_in_radius(smoke_pos, ability.radius)
+				for enemy in enemies:
+					_apply_slow(enemy, 0.4, 1.0)
+			)
+
+	# Remove smoke after duration
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(smoke):
+				smoke.queue_free()
+		)
+
+	_play_sound("smoke_bomb")
+
+func _execute_smoke_blind(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Blinding Smoke - enemies lose accuracy"""
+	_execute_smoke_bomb(ability, player)  # Base smoke effect
+	# Additional: blind enemies (could disable enemy attacks/targeting)
+
+func _execute_smoke_darkness(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Total Darkness - enemies blind, you gain crit"""
+	var smoke_pos = player.global_position
+
+	# Create massive dark cloud
+	var darkness = Node2D.new()
+	darkness.name = "TotalDarkness"
+	darkness.global_position = smoke_pos
+	darkness.z_index = 10
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(darkness)
+
+	# SIGNATURE: Dark visual
+	for i in range(8):
+		var cloud = Polygon2D.new()
+		var radius = ability.radius * (0.6 + randf() * 0.4)
+		var offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
+		var points: PackedVector2Array = []
+		for j in range(16):
+			var angle = TAU * j / 16
+			points.append(Vector2(cos(angle), sin(angle)) * radius + offset)
+		cloud.polygon = points
+		cloud.color = Color(0.1, 0.1, 0.1, 0.7)
+		darkness.add_child(cloud)
+
+	# SIGNATURE: Player gets crit boost while in darkness
+	if player.has_method("add_temp_crit_boost"):
+		player.add_temp_crit_boost(0.5, ability.duration)
+
+	# Stun enemies in darkness
+	var enemies = _get_enemies_in_radius(smoke_pos, ability.radius)
+	for enemy in enemies:
+		_apply_stun(enemy, ability.duration * 0.5)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(darkness):
+				darkness.queue_free()
+		)
+
+	_play_sound("smoke_bomb")
+	_screen_shake("small")
+
+func _execute_smoke_poison(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Poison Cloud - DoT damage"""
+	var damage = _get_damage(ability)
+	var smoke_pos = player.global_position
+
+	# Create poison cloud
+	var cloud = Node2D.new()
+	cloud.name = "PoisonCloud"
+	cloud.global_position = smoke_pos
+	cloud.z_index = 10
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(cloud)
+
+	# Green poison visual
+	for i in range(5):
+		var particle = Polygon2D.new()
+		var radius = ability.radius * (0.5 + randf() * 0.5)
+		var offset = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		var points: PackedVector2Array = []
+		for j in range(12):
+			var angle = TAU * j / 12
+			points.append(Vector2(cos(angle), sin(angle)) * radius + offset)
+		particle.polygon = points
+		particle.color = Color(0.2, 0.6, 0.1, 0.5)
+		cloud.add_child(particle)
+
+	# DoT damage
+	var tick_interval = 0.5
+	var ticks = int(ability.duration / tick_interval)
+	var damage_per_tick = damage / ticks
+
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(tick_interval * i).timeout.connect(func():
+				if not is_instance_valid(cloud):
+					return
+				var enemies = _get_enemies_in_radius(smoke_pos, ability.radius)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage_per_tick)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(cloud):
+				cloud.queue_free()
+		)
+
+	_play_sound("poison")
+
+func _execute_smoke_plague(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Plague Cloud - spreads and grows"""
+	var damage = _get_damage(ability)
+	var smoke_pos = player.global_position
+
+	# SIGNATURE: Growing plague cloud
+	var cloud = Node2D.new()
+	cloud.name = "PlagueCloud"
+	cloud.global_position = smoke_pos
+	cloud.z_index = 10
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(cloud)
+
+	# Dark green plague visual
+	var current_radius = [ability.radius * 0.5]  # Start smaller, grow
+
+	for i in range(6):
+		var particle = Polygon2D.new()
+		var points: PackedVector2Array = []
+		for j in range(12):
+			var angle = TAU * j / 12
+			points.append(Vector2(cos(angle), sin(angle)) * current_radius[0])
+		particle.polygon = points
+		particle.color = Color(0.1, 0.4, 0.05, 0.6)
+		cloud.add_child(particle)
+
+	# SIGNATURE: Cloud grows over time
+	var growth_tween = cloud.create_tween()
+	growth_tween.tween_property(cloud, "scale", Vector2(2.0, 2.0), ability.duration)
+
+	# DoT + stacking poison
+	var tick_interval = 0.4
+	var ticks = int(ability.duration / tick_interval)
+	var damage_per_tick = damage / ticks
+	var poison_stacks: Dictionary = {}
+
+	for i in range(ticks):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(tick_interval * i).timeout.connect(func():
+				if not is_instance_valid(cloud):
+					return
+				var effective_radius = current_radius[0] * cloud.scale.x
+				var enemies = _get_enemies_in_radius(smoke_pos, effective_radius)
+				for enemy in enemies:
+					var enemy_id = enemy.get_instance_id()
+					poison_stacks[enemy_id] = poison_stacks.get(enemy_id, 0) + 1
+					_deal_damage_to_enemy(enemy, damage_per_tick * poison_stacks[enemy_id])
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(cloud):
+				cloud.queue_free()
+		)
+
+	_play_sound("poison")
+	_screen_shake("small")
+
+# ============================================
+# DECOY TREE IMPLEMENTATIONS
+# ============================================
+
+func _execute_decoy(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Base: Deploy a decoy that draws aggro"""
+	var decoy_pos = player.global_position
+
+	# Create decoy visual (looks like player)
+	var decoy = Node2D.new()
+	decoy.name = "Decoy"
+	decoy.global_position = decoy_pos
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(decoy)
+
+	# Simple decoy visual
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-15, -25), Vector2(15, -25), Vector2(15, 25), Vector2(-15, 25)
+	])
+	body.color = Color(0.5, 0.5, 0.8, 0.7)
+	decoy.add_child(body)
+
+	# Make decoy draw aggro (add to enemies group temporarily)
+	decoy.add_to_group("decoys")
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(decoy):
+				decoy.queue_free()
+		)
+
+	_play_sound("deploy")
+
+func _execute_decoy_explosive(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Explosive Decoy (like standalone explosive_decoy)"""
+	var damage = _get_damage(ability)
+	var decoy_pos = player.global_position
+
+	# Create decoy
+	var decoy = Node2D.new()
+	decoy.name = "ExplosiveDecoy"
+	decoy.global_position = decoy_pos
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(decoy)
+
+	# Decoy visual with red tint (explosive)
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-15, -25), Vector2(15, -25), Vector2(15, 25), Vector2(-15, 25)
+	])
+	body.color = Color(0.8, 0.3, 0.3, 0.7)
+	decoy.add_child(body)
+
+	decoy.add_to_group("decoys")
+
+	# Make player briefly invisible
+	if player.has_node("Sprite2D"):
+		var sprite = player.get_node("Sprite2D")
+		sprite.modulate.a = 0.3
+		if _main_executor:
+			_main_executor.get_tree().create_timer(2.0).timeout.connect(func():
+				if is_instance_valid(sprite):
+					sprite.modulate.a = 1.0
+			)
+
+	# Explode after duration
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(decoy):
+				var enemies = _get_enemies_in_radius(decoy_pos, ability.radius)
+				for enemy in enemies:
+					_deal_damage_to_enemy(enemy, damage)
+				_spawn_effect("explosion", decoy_pos)
+				_play_sound("explosion")
+				decoy.queue_free()
+		)
+
+	_play_sound("deploy")
+
+func _execute_decoy_chain(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Chain Reaction - 3 decoys explode in sequence"""
+	var damage = _get_damage(ability)
+
+	# SIGNATURE: Deploy 3 decoys in triangle
+	var positions = [
+		player.global_position + Vector2(-60, 40),
+		player.global_position + Vector2(60, 40),
+		player.global_position + Vector2(0, -60)
+	]
+
+	for idx in range(3):
+		var decoy = Node2D.new()
+		decoy.name = "ChainDecoy" + str(idx)
+		decoy.global_position = positions[idx]
+		if _main_executor:
+			_main_executor.get_tree().current_scene.add_child(decoy)
+
+		var body = Polygon2D.new()
+		body.polygon = PackedVector2Array([
+			Vector2(-12, -20), Vector2(12, -20), Vector2(12, 20), Vector2(-12, 20)
+		])
+		body.color = Color(0.9, 0.4, 0.1, 0.7)
+		decoy.add_child(body)
+
+		# SIGNATURE: Chain explosions with delay
+		var delay = ability.duration + (idx * 0.5)
+		var final_multiplier = 2.0 if idx == 2 else 1.0  # Final blast is 2x
+
+		if _main_executor:
+			_main_executor.get_tree().create_timer(delay).timeout.connect(func():
+				if is_instance_valid(decoy):
+					var enemies = _get_enemies_in_radius(positions[idx], ability.radius)
+					for enemy in enemies:
+						_deal_damage_to_enemy(enemy, damage * final_multiplier)
+					_spawn_effect("explosion", positions[idx])
+					_play_sound("explosion")
+					decoy.queue_free()
+			)
+
+	_play_sound("deploy")
+	_screen_shake("small")
+
+func _execute_decoy_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 2: Mirror Image - decoy copies attacks at 50% damage"""
+	var decoy_pos = player.global_position + Vector2(40, 0)
+
+	var decoy = Node2D.new()
+	decoy.name = "MirrorImage"
+	decoy.global_position = decoy_pos
+	if _main_executor:
+		_main_executor.get_tree().current_scene.add_child(decoy)
+
+	# Mirror visual (looks like player but transparent)
+	var body = Polygon2D.new()
+	body.polygon = PackedVector2Array([
+		Vector2(-15, -25), Vector2(15, -25), Vector2(15, 25), Vector2(-15, 25)
+	])
+	body.color = Color(0.7, 0.7, 1.0, 0.5)
+	decoy.add_child(body)
+
+	# Mirror attacks player's target
+	var shoot_interval = 1.0
+	var shots = int(ability.duration / shoot_interval)
+
+	for i in range(shots):
+		if _main_executor:
+			_main_executor.get_tree().create_timer(shoot_interval * i).timeout.connect(func():
+				if not is_instance_valid(decoy):
+					return
+				var target = _get_nearest_enemy(decoy_pos, 400.0)
+				if target and is_instance_valid(target):
+					# Fire arrow at target (50% player damage)
+					var direction = (target.global_position - decoy_pos).normalized()
+					var proj = _spawn_projectile_at(decoy_pos, direction, 450.0)
+					if proj and "damage" in proj:
+						proj.damage = 15.0  # Fixed low damage for mirror
+					_spawn_effect("arrow_shot", decoy_pos)
+			)
+
+	if _main_executor:
+		_main_executor.get_tree().create_timer(ability.duration).timeout.connect(func():
+			if is_instance_valid(decoy):
+				decoy.queue_free()
+		)
+
+	_play_sound("deploy")
+
+func _execute_decoy_army(ability: ActiveAbilityData, player: Node2D) -> void:
+	"""Tier 3 SIGNATURE: Army of Me - 3 permanent clones"""
+	# SIGNATURE: Create 3 permanent mirror images
+	var offsets = [
+		Vector2(-50, -30),
+		Vector2(50, -30),
+		Vector2(0, 50)
+	]
+
+	for idx in range(3):
+		var clone = Node2D.new()
+		clone.name = "ArmyClone" + str(idx)
+		clone.global_position = player.global_position + offsets[idx]
+		if _main_executor:
+			_main_executor.get_tree().current_scene.add_child(clone)
+
+		var body = Polygon2D.new()
+		body.polygon = PackedVector2Array([
+			Vector2(-12, -20), Vector2(12, -20), Vector2(12, 20), Vector2(-12, 20)
+		])
+		body.color = Color(0.6, 0.8, 1.0, 0.6)
+		clone.add_child(body)
+
+		clone.add_to_group("player_clones")
+
+		# SIGNATURE: Clones attack continuously
+		var shoot_interval = 1.5
+		var clone_idx = idx
+		var clone_pos = clone.global_position
+
+		for i in range(100):  # "Permanent" - very long duration
+			if _main_executor:
+				_main_executor.get_tree().create_timer(shoot_interval * i).timeout.connect(func():
+					if not is_instance_valid(clone):
+						return
+					var target = _get_nearest_enemy(clone.global_position, 350.0)
+					if target and is_instance_valid(target):
+						var direction = (target.global_position - clone.global_position).normalized()
+						var proj = _spawn_projectile_at(clone.global_position, direction, 400.0)
+						if proj and "damage" in proj:
+							proj.damage = 10.0  # 35% of normal damage
+				)
+
+	_play_sound("deploy")
+	_screen_shake("small")
+
+func _spawn_projectile_at(pos: Vector2, direction: Vector2, speed: float) -> Node2D:
+	"""Helper to spawn projectile from arbitrary position"""
+	if _main_executor and _main_executor.has_method("_spawn_projectile_at_position"):
+		return _main_executor._spawn_projectile_at_position(pos, direction, speed)
+	return null
