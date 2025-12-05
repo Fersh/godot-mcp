@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(200.0) \
 	 .with_duration(2.0) \
-	 .with_effect("roar")
+	 .with_effect("roar_pixel")
 
 static func _create_intimidate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -12,6 +12,7 @@ class IconCircleDrawer extends Control:
 	var icon_texture: Texture2D = null
 	var fallback_letter: String = ""
 	var pixel_font: Font = null
+	var show_skillshot_indicator: bool = false
 
 	func _draw() -> void:
 		var center = Vector2(icon_size, icon_size) / 2
@@ -33,6 +34,44 @@ class IconCircleDrawer extends Control:
 			var text_size = font.get_string_size(fallback_letter, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
 			var text_pos = center - text_size / 2 + Vector2(0, text_size.y * 0.35)
 			draw_string(font, text_pos, fallback_letter, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+
+		# Draw skillshot indicator if ability supports it
+		if show_skillshot_indicator:
+			_draw_skillshot_indicator(center, radius)
+
+	func _draw_skillshot_indicator(center: Vector2, radius: float) -> void:
+		# Subtle scope/reticle - 8 lines radiating from edge toward center
+		var indicator_color = Color(1.0, 1.0, 1.0, 0.6)
+		var outline_color = Color(0.0, 0.0, 0.0, 0.4)
+		var line_length = radius * 0.25  # Shorter lines
+		var line_width = 2.0  # Thinner
+		var outline_width = 4.0
+
+		# 8 directions - 4 cardinal + 4 diagonal
+		var angles = [
+			0,           # Right
+			PI * 0.25,   # Bottom-right diagonal
+			PI * 0.5,    # Bottom
+			PI * 0.75,   # Bottom-left diagonal
+			PI,          # Left
+			PI * 1.25,   # Top-left diagonal
+			PI * 1.5,    # Top
+			PI * 1.75    # Top-right diagonal
+		]
+
+		# Diagonal lines are shorter (near the middle area)
+		for i in range(angles.size()):
+			var angle = angles[i]
+			var dir = Vector2(cos(angle), sin(angle))
+			var is_diagonal = (i % 2 == 1)
+			var this_length = line_length * 0.6 if is_diagonal else line_length
+
+			var start = center + dir * radius  # Touch the edge
+			var end = center + dir * (radius - this_length)
+
+			# Draw outline then line
+			draw_line(start, end, outline_color, outline_width)
+			draw_line(start, end, indicator_color, line_width)
 
 	func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: float, modulate: Color) -> void:
 		var segments = 64
@@ -669,6 +708,9 @@ func _create_icon_circle(ability: ActiveAbilityData) -> Control:
 		icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
 		icon_drawer.pixel_font = pixel_font
 
+	# Show skillshot indicator if ability supports aiming
+	icon_drawer.show_skillshot_indicator = ability.supports_skillshot()
+
 	container.add_child(icon_drawer)
 	return container
 
@@ -696,6 +738,7 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 				else:
 					icon_drawer.icon_texture = null
 					icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
+				icon_drawer.show_skillshot_indicator = ability.supports_skillshot()
 				icon_drawer.queue_redraw()
 
 	# Update name (child 3) - set color to rarity

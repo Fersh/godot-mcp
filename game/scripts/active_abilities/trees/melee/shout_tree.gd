@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		12.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(5.0) \
-	 .with_effect("battle_cry")
+	 .with_effect("battle_cry_pixel")
 
 static func _create_rallying_cry() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -78,7 +78,7 @@ static func _create_berserker_rage() -> ActiveAbilityData:
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
-		10.0
+		12.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(6.0) \
 	 .with_effect("berserker_rage") \

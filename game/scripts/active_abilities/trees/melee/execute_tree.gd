@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		8.0
 	).with_damage(60.0, 1.4) \
 	 .with_range(150.0) \
-	 .with_effect("execute")
+	 .with_effect("execute_pixel")
 
 static func _create_reaper() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

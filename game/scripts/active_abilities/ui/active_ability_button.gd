@@ -277,55 +277,37 @@ func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, co
 		draw_colored_polygon(points, color)
 
 func _draw_skillshot_indicator(center: Vector2, radius: float) -> void:
-	# Draw crosshair/scope marks at the edges pointing inward
-	# These indicate the ability can be aimed via skillshot
-	var indicator_color = Color(1.0, 1.0, 1.0, 0.85)  # Bright white
-	var outline_color = Color(0.0, 0.0, 0.0, 0.5)  # Dark outline for contrast
-	var line_length = radius * 0.3  # Length of each indicator line
-	var line_width = 3.0
-	var outline_width = 5.0
-	var inset = 2.0  # Start right at the inner edge
+	# Subtle scope/reticle - 8 lines radiating from edge toward center
+	var indicator_color = Color(1.0, 1.0, 1.0, 0.6)
+	var outline_color = Color(0.0, 0.0, 0.0, 0.4)
+	var line_length = radius * 0.25  # Shorter lines
+	var line_width = 2.0  # Thinner
+	var outline_width = 4.0
 
-	# Four cardinal direction indicators (top, right, bottom, left)
-	var directions = [
-		Vector2(0, -1),  # Top
-		Vector2(1, 0),   # Right
-		Vector2(0, 1),   # Bottom
-		Vector2(-1, 0)   # Left
+	# 8 directions - 4 cardinal + 4 diagonal
+	var angles = [
+		0,           # Right
+		PI * 0.25,   # Bottom-right diagonal
+		PI * 0.5,    # Bottom
+		PI * 0.75,   # Bottom-left diagonal
+		PI,          # Left
+		PI * 1.25,   # Top-left diagonal
+		PI * 1.5,    # Top
+		PI * 1.75    # Top-right diagonal
 	]
 
-	# Draw outline first, then white line on top
-	for dir in directions:
-		var start = center + dir * (radius - inset)
-		var end = center + dir * (radius - inset - line_length)
-		draw_line(start, end, outline_color, outline_width)
-
-	for dir in directions:
-		var start = center + dir * (radius - inset)
-		var end = center + dir * (radius - inset - line_length)
-		draw_line(start, end, indicator_color, line_width)
-
-	# Draw small corner brackets at 45-degree angles for scope effect
-	var corner_length = radius * 0.2
-	var corner_angles = [
-		PI * 0.25,   # Top-right
-		PI * 0.75,   # Top-left
-		PI * 1.25,   # Bottom-left
-		PI * 1.75    # Bottom-right
-	]
-
-	# Draw outline first
-	for angle in corner_angles:
+	# Diagonal lines are shorter (near the middle area)
+	for i in range(angles.size()):
+		var angle = angles[i]
 		var dir = Vector2(cos(angle), sin(angle))
-		var start = center + dir * (radius - inset)
-		var end = center + dir * (radius - inset - corner_length)
-		draw_line(start, end, outline_color, outline_width)
+		var is_diagonal = (i % 2 == 1)
+		var this_length = line_length * 0.6 if is_diagonal else line_length
 
-	# Draw white lines on top
-	for angle in corner_angles:
-		var dir = Vector2(cos(angle), sin(angle))
-		var start = center + dir * (radius - inset)
-		var end = center + dir * (radius - inset - corner_length)
+		var start = center + dir * radius  # Touch the edge
+		var end = center + dir * (radius - this_length)
+
+		# Draw outline then line
+		draw_line(start, end, outline_color, outline_width)
 		draw_line(start, end, indicator_color, line_width)
 
 func setup_ability(p_ability: ActiveAbilityData, p_slot: int) -> void:

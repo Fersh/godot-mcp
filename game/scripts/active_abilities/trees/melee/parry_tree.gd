@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		4.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(0.5) \
-	 .with_effect("parry")
+	 .with_effect("parry_pixel")
 
 static func _create_counter() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

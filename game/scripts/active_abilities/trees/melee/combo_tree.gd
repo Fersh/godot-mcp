@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(25.0, 0.9) \
 	 .with_range(100.0) \
 	 .with_projectiles(3, 0) \
-	 .with_effect("combo_strike")
+	 .with_effect("combo_strike_pixel")
 
 static func _create_chain_combo() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

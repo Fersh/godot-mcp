@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		5.0
 	).with_damage(40.0, 1.1) \
 	 .with_aoe(120.0) \
-	 .with_effect("stomp")
+	 .with_effect("stomp_pixel")
 
 static func _create_quake() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

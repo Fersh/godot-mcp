@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		6.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(1.5) \
-	 .with_effect("block")
+	 .with_effect("block_pixel")
 
 static func _create_reflect() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -76,7 +76,7 @@ static func _create_parry() -> ActiveAbilityData:
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
-		4.0
+		6.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(0.4) \
 	 .with_stun(1.0) \
@@ -92,7 +92,7 @@ static func _create_riposte() -> ActiveAbilityData:
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
-		5.0
+		8.0
 	).with_damage(150.0, 2.5) \
 	 .with_duration(0.3) \
 	 .with_stun(2.0) \

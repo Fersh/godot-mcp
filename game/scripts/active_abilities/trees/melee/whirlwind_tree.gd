@@ -37,7 +37,7 @@ static func _create_base() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_duration(2.0) \
 	 .with_movement() \
-	 .with_effect("whirlwind")
+	 .with_effect("whirlwind_pixel")
 
 static func _create_vacuum_spin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

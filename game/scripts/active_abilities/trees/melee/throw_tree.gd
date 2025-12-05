@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(50.0, 1.3) \
 	 .with_range(350.0) \
 	 .with_projectiles(1, 600.0) \
-	 .with_effect("throw_weapon")
+	 .with_effect("throw_weapon_pixel")
 
 static func _create_ricochet() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

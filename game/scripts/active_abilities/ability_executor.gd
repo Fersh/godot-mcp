@@ -515,6 +515,110 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"poison", "toxic":
 			return "poison"
 
+		# Pixelated melee ability effects (T1 bases)
+		"stomp_pixel":
+			return "stomp_pixel"
+		"cleave_pixel":
+			return "cleave_pixel"
+		"charge_pixel":
+			return "charge_pixel"
+		"whirlwind_pixel":
+			return "whirlwind_pixel"
+		"uppercut_pixel":
+			return "uppercut_pixel"
+		"execute_pixel":
+			return "execute_pixel"
+		"rampage_pixel":
+			return "rampage_pixel"
+		"dash_strike_pixel":
+			return "dash_strike_pixel"
+		"combo_strike_pixel":
+			return "combo_strike_pixel"
+		"impale_pixel":
+			return "impale_pixel"
+		"parry_pixel":
+			return "parry_pixel"
+		"block_pixel":
+			return "block_pixel"
+		"throw_weapon_pixel":
+			return "throw_weapon_pixel"
+		"roar_pixel":
+			return "roar_pixel"
+		"battle_cry_pixel":
+			return "battle_cry_pixel"
+		"taunt_pixel":
+			return "taunt_pixel"
+
+		# Pixelated melee ability effects (T2 upgrades)
+		"quake_stomp":
+			return "quake_stomp_pixel"
+		"thunder_stomp":
+			return "thunder_stomp_pixel"
+		"cleave_executioner":
+			return "cleave_executioner_pixel"
+		"cleave_frost":
+			return "cleave_frost_pixel"
+		"trample":
+			return "trample_pixel"
+		"shield_charge":
+			return "shield_charge_pixel"
+		"vacuum_spin":
+			return "vacuum_spin_pixel"
+		"flame_whirlwind":
+			return "flame_whirlwind_pixel"
+		"vortex":
+			return "vortex_pixel"
+		"deflect_spin":
+			return "deflect_spin_pixel"
+		"juggle":
+			return "juggle_pixel"
+		"grab_slam":
+			return "grab_slam_pixel"
+		"reaper_touch":
+			return "reaper_touch_pixel"
+		"brutal_strike":
+			return "brutal_strike_pixel"
+		"frenzy":
+			return "frenzy_pixel"
+		"fury":
+			return "fury_pixel"
+		"blade_rush":
+			return "blade_rush_pixel"
+		"afterimage":
+			return "afterimage_pixel"
+		"chain_combo":
+			return "chain_combo_pixel"
+		"combo_finisher":
+			return "combo_finisher_pixel"
+		"skewer":
+			return "skewer_pixel"
+		"pinning_strike":
+			return "pinning_strike_pixel"
+		"counter_strike":
+			return "counter_strike_pixel"
+		"deflection":
+			return "deflection_pixel"
+		"reflect_shield":
+			return "reflect_shield_pixel"
+		"parry":
+			return "block_parry_pixel"
+		"ricochet_blade":
+			return "ricochet_blade_pixel"
+		"grapple_throw":
+			return "grapple_throw_pixel"
+		"intimidate":
+			return "intimidate_pixel"
+		"enrage":
+			return "enrage_pixel"
+		"rallying_cry":
+			return "rallying_cry_pixel"
+		"berserker_rage":
+			return "berserker_rage_pixel"
+		"fortify_taunt":
+			return "fortify_taunt_pixel"
+		"counter_stance":
+			return "counter_stance_pixel"
+
 		_:
 			return effect_id  # Return original if no mapping
 

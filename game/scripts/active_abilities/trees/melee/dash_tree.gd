@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(35.0, 1.0) \
 	 .with_range(200.0) \
 	 .with_movement() \
-	 .with_effect("dash_strike")
+	 .with_effect("dash_strike_pixel")
 
 static func _create_blade_rush() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

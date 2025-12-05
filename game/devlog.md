@@ -2,6 +2,128 @@
 
 ---
 
+## Date: 2025-12-05 - UI Polish, Visual Effects & Ability Improvements
+
+### Summary
+Fixed white border artifacts on ability icons, enhanced visual effects for Savage Leap tree, added skillshot aiming system, improved ground slam visibility, and various UI/ability tweaks.
+
+### 1. Ability Icon White Border Fix
+
+**Problem:** Frost orbit and other circular ability icons had white border artifacts from texture edge sampling.
+
+**Solution:** Added UV inset (0.92) to avoid sampling edge pixels during circular texture clipping.
+
+**Files Modified:**
+- `active_ability_selection_ui.gd` - Fixed UV mapping in `_draw()` icon rendering
+- `active_ability_button.gd` - Fixed UV mapping in `_draw()` icon rendering
+
+### 2. T3 Upgrade Green Flames Enhancement
+
+Increased green flame particle intensity for Tier 3 (Signature) upgrades vs Tier 2 (Branch) upgrades.
+
+| Tier | Flame Intensity | Flame Density |
+|------|-----------------|---------------|
+| T2 (Branch) | 1.5 | 14.0 |
+| T3 (Signature) | 2.2 | 22.0 |
+
+**Files Modified:**
+- `active_ability_selection_ui.gd` - `_create_particle_container_for_ability()` and `_create_upgrade_particle_container()`
+
+### 3. Savage Leap Pixelated Visual Effects
+
+Created complete pixelated effect system for the Savage Leap ability tree with fantasy RPG aesthetic.
+
+| Ability | Tier | Effect Description |
+|---------|------|-------------------|
+| Savage Leap | BASE | Dust cloud, ground cracks, debris |
+| Tremor Leap | T2-A | Seismic shockwave rings, ground ruptures |
+| Predator Leap | T2-B | Beast claw marks, speed trails, feral energy |
+| Extinction Event | T3-A | Massive meteor crater with fire rings |
+| Apex Strike | T3-B | Deadly slash marks with blood spray |
+
+**Key Feature:** T2 effects now spawn alongside base effects (instead of replacing them), creating layered visual feedback.
+
+**Files Created:**
+- `savage_leap_pixel_effect.gd` + `.tscn`
+- `tremor_leap_effect.gd` + `.tscn`
+- `predator_leap_effect.gd` + `.tscn`
+- `extinction_event_effect.gd` + `.tscn`
+- `apex_strike_effect.gd` + `.tscn`
+
+**Files Modified:**
+- `ability_executor.gd` - Effect ID mappings
+- `melee_executor.gd` - Multi-effect spawning for T2/T3
+
+### 4. Flame Wall Skillshot Aiming
+
+Made Flame Wall use skillshot aiming system - wall orientation follows aim direction while maintaining perpendicular placement.
+
+**Behavior:**
+- If using aimed shot: Wall placed in aim direction, perpendicular to that direction
+- If not aiming: Falls back to nearest enemy targeting
+
+**Files Modified:**
+- `ability_executor.gd` - `_execute_flame_wall()` checks `ActiveAbilityManager.is_using_aimed_shot()`
+
+### 5. Skillshot Visual Indicator on Ability Icons
+
+Added crosshair/target indicator to ability icons that support skillshot aiming.
+
+**Visual Design:**
+- White crosshair lines (4 directions) drawn inward from icon edge
+- Dark outline for contrast against any background
+- 45-degree corner brackets for additional visual interest
+- Only appears on abilities where `ability.supports_skillshot()` returns true
+
+**Files Modified:**
+- `active_ability_button.gd` - Added `_draw_skillshot_indicator()` function
+
+### 6. Ground Slam Effect Enhancement
+
+Made ground slam visual effect more noticeable and persistent.
+
+| Property | Before | After |
+|----------|--------|-------|
+| Duration | 0.4s | 0.65s |
+| Ring Color | Brown | Golden/Orange |
+| Shockwave Rings | 1 | 3 (staggered) |
+| Impact Flash | None | Bright white flash |
+| Debris Count | 12-18 | 18-28 |
+| Dust Count | 20-30 | 30-45 |
+| Fade Speed | Fast | Slower (0.7x multiplier) |
+
+**Files Modified:**
+- `ground_slam_pixel_effect.gd` - Complete visual overhaul
+
+### 7. Ability Button Position Adjustments
+
+Fine-tuned ability bar button positions for better ergonomics.
+
+| Button | Change |
+|--------|--------|
+| Ability 2 | Moved up 20px more (40px total offset) |
+| Dodge | Moved 20px left |
+| Ability 1 | Unchanged |
+| Ability 3 | Unchanged |
+
+**Files Modified:**
+- `active_ability_bar.gd` - Button positioning calculations
+
+### 8. Ability Cleanup & Balance
+
+| Change | Details |
+|--------|---------|
+| Now You See Me | Commented out (needs rework) |
+| Cooldown Killer | Rarity changed from EPIC to LEGENDARY |
+| Tooltip Hide | Tooltips now hide when player releases ability button |
+
+**Files Modified:**
+- `active_ability_database.gd` - Commented out Now You See Me
+- `combat_passives.gd` - Cooldown Killer rarity change
+- `active_ability_button.gd` - Added `_hide_tooltip()` on input release
+
+---
+
 ## Date: 2025-12-05 - Spawn Rate Curve & Options Updates
 
 ### Summary

@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(60.0, 1.5) \
 	 .with_range(200.0) \
 	 .with_movement() \
-	 .with_effect("charge")
+	 .with_effect("charge_pixel")
 
 static func _create_trampling_charge() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

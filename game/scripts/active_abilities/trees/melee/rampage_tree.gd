@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		15.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(5.0) \
-	 .with_effect("rampage")
+	 .with_effect("rampage_pixel")
 
 static func _create_frenzy() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

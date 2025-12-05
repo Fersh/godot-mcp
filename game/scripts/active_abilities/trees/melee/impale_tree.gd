@@ -35,7 +35,7 @@ static func _create_base() -> ActiveAbilityData:
 		5.0
 	).with_damage(55.0, 1.4) \
 	 .with_range(180.0) \
-	 .with_effect("impale")
+	 .with_effect("impale_pixel")
 
 static func _create_skewer() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

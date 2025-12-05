@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(30.0, 1.0) \
 	 .with_aoe(120.0) \
 	 .with_duration(1.5) \
-	 .with_effect("whirlwind")
+	 .with_effect("whirlwind_pixel")
 
 static func _create_blade_vortex() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -44,7 +44,7 @@ static func _create_base() -> ActiveAbilityData:
 		8.0  # 8 second cooldown
 	).with_damage(55.0, 1.5) \
 	 .with_aoe(180.0) \
-	 .with_effect("cleave")
+	 .with_effect("cleave_pixel")
 
 # ============================================
 # TIER 2 - BRANCH A: EXECUTIONER PATH

@@ -36,7 +36,7 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(45.0, 1.2) \
 	 .with_range(100.0) \
 	 .with_knockback(200.0) \
-	 .with_effect("uppercut")
+	 .with_effect("uppercut_pixel")
 
 static func _create_juggle() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
