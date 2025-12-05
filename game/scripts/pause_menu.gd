@@ -831,6 +831,9 @@ func _populate_options() -> void:
 	# Screen shake toggle
 	_create_option_toggle("Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
+	# Damage numbers toggle
+	_create_option_toggle("Damage Numbers", GameSettings.damage_numbers_enabled, func(toggled): GameSettings.set_damage_numbers_enabled(toggled))
+
 	# Freeze frames toggle (hitstop effects)
 	_create_option_toggle("Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
 

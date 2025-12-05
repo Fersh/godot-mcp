@@ -756,6 +756,9 @@ func _show_settings_panel() -> void:
 	# Screen shake toggle
 	_create_toggle_option(options_container, "Screen Shake", GameSettings.screen_shake_enabled, func(toggled): GameSettings.set_screen_shake_enabled(toggled))
 
+	# Damage numbers toggle
+	_create_toggle_option(options_container, "Damage Numbers", GameSettings.damage_numbers_enabled, func(toggled): GameSettings.set_damage_numbers_enabled(toggled))
+
 	# Freeze frames toggle (hitstop effects)
 	_create_toggle_option(options_container, "Freeze Frames", GameSettings.freeze_frames_enabled, func(toggled): GameSettings.set_freeze_frames_enabled(toggled))
 

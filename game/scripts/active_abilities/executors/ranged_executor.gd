@@ -822,12 +822,13 @@ func _spawn_storm_arrow(center: Vector2, radius: float, damage: float) -> void:
 	target_pos.x = clamp(target_pos.x, -60, 1596)
 	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
 
-	# Deal damage to enemies near landing spot
-	var enemies = _get_enemies_in_radius(target_pos, 40.0)
+	# Deal damage to enemies in impact area
+	var enemies = _get_enemies_in_radius(target_pos, 30.0)
 	for enemy in enemies:
 		_deal_damage_to_enemy(enemy, damage)
 
-	_spawn_effect("arrow_impact", target_pos)
+	# Spawn falling arrow visual
+	_spawn_falling_arrow_visual(target_pos, damage)
 
 func _execute_rain_apocalypse(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Rain of Vengeance - Screen-wide arrow rain with slow"""
@@ -855,7 +856,8 @@ func _execute_rain_apocalypse(ability: ActiveAbilityData, player: Node2D) -> voi
 						_deal_damage_to_enemy(enemy, damage / (waves * 2))
 						_apply_slow(enemy, ability.slow_percent, ability.slow_duration)
 
-					_spawn_effect("arrow_impact", arrow_pos)
+					# Spawn falling arrow visual
+					_spawn_falling_arrow_visual(arrow_pos)
 			)
 
 	_play_sound("arrow_storm")
@@ -879,7 +881,8 @@ func _execute_rain_focused(ability: ActiveAbilityData, player: Node2D) -> void:
 				var enemies = _get_enemies_in_radius(arrow_pos, 30.0)
 				for enemy in enemies:
 					_deal_damage_to_enemy(enemy, damage / 5.0)
-				_spawn_effect("arrow_impact", arrow_pos)
+				# Spawn falling arrow visual
+				_spawn_falling_arrow_visual(arrow_pos)
 			)
 
 	_play_sound("rain_of_arrows")
@@ -2665,3 +2668,87 @@ func _execute_quickdraw_deadeye(ability: ActiveAbilityData, player: Node2D) -> v
 	_play_sound("quickdraw")
 	_screen_shake("large")
 	_impact_pause(0.2)
+
+# ============================================
+# VISUAL HELPERS FOR FALLING ARROWS
+# ============================================
+
+func _spawn_falling_arrow_visual(land_pos: Vector2, _damage: float = 0.0) -> void:
+	"""Spawn a single falling arrow visual with impact effect."""
+	if not _main_executor:
+		return
+
+	# Arrow starts above and falls down at an angle
+	var fall_height = 300.0
+	var horizontal_offset = randf_range(-50, 50)
+	var start_pos = land_pos + Vector2(horizontal_offset, -fall_height)
+
+	# Create arrow visual
+	var arrow = Node2D.new()
+	arrow.global_position = start_pos
+	arrow.z_index = 5
+
+	# Arrow body (slightly golden tint)
+	var body = ColorRect.new()
+	body.size = Vector2(18, 3)
+	body.position = Vector2(-10, -1.5)
+	body.color = Color(0.9, 0.85, 0.7, 1.0)
+	arrow.add_child(body)
+
+	# Arrow tip (dark triangle)
+	var tip = Polygon2D.new()
+	tip.position = Vector2(8, 0)
+	tip.color = Color(0.15, 0.1, 0.1, 1.0)
+	tip.polygon = PackedVector2Array([Vector2(0, -2), Vector2(6, 0), Vector2(0, 2)])
+	arrow.add_child(tip)
+
+	# Rotate arrow to face landing position
+	var direction = (land_pos - start_pos).normalized()
+	arrow.rotation = direction.angle()
+
+	_main_executor.get_tree().current_scene.add_child(arrow)
+
+	# Animate falling with dramatic acceleration
+	var fall_duration = randf_range(0.15, 0.25)
+	var tween = arrow.create_tween()
+	tween.tween_property(arrow, "global_position", land_pos, fall_duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	tween.tween_callback(func():
+		# Small impact effect
+		_spawn_arrow_impact_visual(land_pos)
+		# Fade out arrow stuck in ground
+		var fade_tween = arrow.create_tween()
+		fade_tween.tween_interval(0.3)
+		fade_tween.tween_property(arrow, "modulate:a", 0.0, 0.2)
+		fade_tween.tween_callback(arrow.queue_free)
+	)
+
+func _spawn_arrow_impact_visual(position: Vector2) -> void:
+	"""Small dust/impact effect when arrow lands."""
+	if not _main_executor:
+		return
+
+	var impact = Node2D.new()
+	impact.global_position = position
+	impact.z_index = 4
+	_main_executor.get_tree().current_scene.add_child(impact)
+
+	# Small dust particles
+	for i in range(4):
+		var particle = ColorRect.new()
+		particle.size = Vector2(3, 3)
+		particle.color = Color(0.6, 0.5, 0.4, 0.8)
+		particle.position = Vector2(-1.5, -1.5)
+		impact.add_child(particle)
+
+		var p_angle = (float(i) / 4) * TAU + randf_range(-0.3, 0.3)
+		var end_pos = Vector2(cos(p_angle), sin(p_angle)) * randf_range(8, 15)
+
+		var p_tween = particle.create_tween()
+		p_tween.set_parallel(true)
+		p_tween.tween_property(particle, "position", end_pos, 0.2).set_ease(Tween.EASE_OUT)
+		p_tween.tween_property(particle, "modulate:a", 0.0, 0.15).set_delay(0.05)
+
+	# Clean up
+	var cleanup = impact.create_tween()
+	cleanup.tween_interval(0.3)
+	cleanup.tween_callback(impact.queue_free)

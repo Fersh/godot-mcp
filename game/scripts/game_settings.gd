@@ -14,6 +14,7 @@ var master_volume: float = 1.0  # 0.0 to 1.0
 var track_missions_enabled: bool = true  # Show mission tracker in game HUD
 
 # Visual effect toggles
+var damage_numbers_enabled: bool = true  # Show damage numbers on hit
 var status_text_enabled: bool = true  # Show status text over enemies (BURN, POISON, etc.)
 var freeze_frames_enabled: bool = true  # Hitstop/freeze frame effects on hits/kills
 var visual_effects_enabled: bool = true  # Status tinting, chromatic aberration, zoom punch, etc.
@@ -37,6 +38,7 @@ func load_settings() -> void:
 		master_volume = config.get_value("audio", "master_volume", 1.0)
 		track_missions_enabled = config.get_value("gameplay", "track_missions_enabled", true)
 		# Visual effect toggles
+		damage_numbers_enabled = config.get_value("visual", "damage_numbers_enabled", true)
 		status_text_enabled = config.get_value("visual", "status_text_enabled", true)
 		freeze_frames_enabled = config.get_value("visual", "freeze_frames_enabled", true)
 		visual_effects_enabled = config.get_value("visual", "visual_effects_enabled", true)
@@ -55,6 +57,7 @@ func save_settings() -> void:
 	config.set_value("audio", "master_volume", master_volume)
 	config.set_value("gameplay", "track_missions_enabled", track_missions_enabled)
 	# Visual effect toggles
+	config.set_value("visual", "damage_numbers_enabled", damage_numbers_enabled)
 	config.set_value("visual", "status_text_enabled", status_text_enabled)
 	config.set_value("visual", "freeze_frames_enabled", freeze_frames_enabled)
 	config.set_value("visual", "visual_effects_enabled", visual_effects_enabled)
@@ -104,6 +107,11 @@ func set_haptics_enabled(enabled: bool) -> void:
 
 func set_track_missions_enabled(enabled: bool) -> void:
 	track_missions_enabled = enabled
+	save_settings()
+	emit_signal("settings_changed")
+
+func set_damage_numbers_enabled(enabled: bool) -> void:
+	damage_numbers_enabled = enabled
 	save_settings()
 	emit_signal("settings_changed")
 

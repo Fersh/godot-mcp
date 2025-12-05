@@ -701,6 +701,9 @@ func take_damage(amount: float) -> void:
 			HapticManager.death()
 
 func spawn_damage_number(amount: float) -> void:
+	# Check if damage numbers are enabled in settings
+	if GameSettings and not GameSettings.damage_numbers_enabled:
+		return
 	if damage_number_scene == null:
 		return
 
@@ -710,6 +713,9 @@ func spawn_damage_number(amount: float) -> void:
 	dmg_num.set_damage(amount, false, true)  # is_player_damage = true
 
 func spawn_blocked_damage_number(amount: float) -> void:
+	# Check if damage numbers are enabled in settings
+	if GameSettings and not GameSettings.damage_numbers_enabled:
+		return
 	if damage_number_scene == null:
 		return
 

@@ -166,7 +166,7 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 10.0}]  # every 10 kills
 		),
 
-		# Survivor's Guilt - Buff when summons die
+		# Survivor's Guilt - Buff when summons die (requires a summon)
 		AbilityData.new(
 			"survivors_guilt",
 			"Survivor's Guilt",
@@ -174,7 +174,7 @@ static func get_abilities() -> Array[AbilityData]:
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.SURVIVORS_GUILT, value = 0.25}]  # 25% damage boost
-		),
+		).with_prerequisites(["chicken_companion", "summoner_aid", "drone_support", "blade_orbit", "flame_orbit", "frost_orbit"] as Array[String]),
 
 		# ============================================
 		# SCALING PASSIVES

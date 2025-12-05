@@ -386,6 +386,9 @@ func _apply_elemental_effects(enemy: Node2D) -> void:
 		_spawn_elemental_damage_number(enemy, "ZAP", Color(1.0, 0.9, 0.4))
 
 func _spawn_elemental_damage_number(enemy: Node2D, text: String, color: Color) -> void:
+	# Check if status text is enabled (these are status indicators like BURN, ZAP, etc.)
+	if GameSettings and not GameSettings.status_text_enabled:
+		return
 	var damage_num_scene = load("res://scenes/damage_number.tscn")
 	if damage_num_scene:
 		var dmg_num = damage_num_scene.instantiate()

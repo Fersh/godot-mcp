@@ -676,6 +676,9 @@ func get_current_speed() -> float:
 	return speed
 
 func spawn_damage_number(amount: float, is_critical: bool = false) -> void:
+	# Check if damage numbers are enabled in settings
+	if GameSettings and not GameSettings.damage_numbers_enabled:
+		return
 	if damage_number_scene == null:
 		return
 
