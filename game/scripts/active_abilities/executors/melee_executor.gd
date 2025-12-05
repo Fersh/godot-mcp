@@ -526,14 +526,18 @@ func _execute_cleave_shockwave(ability: ActiveAbilityData, player: Node2D) -> vo
 func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, 150.0)
+	var effect_pos = player.global_position
 
 	if target:
 		_deal_damage_to_enemy(target, damage)
 		_apply_stun(target, ability.stun_duration)
 		var knockback_dir = (target.global_position - player.global_position).normalized()
 		_apply_knockback(target, knockback_dir, ability.knockback_force)
+		effect_pos = target.global_position
 
-	_spawn_effect("shield_bash", player.global_position)
+	var effect = _spawn_effect("shield_bash", effect_pos)
+	if effect and effect.has_method("setup"):
+		effect.setup(80.0, 0.35)
 	_play_sound("shield_hit")
 	_screen_shake("small")
 
@@ -548,8 +552,9 @@ func _execute_bash_shockwave(ability: ActiveAbilityData, player: Node2D) -> void
 		var knockback_dir = (enemy.global_position - player.global_position).normalized()
 		_apply_knockback(enemy, knockback_dir, ability.knockback_force)
 
-	# Use base bash effect
-	_spawn_effect("shield_bash", player.global_position)
+	var effect = _spawn_effect("bash_shockwave", player.global_position)
+	if effect and effect.has_method("setup"):
+		effect.setup(ability.radius, 0.5)
 	_play_sound("shield_hit")
 	_screen_shake("medium")
 
@@ -566,8 +571,9 @@ func _execute_bash_earthquake(ability: ActiveAbilityData, player: Node2D) -> voi
 		knockback_dir.y = -0.5  # Add upward component
 		_apply_knockback(enemy, knockback_dir.normalized(), ability.knockback_force)
 
-	# Use base bash effect
-	_spawn_effect("shield_bash", player.global_position)
+	var effect = _spawn_effect("bash_earthquake", player.global_position)
+	if effect and effect.has_method("setup"):
+		effect.setup(ability.radius, 0.8)
 	_play_sound("shield_hit")
 	_screen_shake("large")
 	_impact_pause(0.15)
@@ -576,13 +582,16 @@ func _execute_bash_lockdown(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Extended single-target stun"""
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, 150.0)
+	var effect_pos = player.global_position
 
 	if target:
 		_deal_damage_to_enemy(target, damage)
 		_apply_stun(target, ability.stun_duration)
+		effect_pos = target.global_position
 
-	# Use base bash effect
-	_spawn_effect("shield_bash", player.global_position)
+	var effect = _spawn_effect("bash_lockdown", effect_pos)
+	if effect and effect.has_method("setup"):
+		effect.setup(60.0, 0.6)
 	_play_sound("shield_hit")
 	_screen_shake("small")
 
@@ -590,6 +599,7 @@ func _execute_bash_petrify(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Petrify with damage amp"""
 	var damage = _get_damage(ability)
 	var target = _get_nearest_enemy(player.global_position, 150.0)
+	var effect_pos = player.global_position
 
 	if target:
 		_deal_damage_to_enemy(target, damage)
@@ -599,9 +609,11 @@ func _execute_bash_petrify(ability: ActiveAbilityData, player: Node2D) -> void:
 			target.apply_petrify(ability.stun_duration)
 		elif target.has_method("apply_vulnerability"):
 			target.apply_vulnerability(2.0, ability.stun_duration)
+		effect_pos = target.global_position
 
-	# Use base bash effect
-	_spawn_effect("shield_bash", player.global_position)
+	var effect = _spawn_effect("bash_petrify", effect_pos)
+	if effect and effect.has_method("setup"):
+		effect.setup(80.0, 0.7)
 	_play_sound("shield_hit")
 	_screen_shake("medium")
 	_impact_pause(0.1)

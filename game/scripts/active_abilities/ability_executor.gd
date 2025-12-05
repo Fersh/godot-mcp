@@ -431,10 +431,22 @@ func _get_mapped_effect(effect_id: String) -> String:
 		"meteor_slam":
 			return "meteor_slam"
 
+		# Shield Bash effects (pixelated)
+		"shield_bash":
+			return "shield_bash_pixel"
+		"bash_shockwave":
+			return "bash_shockwave"
+		"bash_lockdown":
+			return "bash_lockdown"
+		"bash_earthquake":
+			return "bash_earthquake"
+		"bash_petrify":
+			return "bash_petrify"
+
 		# Impact/Smoke effects
 		"savage_leap_landing":
 			return "impact_smoke"
-		"shield_bash", "punch":
+		"punch":
 			return "punch_impact"
 		"dash_strike", "blade_rush", "quick_roll", "dash":
 			return "dash_smoke"
