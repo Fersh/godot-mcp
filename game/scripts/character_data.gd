@@ -127,7 +127,7 @@ static func create_archer() -> CharacterData:
 
 	# Balanced damage, faster, less health
 	data.base_health = 25.0
-	data.base_speed = 162.0  # 10% slower
+	data.base_speed = 145.8  # Reduced 10%
 	data.base_attack_cooldown = 1.07
 	data.base_damage = 1.0
 	data.attack_range = 440.0
@@ -178,7 +178,7 @@ static func create_knight() -> CharacterData:
 
 	# Slower, tankier, higher damage
 	data.base_health = 40.0
-	data.base_speed = 126.0  # 10% slower
+	data.base_speed = 113.4  # Reduced 10%
 	data.base_attack_cooldown = 1.1  # 10% slower attack speed (was 1.0)
 	data.base_damage = 1.5
 	data.attack_range = 54.0  # Melee reach (reduced 10% from 60)
@@ -229,7 +229,7 @@ static func create_beast() -> CharacterData:
 
 	# Glass cannon - very fast, high damage, low health
 	data.base_health = 18.0
-	data.base_speed = 198.0  # 10% slower
+	data.base_speed = 178.2  # Reduced 10%
 	data.base_attack_cooldown = 0.65  # Very fast attacks
 	data.base_damage = 1.8
 	data.attack_range = 65.0  # Melee reach
@@ -295,7 +295,7 @@ static func create_mage() -> CharacterData:
 
 	# Slow but powerful - glass cannon caster
 	data.base_health = 20.0
-	data.base_speed = 130.5  # Slowest character, 10% slower
+	data.base_speed = 117.45  # Slowest character, reduced 10%
 	data.base_attack_cooldown = 1.4  # Slow attacks
 	data.base_damage = 2.5  # Highest damage multiplier
 	data.attack_range = 440.0  # Same as archer
@@ -353,7 +353,7 @@ static func create_monk() -> CharacterData:
 
 	# Monk stats - fast, combo-focused, medium survivability
 	data.base_health = 22.0
-	data.base_speed = 166.5  # 10% slower
+	data.base_speed = 149.85  # Reduced 10%
 	data.base_attack_cooldown = 0.75  # Fast attacks for combos
 	data.base_damage = 1.15
 	data.attack_range = 58.0  # Medium melee reach
@@ -419,7 +419,7 @@ static func create_barbarian() -> CharacterData:
 
 	# Barbarian stats - tanky brawler with big hits
 	data.base_health = 35.0
-	data.base_speed = 150.0
+	data.base_speed = 135.0  # Reduced 10%
 	data.base_attack_cooldown = 1.0  # Slow heavy swings
 	data.base_damage = 1.7
 	data.attack_range = 60.0  # Melee reach
@@ -481,7 +481,7 @@ static func create_assassin() -> CharacterData:
 
 	# Assassin stats - glass cannon with highest speed and crit
 	data.base_health = 16.0  # Lowest HP
-	data.base_speed = 190.0  # Fastest character
+	data.base_speed = 171.0  # Fastest character, reduced 10%
 	data.base_attack_cooldown = 0.6  # Very fast strikes
 	data.base_damage = 1.3
 	data.attack_range = 350.0  # Ranged attack range (shorter than archer)

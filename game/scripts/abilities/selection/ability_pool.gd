@@ -344,19 +344,30 @@ func get_passive_choices_with_active_upgrade(count: int, level: int) -> Array:
 
 func _get_active_upgrade_trigger() -> Variant:
 	"""
-	Get an active ability upgrade to use as trigger card.
-	When clicked, this will show the branching UI with all available branches.
+	Get an active ability upgrade TRIGGER card.
+	Returns a Dictionary representing the trigger card, NOT the individual upgrades.
+	When the trigger card is clicked, the UI will show the available branch options.
 	"""
 	if not ActiveAbilityManager:
 		return null
 
-	var upgrades = ActiveAbilityManager.get_available_upgrades()
-	if upgrades.is_empty():
-		return null
+	# Find which equipped ability has upgrades available
+	for i in ActiveAbilityManager.MAX_ABILITY_SLOTS:
+		var current = ActiveAbilityManager.ability_slots[i]
+		if current == null:
+			continue
 
-	# Return the first upgrade as the trigger card
-	# The UI will show all branches when this is clicked
-	return upgrades[0]
+		# Get available upgrades for this ability
+		var upgrades = AbilityTreeRegistry.get_available_upgrades_for_ability(current.id)
+		if upgrades.size() > 0:
+			# Return a trigger card dictionary
+			return {
+				"is_trigger": true,
+				"ability": current,  # The current equipped ability
+				"upgrades": upgrades  # Available upgrade branches
+			}
+
+	return null
 
 func should_offer_active_upgrade(level: int) -> bool:
 	"""Check if this level should offer an active ability upgrade."""

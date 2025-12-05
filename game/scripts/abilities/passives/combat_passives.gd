@@ -306,17 +306,17 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"cooldown_killer",
 			"Cooldown Killer",
-			"Kills reduce active ability cooldowns by 0.5s",
+			"Kills reduce active ability cooldowns by 0.25s",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.5}]
+			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.25}]
 		).with_rank_effects(
-			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.5}],
-			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.75}],
-			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 1.0}]
+			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.25}],
+			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.35}],
+			[{effect_type = AbilityData.EffectType.COOLDOWN_KILLER, value = 0.5}]
 		).with_rank_descriptions(
-			"Kills reduce active ability cooldowns by 0.5s",
-			"Kills reduce active ability cooldowns by 0.75s",
-			"Kills reduce active ability cooldowns by 1s"
+			"Kills reduce active ability cooldowns by 0.25s",
+			"Kills reduce active ability cooldowns by 0.35s",
+			"Kills reduce active ability cooldowns by 0.5s"
 		),
 	]

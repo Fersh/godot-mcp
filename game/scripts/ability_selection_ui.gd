@@ -147,16 +147,30 @@ func show_choices(abilities: Array) -> void:
 	_animate_entrance()
 
 func create_ability_card(ability, index: int) -> Button:
-	## Create a card for either AbilityData (passive) or ActiveAbilityData (upgrade)
+	## Create a card for either AbilityData (passive), ActiveAbilityData (upgrade), or trigger card
 	var button = Button.new()
 	button.custom_minimum_size = Vector2(312, 360)
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
-	# Get ability properties (works for both types)
-	var ability_name = ability.name
-	var ability_desc = ability.description
-	var is_upgrade = _is_active_ability_upgrade(ability)
+	# Handle trigger cards (Dictionary with ability + upgrades)
+	var is_trigger = _is_trigger_card(ability)
+	var display_ability = ability
+	var ability_name: String
+	var ability_desc: String
+	var is_upgrade: bool
+
+	if is_trigger:
+		# Extract the inner ability for display
+		display_ability = ability.ability
+		ability_name = display_ability.name
+		ability_desc = "Choose upgrade path for " + ability_name
+		is_upgrade = true  # Trigger cards are styled as upgrades
+	else:
+		# Get ability properties (works for both types)
+		ability_name = ability.name
+		ability_desc = ability.description
+		is_upgrade = _is_active_ability_upgrade(ability)
 
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -167,8 +181,20 @@ func create_ability_card(ability, index: int) -> Button:
 	top_spacer.custom_minimum_size = Vector2(0, 8 if not is_upgrade else 24)
 	vbox.add_child(top_spacer)
 
-	# Ability name - use RichTextLabel for upgrades to show prefix in green
-	if is_upgrade and ability is ActiveAbilityData and not ability.name_prefix.is_empty():
+	# Ability name - use RichTextLabel for upgrades with prefix, or trigger cards
+	if is_trigger:
+		# Trigger cards show simple ability name in green
+		var name_label = Label.new()
+		name_label.name = "NameLabel"
+		name_label.text = ability_name
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 18)
+		name_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green for upgrade
+		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if pixel_font:
+			name_label.add_theme_font_override("font", pixel_font)
+		vbox.add_child(name_label)
+	elif is_upgrade and display_ability is ActiveAbilityData and not display_ability.name_prefix.is_empty():
 		var name_rich = RichTextLabel.new()
 		name_rich.name = "NameLabel"
 		name_rich.bbcode_enabled = true
@@ -179,9 +205,9 @@ func create_ability_card(ability, index: int) -> Button:
 		if pixel_font:
 			name_rich.add_theme_font_override("normal_font", pixel_font)
 		# Build compound name: [green]Prefix[/color] [rarity]BaseName[/color] [gold]Suffix[/gold]
-		var base_rarity_color = _get_base_ability_rarity_color(ability)
-		var suffix = ability.name_suffix if ability.is_signature() else ""
-		name_rich.text = _format_compound_name_full(ability.name_prefix, ability.base_name, suffix, base_rarity_color, ability.is_signature())
+		var base_rarity_color = _get_base_ability_rarity_color(display_ability)
+		var suffix = display_ability.name_suffix if display_ability.is_signature() else ""
+		name_rich.text = _format_compound_name_full(display_ability.name_prefix, display_ability.base_name, suffix, base_rarity_color, display_ability.is_signature())
 		vbox.add_child(name_rich)
 	else:
 		# Regular label for non-upgrades
@@ -190,7 +216,7 @@ func create_ability_card(ability, index: int) -> Button:
 		name_label.text = ability_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
-		name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
+		name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
@@ -210,12 +236,12 @@ func create_ability_card(ability, index: int) -> Button:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
 
-	# Stat changes container (for upgrades)
+	# Stat changes container (for upgrades, but not trigger cards)
 	var stats_container = VBoxContainer.new()
 	stats_container.name = "StatsContainer"
 	stats_container.add_theme_constant_override("separation", 2)
-	if is_upgrade and ability is ActiveAbilityData:
-		_populate_stat_changes(stats_container, ability)
+	if is_upgrade and not is_trigger and display_ability is ActiveAbilityData:
+		_populate_stat_changes(stats_container, display_ability)
 	vbox.add_child(stats_container)
 
 	# Rank circle container (replaces tier diamonds)
@@ -225,24 +251,27 @@ func create_ability_card(ability, index: int) -> Button:
 	# Calculate the next rank for this ability
 	var next_rank = 1
 	var is_passive_upgrade = false
-	if ability is AbilityData:
-		next_rank = AbilityManager.get_next_ability_rank(ability.id)
-		is_passive_upgrade = AbilityManager.get_ability_rank(ability.id) > 0
-	elif ability is ActiveAbilityData:
+	if is_trigger:
+		# Trigger cards show rank 2 (upgrading to BRANCH tier)
+		next_rank = 2
+	elif display_ability is AbilityData:
+		next_rank = AbilityManager.get_next_ability_rank(display_ability.id)
+		is_passive_upgrade = AbilityManager.get_ability_rank(display_ability.id) > 0
+	elif display_ability is ActiveAbilityData:
 		# For active abilities, use tier as rank
-		match ability.tier:
+		match display_ability.tier:
 			ActiveAbilityData.AbilityTier.BASE:
 				next_rank = 1
 			ActiveAbilityData.AbilityTier.BRANCH:
 				next_rank = 2
 			ActiveAbilityData.AbilityTier.SIGNATURE:
 				next_rank = 3
-	var rank_circle = _create_rank_circle(ability, next_rank)
+	var rank_circle = _create_rank_circle(display_ability, next_rank)
 	rank_container.add_child(rank_circle)
 	vbox.add_child(rank_container)
 
 	# New/Upgrade label at bottom
-	var new_upgrade_label = _create_new_upgrade_label(ability, is_passive_upgrade or is_upgrade)
+	var new_upgrade_label = _create_new_upgrade_label(display_ability, is_passive_upgrade or is_upgrade)
 	vbox.add_child(new_upgrade_label)
 
 	# Bottom spacer
@@ -261,20 +290,24 @@ func create_ability_card(ability, index: int) -> Button:
 
 	button.add_child(margin)
 
-	# Rarity tag pinned to top
-	var rarity_tag = _create_rarity_tag_for_ability(ability)
+	# Rarity tag pinned to top - trigger cards show "Upgrade"
+	var rarity_tag: Control
+	if is_trigger:
+		rarity_tag = _create_trigger_rarity_tag()
+	else:
+		rarity_tag = _create_rarity_tag_for_ability(display_ability)
 	rarity_tag.name = "RarityTag"
 	button.add_child(rarity_tag)
 
 	# Add particle effect container
-	var particle_container = _create_particle_container_for_ability(ability)
+	var particle_container = _create_particle_container_for_ability(display_ability)
 	particle_container.name = "ParticleContainer"
 	particle_container.visible = false
 	button.add_child(particle_container)
 	particle_containers.append(particle_container)
 
 	# Style the button (upgrade-aware)
-	_style_button_for_ability(button, ability)
+	_style_button_for_ability(button, display_ability)
 
 	# Connect click
 	button.pressed.connect(_on_ability_selected.bind(index))
@@ -286,6 +319,10 @@ func _is_active_ability_upgrade(ability) -> bool:
 	if ability is ActiveAbilityData:
 		return ability.is_upgrade()
 	return false
+
+func _is_trigger_card(ability) -> bool:
+	## Check if this is an upgrade trigger card (Dictionary with ability + upgrades)
+	return ability is Dictionary and ability.has("is_trigger") and ability.is_trigger
 
 func _get_rarity_color(ability) -> Color:
 	## Get rarity color for either AbilityData or ActiveAbilityData
@@ -334,6 +371,41 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 		label.text = "Upgrade"  # Same text for T2 and T3
 	else:
 		label.text = _get_rarity_name(ability)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
+	if pixel_font:
+		label.add_theme_font_override("font", pixel_font)
+	tag.add_child(label)
+
+	center.add_child(tag)
+	return center
+
+func _create_trigger_rarity_tag() -> CenterContainer:
+	## Create a rarity tag for trigger cards that shows "Upgrade"
+	var center = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	center.anchor_left = 0
+	center.anchor_right = 1
+	center.anchor_top = 0
+	center.anchor_bottom = 0
+	center.offset_top = -12
+	center.offset_bottom = 12
+
+	var tag = PanelContainer.new()
+
+	var tag_style = StyleBoxFlat.new()
+	tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+	tag_style.set_corner_radius_all(4)
+	tag_style.content_margin_left = 10
+	tag_style.content_margin_right = 10
+	tag_style.content_margin_top = 4
+	tag_style.content_margin_bottom = 4
+	tag.add_theme_stylebox_override("panel", tag_style)
+
+	var label = Label.new()
+	label.name = "RarityLabel"
+	label.text = "Upgrade"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
@@ -925,8 +997,12 @@ func _on_ability_selected(index: int) -> void:
 	if index >= 0 and index < current_choices.size():
 		var ability = current_choices[index]
 
+		# Check if this is a trigger card (Dictionary with ability + upgrades)
+		if _is_trigger_card(ability):
+			# Enter branch selection with the trigger's upgrade options
+			_enter_branch_selection_with_upgrades(ability.ability, ability.upgrades)
 		# Check if this is an active ability upgrade or a passive ability
-		if ability is ActiveAbilityData:
+		elif ability is ActiveAbilityData:
 			if selection_mode == SelectionMode.NORMAL:
 				# Enter branch selection mode to show upgrade options
 				_enter_branch_selection(ability)
@@ -1394,6 +1470,34 @@ func _enter_branch_selection(trigger_ability: ActiveAbilityData) -> void:
 	await get_tree().create_timer(0.3).timeout
 	_show_branch_cards(branches)
 
+func _enter_branch_selection_with_upgrades(trigger_ability: ActiveAbilityData, upgrades: Array) -> void:
+	"""Enter branch selection mode with pre-provided upgrade options (from trigger card)."""
+	selection_mode = SelectionMode.BRANCH_SELECTION
+
+	# Save current choices for cancel
+	_branch_selector.is_active = true
+	_branch_selector.trigger_ability = trigger_ability
+	_branch_selector.saved_choices = current_choices.duplicate()
+
+	# Convert upgrades to typed array
+	var branches: Array[ActiveAbilityData] = []
+	for upgrade in upgrades:
+		if upgrade is ActiveAbilityData:
+			branches.append(upgrade)
+
+	if branches.is_empty():
+		# No branches available - shouldn't happen with trigger cards
+		selection_mode = SelectionMode.NORMAL
+		return
+
+	# Animate out current cards
+	for i in range(ability_buttons.size()):
+		_animate_card_out(ability_buttons[i], i)
+
+	# Wait for animation then show branches
+	await get_tree().create_timer(0.3).timeout
+	_show_branch_cards(branches)
+
 func _show_branch_cards(branches: Array[ActiveAbilityData]) -> void:
 	"""Display branch upgrade cards."""
 	# Clear current buttons
@@ -1470,20 +1574,30 @@ func _show_cancel_button() -> void:
 		cancel_button = Button.new()
 		cancel_button.text = "Cancel"
 		cancel_button.custom_minimum_size = Vector2(180, 44)
+		cancel_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
-		# Style the button
+		# Style the button (match reroll button styling)
 		var style = StyleBoxFlat.new()
 		style.bg_color = Color(0.4, 0.4, 0.4)
 		style.border_color = Color(0.6, 0.6, 0.6)
 		style.set_border_width_all(2)
 		style.set_corner_radius_all(6)
+		style.content_margin_left = 20
+		style.content_margin_right = 20
+		style.content_margin_top = 8
+		style.content_margin_bottom = 8
 		cancel_button.add_theme_stylebox_override("normal", style)
 
 		var hover_style = style.duplicate()
 		hover_style.bg_color = Color(0.5, 0.5, 0.5)
 		cancel_button.add_theme_stylebox_override("hover", hover_style)
 
-		cancel_button.add_theme_font_size_override("font_size", 14)
+		var pressed_style = style.duplicate()
+		pressed_style.bg_color = Color(0.3, 0.3, 0.3)
+		cancel_button.add_theme_stylebox_override("pressed", pressed_style)
+
+		cancel_button.add_theme_font_size_override("font_size", 15)
+		cancel_button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
 		if pixel_font:
 			cancel_button.add_theme_font_override("font", pixel_font)
 
