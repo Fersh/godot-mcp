@@ -156,17 +156,34 @@ func create_ability_card(ability, index: int) -> Button:
 	top_spacer.custom_minimum_size = Vector2(0, 8 if not is_upgrade else 24)
 	vbox.add_child(top_spacer)
 
-	# Ability name - colored by rarity
-	var name_label = Label.new()
-	name_label.name = "NameLabel"
-	name_label.text = ability_name
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	if pixel_font:
-		name_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(name_label)
+	# Ability name - use RichTextLabel for upgrades to show prefix in green
+	if is_upgrade and ability is ActiveAbilityData and not ability.name_prefix.is_empty():
+		var name_rich = RichTextLabel.new()
+		name_rich.name = "NameLabel"
+		name_rich.bbcode_enabled = true
+		name_rich.fit_content = true
+		name_rich.scroll_active = false
+		name_rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_rich.add_theme_font_size_override("normal_font_size", 18)
+		if pixel_font:
+			name_rich.add_theme_font_override("normal_font", pixel_font)
+		# Build compound name: [green]Prefix[/color] [rarity]BaseName[/color] [gold]Suffix[/gold]
+		var base_rarity_color = _get_base_ability_rarity_color(ability)
+		var suffix = ability.name_suffix if ability.is_signature() else ""
+		name_rich.text = _format_compound_name_full(ability.name_prefix, ability.base_name, suffix, base_rarity_color, ability.is_signature())
+		vbox.add_child(name_rich)
+	else:
+		# Regular label for non-upgrades
+		var name_label = Label.new()
+		name_label.name = "NameLabel"
+		name_label.text = ability_name
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 18)
+		name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
+		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		if pixel_font:
+			name_label.add_theme_font_override("font", pixel_font)
+		vbox.add_child(name_label)
 
 	# Description
 	var desc_label = Label.new()
@@ -181,6 +198,14 @@ func create_ability_card(ability, index: int) -> Button:
 	if pixel_font:
 		desc_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(desc_label)
+
+	# Stat changes container (for upgrades)
+	var stats_container = VBoxContainer.new()
+	stats_container.name = "StatsContainer"
+	stats_container.add_theme_constant_override("separation", 2)
+	if is_upgrade and ability is ActiveAbilityData:
+		_populate_stat_changes(stats_container, ability)
+	vbox.add_child(stats_container)
 
 	# Bottom spacer
 	var bottom_spacer = Control.new()
@@ -616,17 +641,68 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 
 	var is_upgrade = _is_active_ability_upgrade(ability)
 
-	# Children: 0=top_spacer, 1=name, 2=desc, 3=bottom_spacer
-	# Update name label (child 1) - set color to rarity
-	var name_label = vbox.get_child(1) as Label
-	if name_label:
-		name_label.text = ability.name
-		name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
+	# Children: 0=top_spacer, 1=name, 2=desc, 3=stats_container, 4=bottom_spacer
+	# Update name (child 1) - could be Label or RichTextLabel
+	var name_node = vbox.get_child(1)
+	if name_node:
+		if is_upgrade and ability is ActiveAbilityData and not ability.name_prefix.is_empty():
+			# Need RichTextLabel for compound name
+			var base_rarity_color = _get_base_ability_rarity_color(ability)
+			var suffix = ability.name_suffix if ability.is_signature() else ""
+			var formatted_name = _format_compound_name_full(ability.name_prefix, ability.base_name, suffix, base_rarity_color, ability.is_signature())
+
+			if name_node is RichTextLabel:
+				name_node.text = formatted_name
+			elif name_node is Label:
+				# Replace Label with RichTextLabel
+				var name_rich = RichTextLabel.new()
+				name_rich.name = "NameLabel"
+				name_rich.bbcode_enabled = true
+				name_rich.fit_content = true
+				name_rich.scroll_active = false
+				name_rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				name_rich.add_theme_font_size_override("normal_font_size", 18)
+				if pixel_font:
+					name_rich.add_theme_font_override("normal_font", pixel_font)
+				name_rich.text = formatted_name
+				vbox.remove_child(name_node)
+				name_node.queue_free()
+				vbox.add_child(name_rich)
+				vbox.move_child(name_rich, 1)
+		else:
+			# Regular label
+			if name_node is Label:
+				name_node.text = ability.name
+				name_node.add_theme_color_override("font_color", _get_rarity_color(ability))
+			elif name_node is RichTextLabel:
+				# Replace RichTextLabel with Label
+				var name_label = Label.new()
+				name_label.name = "NameLabel"
+				name_label.text = ability.name
+				name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				name_label.add_theme_font_size_override("font_size", 18)
+				name_label.add_theme_color_override("font_color", _get_rarity_color(ability))
+				name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				if pixel_font:
+					name_label.add_theme_font_override("font", pixel_font)
+				vbox.remove_child(name_node)
+				name_node.queue_free()
+				vbox.add_child(name_label)
+				vbox.move_child(name_label, 1)
 
 	# Update description label (child 2)
 	var desc_label = vbox.get_child(2) as Label
 	if desc_label:
 		desc_label.text = ability.description
+
+	# Update stats container (child 3)
+	var stats_container = vbox.get_node_or_null("StatsContainer") as VBoxContainer
+	if stats_container:
+		# Clear and repopulate
+		for child in stats_container.get_children():
+			child.queue_free()
+		if is_upgrade and ability is ActiveAbilityData:
+			_populate_stat_changes(stats_container, ability)
 
 	# Update rarity tag (child 1 of button is CenterContainer, which contains PanelContainer)
 	var center_container = button.get_child(1) as CenterContainer
@@ -934,3 +1010,129 @@ func _spawn_sparkles_count(button: Button, color: Color, count: int) -> void:
 		sparkle_tween.tween_property(sparkle, "color:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
 		sparkle_tween.tween_property(sparkle, "scale", Vector2(0.2, 0.2), 0.7).set_ease(Tween.EASE_IN)
 		sparkle_tween.chain().tween_callback(sparkle.queue_free)
+
+# ============================================
+# UPGRADE CARD HELPERS
+# ============================================
+
+func _format_compound_name_full(prefix: String, base_name: String, suffix: String, base_rarity_color: Color, is_signature: bool) -> String:
+	## Format compound name with prefix in green, base name in rarity color, suffix in gold
+	var green_hex = "33ee55"  # Bright green for prefix
+	var gold_hex = "ffdd44"   # Gold for suffix (signature)
+	var rarity_hex = base_rarity_color.to_html(false)
+
+	var result = "[center]"
+	if not prefix.is_empty():
+		result += "[color=#%s]%s[/color] " % [green_hex, prefix]
+	result += "[color=#%s]%s[/color]" % [rarity_hex, base_name]
+	if not suffix.is_empty():
+		result += " [color=#%s]%s[/color]" % [gold_hex, suffix]
+	result += "[/center]"
+	return result
+
+func _format_compound_name(prefix: String, base_name: String, base_rarity_color: Color) -> String:
+	## Format compound name with prefix in green and base name in rarity color (T2 abilities)
+	return _format_compound_name_full(prefix, base_name, "", base_rarity_color, false)
+
+func _get_base_ability_rarity_color(ability: ActiveAbilityData) -> Color:
+	## Get the rarity color of the root T1 base ability (for the base_name portion)
+	## e.g., for "Fiery Slam of Doom", get the rarity color of "Slam" (the T1 base)
+	if ability.base_ability_id.is_empty():
+		return _get_rarity_color(ability)
+
+	var base_ability = ActiveAbilityDatabase.get_ability(ability.base_ability_id)
+	if base_ability:
+		return ActiveAbilityData.get_rarity_color(base_ability.rarity)
+	return _get_rarity_color(ability)
+
+func _populate_stat_changes(container: VBoxContainer, ability: ActiveAbilityData) -> void:
+	## Populate the stats container with stat change indicators
+	if ability.prerequisite_id.is_empty():
+		return
+
+	var prereq = ActiveAbilityDatabase.get_ability(ability.prerequisite_id)
+	if not prereq:
+		return
+
+	# Clear existing children
+	for child in container.get_children():
+		child.queue_free()
+
+	# Collect stat changes
+	var changes: Array[String] = []
+
+	# Damage comparison
+	if ability.base_damage > 0 and prereq.base_damage > 0:
+		var dmg_diff = ability.base_damage - prereq.base_damage
+		var dmg_percent = (dmg_diff / prereq.base_damage) * 100 if prereq.base_damage > 0 else 0
+		if abs(dmg_percent) >= 5:
+			var sign = "+" if dmg_percent > 0 else ""
+			var color = "33ee55" if dmg_percent > 0 else "ff5555"
+			changes.append("[color=#%s]%s%.0f%% Damage[/color]" % [color, sign, dmg_percent])
+	elif ability.base_damage > 0 and prereq.base_damage == 0:
+		changes.append("[color=#33ee55]+%.0f Damage[/color]" % ability.base_damage)
+
+	# Cooldown comparison (lower is better)
+	if ability.cooldown != prereq.cooldown:
+		var cd_diff = ability.cooldown - prereq.cooldown
+		var sign = "+" if cd_diff > 0 else ""
+		var color = "ff5555" if cd_diff > 0 else "33ee55"  # Lower cooldown is better
+		changes.append("[color=#%s]%s%.1fs Cooldown[/color]" % [color, sign, cd_diff])
+
+	# Range comparison
+	if ability.range_distance > 0 and prereq.range_distance > 0:
+		var range_diff = ability.range_distance - prereq.range_distance
+		var range_percent = (range_diff / prereq.range_distance) * 100 if prereq.range_distance > 0 else 0
+		if abs(range_percent) >= 10:
+			var sign = "+" if range_percent > 0 else ""
+			var color = "33ee55" if range_percent > 0 else "ff5555"
+			changes.append("[color=#%s]%s%.0f%% Range[/color]" % [color, sign, range_percent])
+
+	# AoE comparison
+	if ability.radius > 0 and prereq.radius > 0:
+		var aoe_diff = ability.radius - prereq.radius
+		var aoe_percent = (aoe_diff / prereq.radius) * 100 if prereq.radius > 0 else 0
+		if abs(aoe_percent) >= 10:
+			var sign = "+" if aoe_percent > 0 else ""
+			var color = "33ee55" if aoe_percent > 0 else "ff5555"
+			changes.append("[color=#%s]%s%.0f%% AoE[/color]" % [color, sign, aoe_percent])
+	elif ability.radius > 0 and prereq.radius == 0:
+		changes.append("[color=#33ee55]+AoE[/color]")
+
+	# Duration comparison
+	if ability.duration > 0 and prereq.duration > 0:
+		var dur_diff = ability.duration - prereq.duration
+		if abs(dur_diff) >= 0.5:
+			var sign = "+" if dur_diff > 0 else ""
+			var color = "33ee55" if dur_diff > 0 else "ff5555"
+			changes.append("[color=#%s]%s%.1fs Duration[/color]" % [color, sign, dur_diff])
+	elif ability.duration > 0 and prereq.duration == 0:
+		changes.append("[color=#33ee55]+%.1fs Duration[/color]" % ability.duration)
+
+	# Stun comparison
+	if ability.stun_duration > 0 and prereq.stun_duration == 0:
+		changes.append("[color=#33ee55]+%.1fs Stun[/color]" % ability.stun_duration)
+	elif ability.stun_duration > prereq.stun_duration:
+		var stun_diff = ability.stun_duration - prereq.stun_duration
+		changes.append("[color=#33ee55]+%.1fs Stun[/color]" % stun_diff)
+
+	# Slow comparison
+	if ability.slow_percent > 0 and prereq.slow_percent == 0:
+		changes.append("[color=#33ee55]+%.0f%% Slow[/color]" % (ability.slow_percent * 100))
+
+	# Knockback comparison
+	if ability.knockback_force > 0 and prereq.knockback_force == 0:
+		changes.append("[color=#33ee55]+Knockback[/color]")
+
+	# Create labels for each change (show max 3 to fit in card)
+	var max_changes = 3
+	for i in range(min(changes.size(), max_changes)):
+		var change_label = RichTextLabel.new()
+		change_label.bbcode_enabled = true
+		change_label.fit_content = true
+		change_label.scroll_active = false
+		change_label.add_theme_font_size_override("normal_font_size", 12)
+		if pixel_font:
+			change_label.add_theme_font_override("normal_font", pixel_font)
+		change_label.text = "[center]%s[/center]" % changes[i]
+		container.add_child(change_label)
