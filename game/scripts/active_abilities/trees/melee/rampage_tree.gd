@@ -6,6 +6,9 @@ class_name RampageTree
 # Branch A (Frenzy): Stack frenzy -> Bloodlust (faster with each kill)
 # Branch B (Fury): Damage increase -> Unstoppable (immune + massive damage)
 
+const BASE_NAME = "Rampage"
+const BASE_ID = "rampage"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -46,7 +49,8 @@ static func _create_frenzy() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(6.0) \
 	 .with_effect("frenzy") \
-	 .with_prerequisite("rampage", 0)
+	 .with_prerequisite("rampage", 0) \
+	 .with_prefix("Frenzied", BASE_NAME, BASE_ID)
 
 static func _create_bloodlust() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -61,7 +65,8 @@ static func _create_bloodlust() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("bloodlust") \
 	 .with_prerequisite("rampage_frenzy", 0) \
-	 .with_signature("Kills extend duration by 2s, +10% damage per kill, lifesteal during rampage")
+	 .with_signature("Kills extend duration by 2s, +10% damage per kill, lifesteal during rampage") \
+	 .with_suffix("of Bloodlust", BASE_NAME, "Frenzied", BASE_ID)
 
 static func _create_fury() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,7 +80,8 @@ static func _create_fury() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(5.0) \
 	 .with_effect("fury") \
-	 .with_prerequisite("rampage", 1)
+	 .with_prerequisite("rampage", 1) \
+	 .with_prefix("Furious", BASE_NAME, BASE_ID)
 
 static func _create_unstoppable() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -91,7 +97,8 @@ static func _create_unstoppable() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("unstoppable_force") \
 	 .with_prerequisite("rampage_fury", 1) \
-	 .with_signature("Immune to CC, +100% damage, move through enemies dealing damage, can't be stopped")
+	 .with_signature("Immune to CC, +100% damage, move through enemies dealing damage, can't be stopped") \
+	 .with_suffix("of Annihilation", BASE_NAME, "Furious", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["rampage", "rampage_frenzy", "rampage_bloodlust", "rampage_fury", "rampage_unstoppable"]

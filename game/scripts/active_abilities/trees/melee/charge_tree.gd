@@ -3,8 +3,11 @@ class_name ChargeTree
 
 # Charge Ability Tree
 # Base: Rush forward, damage first enemy hit
-# Branch A (Trampling): Damage ALL enemies in path -> Stampede (fire trail, 3x distance)
-# Branch B (Shield): Immune during charge -> Unstoppable Force (stun all, destroy projectiles)
+# Branch A (Trampling): Damage ALL enemies -> of Inferno (fire trail)
+# Branch B (Shielded): Immune during charge -> of Annihilation
+
+const BASE_NAME = "Charge"
+const BASE_ID = "charge"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"charge",
-		"Charge",
+		BASE_ID,
+		BASE_NAME,
 		"Rush forward and slam into the first enemy, dealing damage.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -48,12 +51,13 @@ static func _create_trampling_charge() -> ActiveAbilityData:
 	 .with_range(250.0) \
 	 .with_movement() \
 	 .with_effect("trample") \
-	 .with_prerequisite("charge", 0)
+	 .with_prerequisite("charge", 0) \
+	 .with_prefix("Trampling", BASE_NAME, BASE_ID)
 
 static func _create_stampede() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"charge_stampede",
-		"Stampede",
+		"Trampling Charge of Inferno",
 		"An unstoppable charge that covers triple distance and leaves a trail of fire.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -64,12 +68,13 @@ static func _create_stampede() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("stampede") \
 	 .with_prerequisite("charge_trample", 0) \
-	 .with_signature("3x charge distance with fire trail")
+	 .with_signature("3x charge distance with fire trail") \
+	 .with_suffix("of Inferno", BASE_NAME, "Trampling", BASE_ID)
 
 static func _create_shield_charge() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"charge_shield",
-		"Shield Charge",
+		"Shielded Charge",
 		"Raise your shield while charging, becoming immune to damage.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -81,13 +86,14 @@ static func _create_shield_charge() -> ActiveAbilityData:
 	 .with_invulnerability(0.5) \
 	 .with_knockback(200.0) \
 	 .with_effect("shield_charge") \
-	 .with_prerequisite("charge", 1)
+	 .with_prerequisite("charge", 1) \
+	 .with_prefix("Shielded", BASE_NAME, BASE_ID)
 
 static func _create_unstoppable_force() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"charge_unstoppable",
-		"Unstoppable Force",
-		"Nothing can stop you. Stun all enemies in path and destroy incoming projectiles.",
+		"Shielded Charge of Annihilation",
+		"Nothing can stop you. Stun all enemies in path and destroy projectiles.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.DIRECTION,
@@ -100,7 +106,8 @@ static func _create_unstoppable_force() -> ActiveAbilityData:
 	 .with_knockback(300.0) \
 	 .with_effect("unstoppable") \
 	 .with_prerequisite("charge_shield", 1) \
-	 .with_signature("Destroys projectiles and stuns all in path")
+	 .with_signature("Destroys projectiles and stuns all in path") \
+	 .with_suffix("of Annihilation", BASE_NAME, "Shielded", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["charge", "charge_trample", "charge_stampede", "charge_shield", "charge_unstoppable"]

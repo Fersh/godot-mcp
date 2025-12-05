@@ -6,6 +6,9 @@ class_name PoisonTree
 # Branch A (Plague): Spreads on death -> Pandemic (massive spread radius)
 # Branch B (Toxic): Stacking poison -> Venom (instant stacks = instant death)
 
+const BASE_NAME = "Poison Arrow"
+const BASE_ID = "poison_arrow"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -49,7 +52,8 @@ static func _create_plague() -> ActiveAbilityData:
 	 .with_aoe(100.0) \
 	 .with_duration(6.0) \
 	 .with_effect("plague_arrow") \
-	 .with_prerequisite("poison_arrow", 0)
+	 .with_prerequisite("poison_arrow", 0) \
+	 .with_prefix("Plague", BASE_NAME, BASE_ID)
 
 static func _create_pandemic() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,7 +70,8 @@ static func _create_pandemic() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("pandemic") \
 	 .with_prerequisite("poison_plague", 0) \
-	 .with_signature("Infinite spread, +10% damage per spread, slows 20%")
+	 .with_signature("Infinite spread, +10% damage per spread, slows 20%") \
+	 .with_suffix("of Pandemic", BASE_NAME, "Plague", BASE_ID)
 
 static func _create_toxic() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,7 +86,8 @@ static func _create_toxic() -> ActiveAbilityData:
 	 .with_projectiles(1, 600.0) \
 	 .with_duration(4.0) \
 	 .with_effect("toxic_shot") \
-	 .with_prerequisite("poison_arrow", 1)
+	 .with_prerequisite("poison_arrow", 1) \
+	 .with_prefix("Toxic", BASE_NAME, BASE_ID)
 
 static func _create_venom() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,7 +103,8 @@ static func _create_venom() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("lethal_venom") \
 	 .with_prerequisite("poison_toxic", 1) \
-	 .with_signature("10 stacks = 500% instant damage burst, stacks build faster")
+	 .with_signature("10 stacks = 500% instant damage burst, stacks build faster") \
+	 .with_suffix("of Venom", BASE_NAME, "Toxic", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["poison_arrow", "poison_plague", "poison_pandemic", "poison_toxic", "poison_venom"]

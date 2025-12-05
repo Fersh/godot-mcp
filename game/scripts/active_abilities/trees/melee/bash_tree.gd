@@ -1,21 +1,22 @@
 extends RefCounted
 class_name BashTree
 
-# Bash (Shield Bash) Ability Tree
+# Shield Bash Ability Tree
 # Base: Single target stun with knockback
-# Branch A (Shockwave): AoE stun, shorter duration -> Earthquake Slam (massive AoE, enemies airborne)
-# Branch B (Lockdown): Long single-target stun -> Petrifying Strike (stun + damage amp)
+# Branch A (Shockwave): AoE stun -> of Destruction
+# Branch B (Lockdown): Long single-target stun -> of Petrification
+
+const BASE_NAME = "Shield Bash"
+const BASE_ID = "shield_bash"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
-	# Branch A: Shockwave path (AoE control)
 	tree.add_branch(
 		_create_shockwave_bash(),
 		_create_earthquake_slam()
 	)
 
-	# Branch B: Lockdown path (single target lockdown)
 	tree.add_branch(
 		_create_lockdown_bash(),
 		_create_petrifying_strike()
@@ -25,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"shield_bash",
-		"Shield Bash",
+		BASE_ID,
+		BASE_NAME,
 		"Bash an enemy with your shield, stunning them briefly and knocking them back.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -40,8 +41,8 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_shockwave_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"bash_shockwave",
-		"Shockwave Bash",
-		"Your bash creates a shockwave that stuns all nearby enemies for a short duration.",
+		"Shockwave Shield Bash",
+		"Creates a shockwave that stuns all nearby enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -51,13 +52,14 @@ static func _create_shockwave_bash() -> ActiveAbilityData:
 	 .with_stun(0.8) \
 	 .with_knockback(100.0) \
 	 .with_effect("shockwave_bash") \
-	 .with_prerequisite("shield_bash", 0)
+	 .with_prerequisite("shield_bash", 0) \
+	 .with_prefix("Shockwave", BASE_NAME, BASE_ID)
 
 static func _create_earthquake_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"bash_earthquake",
-		"Earthquake Slam",
-		"Slam the ground with devastating force. Enemies are launched airborne and stunned on landing.",
+		"Shockwave Shield Bash of Destruction",
+		"Slam with devastating force. Enemies are launched airborne and stunned.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -68,12 +70,13 @@ static func _create_earthquake_slam() -> ActiveAbilityData:
 	 .with_knockback(300.0) \
 	 .with_effect("earthquake") \
 	 .with_prerequisite("bash_shockwave", 0) \
-	 .with_signature("Launches enemies airborne with massive AoE stun")
+	 .with_signature("Launches enemies airborne with massive AoE stun") \
+	 .with_suffix("of Destruction", BASE_NAME, "Shockwave", BASE_ID)
 
 static func _create_lockdown_bash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"bash_lockdown",
-		"Lockdown Bash",
+		"Lockdown Shield Bash",
 		"A focused bash that stuns a single enemy for an extended duration.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -83,13 +86,14 @@ static func _create_lockdown_bash() -> ActiveAbilityData:
 	 .with_stun(3.0) \
 	 .with_knockback(50.0) \
 	 .with_effect("lockdown_bash") \
-	 .with_prerequisite("shield_bash", 1)
+	 .with_prerequisite("shield_bash", 1) \
+	 .with_prefix("Lockdown", BASE_NAME, BASE_ID)
 
 static func _create_petrifying_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"bash_petrify",
-		"Petrifying Strike",
-		"Turn your enemy to stone. Petrified enemies take double damage and can be chain-stunned.",
+		"Lockdown Shield Bash of Petrification",
+		"Turn your enemy to stone. Petrified enemies take double damage.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
@@ -98,7 +102,8 @@ static func _create_petrifying_strike() -> ActiveAbilityData:
 	 .with_stun(4.0) \
 	 .with_effect("petrify") \
 	 .with_prerequisite("bash_lockdown", 1) \
-	 .with_signature("Petrified enemies take 2x damage")
+	 .with_signature("Petrified enemies take 2x damage") \
+	 .with_suffix("of Petrification", BASE_NAME, "Lockdown", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["shield_bash", "bash_shockwave", "bash_earthquake", "bash_lockdown", "bash_petrify"]

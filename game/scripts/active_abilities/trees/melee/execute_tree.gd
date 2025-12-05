@@ -1,6 +1,9 @@
 extends RefCounted
 class_name ExecuteTree
 
+const BASE_NAME = "Execute"
+const BASE_ID = "execute"
+
 # Execute Ability Tree (Melee)
 # Base: Deal bonus damage to low HP enemies
 # Branch A (Reaper): Instant kill threshold -> Soul Harvest (heal per execute)
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"execute",
-		"Execute",
+		BASE_ID,
+		BASE_NAME,
 		"Strike a wounded enemy for bonus damage. +100% damage below 30% HP.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -46,7 +49,8 @@ static func _create_reaper() -> ActiveAbilityData:
 	).with_damage(50.0, 1.2) \
 	 .with_range(150.0) \
 	 .with_effect("reaper_touch") \
-	 .with_prerequisite("execute", 0)
+	 .with_prerequisite("execute", 0) \
+	 .with_prefix("Reaper's", BASE_NAME, BASE_ID)
 
 static func _create_soul_harvest() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -61,7 +65,8 @@ static func _create_soul_harvest() -> ActiveAbilityData:
 	 .with_range(180.0) \
 	 .with_effect("soul_harvest") \
 	 .with_prerequisite("execute_reaper", 0) \
-	 .with_signature("Kill below 25% HP, heal 20% max HP per kill, resets cooldown on kill")
+	 .with_signature("Kill below 25% HP, heal 20% max HP per kill, resets cooldown on kill") \
+	 .with_suffix("of Souls", BASE_NAME, "Reaper's", BASE_ID)
 
 static func _create_brutal_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,7 +80,8 @@ static func _create_brutal_strike() -> ActiveAbilityData:
 	).with_damage(100.0, 1.8) \
 	 .with_range(120.0) \
 	 .with_effect("brutal_strike") \
-	 .with_prerequisite("execute", 1)
+	 .with_prerequisite("execute", 1) \
+	 .with_prefix("Brutal", BASE_NAME, BASE_ID)
 
 static func _create_decapitate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -90,7 +96,8 @@ static func _create_decapitate() -> ActiveAbilityData:
 	 .with_range(150.0) \
 	 .with_effect("decapitate") \
 	 .with_prerequisite("execute_brutal", 1) \
-	 .with_signature("Always crits, 3x damage below 40% HP, brief slow-mo on kill")
+	 .with_signature("Always crits, 3x damage below 40% HP, brief slow-mo on kill") \
+	 .with_suffix("of Death", BASE_NAME, "Brutal", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["execute", "execute_reaper", "execute_harvest", "execute_brutal", "execute_decapitate"]

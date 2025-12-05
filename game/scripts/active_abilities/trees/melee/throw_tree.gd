@@ -1,6 +1,9 @@
 extends RefCounted
 class_name ThrowTree
 
+const BASE_NAME = "Throw Weapon"
+const BASE_ID = "throw_weapon"
+
 # Throw Weapon Ability Tree (Melee)
 # Base: Throw your weapon at enemies
 # Branch A (Ricochet): Bounces between enemies -> Blade Storm (orbiting blades)
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"throw_weapon",
-		"Throw Weapon",
+		BASE_ID,
+		BASE_NAME,
 		"Hurl your weapon at an enemy, dealing heavy damage.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -38,7 +41,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_ricochet() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"throw_ricochet",
-		"Ricochet Blade",
+		"Bouncing Throw Weapon",
 		"Weapon bounces between up to 4 enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -48,12 +51,13 @@ static func _create_ricochet() -> ActiveAbilityData:
 	 .with_range(400.0) \
 	 .with_projectiles(1, 650.0) \
 	 .with_effect("ricochet_blade") \
-	 .with_prerequisite("throw_weapon", 0)
+	 .with_prerequisite("throw_weapon", 0) \
+	 .with_prefix("Bouncing", BASE_NAME, BASE_ID)
 
 static func _create_blade_storm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"throw_bladestorm",
-		"Orbital Blades",
+		"Bouncing Throw Weapon of Storms",
 		"Summon 6 blades that orbit you, shredding nearby enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -64,12 +68,13 @@ static func _create_blade_storm() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("orbital_blades") \
 	 .with_prerequisite("throw_ricochet", 0) \
-	 .with_signature("6 orbiting blades for 8 seconds, can throw them at will")
+	 .with_signature("6 orbiting blades for 8 seconds, can throw them at will") \
+	 .with_suffix("of Storms", BASE_NAME, "Bouncing", BASE_ID)
 
 static func _create_grapple() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"throw_grapple",
-		"Grappling Throw",
+		"Grappling Throw Weapon",
 		"Throw weapon then pull yourself to its location.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -79,12 +84,13 @@ static func _create_grapple() -> ActiveAbilityData:
 	 .with_range(400.0) \
 	 .with_movement() \
 	 .with_effect("grapple_throw") \
-	 .with_prerequisite("throw_weapon", 1)
+	 .with_prerequisite("throw_weapon", 1) \
+	 .with_prefix("Grappling", BASE_NAME, BASE_ID)
 
 static func _create_impaler() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"throw_impaler",
-		"Impaler",
+		"Grappling Throw Weapon of Impalement",
 		"Throw a massive spear that pins enemies and pierces infinitely.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -95,7 +101,8 @@ static func _create_impaler() -> ActiveAbilityData:
 	 .with_stun(2.0) \
 	 .with_effect("impaler") \
 	 .with_prerequisite("throw_grapple", 1) \
-	 .with_signature("Infinite pierce, enemies pinned for 2s, pull yourself to end point")
+	 .with_signature("Infinite pierce, enemies pinned for 2s, pull yourself to end point") \
+	 .with_suffix("of Impalement", BASE_NAME, "Grappling", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["throw_weapon", "throw_ricochet", "throw_bladestorm", "throw_grapple", "throw_impaler"]

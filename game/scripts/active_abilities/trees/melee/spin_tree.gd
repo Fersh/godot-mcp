@@ -1,10 +1,13 @@
 extends RefCounted
 class_name SpinTree
 
-# Spin (Spinning Attack) Ability Tree
+# Spinning Attack Ability Tree
 # Base: Quick 360 attack around self
-# Branch A (Vortex): Sustained spinning with enemy pull -> Bladestorm (move freely, constant damage)
-# Branch B (Deflect): Reflects projectiles -> Mirror Dance (reflected projectiles seek enemies)
+# Branch A (Vortex): Sustained spinning -> of Storms
+# Branch B (Deflecting): Reflects projectiles -> of Mirrors
+
+const BASE_NAME = "Spinning Attack"
+const BASE_ID = "spinning_attack"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"spinning_attack",
-		"Spinning Attack",
+		BASE_ID,
+		BASE_NAME,
 		"Spin your weapon in a full circle, hitting all nearby enemies.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -37,8 +40,8 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_blade_vortex() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_vortex",
-		"Blade Vortex",
-		"Create a spinning vortex that pulls enemies toward you while dealing damage.",
+		"Vortex Spinning Attack",
+		"Creates a vortex that pulls enemies toward you while dealing damage.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -47,13 +50,14 @@ static func _create_blade_vortex() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(3.0) \
 	 .with_effect("vortex") \
-	 .with_prerequisite("spinning_attack", 0)
+	 .with_prerequisite("spinning_attack", 0) \
+	 .with_prefix("Vortex", BASE_NAME, BASE_ID)
 
 static func _create_bladestorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_bladestorm",
-		"Bladestorm",
-		"Become a whirlwind of death. Move freely while constantly damaging all nearby enemies.",
+		"Vortex Spinning Attack of Storms",
+		"Become a whirlwind of death. Move freely while constantly damaging enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -64,13 +68,14 @@ static func _create_bladestorm() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("bladestorm") \
 	 .with_prerequisite("spin_vortex", 0) \
-	 .with_signature("Move freely while spinning, pulls enemies in")
+	 .with_signature("Move freely while spinning, pulls enemies in") \
+	 .with_suffix("of Storms", BASE_NAME, "Vortex", BASE_ID)
 
 static func _create_deflecting_spin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_deflect",
-		"Deflecting Spin",
-		"Your spin deflects incoming projectiles back at enemies.",
+		"Deflecting Spinning Attack",
+		"Deflects incoming projectiles back at enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -79,13 +84,14 @@ static func _create_deflecting_spin() -> ActiveAbilityData:
 	 .with_aoe(130.0) \
 	 .with_duration(1.5) \
 	 .with_effect("deflect_spin") \
-	 .with_prerequisite("spinning_attack", 1)
+	 .with_prerequisite("spinning_attack", 1) \
+	 .with_prefix("Deflecting", BASE_NAME, BASE_ID)
 
 static func _create_mirror_dance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_mirror",
-		"Mirror Dance",
-		"A graceful spin that reflects all projectiles. Reflected projectiles home in on enemies.",
+		"Deflecting Spinning Attack of Mirrors",
+		"Reflects all projectiles. Reflected projectiles home in on enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -96,7 +102,8 @@ static func _create_mirror_dance() -> ActiveAbilityData:
 	 .with_invulnerability(2.5) \
 	 .with_effect("mirror_dance") \
 	 .with_prerequisite("spin_deflect", 1) \
-	 .with_signature("Reflected projectiles become homing missiles")
+	 .with_signature("Reflected projectiles become homing missiles") \
+	 .with_suffix("of Mirrors", BASE_NAME, "Deflecting", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["spinning_attack", "spin_vortex", "spin_bladestorm", "spin_deflect", "spin_mirror"]

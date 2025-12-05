@@ -6,6 +6,9 @@ class_name ImpaleTree
 # Branch A (Skewer): Pierce multiple enemies -> Shish Kebab (carry enemies on weapon)
 # Branch B (Pin): Pin enemy in place -> Crucify (pin to nearest wall)
 
+const BASE_NAME = "Impale"
+const BASE_ID = "impale"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -46,7 +49,8 @@ static func _create_skewer() -> ActiveAbilityData:
 	).with_damage(45.0, 1.2) \
 	 .with_range(250.0) \
 	 .with_effect("skewer") \
-	 .with_prerequisite("impale", 0)
+	 .with_prerequisite("impale", 0) \
+	 .with_prefix("Skewering", BASE_NAME, BASE_ID)
 
 static func _create_shish_kebab() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,7 +68,8 @@ static func _create_shish_kebab() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("shish_kebab") \
 	 .with_prerequisite("impale_skewer", 0) \
-	 .with_signature("Carry up to 5 enemies, slam deals AoE + stuns, move while carrying")
+	 .with_signature("Carry up to 5 enemies, slam deals AoE + stuns, move while carrying") \
+	 .with_suffix("of the Skewer", BASE_NAME, "Skewering", BASE_ID)
 
 static func _create_pin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,7 +84,8 @@ static func _create_pin() -> ActiveAbilityData:
 	 .with_range(150.0) \
 	 .with_stun(2.0) \
 	 .with_effect("pinning_strike") \
-	 .with_prerequisite("impale", 1)
+	 .with_prerequisite("impale", 1) \
+	 .with_prefix("Pinning", BASE_NAME, BASE_ID)
 
 static func _create_crucify() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -95,7 +101,8 @@ static func _create_crucify() -> ActiveAbilityData:
 	 .with_stun(3.0) \
 	 .with_effect("crucify") \
 	 .with_prerequisite("impale_pin", 1) \
-	 .with_signature("Push to wall for 3x damage, pinned for 3 seconds, bleed effect")
+	 .with_signature("Push to wall for 3x damage, pinned for 3 seconds, bleed effect") \
+	 .with_suffix("of Crucifixion", BASE_NAME, "Pinning", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["impale", "impale_skewer", "impale_kebab", "impale_pin", "impale_crucify"]

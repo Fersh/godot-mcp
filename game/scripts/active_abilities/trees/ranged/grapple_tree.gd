@@ -6,6 +6,9 @@ class_name GrappleTree
 # Branch A (Pull): Pull enemies to you -> Scorpion (GET OVER HERE!)
 # Branch B (Swing): Swing through enemies -> Spider (web swing combo)
 
+const BASE_NAME = "Grappling Hook"
+const BASE_ID = "grapple"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_pull() -> ActiveAbilityData:
 	 .with_range(450.0) \
 	 .with_stun(0.5) \
 	 .with_effect("hook_pull") \
-	 .with_prerequisite("grapple", 0)
+	 .with_prerequisite("grapple", 0) \
+	 .with_prefix("Pulling", BASE_NAME, BASE_ID)
 
 static func _create_scorpion() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -65,7 +69,8 @@ static func _create_scorpion() -> ActiveAbilityData:
 	 .with_stun(1.0) \
 	 .with_effect("scorpion") \
 	 .with_prerequisite("grapple_pull", 0) \
-	 .with_signature("Pull up to 5 enemies, impale on arrival, follow-up strike")
+	 .with_signature("Pull up to 5 enemies, impale on arrival, follow-up strike") \
+	 .with_suffix("of the Scorpion", BASE_NAME, "Pulling", BASE_ID)
 
 static func _create_swing() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -82,7 +87,8 @@ static func _create_swing() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_knockback(200.0) \
 	 .with_effect("swing_kick") \
-	 .with_prerequisite("grapple", 1)
+	 .with_prerequisite("grapple", 1) \
+	 .with_prefix("Swinging", BASE_NAME, BASE_ID)
 
 static func _create_spider() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -100,7 +106,8 @@ static func _create_spider() -> ActiveAbilityData:
 	 .with_invulnerability(2.0) \
 	 .with_effect("web_slinger") \
 	 .with_prerequisite("grapple_swing", 1) \
-	 .with_signature("Swing through up to 6 enemies, invulnerable, webs slow 50%")
+	 .with_signature("Swing through up to 6 enemies, invulnerable, webs slow 50%") \
+	 .with_suffix("of the Spider", BASE_NAME, "Swinging", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["grapple", "grapple_pull", "grapple_scorpion", "grapple_swing", "grapple_spider"]

@@ -1,10 +1,13 @@
 extends RefCounted
 class_name BlockTree
 
-# Block/Parry Ability Tree (Melee)
+# Block Ability Tree
 # Base: Block incoming attacks
-# Branch A (Reflect): Reflect projectiles -> Mirror Shield (return damage)
-# Branch B (Parry): Perfect timing counter -> Riposte (massive counter damage)
+# Branch A (Reflecting): Reflect projectiles -> of Retribution
+# Branch B (Parrying): Perfect timing counter -> of Vengeance
+
+const BASE_NAME = "Block"
+const BASE_ID = "block"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"block",
-		"Block",
+		BASE_ID,
+		BASE_NAME,
 		"Raise your guard, reducing incoming damage by 50%.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -37,8 +40,8 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_reflect() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"block_reflect",
-		"Reflect Shield",
-		"Block also reflects projectiles back at enemies.",
+		"Reflecting Block",
+		"Also reflects projectiles back at enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
@@ -46,12 +49,13 @@ static func _create_reflect() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(2.0) \
 	 .with_effect("reflect_shield") \
-	 .with_prerequisite("block", 0)
+	 .with_prerequisite("block", 0) \
+	 .with_prefix("Reflecting", BASE_NAME, BASE_ID)
 
 static func _create_mirror_shield() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"block_mirror",
-		"Mirror Shield",
+		"Reflecting Block of Retribution",
 		"All blocked damage is reflected back to attackers.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -61,12 +65,13 @@ static func _create_mirror_shield() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("mirror_shield") \
 	 .with_prerequisite("block_reflect", 0) \
-	 .with_signature("100% damage reflection, projectiles return at 2x speed")
+	 .with_signature("100% damage reflection, projectiles return at 2x speed") \
+	 .with_suffix("of Retribution", BASE_NAME, "Reflecting", BASE_ID)
 
 static func _create_parry() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"block_parry",
-		"Parry",
+		"Parrying Block",
 		"Brief window to negate damage and stun attacker.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -76,12 +81,13 @@ static func _create_parry() -> ActiveAbilityData:
 	 .with_duration(0.4) \
 	 .with_stun(1.0) \
 	 .with_effect("parry") \
-	 .with_prerequisite("block", 1)
+	 .with_prerequisite("block", 1) \
+	 .with_prefix("Parrying", BASE_NAME, BASE_ID)
 
 static func _create_riposte() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"block_riposte",
-		"Riposte",
+		"Parrying Block of Vengeance",
 		"Perfect parry triggers devastating counter-attack.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -92,7 +98,8 @@ static func _create_riposte() -> ActiveAbilityData:
 	 .with_stun(2.0) \
 	 .with_effect("riposte") \
 	 .with_prerequisite("block_parry", 1) \
-	 .with_signature("Tiny parry window, success deals 250% damage + 2s stun")
+	 .with_signature("Tiny parry window, success deals 250% damage + 2s stun") \
+	 .with_suffix("of Vengeance", BASE_NAME, "Parrying", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["block", "block_reflect", "block_mirror", "block_parry", "block_riposte"]

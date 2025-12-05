@@ -6,6 +6,9 @@ class_name ExplosiveTree
 # Branch A (Cluster): Spawns smaller bombs -> Carpet Bomb (massive area denial)
 # Branch B (Sticky): Attaches to enemy -> Walking Bomb (infects and spreads)
 
+const BASE_NAME = "Explosive Arrow"
+const BASE_ID = "explosive_arrow"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_cluster() -> ActiveAbilityData:
 	 .with_projectiles(1, 500.0) \
 	 .with_aoe(80.0) \
 	 .with_effect("cluster_bomb") \
-	 .with_prerequisite("explosive_arrow", 0)
+	 .with_prerequisite("explosive_arrow", 0) \
+	 .with_prefix("Cluster", BASE_NAME, BASE_ID)
 
 static func _create_carpet_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,7 +68,8 @@ static func _create_carpet_bomb() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("carpet_bomb") \
 	 .with_prerequisite("explosive_cluster", 0) \
-	 .with_signature("12 explosions over 3 seconds, leaves burning ground")
+	 .with_signature("12 explosions over 3 seconds, leaves burning ground") \
+	 .with_suffix("of Carpet Bombing", BASE_NAME, "Cluster", BASE_ID)
 
 static func _create_sticky() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,7 +84,8 @@ static func _create_sticky() -> ActiveAbilityData:
 	 .with_range(400.0) \
 	 .with_aoe(120.0) \
 	 .with_effect("sticky_bomb") \
-	 .with_prerequisite("explosive_arrow", 1)
+	 .with_prerequisite("explosive_arrow", 1) \
+	 .with_prefix("Sticky", BASE_NAME, BASE_ID)
 
 static func _create_walking_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -96,7 +102,8 @@ static func _create_walking_bomb() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("walking_bomb") \
 	 .with_prerequisite("explosive_sticky", 1) \
-	 .with_signature("Infection chains to 3 nearby enemies on death")
+	 .with_signature("Infection chains to 3 nearby enemies on death") \
+	 .with_suffix("of Contagion", BASE_NAME, "Sticky", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["explosive_arrow", "explosive_cluster", "explosive_carpet", "explosive_sticky", "explosive_walking"]

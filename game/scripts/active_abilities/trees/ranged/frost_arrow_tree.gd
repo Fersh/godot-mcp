@@ -6,6 +6,9 @@ class_name FrostArrowTree
 # Branch A (Freeze): Can freeze enemies -> Ice Age (frozen enemies shatter nearby)
 # Branch B (Chill): Stacking slow -> Frostbite (max stacks = damage burst)
 
+const BASE_NAME = "Frost Arrow"
+const BASE_ID = "frost_arrow"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_freezing() -> ActiveAbilityData:
 	 .with_projectiles(1, 500.0) \
 	 .with_stun(1.5) \
 	 .with_effect("freezing_arrow") \
-	 .with_prerequisite("frost_arrow", 0)
+	 .with_prerequisite("frost_arrow", 0) \
+	 .with_prefix("Freezing", BASE_NAME, BASE_ID)
 
 static func _create_ice_age() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -65,7 +69,8 @@ static func _create_ice_age() -> ActiveAbilityData:
 	 .with_stun(2.0) \
 	 .with_effect("ice_age") \
 	 .with_prerequisite("frost_freezing", 0) \
-	 .with_signature("Guaranteed freeze, death causes AoE that can chain freeze")
+	 .with_signature("Guaranteed freeze, death causes AoE that can chain freeze") \
+	 .with_suffix("of the Ice Age", BASE_NAME, "Freezing", BASE_ID)
 
 static func _create_chilling() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -80,7 +85,8 @@ static func _create_chilling() -> ActiveAbilityData:
 	 .with_projectiles(1, 550.0) \
 	 .with_slow(0.2, 4.0) \
 	 .with_effect("chilling_shot") \
-	 .with_prerequisite("frost_arrow", 1)
+	 .with_prerequisite("frost_arrow", 1) \
+	 .with_prefix("Chilling", BASE_NAME, BASE_ID)
 
 static func _create_frostbite() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -96,7 +102,8 @@ static func _create_frostbite() -> ActiveAbilityData:
 	 .with_slow(0.15, 5.0) \
 	 .with_effect("frostbite") \
 	 .with_prerequisite("frost_chilling", 1) \
-	 .with_signature("Max stacks triggers 300% damage burst, brief freeze")
+	 .with_signature("Max stacks triggers 300% damage burst, brief freeze") \
+	 .with_suffix("of Frostbite", BASE_NAME, "Chilling", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["frost_arrow", "frost_freezing", "frost_ice_age", "frost_chilling", "frost_frostbite"]

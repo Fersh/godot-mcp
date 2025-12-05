@@ -6,6 +6,9 @@ class_name RicochetTree
 # Branch A (Chain): More bounces -> Infinite Ricochet (bounces until no targets)
 # Branch B (Splitting): Split on bounce -> Cascade (exponential splitting)
 
+const BASE_NAME = "Ricochet Shot"
+const BASE_ID = "ricochet"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -46,7 +49,8 @@ static func _create_chain() -> ActiveAbilityData:
 	).with_damage(30.0, 0.9) \
 	 .with_range(450.0) \
 	 .with_effect("chain_bounce") \
-	 .with_prerequisite("ricochet", 0)
+	 .with_prerequisite("ricochet", 0) \
+	 .with_prefix("Chain", BASE_NAME, BASE_ID)
 
 static func _create_infinite() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -62,7 +66,8 @@ static func _create_infinite() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("endless_ricochet") \
 	 .with_prerequisite("ricochet_chain", 0) \
-	 .with_signature("Unlimited bounces, +5% damage per bounce, pierces on final hit")
+	 .with_signature("Unlimited bounces, +5% damage per bounce, pierces on final hit") \
+	 .with_suffix("of Infinity", BASE_NAME, "Chain", BASE_ID)
 
 static func _create_split() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -76,7 +81,8 @@ static func _create_split() -> ActiveAbilityData:
 	).with_damage(20.0, 0.7) \
 	 .with_range(400.0) \
 	 .with_effect("splitting_shot") \
-	 .with_prerequisite("ricochet", 1)
+	 .with_prerequisite("ricochet", 1) \
+	 .with_prefix("Splitting", BASE_NAME, BASE_ID)
 
 static func _create_cascade() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -92,7 +98,8 @@ static func _create_cascade() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("cascade") \
 	 .with_prerequisite("ricochet_split", 1) \
-	 .with_signature("Exponential splitting, up to 32 projectiles, screen-filling chaos")
+	 .with_signature("Exponential splitting, up to 32 projectiles, screen-filling chaos") \
+	 .with_suffix("of Cascades", BASE_NAME, "Splitting", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["ricochet", "ricochet_chain", "ricochet_infinite", "ricochet_split", "ricochet_cascade"]

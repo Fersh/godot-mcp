@@ -1,6 +1,9 @@
 extends RefCounted
 class_name TauntTree
 
+const BASE_NAME = "Taunt"
+const BASE_ID = "taunt"
+
 # Taunt Ability Tree (Melee)
 # Base: Force enemies to attack you
 # Branch A (Fortify): Gain armor while taunted -> Unstoppable (immune to damage briefly)
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"taunt",
-		"Taunt",
+		BASE_ID,
+		BASE_NAME,
 		"Force nearby enemies to attack you for 3 seconds.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -48,7 +51,8 @@ static func _create_fortify() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(4.0) \
 	 .with_effect("fortify_taunt") \
-	 .with_prerequisite("taunt", 0)
+	 .with_prerequisite("taunt", 0) \
+	 .with_prefix("Fortified", BASE_NAME, BASE_ID)
 
 static func _create_unstoppable() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -65,7 +69,8 @@ static func _create_unstoppable() -> ActiveAbilityData:
 	 .with_invulnerability(3.0) \
 	 .with_effect("unstoppable") \
 	 .with_prerequisite("taunt_fortify", 0) \
-	 .with_signature("3 seconds of invulnerability, all enemies attack you")
+	 .with_signature("3 seconds of invulnerability, all enemies attack you") \
+	 .with_suffix("of Invincibility", BASE_NAME, "Fortified", BASE_ID)
 
 static func _create_counter_stance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -80,7 +85,8 @@ static func _create_counter_stance() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(4.0) \
 	 .with_effect("counter_stance") \
-	 .with_prerequisite("taunt", 1)
+	 .with_prerequisite("taunt", 1) \
+	 .with_prefix("Counter", BASE_NAME, BASE_ID)
 
 static func _create_vengeance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -96,7 +102,8 @@ static func _create_vengeance() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("vengeance") \
 	 .with_prerequisite("taunt_counter", 1) \
-	 .with_signature("Each hit triggers AoE explosion, gain 10% lifesteal")
+	 .with_signature("Each hit triggers AoE explosion, gain 10% lifesteal") \
+	 .with_suffix("of Vengeance", BASE_NAME, "Counter", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["taunt", "taunt_fortify", "taunt_unstoppable", "taunt_counter", "taunt_vengeance"]

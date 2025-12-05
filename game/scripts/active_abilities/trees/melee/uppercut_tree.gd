@@ -6,6 +6,9 @@ class_name UppercutTree
 # Branch A (Juggle): Keep enemy airborne -> Air Combo (massive juggle damage)
 # Branch B (Slam): Grab and slam -> Piledriver (suplex from air)
 
+const BASE_NAME = "Uppercut"
+const BASE_ID = "uppercut"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -49,7 +52,8 @@ static func _create_juggle() -> ActiveAbilityData:
 	 .with_duration(2.0) \
 	 .with_knockback(150.0) \
 	 .with_effect("juggle") \
-	 .with_prerequisite("uppercut", 0)
+	 .with_prerequisite("uppercut", 0) \
+	 .with_prefix("Juggling", BASE_NAME, BASE_ID)
 
 static func _create_air_combo() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -67,7 +71,8 @@ static func _create_air_combo() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("air_combo") \
 	 .with_prerequisite("uppercut_juggle", 0) \
-	 .with_signature("10-hit air combo, invulnerable during, finisher slams down")
+	 .with_signature("10-hit air combo, invulnerable during, finisher slams down") \
+	 .with_suffix("of the Sky", BASE_NAME, "Juggling", BASE_ID)
 
 static func _create_grab() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -83,7 +88,8 @@ static func _create_grab() -> ActiveAbilityData:
 	 .with_aoe(80.0) \
 	 .with_stun(1.0) \
 	 .with_effect("grab_slam") \
-	 .with_prerequisite("uppercut", 1)
+	 .with_prerequisite("uppercut", 1) \
+	 .with_prefix("Grappling", BASE_NAME, BASE_ID)
 
 static func _create_piledriver() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -102,7 +108,8 @@ static func _create_piledriver() -> ActiveAbilityData:
 	 .with_invulnerability(1.0) \
 	 .with_effect("piledriver") \
 	 .with_prerequisite("uppercut_grab", 1) \
-	 .with_signature("Invulnerable grab, massive slam AoE, earthquake on impact")
+	 .with_signature("Invulnerable grab, massive slam AoE, earthquake on impact") \
+	 .with_suffix("of Destruction", BASE_NAME, "Grappling", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["uppercut", "uppercut_juggle", "uppercut_air_combo", "uppercut_grab", "uppercut_piledriver"]

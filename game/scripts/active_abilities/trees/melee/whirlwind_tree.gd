@@ -1,10 +1,13 @@
 extends RefCounted
 class_name WhirlwindTree
 
-# Whirlwind Ability Tree (Melee)
+# Whirlwind Ability Tree
 # Base: Spin rapidly dealing damage around you
-# Branch A (Vacuum): Pull enemies in -> Singularity (black hole that shreds)
-# Branch B (Elemental): Add fire damage -> Inferno Tornado (massive fire whirl)
+# Branch A (Vacuum): Pull enemies in -> of Singularity
+# Branch B (Fiery): Add fire damage -> of Inferno
+
+const BASE_NAME = "Whirlwind"
+const BASE_ID = "whirlwind"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"whirlwind",
-		"Whirlwind",
+		BASE_ID,
+		BASE_NAME,
 		"Spin rapidly, damaging all enemies around you.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -39,7 +42,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_vacuum_spin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"whirlwind_vacuum",
-		"Vacuum Spin",
+		"Vacuum Whirlwind",
 		"Pull nearby enemies toward you while spinning.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -51,12 +54,13 @@ static func _create_vacuum_spin() -> ActiveAbilityData:
 	 .with_knockback(-150.0) \
 	 .with_movement() \
 	 .with_effect("vacuum_spin") \
-	 .with_prerequisite("whirlwind", 0)
+	 .with_prerequisite("whirlwind", 0) \
+	 .with_prefix("Vacuum", BASE_NAME, BASE_ID)
 
 static func _create_singularity() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"whirlwind_singularity",
-		"Singularity",
+		"Vacuum Whirlwind of Singularity",
 		"Become a gravitational anomaly, shredding all who approach.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -69,13 +73,14 @@ static func _create_singularity() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("singularity") \
 	 .with_prerequisite("whirlwind_vacuum", 0) \
-	 .with_signature("Massive pull radius, damage increases the closer enemies are")
+	 .with_signature("Massive pull radius, damage scales with proximity") \
+	 .with_suffix("of Singularity", BASE_NAME, "Vacuum", BASE_ID)
 
 static func _create_flame_spin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"whirlwind_flame",
-		"Flame Spin",
-		"Your whirlwind leaves trails of fire.",
+		"Fiery Whirlwind",
+		"Leaves trails of fire while spinning.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -85,12 +90,13 @@ static func _create_flame_spin() -> ActiveAbilityData:
 	 .with_duration(2.5) \
 	 .with_movement() \
 	 .with_effect("flame_whirlwind") \
-	 .with_prerequisite("whirlwind", 1)
+	 .with_prerequisite("whirlwind", 1) \
+	 .with_prefix("Fiery", BASE_NAME, BASE_ID)
 
 static func _create_inferno_tornado() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"whirlwind_inferno",
-		"Inferno Tornado",
+		"Fiery Whirlwind of Inferno",
 		"Transform into a massive fire tornado that scorches everything.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -102,7 +108,8 @@ static func _create_inferno_tornado() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("inferno_tornado") \
 	 .with_prerequisite("whirlwind_flame", 1) \
-	 .with_signature("Leave burning ground, enemies take 50% more fire damage")
+	 .with_signature("Leave burning ground, enemies take 50% more fire damage") \
+	 .with_suffix("of Inferno", BASE_NAME, "Fiery", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["whirlwind", "whirlwind_vacuum", "whirlwind_singularity", "whirlwind_flame", "whirlwind_inferno"]

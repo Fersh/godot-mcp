@@ -1,10 +1,13 @@
 extends RefCounted
 class_name LeapTree
 
-# Savage Leap Ability Tree (Melee)
+# Savage Leap Ability Tree
 # Base: Leap to target, damage on landing
-# Branch A (Tremor): Stun on landing -> Extinction Event (meteor shower on landing)
-# Branch B (Predator): Gain attack speed -> Apex Predator (chain leaps, heal on kill)
+# Branch A (Tremor): Stun on landing -> of Extinction
+# Branch B (Predator): Gain attack speed -> of the Apex
+
+const BASE_NAME = "Savage Leap"
+const BASE_ID = "savage_leap"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"savage_leap",
-		"Savage Leap",
+		BASE_ID,
+		BASE_NAME,
 		"Leap to target location, damaging enemies on impact.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -39,7 +42,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_tremor_leap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"leap_tremor",
-		"Tremor Leap",
+		"Tremor Savage Leap",
 		"Landing creates a shockwave that stuns enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -51,12 +54,13 @@ static func _create_tremor_leap() -> ActiveAbilityData:
 	 .with_stun(1.0) \
 	 .with_movement() \
 	 .with_effect("tremor_leap") \
-	 .with_prerequisite("savage_leap", 0)
+	 .with_prerequisite("savage_leap", 0) \
+	 .with_prefix("Tremor", BASE_NAME, BASE_ID)
 
 static func _create_extinction_event() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"leap_extinction",
-		"Extinction Event",
+		"Tremor Savage Leap of Extinction",
 		"Leap so hard meteors rain from the sky on impact.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -71,12 +75,13 @@ static func _create_extinction_event() -> ActiveAbilityData:
 	 .with_invulnerability(0.5) \
 	 .with_effect("extinction_event") \
 	 .with_prerequisite("leap_tremor", 0) \
-	 .with_signature("4 meteors rain down around landing zone")
+	 .with_signature("4 meteors rain down around landing zone") \
+	 .with_suffix("of Extinction", BASE_NAME, "Tremor", BASE_ID)
 
 static func _create_predator_leap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"leap_predator",
-		"Predator's Pounce",
+		"Predator Savage Leap",
 		"Gain 30% attack speed for 3 seconds after leaping.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -88,12 +93,13 @@ static func _create_predator_leap() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_movement() \
 	 .with_effect("predator_leap") \
-	 .with_prerequisite("savage_leap", 1)
+	 .with_prerequisite("savage_leap", 1) \
+	 .with_prefix("Predator", BASE_NAME, BASE_ID)
 
 static func _create_apex_predator() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"leap_apex",
-		"Apex Predator",
+		"Predator Savage Leap of the Apex",
 		"Chain leaps to 3 enemies, heal for each kill.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -106,7 +112,8 @@ static func _create_apex_predator() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("apex_predator") \
 	 .with_prerequisite("leap_predator", 1) \
-	 .with_signature("Chain to 3 enemies, heal 15% max HP per kill")
+	 .with_signature("Chain to 3 enemies, heal 15% max HP per kill") \
+	 .with_suffix("of the Apex", BASE_NAME, "Predator", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["savage_leap", "leap_tremor", "leap_extinction", "leap_predator", "leap_apex"]

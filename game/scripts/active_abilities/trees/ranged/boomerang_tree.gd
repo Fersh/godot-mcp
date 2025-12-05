@@ -6,6 +6,9 @@ class_name BoomerangTree
 # Branch A (Multi): Throw multiple -> Blade Storm (orbiting blades return)
 # Branch B (Track): Homing boomerang -> Predator (hunts down targets)
 
+const BASE_NAME = "Boomerang"
+const BASE_ID = "boomerang"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_multi_rang() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_projectiles(3, 500.0) \
 	 .with_effect("multi_rang") \
-	 .with_prerequisite("boomerang", 0)
+	 .with_prerequisite("boomerang", 0) \
+	 .with_prefix("Multi", BASE_NAME, BASE_ID)
 
 static func _create_blade_storm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,7 +68,8 @@ static func _create_blade_storm() -> ActiveAbilityData:
 	 .with_projectiles(6, 400.0) \
 	 .with_effect("blade_storm") \
 	 .with_prerequisite("boomerang_multi", 0) \
-	 .with_signature("6 blades expand then contract, hit twice, spin for 3 seconds")
+	 .with_signature("6 blades expand then contract, hit twice, spin for 3 seconds") \
+	 .with_suffix("of Blades", BASE_NAME, "Multi", BASE_ID)
 
 static func _create_tracking() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,7 +84,8 @@ static func _create_tracking() -> ActiveAbilityData:
 	 .with_range(400.0) \
 	 .with_projectiles(1, 550.0) \
 	 .with_effect("tracking_rang") \
-	 .with_prerequisite("boomerang", 1)
+	 .with_prerequisite("boomerang", 1) \
+	 .with_prefix("Tracking", BASE_NAME, BASE_ID)
 
 static func _create_predator() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -95,7 +101,8 @@ static func _create_predator() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("predator_disc") \
 	 .with_prerequisite("boomerang_track", 1) \
-	 .with_signature("Hunts until 5 kills or 8 seconds, +20% damage per kill")
+	 .with_signature("Hunts until 5 kills or 8 seconds, +20% damage per kill") \
+	 .with_suffix("of the Predator", BASE_NAME, "Tracking", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["boomerang", "boomerang_multi", "boomerang_storm", "boomerang_track", "boomerang_predator"]

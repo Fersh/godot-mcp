@@ -6,6 +6,9 @@ class_name StompTree
 # Branch A (Quake): Larger waves -> Tectonic Shift (reshape terrain)
 # Branch B (Stun): Stun focused -> Thunderous Stomp (massive stun)
 
+const BASE_NAME = "Stomp"
+const BASE_ID = "stomp"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -47,7 +50,8 @@ static func _create_quake() -> ActiveAbilityData:
 	 .with_aoe(180.0) \
 	 .with_slow(0.3, 2.0) \
 	 .with_effect("quake_stomp") \
-	 .with_prerequisite("stomp", 0)
+	 .with_prerequisite("stomp", 0) \
+	 .with_prefix("Quaking", BASE_NAME, BASE_ID)
 
 static func _create_tectonic() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -63,7 +67,8 @@ static func _create_tectonic() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("tectonic_shift") \
 	 .with_prerequisite("stomp_quake", 0) \
-	 .with_signature("Creates ground fissures, DoT zone, knockback, terrain hazard")
+	 .with_signature("Creates ground fissures, DoT zone, knockback, terrain hazard") \
+	 .with_suffix("of Tectonics", BASE_NAME, "Quaking", BASE_ID)
 
 static func _create_thunder() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -78,7 +83,8 @@ static func _create_thunder() -> ActiveAbilityData:
 	 .with_aoe(140.0) \
 	 .with_stun(1.0) \
 	 .with_effect("thunder_stomp") \
-	 .with_prerequisite("stomp", 1)
+	 .with_prerequisite("stomp", 1) \
+	 .with_prefix("Thundering", BASE_NAME, BASE_ID)
 
 static func _create_thunderous() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -96,7 +102,8 @@ static func _create_thunderous() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("thunderous_impact") \
 	 .with_prerequisite("stomp_thunder", 1) \
-	 .with_signature("Leap to target, massive stun, screen shake, knockback")
+	 .with_signature("Leap to target, massive stun, screen shake, knockback") \
+	 .with_suffix("of Thunder", BASE_NAME, "Thundering", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["stomp", "stomp_quake", "stomp_tectonic", "stomp_thunder", "stomp_thunderous"]

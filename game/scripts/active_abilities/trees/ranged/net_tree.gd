@@ -6,6 +6,9 @@ class_name NetTree
 # Branch A (Electric): Electrified net -> Tesla Net (chains lightning)
 # Branch B (Barbed): Damaging net -> Razor Net (shreds trapped enemies)
 
+const BASE_NAME = "Throwing Net"
+const BASE_ID = "net"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -51,7 +54,8 @@ static func _create_electric() -> ActiveAbilityData:
 	 .with_slow(0.6, 4.0) \
 	 .with_stun(0.5) \
 	 .with_effect("electric_net") \
-	 .with_prerequisite("net", 0)
+	 .with_prerequisite("net", 0) \
+	 .with_prefix("Electric", BASE_NAME, BASE_ID)
 
 static func _create_tesla() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -70,7 +74,8 @@ static func _create_tesla() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("tesla_net") \
 	 .with_prerequisite("net_electric", 0) \
-	 .with_signature("Continuous lightning between trapped enemies, longer duration")
+	 .with_signature("Continuous lightning between trapped enemies, longer duration") \
+	 .with_suffix("of Tesla", BASE_NAME, "Electric", BASE_ID)
 
 static func _create_barbed() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -87,7 +92,8 @@ static func _create_barbed() -> ActiveAbilityData:
 	 .with_slow(0.5, 4.0) \
 	 .with_duration(4.0) \
 	 .with_effect("barbed_net") \
-	 .with_prerequisite("net", 1)
+	 .with_prerequisite("net", 1) \
+	 .with_prefix("Barbed", BASE_NAME, BASE_ID)
 
 static func _create_razor() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -105,7 +111,8 @@ static func _create_razor() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("razor_net") \
 	 .with_prerequisite("net_barbed", 1) \
-	 .with_signature("Constricts over time dealing increasing damage, bleed effect")
+	 .with_signature("Constricts over time dealing increasing damage, bleed effect") \
+	 .with_suffix("of Razors", BASE_NAME, "Barbed", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["net", "net_electric", "net_tesla", "net_barbed", "net_razor"]

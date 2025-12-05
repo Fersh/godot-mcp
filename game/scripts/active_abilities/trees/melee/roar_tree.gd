@@ -6,6 +6,9 @@ class_name RoarTree
 # Branch A (Intimidate): Reduce enemy damage -> Crushing Presence (permanent debuff)
 # Branch B (Enrage): Self buff after roar -> Blood Rage (damage on hit fuels power)
 
+const BASE_NAME = "Terrifying Roar"
+const BASE_ID = "roar"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_intimidate() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(5.0) \
 	 .with_effect("intimidate") \
-	 .with_prerequisite("roar", 0)
+	 .with_prerequisite("roar", 0) \
+	 .with_prefix("Intimidating", BASE_NAME, BASE_ID)
 
 static func _create_crushing_presence() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,7 +68,8 @@ static func _create_crushing_presence() -> ActiveAbilityData:
 	 .with_duration(15.0) \
 	 .with_effect("crushing_presence") \
 	 .with_prerequisite("roar_intimidate", 0) \
-	 .with_signature("Aura: -40% enemy damage, -30% enemy speed, fear on first contact")
+	 .with_signature("Aura: -40% enemy damage, -30% enemy speed, fear on first contact") \
+	 .with_suffix("of Domination", BASE_NAME, "Intimidating", BASE_ID)
 
 static func _create_enrage() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,7 +84,8 @@ static func _create_enrage() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(6.0) \
 	 .with_effect("enrage") \
-	 .with_prerequisite("roar", 1)
+	 .with_prerequisite("roar", 1) \
+	 .with_prefix("Enraging", BASE_NAME, BASE_ID)
 
 static func _create_blood_rage() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -95,7 +101,8 @@ static func _create_blood_rage() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("blood_rage") \
 	 .with_prerequisite("roar_enrage", 1) \
-	 .with_signature("+10% damage per hit (max 100%), lifesteal, attack speed boost")
+	 .with_signature("+10% damage per hit (max 100%), lifesteal, attack speed boost") \
+	 .with_suffix("of Blood Rage", BASE_NAME, "Enraging", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["roar", "roar_intimidate", "roar_crushing", "roar_enrage", "roar_blood_rage"]

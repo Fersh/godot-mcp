@@ -1,10 +1,13 @@
 extends RefCounted
 class_name SlamTree
 
-# Ground Slam Ability Tree (Melee)
+# Ground Slam Ability Tree
 # Base: Slam ground for AoE damage
-# Branch A (Seismic): Delayed aftershock waves -> Earthquake (screen-wide)
-# Branch B (Crater): Leave burning ground -> Meteor Slam (massive single crater)
+# Branch A (Seismic): Aftershock waves -> of Cataclysm
+# Branch B (Crater): Burning ground -> of Meteors
+
+const BASE_NAME = "Ground Slam"
+const BASE_ID = "ground_slam"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"ground_slam",
-		"Ground Slam",
+		BASE_ID,
+		BASE_NAME,
 		"Slam the ground, damaging all nearby enemies.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -38,8 +41,8 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_seismic_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"slam_seismic",
-		"Seismic Slam",
-		"Slam creates aftershock waves that travel outward.",
+		"Seismic Ground Slam",
+		"Creates aftershock waves that travel outward.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -49,12 +52,13 @@ static func _create_seismic_slam() -> ActiveAbilityData:
 	 .with_stun(0.5) \
 	 .with_duration(1.5) \
 	 .with_effect("seismic_wave") \
-	 .with_prerequisite("ground_slam", 0)
+	 .with_prerequisite("ground_slam", 0) \
+	 .with_prefix("Seismic", BASE_NAME, BASE_ID)
 
 static func _create_earthquake() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"slam_earthquake",
-		"Earthquake",
+		"Seismic Ground Slam of Cataclysm",
 		"Devastate the entire battlefield with seismic fury.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -66,12 +70,13 @@ static func _create_earthquake() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("earthquake") \
 	 .with_prerequisite("slam_seismic", 0) \
-	 .with_signature("Screen-wide damage over 3 seconds, stuns all enemies")
+	 .with_signature("Screen-wide damage over 3 seconds, stuns all") \
+	 .with_suffix("of Cataclysm", BASE_NAME, "Seismic", BASE_ID)
 
 static func _create_crater_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"slam_crater",
-		"Crater Slam",
+		"Crater Ground Slam",
 		"Leave burning ground where you slam.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -81,12 +86,13 @@ static func _create_crater_slam() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_duration(4.0) \
 	 .with_effect("burning_crater") \
-	 .with_prerequisite("ground_slam", 1)
+	 .with_prerequisite("ground_slam", 1) \
+	 .with_prefix("Crater", BASE_NAME, BASE_ID)
 
 static func _create_meteor_slam() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"slam_meteor",
-		"Meteor Slam",
+		"Crater Ground Slam of Meteors",
 		"Leap into the air and crash down like a meteor.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -99,7 +105,8 @@ static func _create_meteor_slam() -> ActiveAbilityData:
 	 .with_invulnerability(0.8) \
 	 .with_effect("meteor_slam") \
 	 .with_prerequisite("slam_crater", 1) \
-	 .with_signature("Leap to target, invulnerable during, massive impact crater")
+	 .with_signature("Leap to target, invulnerable, massive impact crater") \
+	 .with_suffix("of Meteors", BASE_NAME, "Crater", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["ground_slam", "slam_seismic", "slam_earthquake", "slam_crater", "slam_meteor"]

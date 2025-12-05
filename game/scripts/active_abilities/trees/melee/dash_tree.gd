@@ -1,10 +1,13 @@
 extends RefCounted
 class_name DashTree
 
-# Dash Strike Ability Tree (Melee)
+# Dash Strike Ability Tree
 # Base: Quick dash that damages enemies in path
-# Branch A (Multi): Chain dashes -> Omnislash (teleport between enemies)
-# Branch B (Afterimage): Leave damaging clone -> Shadow Legion (multiple clones)
+# Branch A (Rushing): Chain dashes -> of Oblivion
+# Branch B (Shadow): Leave damaging clone -> of Shadows
+
+const BASE_NAME = "Dash Strike"
+const BASE_ID = "dash_strike"
 
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
@@ -23,8 +26,8 @@ static func create() -> AbilityTreeNode:
 
 static func _create_base() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
-		"dash_strike",
-		"Dash Strike",
+		BASE_ID,
+		BASE_NAME,
 		"Dash forward, damaging enemies in your path.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
@@ -38,7 +41,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_blade_rush() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_blade_rush",
-		"Blade Rush",
+		"Rushing Dash Strike",
 		"Chain up to 3 dashes in quick succession.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -49,12 +52,13 @@ static func _create_blade_rush() -> ActiveAbilityData:
 	 .with_projectiles(3, 0) \
 	 .with_movement() \
 	 .with_effect("blade_rush") \
-	 .with_prerequisite("dash_strike", 0)
+	 .with_prerequisite("dash_strike", 0) \
+	 .with_prefix("Rushing", BASE_NAME, BASE_ID)
 
 static func _create_omnislash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_omnislash",
-		"Omnislash",
+		"Rushing Dash Strike of Oblivion",
 		"Teleport between enemies, striking each one multiple times.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -67,12 +71,13 @@ static func _create_omnislash() -> ActiveAbilityData:
 	 .with_invulnerability(2.0) \
 	 .with_effect("omnislash") \
 	 .with_prerequisite("dash_blade_rush", 0) \
-	 .with_signature("Invulnerable, teleport to 8 enemies, hit each 3 times")
+	 .with_signature("Invulnerable, teleport to 8 enemies, hit each 3 times") \
+	 .with_suffix("of Oblivion", BASE_NAME, "Rushing", BASE_ID)
 
 static func _create_afterimage() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_afterimage",
-		"Afterimage",
+		"Shadow Dash Strike",
 		"Leave a damaging clone at your start position.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -83,12 +88,13 @@ static func _create_afterimage() -> ActiveAbilityData:
 	 .with_duration(2.0) \
 	 .with_movement() \
 	 .with_effect("afterimage") \
-	 .with_prerequisite("dash_strike", 1)
+	 .with_prerequisite("dash_strike", 1) \
+	 .with_prefix("Shadow", BASE_NAME, BASE_ID)
 
 static func _create_shadow_legion() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_shadow_legion",
-		"Shadow Legion",
+		"Shadow Dash Strike of Shadows",
 		"Create 4 shadow clones that mimic your attacks.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -98,7 +104,8 @@ static func _create_shadow_legion() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("shadow_legion") \
 	 .with_prerequisite("dash_afterimage", 1) \
-	 .with_signature("4 shadow clones follow you, each dealing 25% of your damage")
+	 .with_signature("4 shadow clones follow you, each dealing 25% of your damage") \
+	 .with_suffix("of Shadows", BASE_NAME, "Shadow", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["dash_strike", "dash_blade_rush", "dash_omnislash", "dash_afterimage", "dash_shadow_legion"]

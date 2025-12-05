@@ -6,6 +6,9 @@ class_name ComboTree
 # Branch A (Chain): Longer combo -> Infinite Combo (never-ending attacks)
 # Branch B (Finisher): Big finisher -> Ultimate Finisher (massive final hit)
 
+const BASE_NAME = "Combo Strike"
+const BASE_ID = "combo_strike"
+
 static func create() -> AbilityTreeNode:
 	var tree = AbilityTreeNode.new(_create_base())
 
@@ -48,7 +51,8 @@ static func _create_chain_combo() -> ActiveAbilityData:
 	 .with_range(100.0) \
 	 .with_projectiles(5, 0) \
 	 .with_effect("chain_combo") \
-	 .with_prerequisite("combo_strike", 0)
+	 .with_prerequisite("combo_strike", 0) \
+	 .with_prefix("Chain", BASE_NAME, BASE_ID)
 
 static func _create_infinite_combo() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -64,7 +68,8 @@ static func _create_infinite_combo() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("infinite_combo") \
 	 .with_prerequisite("combo_chain", 0) \
-	 .with_signature("Attack until interrupted, +5% damage per hit, lifesteal on hit")
+	 .with_signature("Attack until interrupted, +5% damage per hit, lifesteal on hit") \
+	 .with_suffix("of Infinity", BASE_NAME, "Chain", BASE_ID)
 
 static func _create_finisher() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -79,7 +84,8 @@ static func _create_finisher() -> ActiveAbilityData:
 	 .with_range(100.0) \
 	 .with_projectiles(3, 0) \
 	 .with_effect("combo_finisher") \
-	 .with_prerequisite("combo_strike", 1)
+	 .with_prerequisite("combo_strike", 1) \
+	 .with_prefix("Finishing", BASE_NAME, BASE_ID)
 
 static func _create_ultimate_finisher() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,7 +103,8 @@ static func _create_ultimate_finisher() -> ActiveAbilityData:
 	 .with_stun(1.0) \
 	 .with_effect("ultimate_finisher") \
 	 .with_prerequisite("combo_finisher", 1) \
-	 .with_signature("5th hit deals 400% damage, AoE shockwave, brief slow-mo")
+	 .with_signature("5th hit deals 400% damage, AoE shockwave, brief slow-mo") \
+	 .with_suffix("of Devastation", BASE_NAME, "Finishing", BASE_ID)
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["combo_strike", "combo_chain", "combo_infinite", "combo_finisher", "combo_ultimate"]
