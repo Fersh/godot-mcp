@@ -590,12 +590,14 @@ func _get_available_upgrades() -> Array[ActiveAbilityData]:
 	return upgrades
 
 func _get_available_abilities(is_melee: bool) -> Array[ActiveAbilityData]:
-	"""Get all abilities available for selection (not yet acquired)."""
+	## Get BASE abilities available for selection (not yet acquired).
+	## Only returns Tier 1 (base) abilities - upgrades come from _get_available_upgrades().
 	var all_abilities = ActiveAbilityDatabase.get_abilities_for_class(is_melee)
 	var available: Array[ActiveAbilityData] = []
 
 	for ability in all_abilities:
-		if ability.id not in acquired_ability_ids:
+		# Only include BASE tier abilities - upgrades are handled separately
+		if ability.is_base() and ability.id not in acquired_ability_ids:
 			available.append(ability)
 
 	return available
