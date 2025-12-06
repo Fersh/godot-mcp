@@ -41,7 +41,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_blade_rush() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_blade_rush",
-		"Rushing Dash Strike",
+		"Blade Rush",
 		"Chain up to 3 dashes in quick succession.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -52,13 +52,12 @@ static func _create_blade_rush() -> ActiveAbilityData:
 	 .with_projectiles(3, 0) \
 	 .with_movement() \
 	 .with_effect("blade_rush") \
-	 .with_prerequisite("dash_strike", 0) \
-	 .with_prefix("Rushing", BASE_NAME, BASE_ID)
+	 .with_prerequisite("dash_strike", 0)
 
 static func _create_omnislash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_omnislash",
-		"Rushing Dash Strike of Oblivion",
+		"Omnislash",
 		"Teleport between enemies, striking each one multiple times.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -71,13 +70,12 @@ static func _create_omnislash() -> ActiveAbilityData:
 	 .with_invulnerability(2.0) \
 	 .with_effect("omnislash") \
 	 .with_prerequisite("dash_blade_rush", 0) \
-	 .with_signature("Invulnerable, teleport to 8 enemies, hit each 3 times") \
-	 .with_suffix("of Oblivion", BASE_NAME, "Rushing", BASE_ID)
+	 .with_signature("Invulnerable, teleport to 8 enemies, hit each 3 times")
 
 static func _create_afterimage() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_afterimage",
-		"Shadow Dash Strike",
+		"Afterimage",
 		"Leave a damaging clone at your start position.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -88,13 +86,12 @@ static func _create_afterimage() -> ActiveAbilityData:
 	 .with_duration(2.0) \
 	 .with_movement() \
 	 .with_effect("afterimage") \
-	 .with_prerequisite("dash_strike", 1) \
-	 .with_prefix("Shadow", BASE_NAME, BASE_ID)
+	 .with_prerequisite("dash_strike", 1)
 
 static func _create_shadow_legion() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"dash_shadow_legion",
-		"Shadow Dash Strike of Shadows",
+		"Shadow Legion",
 		"Create 4 shadow clones that mimic your attacks.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -104,8 +101,7 @@ static func _create_shadow_legion() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("shadow_legion") \
 	 .with_prerequisite("dash_afterimage", 1) \
-	 .with_signature("4 shadow clones follow you, each dealing 25% of your damage") \
-	 .with_suffix("of Shadows", BASE_NAME, "Shadow", BASE_ID)
+	 .with_signature("4 shadow clones follow you, each dealing 25% of your damage")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["dash_strike", "dash_blade_rush", "dash_omnislash", "dash_afterimage", "dash_shadow_legion"]

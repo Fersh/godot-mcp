@@ -51,8 +51,7 @@ static func _create_headshot() -> ActiveAbilityData:
 	 .with_range(700.0) \
 	 .with_cast_time(1.2) \
 	 .with_effect("headshot") \
-	 .with_prerequisite("snipe", 0) \
-	 .with_prefix("Headshot", BASE_NAME, BASE_ID)
+	 .with_prerequisite("snipe", 0)
 
 static func _create_assassinate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_assassinate() -> ActiveAbilityData:
 	 .with_cast_time(0.8) \
 	 .with_effect("assassinate") \
 	 .with_prerequisite("snipe_headshot", 0) \
-	 .with_signature("Instant kill below 30%, refund CD on kill, invisible briefly after") \
-	 .with_suffix("of Assassination", BASE_NAME, "Headshot", BASE_ID)
+	 .with_signature("Instant kill below 30%, refund CD on kill, invisible briefly after")
 
 static func _create_armor_pierce() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -84,8 +82,7 @@ static func _create_armor_pierce() -> ActiveAbilityData:
 	 .with_range(650.0) \
 	 .with_cast_time(1.0) \
 	 .with_effect("armor_pierce") \
-	 .with_prerequisite("snipe", 1) \
-	 .with_prefix("Piercing", BASE_NAME, BASE_ID)
+	 .with_prerequisite("snipe", 1)
 
 static func _create_obliterate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -101,8 +98,7 @@ static func _create_obliterate() -> ActiveAbilityData:
 	 .with_cast_time(2.0) \
 	 .with_effect("obliterate") \
 	 .with_prerequisite("snipe_pierce", 1) \
-	 .with_signature("Massive damage, pierces all, leaves destruction trail, knockback self") \
-	 .with_suffix("of Obliteration", BASE_NAME, "Piercing", BASE_ID)
+	 .with_signature("Massive damage, pierces all, leaves destruction trail, knockback self")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["snipe", "snipe_headshot", "snipe_assassinate", "snipe_pierce", "snipe_obliterate"]

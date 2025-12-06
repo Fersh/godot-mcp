@@ -62,7 +62,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_piercing_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_pierce",
-		"Piercing Power Shot",
+		"Piercing Shot",
 		"Pierces through up to 5 enemies, dealing full damage to each.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
@@ -72,8 +72,7 @@ static func _create_piercing_shot() -> ActiveAbilityData:
 	 .with_projectiles(1, 700.0) \
 	 .with_cast_time(0.3) \
 	 .with_effect("piercing_shot") \
-	 .with_prerequisite("power_shot", 0) \
-	 .with_prefix("Piercing", BASE_NAME, BASE_ID)
+	 .with_prerequisite("power_shot", 0)
 
 # ============================================
 # TIER 3 - BRANCH A: RAIL GUN (SIGNATURE)
@@ -82,7 +81,7 @@ static func _create_piercing_shot() -> ActiveAbilityData:
 static func _create_rail_gun() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_railgun",
-		"Piercing Power Shot of Annihilation",
+		"Rail Gun",
 		"Fire a devastating beam that pierces infinitely across the entire screen.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
@@ -93,8 +92,7 @@ static func _create_rail_gun() -> ActiveAbilityData:
 	 .with_cast_time(0.5) \
 	 .with_effect("railgun") \
 	 .with_prerequisite("power_shot_pierce", 0) \
-	 .with_signature("Infinite pierce beam across the entire screen") \
-	 .with_suffix("of Annihilation", BASE_NAME, "Piercing", BASE_ID)
+	 .with_signature("Infinite pierce beam across the entire screen")
 
 # ============================================
 # TIER 2 - BRANCH B: EXPLOSIVE PATH
@@ -103,7 +101,7 @@ static func _create_rail_gun() -> ActiveAbilityData:
 static func _create_explosive_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_explosive",
-		"Explosive Power Shot",
+		"Explosive Shot",
 		"Explodes on impact, dealing AoE damage in a radius.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
@@ -114,8 +112,7 @@ static func _create_explosive_shot() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_cast_time(0.3) \
 	 .with_effect("explosive_arrow") \
-	 .with_prerequisite("power_shot", 1) \
-	 .with_prefix("Explosive", BASE_NAME, BASE_ID)
+	 .with_prerequisite("power_shot", 1)
 
 # ============================================
 # TIER 3 - BRANCH B: NUKE ARROW (SIGNATURE)
@@ -124,7 +121,7 @@ static func _create_explosive_shot() -> ActiveAbilityData:
 static func _create_nuke_arrow() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_nuke",
-		"Explosive Power Shot of Devastation",
+		"Nuke Arrow",
 		"Launch a devastating payload that creates a massive explosion. Enemies are obliterated.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
@@ -138,8 +135,7 @@ static func _create_nuke_arrow() -> ActiveAbilityData:
 	 .with_knockback(400.0) \
 	 .with_effect("nuke_explosion") \
 	 .with_prerequisite("power_shot_explosive", 1) \
-	 .with_signature("Massive 300-unit radius explosion with stun and knockback") \
-	 .with_suffix("of Devastation", BASE_NAME, "Explosive", BASE_ID)
+	 .with_signature("Massive 300-unit radius explosion with stun and knockback")
 
 # ============================================
 # TIER 2 - BRANCH C: BALLISTA PATH
@@ -148,7 +144,7 @@ static func _create_nuke_arrow() -> ActiveAbilityData:
 static func _create_heavy_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_heavy",
-		"Heavy Power Shot",
+		"Heavy Shot",
 		"Fire a heavy bolt with extended range and armor penetration.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
@@ -159,8 +155,7 @@ static func _create_heavy_shot() -> ActiveAbilityData:
 	 .with_range(600.0) \
 	 .with_cast_time(0.5) \
 	 .with_effect("heavy_shot") \
-	 .with_prerequisite("power_shot", 2) \
-	 .with_prefix("Heavy", BASE_NAME, BASE_ID)
+	 .with_prerequisite("power_shot", 2)
 
 # ============================================
 # TIER 3 - BRANCH C: BALLISTA STRIKE (SIGNATURE)
@@ -169,7 +164,7 @@ static func _create_heavy_shot() -> ActiveAbilityData:
 static func _create_ballista_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"power_shot_ballista",
-		"Heavy Power Shot of the Ballista",
+		"Ballista Strike",
 		"Fire an immense siege bolt that pierces all enemies for devastating damage.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
@@ -181,8 +176,7 @@ static func _create_ballista_strike() -> ActiveAbilityData:
 	 .with_cast_time(0.8) \
 	 .with_effect("ballista_strike") \
 	 .with_prerequisite("power_shot_heavy", 2) \
-	 .with_signature("Massive piercing bolt, ignores armor, 800 range, devastates single target") \
-	 .with_suffix("of the Ballista", BASE_NAME, "Heavy", BASE_ID)
+	 .with_signature("Massive piercing bolt, ignores armor, 800 range, devastates single target")
 
 # ============================================
 # UTILITY FUNCTIONS

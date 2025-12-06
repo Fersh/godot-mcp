@@ -47,7 +47,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_blade_vortex() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_vortex",
-		"Vortex Whirlwind",
+		"Blade Vortex",
 		"Creates a vortex that pulls enemies toward you while dealing damage.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -57,13 +57,12 @@ static func _create_blade_vortex() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(3.0) \
 	 .with_effect("vortex") \
-	 .with_prerequisite("whirlwind", 0) \
-	 .with_prefix("Vortex", BASE_NAME, BASE_ID)
+	 .with_prerequisite("whirlwind", 0)
 
 static func _create_bladestorm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_bladestorm",
-		"Vortex Whirlwind of Storms",
+		"Bladestorm",
 		"Become a whirlwind of death. Move freely while constantly damaging enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -75,13 +74,12 @@ static func _create_bladestorm() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("bladestorm") \
 	 .with_prerequisite("spin_vortex", 0) \
-	 .with_signature("Move freely while spinning, pulls enemies in") \
-	 .with_suffix("of Storms", BASE_NAME, "Vortex", BASE_ID)
+	 .with_signature("Move freely while spinning, pulls enemies in")
 
 static func _create_deflecting_spin() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_deflect",
-		"Deflecting Whirlwind",
+		"Deflecting Spin",
 		"Deflects incoming projectiles back at enemies.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -91,13 +89,12 @@ static func _create_deflecting_spin() -> ActiveAbilityData:
 	 .with_aoe(130.0) \
 	 .with_duration(1.5) \
 	 .with_effect("deflect_spin") \
-	 .with_prerequisite("whirlwind", 1) \
-	 .with_prefix("Deflecting", BASE_NAME, BASE_ID)
+	 .with_prerequisite("whirlwind", 1)
 
 static func _create_mirror_dance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_mirror",
-		"Deflecting Whirlwind of Mirrors",
+		"Mirror Dance",
 		"Reflects all projectiles. Reflected projectiles home in on enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -109,13 +106,12 @@ static func _create_mirror_dance() -> ActiveAbilityData:
 	 .with_invulnerability(2.5) \
 	 .with_effect("mirror_dance") \
 	 .with_prerequisite("spin_deflect", 1) \
-	 .with_signature("Reflected projectiles become homing missiles") \
-	 .with_suffix("of Mirrors", BASE_NAME, "Deflecting", BASE_ID)
+	 .with_signature("Reflected projectiles become homing missiles")
 
 static func _create_fiery_whirlwind() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_fiery",
-		"Fiery Whirlwind",
+		"Flame Spin",
 		"Leaves trails of fire while spinning. Burns enemies caught in the flames.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -125,13 +121,12 @@ static func _create_fiery_whirlwind() -> ActiveAbilityData:
 	 .with_aoe(130.0) \
 	 .with_duration(2.5) \
 	 .with_effect("flame_whirlwind") \
-	 .with_prerequisite("whirlwind", 2) \
-	 .with_prefix("Fiery", BASE_NAME, BASE_ID)
+	 .with_prerequisite("whirlwind", 2)
 
 static func _create_inferno_tornado() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spin_inferno",
-		"Fiery Whirlwind of Inferno",
+		"Inferno Tornado",
 		"Transform into a massive fire tornado that scorches everything.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -142,8 +137,7 @@ static func _create_inferno_tornado() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("inferno_tornado") \
 	 .with_prerequisite("spin_fiery", 2) \
-	 .with_signature("Leave burning ground, enemies take 50% more fire damage") \
-	 .with_suffix("of Inferno", BASE_NAME, "Fiery", BASE_ID)
+	 .with_signature("Leave burning ground, enemies take 50% more fire damage")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["whirlwind", "spin_vortex", "spin_bladestorm", "spin_deflect", "spin_mirror", "spin_fiery", "spin_inferno"]

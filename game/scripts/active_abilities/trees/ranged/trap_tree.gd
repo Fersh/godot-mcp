@@ -49,8 +49,7 @@ static func _create_bear_trap() -> ActiveAbilityData:
 	).with_damage(70.0, 1.3) \
 	 .with_stun(3.0) \
 	 .with_effect("bear_trap") \
-	 .with_prerequisite("trap", 0) \
-	 .with_prefix("Bear", BASE_NAME, BASE_ID)
+	 .with_prerequisite("trap", 0)
 
 static func _create_chain_trap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_chain_trap() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_effect("chain_trap") \
 	 .with_prerequisite("trap_bear", 0) \
-	 .with_signature("Pulls all nearby enemies into the trap") \
-	 .with_suffix("of Chains", BASE_NAME, "Bear", BASE_ID)
+	 .with_signature("Pulls all nearby enemies into the trap")
 
 static func _create_explosive_trap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_explosive_trap() -> ActiveAbilityData:
 	).with_damage(60.0, 1.2) \
 	 .with_aoe(150.0) \
 	 .with_effect("explosive_trap") \
-	 .with_prerequisite("trap", 1) \
-	 .with_prefix("Explosive", BASE_NAME, BASE_ID)
+	 .with_prerequisite("trap", 1)
 
 static func _create_cluster_mine() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_cluster_mine() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_effect("cluster_mine") \
 	 .with_prerequisite("trap_explosive", 1) \
-	 .with_signature("Creates 4 additional explosive traps on detonation") \
-	 .with_suffix("of Clusters", BASE_NAME, "Explosive", BASE_ID)
+	 .with_signature("Creates 4 additional explosive traps on detonation")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["trap", "trap_bear", "trap_chain", "trap_explosive", "trap_cluster"]

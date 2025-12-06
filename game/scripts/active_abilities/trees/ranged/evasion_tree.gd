@@ -54,8 +54,7 @@ static func _create_shadow_roll() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_invulnerability(0.3) \
 	 .with_effect("shadow_roll") \
-	 .with_prerequisite("quick_roll", 0) \
-	 .with_prefix("Shadow", BASE_NAME, BASE_ID)
+	 .with_prerequisite("quick_roll", 0)
 
 static func _create_shadow_dance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -75,8 +74,7 @@ static func _create_shadow_dance() -> ActiveAbilityData:
 	 .with_duration(2.0) \
 	 .with_effect("shadow_dance") \
 	 .with_prerequisite("roll_shadow", 0) \
-	 .with_signature("3 chain rolls, each clone attacks 3 times before vanishing") \
-	 .with_suffix("of Shadows", BASE_NAME, "Shadow", BASE_ID)
+	 .with_signature("3 chain rolls, each clone attacks 3 times before vanishing")
 
 static func _create_counter_roll() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -92,8 +90,7 @@ static func _create_counter_roll() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_invulnerability(0.3) \
 	 .with_effect("counter_roll") \
-	 .with_prerequisite("quick_roll", 1) \
-	 .with_prefix("Countering", BASE_NAME, BASE_ID)
+	 .with_prerequisite("quick_roll", 1)
 
 static func _create_perfect_dodge() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -111,8 +108,7 @@ static func _create_perfect_dodge() -> ActiveAbilityData:
 	 .with_stun(1.0) \
 	 .with_effect("perfect_dodge") \
 	 .with_prerequisite("roll_counter", 1) \
-	 .with_signature("Slow-mo for 0.5s, guaranteed crit counter, stuns target") \
-	 .with_suffix("of Perfection", BASE_NAME, "Countering", BASE_ID)
+	 .with_signature("Slow-mo for 0.5s, guaranteed crit counter, stuns target")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["quick_roll", "roll_shadow", "roll_dance", "roll_counter", "roll_perfect"]

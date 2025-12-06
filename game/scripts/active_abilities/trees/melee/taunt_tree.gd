@@ -51,13 +51,12 @@ static func _create_fortify() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(4.0) \
 	 .with_effect("fortify_taunt") \
-	 .with_prerequisite("taunt", 0) \
-	 .with_prefix("Fortified", BASE_NAME, BASE_ID)
+	 .with_prerequisite("taunt", 0)
 
 static func _create_unstoppable() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"taunt_unstoppable",
-		"Unstoppable",
+		"Come At Me Bro",
 		"Become immune to damage and CC. Enemies forced to attack you.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -69,8 +68,7 @@ static func _create_unstoppable() -> ActiveAbilityData:
 	 .with_invulnerability(3.0) \
 	 .with_effect("unstoppable_taunt") \
 	 .with_prerequisite("taunt_fortify", 0) \
-	 .with_signature("3 seconds of invulnerability, all enemies attack you") \
-	 .with_suffix("of Invincibility", BASE_NAME, "Fortified", BASE_ID)
+	 .with_signature("3 seconds of invulnerability, all enemies attack you")
 
 static func _create_counter_stance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -85,13 +83,12 @@ static func _create_counter_stance() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(4.0) \
 	 .with_effect("counter_stance") \
-	 .with_prerequisite("taunt", 1) \
-	 .with_prefix("Counter", BASE_NAME, BASE_ID)
+	 .with_prerequisite("taunt", 1)
 
 static func _create_vengeance() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"taunt_vengeance",
-		"Vengeance",
+		"Sore Winner",
 		"Every hit you take causes an explosion damaging nearby enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -102,8 +99,7 @@ static func _create_vengeance() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("vengeance") \
 	 .with_prerequisite("taunt_counter", 1) \
-	 .with_signature("Each hit triggers AoE explosion, gain 10% lifesteal") \
-	 .with_suffix("of Vengeance", BASE_NAME, "Counter", BASE_ID)
+	 .with_signature("Each hit triggers AoE explosion, gain 10% lifesteal")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["taunt", "taunt_fortify", "taunt_unstoppable", "taunt_counter", "taunt_vengeance"]

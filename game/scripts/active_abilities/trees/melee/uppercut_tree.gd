@@ -52,13 +52,12 @@ static func _create_juggle() -> ActiveAbilityData:
 	 .with_duration(2.0) \
 	 .with_knockback(150.0) \
 	 .with_effect("juggle") \
-	 .with_prerequisite("uppercut", 0) \
-	 .with_prefix("Juggling", BASE_NAME, BASE_ID)
+	 .with_prerequisite("uppercut", 0)
 
 static func _create_air_combo() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"uppercut_air_combo",
-		"Air Combo",
+		"Infinite Air Combo",
 		"Launch into air and deliver a devastating combo.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -71,13 +70,12 @@ static func _create_air_combo() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("air_combo") \
 	 .with_prerequisite("uppercut_juggle", 0) \
-	 .with_signature("10-hit air combo, invulnerable during, finisher slams down") \
-	 .with_suffix("of the Sky", BASE_NAME, "Juggling", BASE_ID)
+	 .with_signature("10-hit air combo, invulnerable during, finisher slams down")
 
 static func _create_grab() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"uppercut_grab",
-		"Grab",
+		"Grab & Slam",
 		"Grab an airborne enemy and slam them down.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -88,8 +86,7 @@ static func _create_grab() -> ActiveAbilityData:
 	 .with_aoe(80.0) \
 	 .with_stun(1.0) \
 	 .with_effect("grab_slam") \
-	 .with_prerequisite("uppercut", 1) \
-	 .with_prefix("Grappling", BASE_NAME, BASE_ID)
+	 .with_prerequisite("uppercut", 1)
 
 static func _create_piledriver() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -108,8 +105,7 @@ static func _create_piledriver() -> ActiveAbilityData:
 	 .with_invulnerability(1.0) \
 	 .with_effect("piledriver") \
 	 .with_prerequisite("uppercut_grab", 1) \
-	 .with_signature("Invulnerable grab, massive slam AoE, earthquake on impact") \
-	 .with_suffix("of Destruction", BASE_NAME, "Grappling", BASE_ID)
+	 .with_signature("Invulnerable grab, massive slam AoE, earthquake on impact")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["uppercut", "uppercut_juggle", "uppercut_air_combo", "uppercut_grab", "uppercut_piledriver"]

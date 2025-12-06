@@ -44,6 +44,7 @@ var skillshot_aim_direction: Vector2 = Vector2.ZERO
 var aim_indicator: Node2D = null
 
 var pixel_font: Font = null
+var desc_font: Font = null
 
 func _ready() -> void:
 	custom_minimum_size = button_size
@@ -52,6 +53,10 @@ func _ready() -> void:
 	# Load pixel font
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load Quicksand font for descriptions
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Regular.ttf"):
+		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Regular.ttf")
 
 	_create_ui()
 

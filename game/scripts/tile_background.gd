@@ -75,17 +75,31 @@ var dirt_grass_edges: Dictionary = {
 	"bottom_right": Rect2i(224, 64, 32, 32),
 }
 
-# Yellow grass overlay tiles
-var yellow_grass_tiles: Array[Rect2i] = [
-	Rect2i(128, 576, 32, 32),
-	Rect2i(96, 576, 32, 32),
-	Rect2i(160, 576, 32, 32),
-	Rect2i(128, 544, 32, 32),
-	Rect2i(128, 608, 32, 32),
+# Yellow grass - center tall tile and surrounding base tiles
+var tall_yellow_grass_center: Rect2i = Rect2i(128, 576, 32, 32)  # (4, 18) - the tall center
+var yellow_grass_base_tiles: Array[Rect2i] = [
+	Rect2i(96, 544, 32, 32),   # (3, 17) - top-left base
+	Rect2i(128, 544, 32, 32),  # (4, 17) - top base
+	Rect2i(160, 544, 32, 32),  # (5, 17) - top-right base
+	Rect2i(96, 576, 32, 32),   # (3, 18) - left base
+	Rect2i(160, 576, 32, 32),  # (5, 18) - right base
+	Rect2i(96, 608, 32, 32),   # (3, 19) - bottom-left base
+	Rect2i(128, 608, 32, 32),  # (4, 19) - bottom base
+	Rect2i(160, 608, 32, 32),  # (5, 19) - bottom-right base
 ]
 
-# Green grass
-var tall_green_grass: Rect2i = Rect2i(32, 768, 32, 32)
+# Green grass - center tall tile and surrounding base tiles
+var tall_green_grass_center: Rect2i = Rect2i(32, 768, 32, 32)  # (1, 24) - the tall center
+var green_grass_base_tiles: Array[Rect2i] = [
+	Rect2i(0, 736, 32, 32),    # (0, 23) - top-left base
+	Rect2i(32, 736, 32, 32),   # (1, 23) - top base
+	Rect2i(64, 736, 32, 32),   # (2, 23) - top-right base
+	Rect2i(0, 768, 32, 32),    # (0, 24) - left base
+	Rect2i(64, 768, 32, 32),   # (2, 24) - right base
+	Rect2i(0, 800, 32, 32),    # (0, 25) - bottom-left base
+	Rect2i(32, 800, 32, 32),   # (1, 25) - bottom base
+	Rect2i(64, 800, 32, 32),   # (2, 25) - bottom-right base
+]
 
 # Water tiles
 var water_grass_center: Rect2i = Rect2i(192, 224, 32, 32)
@@ -416,7 +430,8 @@ func _get_dirt_edge_type(x: int, y: int) -> String:
 func _create_water_collision(pos: Vector2, size: float) -> void:
 	var body = StaticBody2D.new()
 	body.position = pos + Vector2(size / 2, size / 2)
-	body.collision_layer = 2
+	# Layer 1 = terrain that blocks player/enemies, Layer 2 = water (for player detection)
+	body.collision_layer = 3  # Layers 1 and 2 (binary 11)
 	body.collision_mask = 0
 
 	var collision = CollisionShape2D.new()
@@ -665,7 +680,7 @@ func _generate_trees_structured() -> void:
 		trees_placed += 1
 
 func _generate_lamps_along_roads() -> void:
-	"""Place lamps at intersections and along roads."""
+	"""Place lamps on grass tiles beside roads, not on the roads themselves."""
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
 	var lamp_tex = load(LAMP_TEXTURE_PATH)
@@ -673,44 +688,37 @@ func _generate_lamps_along_roads() -> void:
 		return
 
 	var placed_positions: Array[Vector2] = []
-	var min_lamp_distance = scaled_tile_size * 5
+	var min_lamp_distance = scaled_tile_size * 6
 
-	# Place lamps at road waypoints (intersections and endpoints)
-	for waypoint in road_waypoints:
+	# Find all grass tiles that are adjacent to dirt roads
+	var roadside_grass: Array[Vector2i] = []
+	for road_pos in dirt_positions:
+		# Check all 4 cardinal directions for grass tiles
+		var offsets = [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(0, -1), Vector2i(0, 1)]
+		for offset in offsets:
+			var adjacent = road_pos + offset
+			# Must be valid, not dirt, not water, not in central clearing
+			if _is_valid_tile(adjacent.x, adjacent.y) and \
+			   not _is_dirt_tile(adjacent.x, adjacent.y) and \
+			   not _is_water_tile(adjacent.x, adjacent.y) and \
+			   not _is_in_central_clearing(adjacent.x, adjacent.y) and \
+			   not roadside_grass.has(adjacent):
+				roadside_grass.append(adjacent)
+
+	# Shuffle the roadside positions for variety
+	roadside_grass.shuffle()
+
+	# Place lamps on roadside grass tiles
+	for grass_pos in roadside_grass:
 		if placed_positions.size() >= lamp_count:
 			break
 
 		var pos = Vector2(
-			arena_offset_x + waypoint.x * scaled_tile_size,
-			arena_offset_y + waypoint.y * scaled_tile_size
+			arena_offset_x + grass_pos.x * scaled_tile_size,
+			arena_offset_y + grass_pos.y * scaled_tile_size
 		)
 
 		# Check minimum distance from other lamps
-		var too_close = false
-		for existing in placed_positions:
-			if pos.distance_to(existing) < min_lamp_distance:
-				too_close = true
-				break
-		if too_close:
-			continue
-
-		_create_lamp_at(pos, lamp_tex)
-		placed_positions.append(pos)
-
-	# Fill remaining lamps along road segments
-	var attempts = 0
-	while placed_positions.size() < lamp_count and attempts < 100:
-		attempts += 1
-
-		if dirt_positions.is_empty():
-			break
-
-		var road_tile = dirt_positions[rng.randi() % dirt_positions.size()]
-		var pos = Vector2(
-			arena_offset_x + road_tile.x * scaled_tile_size,
-			arena_offset_y + road_tile.y * scaled_tile_size
-		)
-
 		var too_close = false
 		for existing in placed_positions:
 			if pos.distance_to(existing) < min_lamp_distance:
@@ -765,12 +773,12 @@ func _create_lamp_at(pos: Vector2, lamp_tex: Texture2D) -> void:
 	lamp_nodes.append(lamp_node)
 
 func _generate_tall_grass_clusters() -> void:
-	"""Generate tall grass in clusters, avoiding roads and central clearing."""
+	"""Generate tall grass clusters with proper base tiles and overlay z-index."""
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
 	for _cluster in range(grass_cluster_count):
-		var x = rng.randi_range(border_thickness + 2, arena_width_tiles - border_thickness - 2)
-		var y = rng.randi_range(border_thickness + 2, arena_height_tiles - border_thickness - 2)
+		var x = rng.randi_range(border_thickness + 3, arena_width_tiles - border_thickness - 3)
+		var y = rng.randi_range(border_thickness + 3, arena_height_tiles - border_thickness - 3)
 
 		# Skip bad locations
 		if _is_in_central_clearing(x, y):
@@ -781,41 +789,59 @@ func _generate_tall_grass_clusters() -> void:
 			continue
 
 		var center_pos = Vector2(
-			arena_offset_x + x * scaled_tile_size,
-			arena_offset_y + y * scaled_tile_size
+			arena_offset_x + x * scaled_tile_size + scaled_tile_size / 2,
+			arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
 		)
 
-		# Create cluster of grass
-		var cluster_size = rng.randi_range(3, 6)
 		var use_yellow = rng.randf() < 0.4
+		_create_grass_cluster(center_pos, use_yellow)
 
-		for _i in range(cluster_size):
-			var offset = Vector2(
-				rng.randf_range(-scaled_tile_size, scaled_tile_size),
-				rng.randf_range(-scaled_tile_size, scaled_tile_size)
-			)
-			var grass_pos = center_pos + offset
+func _create_grass_cluster(center_pos: Vector2, use_yellow: bool) -> void:
+	"""Create a grass cluster with surrounding base tiles and tall center."""
+	var scaled_tile_size = TILE_SIZE * tile_scale
 
-			var tile_rect: Rect2i
-			if use_yellow:
-				tile_rect = yellow_grass_tiles[rng.randi() % yellow_grass_tiles.size()]
-			else:
-				tile_rect = tall_green_grass
+	var center_tile: Rect2i
+	var base_tiles: Array[Rect2i]
 
-			_create_grass_overlay(grass_pos, tile_rect)
+	if use_yellow:
+		center_tile = tall_yellow_grass_center
+		base_tiles = yellow_grass_base_tiles
+	else:
+		center_tile = tall_green_grass_center
+		base_tiles = green_grass_base_tiles
 
-func _create_grass_overlay(pos: Vector2, region: Rect2i) -> void:
+	# Place surrounding base tiles first (lower z-index)
+	var base_offsets = [
+		Vector2(-1, -1), Vector2(0, -1), Vector2(1, -1),  # top row
+		Vector2(-1, 0),                  Vector2(1, 0),   # middle sides
+		Vector2(-1, 1),  Vector2(0, 1),  Vector2(1, 1),   # bottom row
+	]
+
+	for i in range(base_offsets.size()):
+		var offset = base_offsets[i] * scaled_tile_size
+		var base_pos = center_pos + offset
+		var base_tile = base_tiles[i]
+		_create_grass_sprite(base_pos, base_tile, false)
+
+	# Place tall center tile with high z-index to overlay characters
+	_create_grass_sprite(center_pos, center_tile, true)
+
+func _create_grass_sprite(pos: Vector2, region: Rect2i, is_tall: bool) -> void:
+	"""Create a grass sprite. Tall grass overlays characters."""
 	var sprite = Sprite2D.new()
 	sprite.texture = tileset_texture
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.region_enabled = true
 	sprite.region_rect = Rect2(region)
-	sprite.scale = Vector2(tile_scale * 1.1, tile_scale * 1.1)
+	sprite.scale = Vector2(tile_scale, tile_scale)
 	sprite.position = pos
 
-	var grass_bottom_y = pos.y + (TILE_SIZE * tile_scale * 0.4)
-	sprite.z_index = int(grass_bottom_y / 10)
-	sprite.modulate = Color(1, 1, 1, 0.92)
+	if is_tall:
+		# High z-index to render on top of characters/enemies
+		sprite.z_index = 100
+	else:
+		# Base tiles render below characters
+		sprite.z_index = -5
 
 	add_child(sprite)
 	overlay_sprites.append(sprite)

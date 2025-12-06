@@ -50,8 +50,7 @@ static func _create_counter() -> ActiveAbilityData:
 	 .with_duration(0.6) \
 	 .with_range(100.0) \
 	 .with_effect("counter_strike") \
-	 .with_prerequisite("parry", 0) \
-	 .with_prefix("Countering", BASE_NAME, BASE_ID)
+	 .with_prerequisite("parry", 0)
 
 static func _create_riposte() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_riposte() -> ActiveAbilityData:
 	 .with_stun(1.5) \
 	 .with_effect("perfect_riposte") \
 	 .with_prerequisite("parry_counter", 0) \
-	 .with_signature("Parry window extended, counter crits guaranteed, stuns attacker") \
-	 .with_suffix("of Riposte", BASE_NAME, "Countering", BASE_ID)
+	 .with_signature("Parry window extended, counter crits guaranteed, stuns attacker")
 
 static func _create_deflect() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -83,8 +81,7 @@ static func _create_deflect() -> ActiveAbilityData:
 	).with_damage(40.0, 1.0) \
 	 .with_duration(0.7) \
 	 .with_effect("deflection") \
-	 .with_prerequisite("parry", 1) \
-	 .with_prefix("Deflecting", BASE_NAME, BASE_ID)
+	 .with_prerequisite("parry", 1)
 
 static func _create_mirror() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -100,8 +97,7 @@ static func _create_mirror() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_effect("mirror_guard") \
 	 .with_prerequisite("parry_deflect", 1) \
-	 .with_signature("100% damage reflection, immunity during duration, AoE reflect burst") \
-	 .with_suffix("of Mirrors", BASE_NAME, "Deflecting", BASE_ID)
+	 .with_signature("100% damage reflection, immunity during duration, AoE reflect burst")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["parry", "parry_counter", "parry_riposte", "parry_deflect", "parry_mirror"]

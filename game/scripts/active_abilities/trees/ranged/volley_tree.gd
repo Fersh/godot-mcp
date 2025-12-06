@@ -40,7 +40,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_ricochet() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"volley_ricochet",
-		"Ricochet Volley",
+		"Ricochet",
 		"Arrows bounce between enemies up to 3 times each.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
@@ -49,8 +49,7 @@ static func _create_ricochet() -> ActiveAbilityData:
 	).with_damage(30.0, 0.9) \
 	 .with_projectiles(3, 550.0) \
 	 .with_effect("ricochet_volley") \
-	 .with_prerequisite("piercing_volley", 0) \
-	 .with_prefix("Ricocheting", BASE_NAME, BASE_ID)
+	 .with_prerequisite("piercing_volley", 0)
 
 static func _create_chaos_bolts() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_chaos_bolts() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("chaos_bolts") \
 	 .with_prerequisite("volley_ricochet", 0) \
-	 .with_signature("8 projectiles bounce forever for 3s, +5% damage per bounce") \
-	 .with_suffix("of Chaos", BASE_NAME, "Ricocheting", BASE_ID)
+	 .with_signature("8 projectiles bounce forever for 3s, +5% damage per bounce")
 
 static func _create_sniper_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_sniper_shot() -> ActiveAbilityData:
 	).with_damage(80.0, 1.5) \
 	 .with_projectiles(1, 1000.0) \
 	 .with_effect("sniper_shot") \
-	 .with_prerequisite("piercing_volley", 1) \
-	 .with_prefix("Sniping", BASE_NAME, BASE_ID)
+	 .with_prerequisite("piercing_volley", 1)
 
 static func _create_rail_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_rail_shot() -> ActiveAbilityData:
 	 .with_range(2000.0) \
 	 .with_effect("rail_shot") \
 	 .with_prerequisite("volley_sniper", 1) \
-	 .with_signature("Instant beam, screen-wide, +25% crit chance") \
-	 .with_suffix("of the Railgun", BASE_NAME, "Sniping", BASE_ID)
+	 .with_signature("Instant beam, screen-wide, +25% crit chance")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["piercing_volley", "volley_ricochet", "volley_chaos", "volley_sniper", "volley_rail"]

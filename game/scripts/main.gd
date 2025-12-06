@@ -542,6 +542,9 @@ func _setup_tile_background() -> void:
 	add_child(tile_background)
 	move_child(tile_background, 0)  # Move to back of scene
 
+	# Hide static torches and banners for procedural maps
+	_hide_static_decorations()
+
 	# Setup camera limits after tile background is created
 	call_deferred("_setup_tile_camera_bounds")
 
@@ -647,6 +650,18 @@ func _setup_tile_camera_bounds() -> void:
 	# Set bounds on player
 	if player.has_method("set_arena_bounds"):
 		player.set_arena_bounds(arena_bounds, camera_bounds)
+
+func _hide_static_decorations() -> void:
+	"""Hide static torches and banners when using procedural maps."""
+	# Hide all torches in the torches group
+	var torches = get_tree().get_nodes_in_group("torches")
+	for torch in torches:
+		torch.visible = false
+
+	# Hide banners by name pattern
+	for child in get_children():
+		if child.name.begins_with("Banner"):
+			child.visible = false
 
 func toggle_tile_background(enabled: bool) -> void:
 	"""Toggle between tile-based and static background at runtime."""

@@ -40,7 +40,7 @@ static func _create_base() -> ActiveAbilityData:
 static func _create_rallying_cry() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shout_rallying",
-		"Rallying Battle Cry",
+		"Rallying Cry",
 		"Your cry inspires nearby allies, granting 30% damage reduction to all.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -50,13 +50,12 @@ static func _create_rallying_cry() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(6.0) \
 	 .with_effect("rallying_cry") \
-	 .with_prerequisite("battle_cry", 0) \
-	 .with_prefix("Rallying", BASE_NAME, BASE_ID)
+	 .with_prerequisite("battle_cry", 0)
 
 static func _create_fortress() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shout_fortress",
-		"Rallying Battle Cry of the Fortress",
+		"Fortress",
 		"Create an aura of protection. Allies take 50% less damage and reflect attacks.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -67,13 +66,12 @@ static func _create_fortress() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("fortress_aura") \
 	 .with_prerequisite("shout_rallying", 0) \
-	 .with_signature("50% damage reduction aura, 25% damage reflection, enemies slowed") \
-	 .with_suffix("of the Fortress", BASE_NAME, "Rallying", BASE_ID)
+	 .with_signature("50% damage reduction aura, 25% damage reflection, enemies slowed")
 
 static func _create_iron_will() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shout_iron",
-		"Iron Battle Cry",
+		"Iron Will",
 		"Steel yourself. Become immune to crowd control and take 50% less damage.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.MELEE,
@@ -82,13 +80,12 @@ static func _create_iron_will() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(4.0) \
 	 .with_effect("iron_will") \
-	 .with_prerequisite("battle_cry", 1) \
-	 .with_prefix("Iron", BASE_NAME, BASE_ID)
+	 .with_prerequisite("battle_cry", 1)
 
 static func _create_unbreakable() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"shout_unbreakable",
-		"Iron Battle Cry of the Unbreakable",
+		"Unbreakable",
 		"Become truly unbreakable. Immune to all damage and effects.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -99,8 +96,7 @@ static func _create_unbreakable() -> ActiveAbilityData:
 	 .with_invulnerability(3.0) \
 	 .with_effect("unbreakable") \
 	 .with_prerequisite("shout_iron", 1) \
-	 .with_signature("3 seconds of total invulnerability, immune to all CC") \
-	 .with_suffix("of the Unbreakable", BASE_NAME, "Iron", BASE_ID)
+	 .with_signature("3 seconds of total invulnerability, immune to all CC")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["battle_cry", "shout_rallying", "shout_fortress", "shout_iron", "shout_unbreakable"]

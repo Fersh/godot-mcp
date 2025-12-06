@@ -49,8 +49,7 @@ static func _create_fan_of_knives() -> ActiveAbilityData:
 	).with_damage(25.0, 0.9) \
 	 .with_projectiles(5, 550.0) \
 	 .with_effect("fan_of_knives") \
-	 .with_prerequisite("multi_shot", 0) \
-	 .with_prefix("Fanning", BASE_NAME, BASE_ID)
+	 .with_prerequisite("multi_shot", 0)
 
 static func _create_blade_tornado() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_blade_tornado() -> ActiveAbilityData:
 	 .with_aoe(360.0) \
 	 .with_effect("blade_tornado") \
 	 .with_prerequisite("multi_fan", 0) \
-	 .with_signature("360-degree blade storm, 12 projectiles") \
-	 .with_suffix("of Blades", BASE_NAME, "Fanning", BASE_ID)
+	 .with_signature("360-degree blade storm, 12 projectiles")
 
 static func _create_focused_volley() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_focused_volley() -> ActiveAbilityData:
 	).with_damage(40.0, 1.5) \
 	 .with_projectiles(3, 600.0) \
 	 .with_effect("focused_volley") \
-	 .with_prerequisite("multi_shot", 1) \
-	 .with_prefix("Focused", BASE_NAME, BASE_ID)
+	 .with_prerequisite("multi_shot", 1)
 
 static func _create_triple_threat() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_triple_threat() -> ActiveAbilityData:
 	 .with_projectiles(3, 650.0) \
 	 .with_effect("triple_threat") \
 	 .with_prerequisite("multi_focused", 1) \
-	 .with_signature("Each arrow spawns 3 more on hit (9 total)") \
-	 .with_suffix("of Splitting", BASE_NAME, "Focused", BASE_ID)
+	 .with_signature("Each arrow spawns 3 more on hit (9 total)")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["multi_shot", "multi_fan", "multi_tornado", "multi_focused", "multi_triple"]

@@ -51,8 +51,7 @@ static func _create_hunters_mark() -> ActiveAbilityData:
 	 .with_range(600.0) \
 	 .with_duration(8.0) \
 	 .with_effect("hunters_mark") \
-	 .with_prerequisite("mark_target", 0) \
-	 .with_prefix("Hunter's", BASE_NAME, BASE_ID)
+	 .with_prerequisite("mark_target", 0)
 
 static func _create_death_mark() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_death_mark() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("death_mark") \
 	 .with_prerequisite("mark_hunter", 0) \
-	 .with_signature("50% bonus damage, execute below 25%, mark spreads on kill") \
-	 .with_suffix("of Death", BASE_NAME, "Hunter's", BASE_ID)
+	 .with_signature("50% bonus damage, execute below 25%, mark spreads on kill")
 
 static func _create_focus_fire() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -85,8 +83,7 @@ static func _create_focus_fire() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(6.0) \
 	 .with_effect("focus_fire") \
-	 .with_prerequisite("mark_target", 1) \
-	 .with_prefix("Focused", BASE_NAME, BASE_ID)
+	 .with_prerequisite("mark_target", 1)
 
 static func _create_kill_order() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -102,8 +99,7 @@ static func _create_kill_order() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("kill_order") \
 	 .with_prerequisite("mark_focus", 1) \
-	 .with_signature("100% bonus damage, attacks can't miss, cooldown reset on kill") \
-	 .with_suffix("of the Kill Order", BASE_NAME, "Focused", BASE_ID)
+	 .with_signature("100% bonus damage, attacks can't miss, cooldown reset on kill")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["mark_target", "mark_hunter", "mark_death", "mark_focus", "mark_kill_order"]

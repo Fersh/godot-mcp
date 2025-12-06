@@ -49,8 +49,7 @@ static func _create_reaper() -> ActiveAbilityData:
 	).with_damage(50.0, 1.2) \
 	 .with_range(150.0) \
 	 .with_effect("reaper_touch") \
-	 .with_prerequisite("execute", 0) \
-	 .with_prefix("Reaper's", BASE_NAME, BASE_ID)
+	 .with_prerequisite("execute", 0)
 
 static func _create_soul_harvest() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -65,8 +64,7 @@ static func _create_soul_harvest() -> ActiveAbilityData:
 	 .with_range(180.0) \
 	 .with_effect("soul_harvest") \
 	 .with_prerequisite("execute_reaper", 0) \
-	 .with_signature("Kill below 25% HP, heal 20% max HP per kill, resets cooldown on kill") \
-	 .with_suffix("of Souls", BASE_NAME, "Reaper's", BASE_ID)
+	 .with_signature("Kill below 25% HP, heal 20% max HP per kill, resets cooldown on kill")
 
 static func _create_brutal_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -80,13 +78,12 @@ static func _create_brutal_strike() -> ActiveAbilityData:
 	).with_damage(100.0, 1.8) \
 	 .with_range(120.0) \
 	 .with_effect("brutal_strike") \
-	 .with_prerequisite("execute", 1) \
-	 .with_prefix("Brutal", BASE_NAME, BASE_ID)
+	 .with_prerequisite("execute", 1)
 
 static func _create_decapitate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"execute_decapitate",
-		"Decapitate",
+		"Off With Their Head",
 		"Guaranteed critical hit. Targets below 40% HP take triple damage.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.MELEE,
@@ -96,8 +93,7 @@ static func _create_decapitate() -> ActiveAbilityData:
 	 .with_range(150.0) \
 	 .with_effect("decapitate") \
 	 .with_prerequisite("execute_brutal", 1) \
-	 .with_signature("Always crits, 3x damage below 40% HP, brief slow-mo on kill") \
-	 .with_suffix("of Death", BASE_NAME, "Brutal", BASE_ID)
+	 .with_signature("Always crits, 3x damage below 40% HP, brief slow-mo on kill")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["execute", "execute_reaper", "execute_harvest", "execute_brutal", "execute_decapitate"]

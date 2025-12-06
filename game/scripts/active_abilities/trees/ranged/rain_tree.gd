@@ -51,8 +51,7 @@ static func _create_arrow_storm() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(3.0) \
 	 .with_effect("arrow_storm") \
-	 .with_prerequisite("rain_of_arrows", 0) \
-	 .with_prefix("Storming", BASE_NAME, BASE_ID)
+	 .with_prerequisite("rain_of_arrows", 0)
 
 static func _create_arrow_apocalypse() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_arrow_apocalypse() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_effect("arrow_apocalypse") \
 	 .with_prerequisite("rain_storm", 0) \
-	 .with_signature("Screen-wide arrow rain for 5 seconds, slows enemies 30%") \
-	 .with_suffix("of Apocalypse", BASE_NAME, "Storming", BASE_ID)
+	 .with_signature("Screen-wide arrow rain for 5 seconds, slows enemies 30%")
 
 static func _create_focused_barrage() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -84,8 +82,7 @@ static func _create_focused_barrage() -> ActiveAbilityData:
 	 .with_aoe(100.0) \
 	 .with_duration(1.5) \
 	 .with_effect("focused_barrage") \
-	 .with_prerequisite("rain_of_arrows", 1) \
-	 .with_prefix("Focused", BASE_NAME, BASE_ID)
+	 .with_prerequisite("rain_of_arrows", 1)
 
 static func _create_orbital_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -102,8 +99,7 @@ static func _create_orbital_strike() -> ActiveAbilityData:
 	 .with_stun(2.0) \
 	 .with_effect("orbital_strike") \
 	 .with_prerequisite("rain_focused", 1) \
-	 .with_signature("Massive single strike, 2s charge, stuns survivors") \
-	 .with_suffix("of Annihilation", BASE_NAME, "Focused", BASE_ID)
+	 .with_signature("Massive single strike, 2s charge, stuns survivors")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["rain_of_arrows", "rain_storm", "rain_apocalypse", "rain_focused", "rain_orbital"]
