@@ -812,9 +812,9 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	# Update description (child 4 is MarginContainer, desc_label is inside)
 	var desc_margin = vbox.get_child(4) as MarginContainer
 	if desc_margin and desc_margin.get_child_count() > 0:
-		var desc_label = desc_margin.get_child(0) as Label
+		var desc_label = desc_margin.get_child(0) as RichTextLabel
 		if desc_label:
-			desc_label.text = ability.description
+			desc_label.text = DescriptionFormatter.format(ability.description)
 
 	# Update upgradeable indicator (child 5) - only show on final reveal for base abilities in trees
 	var upgradeable_label = vbox.get_child(5) as Label

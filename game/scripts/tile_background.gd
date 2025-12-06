@@ -1,9 +1,15 @@
 extends Node2D
-## Modular tile-based background system using forest_tileset.png
+## Modular tile-based background system
 ## Creates a structured arena with roads, clearings, and natural vegetation
+## Uses forest_tileset.png for Pitiful, RA_Jungle.png for Easy+
 
 const TILE_SIZE: int = 32
-const TILESET_PATH: String = "res://assets/enviro/forest_tileset.png"
+const TILESET_PATH_PITIFUL: String = "res://assets/enviro/forest_tileset.png"
+const TILESET_PATH_JUNGLE: String = "res://assets/enviro/adv/jungle/Godot/RA_Jungle.png"
+const JUNGLE_TILE_SIZE: int = 16  # Jungle tileset uses 16px tiles
+
+var use_jungle_theme: bool = false
+var current_tileset_path: String = TILESET_PATH_PITIFUL
 
 @export var tile_scale: float = 2.0
 @export var arena_width_tiles: int = 48
@@ -143,12 +149,55 @@ var decoration_tiles: Array[Dictionary] = [
 	{"rect": Rect2i(288, 704, 32, 32), "type": "log"},
 ]
 
-# Tree textures
-var tree_textures: Array[String] = [
+# Tree textures - Pitiful theme (forest)
+var tree_textures_forest: Array[String] = [
 	"res://assets/enviro/gowl/Trees/Tree1.png",
 	"res://assets/enviro/gowl/Trees/Tree2.png",
 	"res://assets/enviro/gowl/Trees/Tree3.png",
 ]
+
+# Tree textures - Jungle theme
+var tree_textures_jungle: Array[String] = [
+	"res://assets/enviro/adv/jungle/Godot/tree01_s_01_animation.png",
+	"res://assets/enviro/adv/jungle/Godot/tree02_s_01_animation.png",
+	"res://assets/enviro/adv/jungle/Godot/tree03_s_01_animation.png",
+	"res://assets/enviro/adv/jungle/Godot/tree04_s_01_animation.png",
+	"res://assets/enviro/adv/jungle/Godot/tree05_s_01_animation.png",
+	"res://assets/enviro/adv/jungle/Godot/tree06_s_01_animation.png",
+]
+
+# Returns the appropriate tree textures based on theme
+func get_tree_textures() -> Array[String]:
+	return tree_textures_jungle if use_jungle_theme else tree_textures_forest
+
+# ============================================
+# JUNGLE TILE DEFINITIONS (16px tiles in RA_Jungle.png)
+# ============================================
+
+# Jungle grass tiles - 3 shades (light, dark, darkest)
+# Light grass center at (1, 34) = 16, 544
+var jungle_grass_light: Rect2i = Rect2i(16, 544, 16, 16)
+var jungle_grass_dark: Rect2i = Rect2i(96, 544, 16, 16)  # (6, 34)
+var jungle_grass_darkest: Rect2i = Rect2i(176, 544, 16, 16)  # (11, 34)
+
+# Jungle tall grass tiles
+# Light tall grass center at (1, 37) = 16, 592
+var jungle_tall_grass_light: Rect2i = Rect2i(16, 592, 16, 16)
+var jungle_tall_grass_dark: Rect2i = Rect2i(96, 592, 16, 16)  # (6, 37)
+var jungle_tall_grass_darkest: Rect2i = Rect2i(176, 592, 16, 16)  # (11, 37)
+
+# Jungle decorations - rows 35-36, columns 15-31 (17 decorations per row)
+var jungle_decoration_tiles: Array[Rect2i] = []
+
+func _init_jungle_decorations() -> void:
+	jungle_decoration_tiles.clear()
+	# Row 35: y = 35 * 16 = 560 (columns 15-31)
+	for x in range(15, 32):
+		jungle_decoration_tiles.append(Rect2i(x * 16, 560, 16, 16))
+	# Row 36: y = 36 * 16 = 576 (columns 15-31)
+	for x in range(15, 32):
+		jungle_decoration_tiles.append(Rect2i(x * 16, 576, 16, 16))
+	print("TileBackground: Initialized %d jungle decoration tiles" % jungle_decoration_tiles.size())
 
 const LAMP_TEXTURE_PATH: String = "res://assets/enviro/gowl/Wooden/Lamp.png"
 
@@ -171,13 +220,30 @@ var arena_offset_y: float = 0.0
 
 func _ready() -> void:
 	z_index = -10
+	_determine_theme()
+	_init_jungle_decorations()
 	_load_tileset()
 	generate_arena()
 
+func _determine_theme() -> void:
+	# Check if DifficultyManager exists and get current difficulty
+	var diff_manager = get_node_or_null("/root/DifficultyManager")
+	if diff_manager:
+		var current_diff = diff_manager.get_current_difficulty()
+		# Pitiful (JUVENILE = 0) uses forest, all others use jungle
+		use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
+		current_tileset_path = TILESET_PATH_JUNGLE if use_jungle_theme else TILESET_PATH_PITIFUL
+		print("TileBackground: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
+	else:
+		# Default to Pitiful theme if no difficulty manager
+		use_jungle_theme = false
+		current_tileset_path = TILESET_PATH_PITIFUL
+		print("TileBackground: No difficulty manager found, using default theme")
+
 func _load_tileset() -> void:
-	tileset_texture = load(TILESET_PATH)
+	tileset_texture = load(current_tileset_path)
 	if not tileset_texture:
-		push_error("TileBackground: Failed to load tileset from " + TILESET_PATH)
+		push_error("TileBackground: Failed to load tileset from " + current_tileset_path)
 
 func generate_arena() -> void:
 	if not tileset_texture:
@@ -202,30 +268,128 @@ func generate_arena() -> void:
 	_generate_road_network()
 	_generate_water_pools()
 
-	# Step 2: Generate floor tiles
-	for y in range(arena_height_tiles):
-		for x in range(arena_width_tiles):
-			var tile_pos = Vector2(arena_offset_x + x * scaled_tile_size, arena_offset_y + y * scaled_tile_size)
-			var tile_type = _determine_tile_type(x, y)
-			var tile_rect = _get_tile_rect(tile_type, x, y)
-			_create_tile_sprite(tile_pos, tile_rect, tile_type)
+	# Step 2: Generate floor
+	if use_jungle_theme:
+		# Jungle uses solid color background + decorations
+		_create_jungle_background(scaled_tile_size, arena_pixel_width, arena_pixel_height)
+	else:
+		# Forest uses tile-based floor
+		for y in range(arena_height_tiles):
+			for x in range(arena_width_tiles):
+				var tile_pos = Vector2(arena_offset_x + x * scaled_tile_size, arena_offset_y + y * scaled_tile_size)
+				var tile_type = _determine_tile_type(x, y)
+				var tile_rect = _get_tile_rect(tile_type, x, y)
+				_create_tile_sprite(tile_pos, tile_rect, tile_type)
 
-			if tile_type.begins_with("water"):
-				_create_water_collision(tile_pos, scaled_tile_size)
+				if tile_type.begins_with("water"):
+					_create_water_collision(tile_pos, scaled_tile_size)
 
-	# Step 2.5: Generate border extensions
-	_generate_top_border_extension(scaled_tile_size)
-	_generate_water_borders(scaled_tile_size)
+	# Step 2.5: Generate border extensions (forest theme only)
+	if not use_jungle_theme:
+		_generate_top_border_extension(scaled_tile_size)
+		_generate_water_borders(scaled_tile_size)
+	else:
+		# Jungle uses simple colored borders
+		_generate_jungle_borders(scaled_tile_size, arena_pixel_width, arena_pixel_height)
 
 	# Step 3: Add overlays and objects (respecting structure)
 	_generate_trees_structured()
 	_generate_lamps_along_roads()
-	# Tall grass disabled - not using yellow or green grass overlays
-	# _generate_tall_grass_clusters()
 	_generate_small_decorations()
+
+	# Generate tall grass for jungle theme
+	if use_jungle_theme:
+		_generate_jungle_tall_grass(scaled_tile_size)
 
 	# Step 4: Spawn one treasure chest in a valid location
 	_spawn_treasure_chest(scaled_tile_size)
+
+func _create_jungle_background(scaled_tile_size: float, width: float, height: float) -> void:
+	# Create solid grass background
+	var bg = ColorRect.new()
+	bg.name = "JungleBackground"
+	bg.color = Color(0.267, 0.412, 0.220)  # Dark jungle green
+	bg.position = Vector2(arena_offset_x, arena_offset_y)
+	bg.size = Vector2(width, height)
+	bg.z_index = -11
+	add_child(bg)
+	generated_tiles.append(bg)
+
+func _generate_jungle_borders(scaled_tile_size: float, width: float, height: float) -> void:
+	var water_color = Color(0.247, 0.463, 0.580)  # Blue water
+	var border_depth = 10 * scaled_tile_size
+
+	# Top border (darker area)
+	var top_border = ColorRect.new()
+	top_border.color = Color(0.15, 0.25, 0.12)  # Darker green
+	top_border.position = Vector2(arena_offset_x - border_depth, arena_offset_y - border_depth)
+	top_border.size = Vector2(width + border_depth * 2, border_depth)
+	top_border.z_index = -10
+	add_child(top_border)
+	generated_tiles.append(top_border)
+
+	# Left water border
+	var left_water = ColorRect.new()
+	left_water.color = water_color
+	left_water.position = Vector2(arena_offset_x - border_depth, arena_offset_y)
+	left_water.size = Vector2(border_depth, height + border_depth)
+	left_water.z_index = -10
+	add_child(left_water)
+	generated_tiles.append(left_water)
+	_create_water_collision(left_water.position, border_depth)
+
+	# Right water border
+	var right_water = ColorRect.new()
+	right_water.color = water_color
+	right_water.position = Vector2(arena_offset_x + width, arena_offset_y)
+	right_water.size = Vector2(border_depth, height + border_depth)
+	right_water.z_index = -10
+	add_child(right_water)
+	generated_tiles.append(right_water)
+	_create_water_collision(right_water.position, border_depth)
+
+	# Bottom water border
+	var bottom_water = ColorRect.new()
+	bottom_water.color = water_color
+	bottom_water.position = Vector2(arena_offset_x - border_depth, arena_offset_y + height)
+	bottom_water.size = Vector2(width + border_depth * 2, border_depth)
+	bottom_water.z_index = -10
+	add_child(bottom_water)
+	generated_tiles.append(bottom_water)
+	_create_water_collision(bottom_water.position, border_depth)
+
+func _generate_jungle_tall_grass(scaled_tile_size: float) -> void:
+	# Add clusters of tall grass using jungle tall grass tiles
+	var tall_grass_tiles: Array[Rect2i] = [jungle_tall_grass_light, jungle_tall_grass_dark, jungle_tall_grass_darkest]
+
+	for _cluster in range(grass_cluster_count):
+		var x = rng.randi_range(border_thickness + 3, arena_width_tiles - border_thickness - 3)
+		var y = rng.randi_range(border_thickness + 3, arena_height_tiles - border_thickness - 3)
+
+		if _is_in_central_clearing(x, y):
+			continue
+		if _is_dirt_tile(x, y):
+			continue
+		if _is_water_tile(x, y):
+			continue
+
+		var pos = Vector2(
+			arena_offset_x + x * scaled_tile_size + scaled_tile_size / 2,
+			arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
+		)
+
+		var grass_rect = tall_grass_tiles[rng.randi() % tall_grass_tiles.size()]
+		var sprite = Sprite2D.new()
+		sprite.texture = tileset_texture
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		sprite.region_enabled = true
+		sprite.region_rect = Rect2(grass_rect)
+		sprite.scale = Vector2(tile_scale, tile_scale)
+		sprite.position = pos
+		sprite.z_as_relative = false
+		sprite.z_index = 1000  # Overlay on top of characters
+		add_child(sprite)
+		overlay_sprites.append(sprite)
 
 func _define_central_clearing() -> void:
 	"""Define the central open area where combat happens."""
@@ -577,6 +741,10 @@ func _determine_tile_type(x: int, y: int) -> String:
 	return "light_grass"
 
 func _get_tile_rect(tile_type: String, _x: int, _y: int) -> Rect2i:
+	# For jungle theme, return jungle tiles
+	if use_jungle_theme:
+		return _get_jungle_tile_rect(tile_type, _x, _y)
+
 	match tile_type:
 		"light_grass":
 			return light_field_tiles[rng.randi() % light_field_tiles.size()]
@@ -614,6 +782,32 @@ func _get_tile_rect(tile_type: String, _x: int, _y: int) -> Rect2i:
 
 	return light_field_tiles[rng.randi() % light_field_tiles.size()]
 
+func _get_jungle_tile_rect(tile_type: String, _x: int, _y: int) -> Rect2i:
+	# Jungle tiles are 16px, return appropriate tiles
+	var jungle_grass_tiles: Array[Rect2i] = [jungle_grass_light, jungle_grass_dark, jungle_grass_darkest]
+
+	match tile_type:
+		"light_grass":
+			# Mix of grass shades for variety
+			return jungle_grass_tiles[rng.randi() % jungle_grass_tiles.size()]
+
+		# For outer edges, use the darkest grass as border
+		"outer_top", "outer_bottom", "outer_left", "outer_right", \
+		"outer_top_left", "outer_top_right", "outer_bottom_left", "outer_bottom_right":
+			return jungle_grass_darkest
+
+		# Water tiles - use dark grass for now (would need proper water tiles)
+		"water", "water_edge_top", "water_edge_bottom", "water_edge_left", "water_edge_right", \
+		"water_edge_top_left", "water_edge_top_right", "water_edge_bottom_left", "water_edge_bottom_right":
+			return jungle_grass_dark
+
+		# Dirt/road tiles - use light grass
+		"dirt", "dirt_edge_top", "dirt_edge_bottom", "dirt_edge_left", "dirt_edge_right", \
+		"dirt_edge_top_left", "dirt_edge_top_right", "dirt_edge_bottom_left", "dirt_edge_bottom_right":
+			return jungle_grass_light
+
+	return jungle_grass_tiles[rng.randi() % jungle_grass_tiles.size()]
+
 func _create_tile_sprite(pos: Vector2, region: Rect2i, _tile_type: String = "light_grass") -> void:
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
@@ -622,6 +816,8 @@ func _create_tile_sprite(pos: Vector2, region: Rect2i, _tile_type: String = "lig
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sprite.region_enabled = true
 	sprite.region_rect = Rect2(region)
+
+	# Use standard scale - jungle tiles will naturally be smaller but that's OK
 	sprite.scale = Vector2(tile_scale, tile_scale)
 	sprite.position = pos + Vector2(scaled_tile_size / 2, scaled_tile_size / 2)
 	sprite.z_index = -10
@@ -725,13 +921,18 @@ func _generate_trees_structured() -> void:
 		# Instantiate destructible tree
 		var tree_instance = tree_scene.instantiate()
 		tree_instance.position = pos
-		# Randomize tree size from 1x to 2x the base tree_scale
-		var random_scale = tree_scale * rng.randf_range(1.0, 2.0)
+		# Randomize tree size - use region_rect frame size for scale calculation
+		var base_scale = tree_scale
+		if use_jungle_theme:
+			# Jungle tree frames are 64x240, need appropriate scale
+			base_scale = tree_scale * 0.4  # Smaller base since frames are tall
+		var random_scale = base_scale * rng.randf_range(0.8, 1.3)
 		tree_instance.scale = Vector2(random_scale, random_scale)
 
-		# Randomize tree texture
+		# Randomize tree texture based on theme
 		var tree_textures_loaded: Array[Texture2D] = []
-		for path in tree_textures:
+		var current_tree_textures = get_tree_textures()
+		for path in current_tree_textures:
 			var tex = load(path)
 			if tex:
 				tree_textures_loaded.append(tex)
@@ -741,15 +942,24 @@ func _generate_trees_structured() -> void:
 			var sprite_node = tree_instance.get_node_or_null("Sprite")
 			if sprite_node:
 				sprite_node.texture = random_tex
+				# Jungle tree textures are sprite sheets (256x240) - use only first frame
+				if use_jungle_theme:
+					sprite_node.region_enabled = true
+					sprite_node.region_rect = Rect2(0, 0, 64, 240)  # First frame of 4-frame horizontal strip
 			var shadow_node = tree_instance.get_node_or_null("Shadow")
 			if shadow_node:
 				shadow_node.texture = random_tex
+				if use_jungle_theme:
+					shadow_node.region_enabled = true
+					shadow_node.region_rect = Rect2(0, 0, 64, 240)
 
 		add_child(tree_instance)
 		tree_sprites.append(tree_instance)
 		placed_tree_tiles.append(Vector2i(x, y))
 		placed_tree_positions.append(pos)  # Track world position for chest spawn
 		trees_placed += 1
+
+	print("TileBackground: Placed %d trees (jungle theme: %s)" % [trees_placed, use_jungle_theme])
 
 func _generate_lamps_along_roads() -> void:
 	"""Place lamps on grass tiles beside roads, not on the roads themselves."""
@@ -975,11 +1185,19 @@ func _create_grass_sprite(pos: Vector2, region: Rect2i, is_tall: bool) -> void:
 	overlay_sprites.append(sprite)
 
 func _generate_small_decorations() -> void:
-	if decoration_tiles.is_empty():
-		return
-
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
+	# Use jungle decorations or forest decorations based on theme
+	if use_jungle_theme:
+		if jungle_decoration_tiles.is_empty():
+			return
+		_generate_jungle_decorations(scaled_tile_size)
+	else:
+		if decoration_tiles.is_empty():
+			return
+		_generate_forest_decorations(scaled_tile_size)
+
+func _generate_forest_decorations(scaled_tile_size: float) -> void:
 	for y in range(border_thickness + 2, arena_height_tiles - border_thickness - 2):
 		for x in range(border_thickness + 2, arena_width_tiles - border_thickness - 2):
 			if rng.randf() > decoration_density:
@@ -1005,6 +1223,45 @@ func _generate_small_decorations() -> void:
 			sprite.z_index = -9
 			add_child(sprite)
 			decoration_sprites.append(sprite)
+
+func _generate_jungle_decorations(scaled_tile_size: float) -> void:
+	# Higher decoration density for jungle theme
+	var jungle_decoration_density = decoration_density * 2.0  # Double the density
+	var decorations_placed = 0
+
+	for y in range(border_thickness + 2, arena_height_tiles - border_thickness - 2):
+		for x in range(border_thickness + 2, arena_width_tiles - border_thickness - 2):
+			if rng.randf() > jungle_decoration_density:
+				continue
+
+			if _is_water_tile(x, y) or _is_dirt_tile(x, y):
+				continue
+
+			# Skip central clearing for decorations
+			if _is_in_central_clearing(x, y):
+				continue
+
+			var decoration_rect = jungle_decoration_tiles[rng.randi() % jungle_decoration_tiles.size()]
+			var sprite = Sprite2D.new()
+			sprite.texture = tileset_texture
+			sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			sprite.region_enabled = true
+			sprite.region_rect = Rect2(decoration_rect)
+			# Scale up jungle decorations a bit more for visibility
+			sprite.scale = Vector2(tile_scale * 1.2, tile_scale * 1.2)
+
+			var pos = Vector2(
+				arena_offset_x + x * scaled_tile_size + scaled_tile_size / 2,
+				arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
+			)
+
+			sprite.position = pos
+			sprite.z_index = -5  # Above background (-11) but below characters
+			add_child(sprite)
+			decoration_sprites.append(sprite)
+			decorations_placed += 1
+
+	print("TileBackground: Placed %d jungle decorations" % decorations_placed)
 
 func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 	"""Spawn a single treasure chest away from player spawn area."""

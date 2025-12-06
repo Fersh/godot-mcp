@@ -3,6 +3,7 @@ extends Node2D
 ## Procedural Map Generator
 ## Creates a 2500x2500 playable area surrounded by water.
 ## Scatters trees, rocks, lamps, and rare magic stones.
+## Uses different tilesets based on difficulty: Nature.png for Pitiful, RA_Jungle.png for Easy+
 
 signal map_generated(map_bounds: Rect2)
 
@@ -12,6 +13,9 @@ const TILE_SIZE: int = 16
 const WATER_BORDER: int = 200  # Water extends 200px beyond playable area
 const CAMERA_WATER_MARGIN: int = 100  # How far camera can see into water
 
+# ============================================
+# PITIFUL TILESET - Nature.png (16px grid)
+# ============================================
 # Tile coordinates in Nature.png (16px grid, 19 columns x 8 rows)
 # Looking at the tileset: large grass area is at rows 4-5, cols 0-5
 # Grass tiles - solid green areas
@@ -39,6 +43,192 @@ const TILE_WATER_CORNER_BR := Vector2i(2, 2)  # Corner bottom-right (inner)
 # Path tiles - dirt area at cols 4-5
 const TILE_DIRT := Vector2i(4, 1)  # Dirt/cleared ground center
 const TILE_DIRT_2 := Vector2i(5, 1)  # Dirt variant
+
+# ============================================
+# JUNGLE TILESET - RA_Jungle.png (16px grid, 32x47 tiles)
+# Used for Easy difficulty and above
+# ============================================
+
+# Grass tiles - 3 shades with 3x3 edge patterns (center + 8 surrounding)
+# Light grass (shade 1) - center at 1,34
+const JUNGLE_GRASS_LIGHT := {
+	"center": Vector2i(1, 34),
+	"top": Vector2i(1, 33),
+	"bottom": Vector2i(1, 35),
+	"left": Vector2i(0, 34),
+	"right": Vector2i(2, 34),
+	"top_left": Vector2i(0, 33),
+	"top_right": Vector2i(2, 33),
+	"bottom_left": Vector2i(0, 35),
+	"bottom_right": Vector2i(2, 35),
+}
+
+# Darker grass (shade 2) - center at 6,34
+const JUNGLE_GRASS_DARK := {
+	"center": Vector2i(6, 34),
+	"top": Vector2i(6, 33),
+	"bottom": Vector2i(6, 35),
+	"left": Vector2i(5, 34),
+	"right": Vector2i(7, 34),
+	"top_left": Vector2i(5, 33),
+	"top_right": Vector2i(7, 33),
+	"bottom_left": Vector2i(5, 35),
+	"bottom_right": Vector2i(7, 35),
+}
+
+# Darkest grass (shade 3) - center at 11,34
+const JUNGLE_GRASS_DARKEST := {
+	"center": Vector2i(11, 34),
+	"top": Vector2i(11, 33),
+	"bottom": Vector2i(11, 35),
+	"left": Vector2i(10, 34),
+	"right": Vector2i(12, 34),
+	"top_left": Vector2i(10, 33),
+	"top_right": Vector2i(12, 33),
+	"bottom_left": Vector2i(10, 35),
+	"bottom_right": Vector2i(12, 35),
+}
+
+# Tall grass tiles - 3 shades with 3x3 patterns + animation frames
+# Light tall grass - center at 1,37
+const JUNGLE_TALL_GRASS_LIGHT := {
+	"center": Vector2i(1, 37),
+	"top": Vector2i(1, 36),
+	"bottom": Vector2i(1, 38),
+	"left": Vector2i(0, 37),
+	"right": Vector2i(2, 37),
+	"top_left": Vector2i(0, 36),
+	"top_right": Vector2i(2, 36),
+	"bottom_left": Vector2i(0, 38),
+	"bottom_right": Vector2i(2, 38),
+	# Animation frames (3 rows down from center = row 40)
+	"anim_center": [Vector2i(1, 40), Vector2i(1, 43), Vector2i(1, 46)],
+	"anim_surrounding": [
+		[Vector2i(0, 40), Vector2i(0, 43), Vector2i(0, 46)],  # left
+		[Vector2i(2, 40), Vector2i(2, 43), Vector2i(2, 46)],  # right
+		[Vector2i(1, 39), Vector2i(1, 42), Vector2i(1, 45)],  # top
+		[Vector2i(1, 41), Vector2i(1, 44), Vector2i(1, 47)],  # bottom (if exists)
+	],
+}
+
+# Dark tall grass - center at 6,37
+const JUNGLE_TALL_GRASS_DARK := {
+	"center": Vector2i(6, 37),
+	"top": Vector2i(6, 36),
+	"bottom": Vector2i(6, 38),
+	"left": Vector2i(5, 37),
+	"right": Vector2i(7, 37),
+	"top_left": Vector2i(5, 36),
+	"top_right": Vector2i(7, 36),
+	"bottom_left": Vector2i(5, 38),
+	"bottom_right": Vector2i(7, 38),
+	"anim_center": [Vector2i(6, 40), Vector2i(6, 43), Vector2i(6, 46)],
+}
+
+# Darkest tall grass - center at 11,37
+const JUNGLE_TALL_GRASS_DARKEST := {
+	"center": Vector2i(11, 37),
+	"top": Vector2i(11, 36),
+	"bottom": Vector2i(11, 38),
+	"left": Vector2i(10, 37),
+	"right": Vector2i(12, 37),
+	"top_left": Vector2i(10, 36),
+	"top_right": Vector2i(12, 36),
+	"bottom_left": Vector2i(10, 38),
+	"bottom_right": Vector2i(12, 38),
+	"anim_center": [Vector2i(11, 40), Vector2i(11, 43), Vector2i(11, 46)],
+}
+
+# Decorations over grass - rows 35-36, columns 15-31 (17 tiles per row, 34 total)
+const JUNGLE_DECORATIONS: Array[Vector2i] = [
+	# Row 35 (upper decorations)
+	Vector2i(15, 35), Vector2i(16, 35), Vector2i(17, 35), Vector2i(18, 35),
+	Vector2i(19, 35), Vector2i(20, 35), Vector2i(21, 35), Vector2i(22, 35),
+	Vector2i(23, 35), Vector2i(24, 35), Vector2i(25, 35), Vector2i(26, 35),
+	Vector2i(27, 35), Vector2i(28, 35), Vector2i(29, 35), Vector2i(30, 35),
+	Vector2i(31, 35),
+	# Row 36 (lower decorations)
+	Vector2i(15, 36), Vector2i(16, 36), Vector2i(17, 36), Vector2i(18, 36),
+	Vector2i(19, 36), Vector2i(20, 36), Vector2i(21, 36), Vector2i(22, 36),
+	Vector2i(23, 36), Vector2i(24, 36), Vector2i(25, 36), Vector2i(26, 36),
+	Vector2i(27, 36), Vector2i(28, 36), Vector2i(29, 36), Vector2i(30, 36),
+	Vector2i(31, 36),
+]
+
+# Rocks in 4-frame groups (2x2 each): top-left, top-right, bottom-left, bottom-right
+# Group 1: starts at 22,33
+# Group 2: starts at 24,33
+# Group 3: starts at 26,33
+const JUNGLE_ROCK_GROUPS: Array = [
+	{
+		"top_left": Vector2i(22, 33),
+		"top_right": Vector2i(23, 33),
+		"bottom_left": Vector2i(22, 34),
+		"bottom_right": Vector2i(23, 34),
+	},
+	{
+		"top_left": Vector2i(24, 33),
+		"top_right": Vector2i(25, 33),
+		"bottom_left": Vector2i(24, 34),
+		"bottom_right": Vector2i(25, 34),
+	},
+	{
+		"top_left": Vector2i(26, 33),
+		"top_right": Vector2i(27, 33),
+		"bottom_left": Vector2i(26, 34),
+		"bottom_right": Vector2i(27, 34),
+	},
+]
+
+# Trees - 3x3 small trees starting at 0,1, then taller 3x5 trees
+# Row 1: 2 small trees (3x3), then 3 tall trees (3x5)
+# Each tree color repeats this pattern with a gap row between colors
+const JUNGLE_TREE_COLORS: Array = [
+	{
+		"name": "green",
+		"small_trees": [
+			# Small tree 1: 0,1 to 2,3 (3x3)
+			{"start": Vector2i(0, 1), "size": Vector2i(3, 3)},
+			# Small tree 2: 3,1 to 5,3 (3x3)
+			{"start": Vector2i(3, 1), "size": Vector2i(3, 3)},
+		],
+		"tall_trees": [
+			# Tall tree 1: 6,-1 to 8,3 (3x5, extends 2 rows up)
+			{"start": Vector2i(6, 0), "size": Vector2i(3, 5)},
+			# Tall tree 2: 9,-1 to 11,3
+			{"start": Vector2i(9, 0), "size": Vector2i(3, 5)},
+			# Tall tree 3: 12,-1 to 14,3
+			{"start": Vector2i(12, 0), "size": Vector2i(3, 5)},
+		],
+	},
+	{
+		"name": "yellow",
+		"small_trees": [
+			{"start": Vector2i(0, 8), "size": Vector2i(3, 3)},
+			{"start": Vector2i(3, 8), "size": Vector2i(3, 3)},
+		],
+		"tall_trees": [
+			{"start": Vector2i(6, 6), "size": Vector2i(3, 5)},
+			{"start": Vector2i(9, 6), "size": Vector2i(3, 5)},
+			{"start": Vector2i(12, 6), "size": Vector2i(3, 5)},
+		],
+	},
+	{
+		"name": "orange",
+		"small_trees": [
+			{"start": Vector2i(0, 15), "size": Vector2i(3, 3)},
+			{"start": Vector2i(3, 15), "size": Vector2i(3, 3)},
+		],
+		"tall_trees": [
+			{"start": Vector2i(6, 13), "size": Vector2i(3, 5)},
+			{"start": Vector2i(9, 13), "size": Vector2i(3, 5)},
+			{"start": Vector2i(12, 13), "size": Vector2i(3, 5)},
+		],
+	},
+]
+
+# Track if using jungle theme
+var use_jungle_theme: bool = false
 
 # Central spawn area config
 const SPAWN_AREA_RADIUS: int = 150  # Clear area around spawn point
@@ -96,6 +286,9 @@ func _load_scenes() -> void:
 func generate_map() -> void:
 	print("ProceduralMapGenerator: Starting map generation...")
 
+	# Check difficulty to determine tileset
+	_determine_theme()
+
 	# Clear any existing generated content
 	_clear_existing()
 
@@ -122,6 +315,21 @@ func generate_map() -> void:
 
 	print("ProceduralMapGenerator: Map generation complete!")
 
+func _determine_theme() -> void:
+	# Check if DifficultyManager exists and get current difficulty
+	if Engine.has_singleton("DifficultyManager") or has_node("/root/DifficultyManager"):
+		var diff_manager = get_node_or_null("/root/DifficultyManager")
+		if diff_manager:
+			var current_diff = diff_manager.get_current_difficulty()
+			# Pitiful (JUVENILE = 0) uses Nature.png, all others use jungle
+			use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
+			print("ProceduralMapGenerator: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
+			return
+
+	# Default to Pitiful theme if no difficulty manager
+	use_jungle_theme = false
+	print("ProceduralMapGenerator: No difficulty manager found, using default theme")
+
 func _clear_existing() -> void:
 	obstacle_positions.clear()
 	lamp_positions.clear()
@@ -136,16 +344,20 @@ func _setup_tilemaps() -> void:
 	# Create a solid grass background using ColorRect
 	var grass_bg = ColorRect.new()
 	grass_bg.name = "GrassBackground"
-	grass_bg.color = Color(0.322, 0.537, 0.243)  # Match the grass green from tileset
+	# Different background colors for different themes
+	if use_jungle_theme:
+		grass_bg.color = Color(0.267, 0.412, 0.220)  # Darker jungle green
+	else:
+		grass_bg.color = Color(0.322, 0.537, 0.243)  # Match the grass green from tileset
 	grass_bg.position = Vector2(-WATER_BORDER, -WATER_BORDER)
 	grass_bg.size = Vector2(MAP_SIZE + WATER_BORDER * 2, MAP_SIZE + WATER_BORDER * 2)
 	grass_bg.z_index = -12
 	add_child(grass_bg)
 
-	# Create tileset from Nature.png for water and decorations
+	# Create tileset based on current theme
 	var tileset = _create_tileset()
 
-	# Ground layer - for dirt paths only
+	# Ground layer - for grass tiles in jungle theme, dirt paths in pitiful
 	ground_tilemap = TileMapLayer.new()
 	ground_tilemap.name = "GroundTileMap"
 	ground_tilemap.tile_set = tileset
@@ -159,20 +371,34 @@ func _setup_tilemaps() -> void:
 	water_tilemap.z_index = -9
 	add_child(water_tilemap)
 
-	# Decoration layer (flowers, mushrooms)
+	# Decoration layer (flowers, mushrooms, tall grass)
 	decoration_tilemap = TileMapLayer.new()
 	decoration_tilemap.name = "DecorationTileMap"
 	decoration_tilemap.tile_set = tileset
 	decoration_tilemap.z_index = -8
 	add_child(decoration_tilemap)
 
+	# Animated tall grass layer for jungle theme
+	if use_jungle_theme:
+		var tall_grass_tilemap = TileMapLayer.new()
+		tall_grass_tilemap.name = "TallGrassTileMap"
+		tall_grass_tilemap.tile_set = tileset
+		tall_grass_tilemap.z_index = -7
+		add_child(tall_grass_tilemap)
+
 func _create_tileset() -> TileSet:
 	var tileset = TileSet.new()
 	tileset.tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
-	# Add the Nature.png as a source
+	# Choose texture based on theme
+	var texture_path: String
+	if use_jungle_theme:
+		texture_path = "res://assets/enviro/adv/jungle/Godot/RA_Jungle.png"
+	else:
+		texture_path = "res://assets/enviro/gowl/Tiles/Nature.png"
+
 	var source = TileSetAtlasSource.new()
-	var texture = load("res://assets/enviro/gowl/Tiles/Nature.png")
+	var texture = load(texture_path)
 	if texture:
 		source.texture = texture
 		source.texture_region_size = Vector2i(TILE_SIZE, TILE_SIZE)
@@ -187,22 +413,99 @@ func _create_tileset() -> TileSet:
 				source.create_tile(atlas_coords)
 
 		tileset.add_source(source, 0)
+		print("ProceduralMapGenerator: Created tileset from %s (%dx%d tiles)" % [texture_path, cols, rows])
 
 	return tileset
 
 func _generate_ground() -> void:
 	# Ground is now handled by a solid ColorRect background
-	# This function now only adds occasional decorative tiles scattered on the grass
+	# This function adds decorative tiles scattered on the grass
 	var tiles_x = MAP_SIZE / TILE_SIZE
 	var tiles_y = MAP_SIZE / TILE_SIZE
 
-	# Scatter some decorative elements on the grass (very sparse)
+	if use_jungle_theme:
+		_generate_jungle_ground(tiles_x, tiles_y)
+	else:
+		_generate_pitiful_ground(tiles_x, tiles_y)
+
+func _generate_pitiful_ground(tiles_x: int, tiles_y: int) -> void:
+	# Original Pitiful theme decorations (Nature.png)
 	for y in range(tiles_y):
 		for x in range(tiles_x):
 			# Very sparse decorations
 			if rng.randf() < 0.003:
 				var tile_pos = Vector2i(x, y)
 				var deco = TILE_GRASS_FLOWER if rng.randf() < 0.7 else TILE_GRASS_MUSHROOM
+				decoration_tilemap.set_cell(tile_pos, 0, deco)
+
+func _generate_jungle_ground(tiles_x: int, tiles_y: int) -> void:
+	# Jungle theme: Use grass tiles, tall grass, and jungle decorations
+	var tall_grass_tilemap = get_node_or_null("TallGrassTileMap")
+
+	# Place base grass patches with different shades for variety
+	var grass_shades = [JUNGLE_GRASS_LIGHT, JUNGLE_GRASS_DARK, JUNGLE_GRASS_DARKEST]
+
+	# Create patches of darker grass for visual interest
+	var patch_count = 80  # Number of darker grass patches
+	for _i in range(patch_count):
+		var patch_x = rng.randi_range(5, tiles_x - 5)
+		var patch_y = rng.randi_range(5, tiles_y - 5)
+		var patch_size = rng.randi_range(3, 8)
+		var shade = grass_shades[rng.randi_range(1, 2)]  # Dark or darkest
+
+		# Create irregular patch
+		for py in range(-patch_size, patch_size + 1):
+			for px in range(-patch_size, patch_size + 1):
+				var dist = sqrt(px * px + py * py)
+				if dist <= patch_size * rng.randf_range(0.6, 1.0):
+					var tx = patch_x + px
+					var ty = patch_y + py
+					if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
+						var tile_pos = Vector2i(tx, ty)
+						ground_tilemap.set_cell(tile_pos, 0, shade["center"])
+
+	# Place tall grass in clusters (animated)
+	var tall_grass_shades = [JUNGLE_TALL_GRASS_LIGHT, JUNGLE_TALL_GRASS_DARK, JUNGLE_TALL_GRASS_DARKEST]
+	var tall_grass_cluster_count = 120
+
+	for _i in range(tall_grass_cluster_count):
+		var cluster_x = rng.randi_range(10, tiles_x - 10)
+		var cluster_y = rng.randi_range(10, tiles_y - 10)
+		var cluster_size = rng.randi_range(2, 5)
+		var shade = tall_grass_shades[rng.randi() % tall_grass_shades.size()]
+
+		# Check not on path
+		var key = "%d_%d" % [cluster_x, cluster_y]
+		if key in path_cells:
+			continue
+
+		for py in range(-cluster_size, cluster_size + 1):
+			for px in range(-cluster_size, cluster_size + 1):
+				if rng.randf() < 0.6:  # Sparse within cluster
+					var tx = cluster_x + px
+					var ty = cluster_y + py
+					if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
+						var check_key = "%d_%d" % [tx, ty]
+						if check_key in path_cells:
+							continue
+						var tile_pos = Vector2i(tx, ty)
+						# Use center tile for tall grass (animation handled separately)
+						if tall_grass_tilemap:
+							tall_grass_tilemap.set_cell(tile_pos, 0, shade["center"])
+						else:
+							decoration_tilemap.set_cell(tile_pos, 0, shade["center"])
+
+	# Scatter individual decorations (jungle flowers, plants)
+	for y in range(tiles_y):
+		for x in range(tiles_x):
+			if rng.randf() < 0.005:  # Slightly denser than pitiful
+				var tile_pos = Vector2i(x, y)
+				# Check not on path
+				var key = "%d_%d" % [x, y]
+				if key in path_cells:
+					continue
+				# Random decoration from jungle decorations
+				var deco = JUNGLE_DECORATIONS[rng.randi() % JUNGLE_DECORATIONS.size()]
 				decoration_tilemap.set_cell(tile_pos, 0, deco)
 
 func _generate_water_boundary() -> void:
@@ -497,12 +800,26 @@ func _place_trees() -> void:
 	print("ProceduralMapGenerator: Placed %d trees" % placed)
 
 func _randomize_tree_appearance(tree: Node2D) -> void:
-	# Load different tree textures randomly
-	var tree_textures = [
-		"res://assets/enviro/gowl/Trees/Tree1.png",
-		"res://assets/enviro/gowl/Trees/Tree2.png",
-		"res://assets/enviro/gowl/Trees/Tree3.png"
-	]
+	# Load different tree textures based on theme
+	var tree_textures: Array[String]
+
+	if use_jungle_theme:
+		# Jungle trees (6 tree types, each with 3 animation frames - use frame 1)
+		tree_textures = [
+			"res://assets/enviro/adv/jungle/Godot/tree01_s_01_animation.png",
+			"res://assets/enviro/adv/jungle/Godot/tree02_s_01_animation.png",
+			"res://assets/enviro/adv/jungle/Godot/tree03_s_01_animation.png",
+			"res://assets/enviro/adv/jungle/Godot/tree04_s_01_animation.png",
+			"res://assets/enviro/adv/jungle/Godot/tree05_s_01_animation.png",
+			"res://assets/enviro/adv/jungle/Godot/tree06_s_01_animation.png",
+		]
+	else:
+		# Pitiful trees (original)
+		tree_textures = [
+			"res://assets/enviro/gowl/Trees/Tree1.png",
+			"res://assets/enviro/gowl/Trees/Tree2.png",
+			"res://assets/enviro/gowl/Trees/Tree3.png"
+		]
 
 	var sprite = tree.get_node_or_null("Sprite")
 	if sprite and sprite is Sprite2D:
@@ -511,8 +828,14 @@ func _randomize_tree_appearance(tree: Node2D) -> void:
 		if tex:
 			sprite.texture = tex
 
-		# Bigger trees with variation (2.0 to 3.0x scale)
-		var scale_var = rng.randf_range(2.0, 3.0)
+		# Different scale ranges for different themes
+		var scale_var: float
+		if use_jungle_theme:
+			# Jungle trees are already larger, use smaller scale
+			scale_var = rng.randf_range(1.5, 2.5)
+		else:
+			# Bigger trees with variation (2.0 to 3.0x scale)
+			scale_var = rng.randf_range(2.0, 3.0)
 		sprite.scale = Vector2(scale_var, scale_var)
 
 		# Random flip

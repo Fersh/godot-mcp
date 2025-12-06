@@ -1434,7 +1434,8 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 
 	# Update description label
 	# For trigger card slots, always use the stored trigger description (not the random ability's)
-	var desc_label = vbox.get_node_or_null("DescLabel") as RichTextLabel
+	# Use find_child since DescLabel is nested inside a MarginContainer
+	var desc_label = vbox.find_child("DescLabel", true, false) as RichTextLabel
 	if desc_label:
 		if button.has_meta("is_trigger_slot") and button.get_meta("is_trigger_slot") and not is_final_reveal:
 			# During rolling, keep the trigger card description
