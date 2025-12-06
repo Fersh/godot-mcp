@@ -94,6 +94,16 @@ var base_modulate: Color = Color.WHITE  # Store original/champion color
 var knockback_velocity: Vector2 = Vector2.ZERO
 var knockback_decay: float = 10.0
 
+# Pathfinding / obstacle avoidance
+var stuck_timer: float = 0.0
+var last_position: Vector2 = Vector2.ZERO
+var avoidance_direction: Vector2 = Vector2.ZERO
+var is_avoiding: bool = false
+var avoidance_timer: float = 0.0
+const STUCK_THRESHOLD: float = 0.3  # Time before considered stuck
+const AVOIDANCE_DURATION: float = 0.5  # Time to continue avoiding
+const STUCK_DISTANCE: float = 5.0  # Minimum movement to not be stuck
+
 # Hit flash
 var flash_timer: float = 0.0
 var flash_hold_duration: float = 0.033  # Hold full white for 2 frames at 60fps
@@ -227,22 +237,93 @@ func _physics_process(delta: float) -> void:
 # Override in subclasses for custom AI behavior
 func _process_behavior(delta: float) -> void:
 	if player and is_instance_valid(player):
-		var direction = (player.global_position - global_position)
-		var distance = direction.length()
+		var to_player = player.global_position - global_position
+		var distance = to_player.length()
 
 		if distance > attack_range:
-			direction = direction.normalized()
-			velocity = direction * speed
+			var direction = to_player.normalized()
+
+			# Check if we're stuck (not moving despite trying)
+			var movement_distance = global_position.distance_to(last_position)
+			if movement_distance < STUCK_DISTANCE * delta * 60:  # Scale by expected movement
+				stuck_timer += delta
+			else:
+				stuck_timer = 0.0
+				is_avoiding = false
+
+			# Update avoidance timer
+			if is_avoiding:
+				avoidance_timer -= delta
+				if avoidance_timer <= 0:
+					is_avoiding = false
+
+			# If stuck, find an avoidance direction
+			if stuck_timer > STUCK_THRESHOLD and not is_avoiding:
+				is_avoiding = true
+				avoidance_timer = AVOIDANCE_DURATION
+				# Choose to go left or right around the obstacle
+				avoidance_direction = _find_avoidance_direction(direction)
+
+			# Apply movement with optional avoidance
+			var move_direction: Vector2
+			if is_avoiding:
+				# Blend avoidance direction with player direction for smoother pathing
+				move_direction = (avoidance_direction * 0.7 + direction * 0.3).normalized()
+			else:
+				move_direction = direction
+
+			velocity = move_direction * speed
 			move_and_slide()
-			update_animation(delta, ROW_MOVE, direction)
+			last_position = global_position
+			update_animation(delta, ROW_MOVE, direction)  # Always face player
 		else:
 			velocity = Vector2.ZERO
-			update_animation(delta, ROW_ATTACK, direction)
+			stuck_timer = 0.0
+			is_avoiding = false
+			update_animation(delta, ROW_ATTACK, to_player.normalized())
 			if can_attack:
 				start_attack()
 	else:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)
+
+func _find_avoidance_direction(desired_direction: Vector2) -> Vector2:
+	"""Find a direction to avoid obstacles using raycasting."""
+	var space_state = get_world_2d().direct_space_state
+
+	# Test multiple angles to find a clear path
+	var test_angles = [PI/4, -PI/4, PI/2, -PI/2, PI*3/4, -PI*3/4]
+	var best_direction = desired_direction.rotated(PI/2)  # Default: perpendicular
+	var best_score = -1.0
+
+	for angle in test_angles:
+		var test_dir = desired_direction.rotated(angle)
+		var ray_params = PhysicsRayQueryParameters2D.create(
+			global_position,
+			global_position + test_dir * 100.0,
+			collision_mask
+		)
+		ray_params.exclude = [self]
+
+		var result = space_state.intersect_ray(ray_params)
+
+		if result.is_empty():
+			# No collision - this direction is clear
+			# Prefer directions closer to the player direction
+			var score = test_dir.dot(desired_direction)
+			if score > best_score:
+				best_score = score
+				best_direction = test_dir
+		else:
+			# Collision found - check distance
+			var hit_distance = global_position.distance_to(result.position)
+			if hit_distance > 60.0:  # Far enough to still be useful
+				var score = test_dir.dot(desired_direction) * (hit_distance / 100.0)
+				if score > best_score:
+					best_score = score
+					best_direction = test_dir
+
+	return best_direction
 
 func start_attack() -> void:
 	is_winding_up = true

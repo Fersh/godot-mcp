@@ -69,6 +69,18 @@ func _process(delta: float) -> void:
 	global_position += direction * speed * delta
 	rotation = direction.angle()
 
+	# Check for collision with obstacles (trees, rocks, etc.)
+	var obstacles = get_tree().get_nodes_in_group("obstacles")
+	for obstacle in obstacles:
+		if is_instance_valid(obstacle):
+			var dist = global_position.distance_to(obstacle.global_position)
+			if dist < 25.0:
+				if obstacle.has_method("take_damage"):
+					obstacle.take_damage(damage, false)
+				spawn_hit_effect()
+				queue_free()
+				return
+
 	# Check for collision with enemies
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	for enemy in enemies:

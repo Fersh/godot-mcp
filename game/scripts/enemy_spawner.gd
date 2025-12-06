@@ -594,7 +594,7 @@ func get_spawn_position() -> Vector2:
 
 	# Spawn just outside visible screen but inside arena bounds
 	var spawn_offset = 50.0  # Just outside screen edge
-	var margin = 80.0  # Stay away from arena edges (water)
+	var margin = 150.0  # Stay well away from arena edges (water borders are 10 tiles = 640px outside)
 	var pos: Vector2
 	var roll = randf()
 	var attempts = 0
@@ -633,8 +633,8 @@ func get_spawn_position() -> Vector2:
 		pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
 
 		# If position is valid (inside arena), use it
-		if pos.x > ARENA_LEFT + margin and pos.x < ARENA_RIGHT - margin \
-		   and pos.y > ARENA_TOP + margin and pos.y < ARENA_BOTTOM - margin:
+		if pos.x >= ARENA_LEFT + margin and pos.x <= ARENA_RIGHT - margin \
+		   and pos.y >= ARENA_TOP + margin and pos.y <= ARENA_BOTTOM - margin:
 			return pos
 
 		# Try a different edge
@@ -645,7 +645,7 @@ func get_spawn_position() -> Vector2:
 
 func _get_fallback_spawn_position() -> Vector2:
 	"""Fallback spawn position inside the arena."""
-	var margin = 100.0
+	var margin = 200.0  # Larger margin for fallback to ensure safe spawns
 	return Vector2(
 		randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin),
 		randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin)
@@ -717,7 +717,7 @@ func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
 
 	# Spawn just inside the screen edge (with small offset so they're visible immediately)
 	var edge_offset = 30.0  # Pixels inside the screen edge
-	var margin = 80.0  # Stay away from arena edges (water)
+	var margin = 150.0  # Stay well away from arena edges (water borders)
 	var pos: Vector2
 	var roll = randf()
 

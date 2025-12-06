@@ -179,40 +179,76 @@ func _play_destruction_animation() -> void:
 	tween.chain().tween_callback(queue_free)
 
 func _spawn_destruction_particles() -> void:
-	# Create simple particle effect based on type
-	var particle_color: Color
+	# Create particle effect based on type - similar to blood splatter effect
+	var particle_colors: Array[Color] = []
+	var particle_count: int = 12
+
 	match obstacle_type:
 		"tree":
-			particle_color = Color(0.2, 0.5, 0.15)  # Green leaves
+			# Green leaves with some brown bark
+			particle_colors = [
+				Color(0.15, 0.5, 0.1),   # Dark green
+				Color(0.25, 0.6, 0.15),  # Medium green
+				Color(0.35, 0.7, 0.2),   # Light green
+				Color(0.4, 0.3, 0.15),   # Brown bark
+			]
+			particle_count = 16
 		"rock":
-			particle_color = Color(0.5, 0.5, 0.5)  # Gray stone
+			# Gray stone shades
+			particle_colors = [
+				Color(0.4, 0.4, 0.4),   # Dark gray
+				Color(0.5, 0.5, 0.5),   # Medium gray
+				Color(0.6, 0.6, 0.6),   # Light gray
+				Color(0.35, 0.35, 0.38), # Blue-gray
+			]
+			particle_count = 12
+		"lamp":
+			# Brown wood pieces
+			particle_colors = [
+				Color(0.45, 0.28, 0.12),  # Dark brown
+				Color(0.55, 0.35, 0.15),  # Medium brown
+				Color(0.65, 0.42, 0.2),   # Light brown
+				Color(0.3, 0.2, 0.1),     # Very dark brown
+			]
+			particle_count = 10
 		"branch":
-			particle_color = Color(0.4, 0.25, 0.1)  # Brown wood
+			# Brown wood
+			particle_colors = [
+				Color(0.4, 0.25, 0.1),
+				Color(0.5, 0.32, 0.14),
+				Color(0.35, 0.2, 0.08),
+			]
+			particle_count = 8
 		_:
-			particle_color = Color(0.5, 0.5, 0.5)
+			particle_colors = [Color(0.5, 0.5, 0.5)]
+			particle_count = 8
 
-	# Spawn several small sprites as particles
-	for i in range(8):
+	# Spawn particles with varied sizes and colors
+	for i in range(particle_count):
 		var particle = Sprite2D.new()
 		particle.texture = _create_particle_texture()
-		particle.modulate = particle_color
-		particle.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-20, 20))
-		particle.scale = Vector2(0.5, 0.5) * randf_range(0.5, 1.5)
+		particle.modulate = particle_colors[randi() % particle_colors.size()]
+		particle.global_position = global_position + Vector2(randf_range(-25, 25), randf_range(-30, 10))
+		particle.scale = Vector2(1.0, 1.0) * randf_range(0.8, 2.0)
 		particle.z_index = z_index + 1
 		get_parent().add_child(particle)
 
-		# Animate particle
+		# Animate particle - burst outward and fall
 		var tween = create_tween()
-		var end_pos = particle.global_position + Vector2(randf_range(-40, 40), randf_range(-60, -20))
+		var burst_dir = Vector2(randf_range(-1, 1), randf_range(-1, -0.3)).normalized()
+		var burst_distance = randf_range(40, 80)
+		var end_pos = particle.global_position + burst_dir * burst_distance + Vector2(0, randf_range(20, 50))
+
 		tween.set_parallel(true)
-		tween.tween_property(particle, "global_position", end_pos, 0.5)
-		tween.tween_property(particle, "modulate:a", 0.0, 0.5)
-		tween.tween_property(particle, "rotation", randf_range(-3, 3), 0.5)
+		tween.tween_property(particle, "global_position", end_pos, randf_range(0.4, 0.7)).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, randf_range(0.5, 0.8)).set_delay(0.1)
+		tween.tween_property(particle, "rotation", randf_range(-4, 4), 0.6)
+		tween.tween_property(particle, "scale", particle.scale * 0.3, 0.6)
 		tween.chain().tween_callback(particle.queue_free)
 
 func _create_particle_texture() -> Texture2D:
-	# Create a simple square texture for particles
-	var image = Image.create(4, 4, false, Image.FORMAT_RGBA8)
+	# Create a simple square texture for particles (like blood effect)
+	var image = Image.create(6, 6, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
 

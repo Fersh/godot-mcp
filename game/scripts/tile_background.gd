@@ -778,46 +778,88 @@ func _generate_lamps_along_roads() -> void:
 		placed_positions.append(pos)
 
 func _create_lamp_at(pos: Vector2, lamp_tex: Texture2D) -> void:
-	"""Create a lamp with light at the given position."""
-	var lamp_node = Node2D.new()
-	lamp_node.position = pos
+	"""Create a destructible lamp with light at the given position."""
+	# Load destructible lamp scene
+	var lamp_scene = load("res://scenes/environment/destructible_lamp.tscn")
+	if lamp_scene:
+		var lamp_instance = lamp_scene.instantiate()
+		lamp_instance.position = pos
+		lamp_instance.scale = Vector2(lamp_scale, lamp_scale)
 
-	var sprite = Sprite2D.new()
-	sprite.texture = lamp_tex
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sprite.scale = Vector2(lamp_scale, lamp_scale)
-	sprite.offset = Vector2(0, -lamp_tex.get_height() / 2)
-	lamp_node.add_child(sprite)
+		# Update sprite texture (in case we want different lamp types later)
+		var sprite_node = lamp_instance.get_node_or_null("Sprite")
+		if sprite_node and lamp_tex:
+			sprite_node.texture = lamp_tex
 
-	var light = PointLight2D.new()
-	light.position = Vector2(0, -lamp_tex.get_height() * lamp_scale * 0.7)
-	light.color = Color(1.0, 0.85, 0.6, 1.0)
-	light.energy = 0.5
-	light.texture_scale = 2.5
+		# Add point light
+		var light = PointLight2D.new()
+		light.position = Vector2(0, -lamp_tex.get_height() * lamp_scale * 0.35)
+		light.color = Color(1.0, 0.85, 0.6, 1.0)
+		light.energy = 0.5
+		light.texture_scale = 2.5
 
-	var gradient = Gradient.new()
-	gradient.offsets = PackedFloat32Array([0, 0.4, 1])
-	gradient.colors = PackedColorArray([
-		Color(1, 1, 1, 1),
-		Color(1, 0.9, 0.7, 0.7),
-		Color(1, 0.6, 0.3, 0)
-	])
+		var gradient = Gradient.new()
+		gradient.offsets = PackedFloat32Array([0, 0.4, 1])
+		gradient.colors = PackedColorArray([
+			Color(1, 1, 1, 1),
+			Color(1, 0.9, 0.7, 0.7),
+			Color(1, 0.6, 0.3, 0)
+		])
 
-	var grad_tex = GradientTexture2D.new()
-	grad_tex.gradient = gradient
-	grad_tex.width = 128
-	grad_tex.height = 128
-	grad_tex.fill = GradientTexture2D.FILL_RADIAL
-	grad_tex.fill_from = Vector2(0.5, 0.5)
-	grad_tex.fill_to = Vector2(1.0, 0.5)
+		var grad_tex = GradientTexture2D.new()
+		grad_tex.gradient = gradient
+		grad_tex.width = 128
+		grad_tex.height = 128
+		grad_tex.fill = GradientTexture2D.FILL_RADIAL
+		grad_tex.fill_from = Vector2(0.5, 0.5)
+		grad_tex.fill_to = Vector2(1.0, 0.5)
 
-	light.texture = grad_tex
-	lamp_node.add_child(light)
+		light.texture = grad_tex
+		lamp_instance.add_child(light)
 
-	lamp_node.z_index = int(pos.y / 10)
+		add_child(lamp_instance)
+		lamp_nodes.append(lamp_instance)
+	else:
+		# Fallback to old behavior if scene not found
+		var lamp_node = Node2D.new()
+		lamp_node.position = pos
 
-	add_child(lamp_node)
-	lamp_nodes.append(lamp_node)
+		var sprite = Sprite2D.new()
+		sprite.texture = lamp_tex
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		sprite.scale = Vector2(lamp_scale, lamp_scale)
+		sprite.offset = Vector2(0, -lamp_tex.get_height() / 2)
+		lamp_node.add_child(sprite)
+
+		var light = PointLight2D.new()
+		light.position = Vector2(0, -lamp_tex.get_height() * lamp_scale * 0.7)
+		light.color = Color(1.0, 0.85, 0.6, 1.0)
+		light.energy = 0.5
+		light.texture_scale = 2.5
+
+		var gradient = Gradient.new()
+		gradient.offsets = PackedFloat32Array([0, 0.4, 1])
+		gradient.colors = PackedColorArray([
+			Color(1, 1, 1, 1),
+			Color(1, 0.9, 0.7, 0.7),
+			Color(1, 0.6, 0.3, 0)
+		])
+
+		var grad_tex = GradientTexture2D.new()
+		grad_tex.gradient = gradient
+		grad_tex.width = 128
+		grad_tex.height = 128
+		grad_tex.fill = GradientTexture2D.FILL_RADIAL
+		grad_tex.fill_from = Vector2(0.5, 0.5)
+		grad_tex.fill_to = Vector2(1.0, 0.5)
+
+		light.texture = grad_tex
+		lamp_node.add_child(light)
+
+		lamp_node.z_index = int(pos.y / 10)
+
+		add_child(lamp_node)
+		lamp_nodes.append(lamp_node)
 
 func _generate_tall_grass_clusters() -> void:
 	"""Generate tall grass clusters with proper base tiles and overlay z-index."""
