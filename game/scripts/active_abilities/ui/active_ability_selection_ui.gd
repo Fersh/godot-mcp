@@ -127,6 +127,7 @@ var roll_tick_timers: Array[float] = []
 
 var pixel_font: Font = null
 var desc_font: Font = null
+var desc_bold_font: Font = null
 var rarity_particle_shader: Shader = null
 var particle_containers: Array[Control] = []
 
@@ -139,9 +140,11 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
-	# Load Quicksand font for descriptions
+	# Load Quicksand fonts for descriptions
 	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
 		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Bold.ttf"):
+		desc_bold_font = load("res://assets/fonts/Quicksand/Quicksand-Bold.ttf")
 
 	# Load rarity particle shader
 	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
@@ -411,17 +414,21 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	desc_margin.add_theme_constant_override("margin_right", 10)
 	desc_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
-	var desc_label = Label.new()
+	var desc_label = RichTextLabel.new()
 	desc_label.name = "DescLabel"
-	desc_label.text = ability.description
-	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP  # Top-aligned
-	desc_label.add_theme_font_size_override("font_size", 16)
-	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
+	desc_label.bbcode_enabled = true
+	desc_label.text = DescriptionFormatter.format(ability.description)
+	desc_label.fit_content = true
+	desc_label.scroll_active = false
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	desc_label.add_theme_font_size_override("normal_font_size", 16)
+	desc_label.add_theme_font_size_override("bold_font_size", 16)
+	desc_label.add_theme_color_override("default_color", Color(0.95, 0.95, 0.95))
 	if desc_font:
-		desc_label.add_theme_font_override("font", desc_font)
+		desc_label.add_theme_font_override("normal_font", desc_font)
+	if desc_bold_font:
+		desc_label.add_theme_font_override("bold_font", desc_bold_font)
 	desc_margin.add_child(desc_label)
 	vbox.add_child(desc_margin)
 

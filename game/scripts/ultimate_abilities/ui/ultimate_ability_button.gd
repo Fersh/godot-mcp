@@ -36,6 +36,7 @@ var glow_intensity: float = 0.0
 
 var pixel_font: Font = null
 var desc_font: Font = null
+var desc_bold_font: Font = null
 var border_color: Color = Color(0.3, 0.25, 0.1, 0.5)
 var bg_color: Color = Color(0.08, 0.06, 0.02, 0.95)
 
@@ -46,9 +47,11 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
-	# Load Quicksand font for descriptions
+	# Load Quicksand fonts for descriptions
 	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
 		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Bold.ttf"):
+		desc_bold_font = load("res://assets/fonts/Quicksand/Quicksand-Bold.ttf")
 
 	_create_ui()
 	_connect_signals()
@@ -359,15 +362,20 @@ func _create_tooltip() -> void:
 	desc_margin.add_theme_constant_override("margin_left", 10)
 	desc_margin.add_theme_constant_override("margin_right", 10)
 
-	var desc_label = Label.new()
+	var desc_label = RichTextLabel.new()
 	desc_label.name = "DescLabel"
-	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 15)
-	desc_label.add_theme_color_override("font_color", Color(0.85, 0.8, 0.7))
+	desc_label.bbcode_enabled = true
+	desc_label.fit_content = true
+	desc_label.scroll_active = false
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 250
+	desc_label.add_theme_font_size_override("normal_font_size", 15)
+	desc_label.add_theme_font_size_override("bold_font_size", 15)
+	desc_label.add_theme_color_override("default_color", Color(0.85, 0.8, 0.7))
 	if desc_font:
-		desc_label.add_theme_font_override("font", desc_font)
+		desc_label.add_theme_font_override("normal_font", desc_font)
+	if desc_bold_font:
+		desc_label.add_theme_font_override("bold_font", desc_bold_font)
 	desc_margin.add_child(desc_label)
 	vbox.add_child(desc_margin)
 
@@ -393,13 +401,13 @@ func _update_tooltip_content() -> void:
 
 	var name_label = vbox.get_node("NameLabel") as Label
 	var desc_margin = vbox.get_node_or_null("DescMargin") as MarginContainer
-	var desc_label = desc_margin.get_node("DescLabel") as Label if desc_margin else null
+	var desc_label = desc_margin.get_node("DescLabel") as RichTextLabel if desc_margin else null
 	var cd_label = vbox.get_node("CooldownLabel") as Label
 
 	if name_label:
 		name_label.text = ultimate.name
 	if desc_label:
-		desc_label.text = ultimate.description
+		desc_label.text = DescriptionFormatter.format(ultimate.description)
 	if cd_label:
 		cd_label.text = "Cooldown: " + str(int(ultimate.cooldown)) + "s"
 

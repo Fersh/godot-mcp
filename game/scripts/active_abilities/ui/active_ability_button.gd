@@ -45,6 +45,7 @@ var aim_indicator: Node2D = null
 
 var pixel_font: Font = null
 var desc_font: Font = null
+var desc_bold_font: Font = null
 
 func _ready() -> void:
 	custom_minimum_size = button_size
@@ -54,9 +55,11 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
-	# Load Quicksand font for descriptions
+	# Load Quicksand fonts for descriptions
 	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
 		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Bold.ttf"):
+		desc_bold_font = load("res://assets/fonts/Quicksand/Quicksand-Bold.ttf")
 
 	_create_ui()
 
@@ -638,7 +641,8 @@ func _create_tooltip() -> void:
 	desc_label.add_theme_color_override("default_color", Color.WHITE)
 	if desc_font:
 		desc_label.add_theme_font_override("normal_font", desc_font)
-		desc_label.add_theme_font_override("bold_font", desc_font)
+	if desc_bold_font:
+		desc_label.add_theme_font_override("bold_font", desc_bold_font)
 	desc_margin.add_child(desc_label)
 	vbox.add_child(desc_margin)
 

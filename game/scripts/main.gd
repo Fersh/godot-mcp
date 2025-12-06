@@ -616,10 +616,10 @@ func _set_tile_arena_bounds() -> void:
 		# Pass empty camera bounds - will be set properly in deferred call
 		player.set_arena_bounds(arena_bounds, Rect2())
 
-	# Set arena bounds on enemy spawner
+	# Set arena bounds on enemy spawner (pass tile_background for water checking)
 	var enemy_spawner = get_node_or_null("EnemySpawner")
 	if enemy_spawner and enemy_spawner.has_method("set_arena_bounds"):
-		enemy_spawner.set_arena_bounds(arena_bounds)
+		enemy_spawner.set_arena_bounds(arena_bounds, tile_background)
 
 	# Set arena bounds on elite spawner
 	var elite_spawner = get_node_or_null("EliteSpawner")
@@ -661,10 +661,10 @@ func _setup_tile_camera_bounds() -> void:
 	if player.has_method("set_arena_bounds"):
 		player.set_arena_bounds(arena_bounds, camera_bounds)
 
-	# Set arena bounds on enemy spawner
+	# Set arena bounds on enemy spawner (pass tile_background for water checking)
 	var enemy_spawner = get_node_or_null("EnemySpawner")
 	if enemy_spawner and enemy_spawner.has_method("set_arena_bounds"):
-		enemy_spawner.set_arena_bounds(arena_bounds)
+		enemy_spawner.set_arena_bounds(arena_bounds, tile_background)
 
 	# Set arena bounds on elite spawner
 	var elite_spawner = get_node_or_null("EliteSpawner")

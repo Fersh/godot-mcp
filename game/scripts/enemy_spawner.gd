@@ -27,6 +27,9 @@ extends Node2D
 # Dynamic arena bounds (set by procedural map generator)
 var arena_bounds: Rect2 = Rect2(0, 0, 2500, 2500)
 
+# Reference to tile background for water checking
+var tile_background: Node2D = null
+
 # Legacy constants for backwards compatibility
 var ARENA_WIDTH: float = 2500
 var ARENA_HEIGHT: float = 2500
@@ -628,37 +631,45 @@ func get_spawn_position() -> Vector2:
 	if valid_edges.is_empty():
 		return _get_closest_offscreen_arena_position(screen_center, half_width, half_height, margin)
 
-	# Pick a random valid edge and spawn along it
-	var edge = valid_edges[randi() % valid_edges.size()]
-	var pos: Vector2
+	# Try multiple times to find a non-water position
+	var max_attempts = 10
+	for _attempt in range(max_attempts):
+		# Pick a random valid edge and spawn along it
+		var edge = valid_edges[randi() % valid_edges.size()]
+		var pos: Vector2
 
-	match edge:
-		"left":
-			pos = Vector2(
-				screen_left - spawn_offset,
-				screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
-			)
-		"right":
-			pos = Vector2(
-				screen_right + spawn_offset,
-				screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
-			)
-		"top":
-			pos = Vector2(
-				screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
-				screen_top - spawn_offset
-			)
-		"bottom":
-			pos = Vector2(
-				screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
-				screen_bottom + spawn_offset
-			)
+		match edge:
+			"left":
+				pos = Vector2(
+					screen_left - spawn_offset,
+					screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
+				)
+			"right":
+				pos = Vector2(
+					screen_right + spawn_offset,
+					screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
+				)
+			"top":
+				pos = Vector2(
+					screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
+					screen_top - spawn_offset
+				)
+			"bottom":
+				pos = Vector2(
+					screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
+					screen_bottom + spawn_offset
+				)
 
-	# Final clamp to ensure we're inside arena
-	pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
-	pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
+		# Final clamp to ensure we're inside arena
+		pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
+		pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
 
-	return pos
+		# Check if position is on water - if not, use it
+		if not _is_position_on_water(pos):
+			return pos
+
+	# All attempts hit water, use fallback
+	return _get_safe_spawn_position()
 
 func _get_closest_offscreen_arena_position(screen_center: Vector2, half_width: float, half_height: float, margin: float) -> Vector2:
 	"""When player is near arena corner, find closest spawn point that's off-screen but in arena."""
@@ -696,12 +707,21 @@ func _get_closest_offscreen_arena_position(screen_center: Vector2, half_width: f
 		))
 
 	if candidates.is_empty():
-		return _get_fallback_spawn_position()
+		return _get_safe_spawn_position()
 
-	# Pick closest candidate to screen center
-	var best = candidates[0]
-	var best_dist = best.distance_to(screen_center)
+	# Filter out candidates on water
+	var valid_candidates: Array = []
 	for c in candidates:
+		if not _is_position_on_water(c):
+			valid_candidates.append(c)
+
+	if valid_candidates.is_empty():
+		return _get_safe_spawn_position()
+
+	# Pick closest valid candidate to screen center
+	var best = valid_candidates[0]
+	var best_dist = best.distance_to(screen_center)
+	for c in valid_candidates:
 		var dist = c.distance_to(screen_center)
 		if dist < best_dist:
 			best = c
@@ -717,7 +737,23 @@ func _get_fallback_spawn_position() -> Vector2:
 		randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin)
 	)
 
-func set_arena_bounds(bounds: Rect2) -> void:
+func _get_safe_spawn_position() -> Vector2:
+	"""Find a spawn position that's guaranteed not on water."""
+	var margin = 150.0
+	var max_attempts = 20
+
+	for _i in range(max_attempts):
+		var pos = Vector2(
+			randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin),
+			randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin)
+		)
+		if not _is_position_on_water(pos):
+			return pos
+
+	# Ultimate fallback - spawn at arena center
+	return Vector2((ARENA_LEFT + ARENA_RIGHT) / 2, (ARENA_TOP + ARENA_BOTTOM) / 2)
+
+func set_arena_bounds(bounds: Rect2, bg: Node2D = null) -> void:
 	"""Set the arena boundaries for enemy spawning."""
 	arena_bounds = bounds
 	ARENA_LEFT = bounds.position.x
@@ -726,6 +762,42 @@ func set_arena_bounds(bounds: Rect2) -> void:
 	ARENA_BOTTOM = bounds.end.y
 	ARENA_WIDTH = bounds.size.x
 	ARENA_HEIGHT = bounds.size.y
+
+	# Store tile background reference for water checking
+	if bg:
+		tile_background = bg
+
+func _is_position_on_water(pos: Vector2) -> bool:
+	"""Check if a world position is on a water tile."""
+	if not tile_background:
+		return false
+
+	# Get tile background properties
+	if not "water_positions" in tile_background:
+		return false
+
+	var water_positions = tile_background.water_positions
+	if water_positions.is_empty():
+		return false
+
+	# Get tile coordinate conversion values
+	var tile_size = tile_background.TILE_SIZE if "TILE_SIZE" in tile_background else 32
+	var tile_scale = tile_background.tile_scale if "tile_scale" in tile_background else 2.0
+	var scaled_tile_size = tile_size * tile_scale
+	var arena_offset_x = tile_background.arena_offset_x if "arena_offset_x" in tile_background else 0.0
+	var arena_offset_y = tile_background.arena_offset_y if "arena_offset_y" in tile_background else 0.0
+
+	# Convert world position to tile coordinates
+	var tile_x = int((pos.x - arena_offset_x) / scaled_tile_size)
+	var tile_y = int((pos.y - arena_offset_y) / scaled_tile_size)
+
+	# Check if this tile or adjacent tiles are water (buffer zone)
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			if water_positions.has(Vector2i(tile_x + dx, tile_y + dy)):
+				return true
+
+	return false
 
 # ============================================
 # CHALLENGE MODE CONTROLS
@@ -784,27 +856,36 @@ func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
 	# Spawn just inside the screen edge (with small offset so they're visible immediately)
 	var edge_offset = 30.0  # Pixels inside the screen edge
 	var margin = 150.0  # Stay well away from arena edges (water borders)
-	var pos: Vector2
-	var roll = randf()
 
-	if roll < 0.25:
-		# Left edge
-		pos = Vector2(screen_center.x - half_width + edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
-	elif roll < 0.5:
-		# Right edge
-		pos = Vector2(screen_center.x + half_width - edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
-	elif roll < 0.75:
-		# Top edge
-		pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y - half_height + edge_offset)
-	else:
-		# Bottom edge
-		pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y + half_height - edge_offset)
+	# Try multiple times to avoid water
+	var max_attempts = 10
+	for _attempt in range(max_attempts):
+		var pos: Vector2
+		var roll = randf()
 
-	# Clamp to arena bounds (stay on land, avoid water)
-	pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
-	pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
+		if roll < 0.25:
+			# Left edge
+			pos = Vector2(screen_center.x - half_width + edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
+		elif roll < 0.5:
+			# Right edge
+			pos = Vector2(screen_center.x + half_width - edge_offset, screen_center.y + randf_range(-half_height * 0.6, half_height * 0.6))
+		elif roll < 0.75:
+			# Top edge
+			pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y - half_height + edge_offset)
+		else:
+			# Bottom edge
+			pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y + half_height - edge_offset)
 
-	return pos
+		# Clamp to arena bounds (stay on land, avoid water)
+		pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
+		pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
+
+		# Check if position is on water - if not, use it
+		if not _is_position_on_water(pos):
+			return pos
+
+	# All attempts hit water, use safe spawn
+	return _get_safe_spawn_position()
 
 # ============================================
 # CHAMPION ENEMIES (Nightmare+ Difficulty)
