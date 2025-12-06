@@ -291,43 +291,44 @@ func _set_mouse_filter_recursive(control: Control, filter: Control.MouseFilter) 
 		if child is Control:
 			_set_mouse_filter_recursive(child, filter)
 
-func _process(delta: float) -> void:
-	if not is_rolling:
-		return
-
-	roll_timer += delta
-
-	# Update each slot
-	for i in range(ability_buttons.size()):
-		if slots_settled[i]:
-			continue
-
-		if roll_timer >= slot_settle_times[i]:
-			slots_settled[i] = true
-			_update_card_content(ability_buttons[i], current_choices[i], true)  # true = final reveal
-			if SoundManager and SoundManager.has_method("play_ding"):
-				SoundManager.play_ding()
-		else:
-			roll_tick_timers[i] += delta
-			var progress = roll_timer / slot_settle_times[i]
-			var current_speed = current_roll_speed * (1.0 + progress * 3.0)
-
-			if roll_tick_timers[i] >= current_speed:
-				roll_tick_timers[i] = 0.0
-				if all_abilities_pool.size() > 0:
-					var random_ability = all_abilities_pool[randi() % all_abilities_pool.size()]
-					_update_card_content(ability_buttons[i], random_ability)
-
-	# Check if all slots settled
-	if slots_settled.all(func(s): return s):
-		is_rolling = false
-		for button in ability_buttons:
-			button.disabled = false
-			# Start idle animations on cards
-			_start_idle_animation(button)
-		# Enable reroll button if not used yet
-		if reroll_button and not reroll_used:
-			reroll_button.disabled = false
+func _process(_delta: float) -> void:
+	# SLOT MACHINE DISABLED - using fly-in animation instead
+	# To re-enable: uncomment below and set is_rolling = true in show_choices
+	pass
+	#if not is_rolling:
+		#return
+	#
+	#roll_timer += delta
+	#
+	## Update each slot
+	#for i in range(ability_buttons.size()):
+		#if slots_settled[i]:
+			#continue
+		#
+		#if roll_timer >= slot_settle_times[i]:
+			#slots_settled[i] = true
+			#_update_card_content(ability_buttons[i], current_choices[i], true)  # true = final reveal
+			#if SoundManager and SoundManager.has_method("play_ding"):
+				#SoundManager.play_ding()
+		#else:
+			#roll_tick_timers[i] += delta
+			#var progress = roll_timer / slot_settle_times[i]
+			#var current_speed = current_roll_speed * (1.0 + progress * 3.0)
+			#
+			#if roll_tick_timers[i] >= current_speed:
+				#roll_tick_timers[i] = 0.0
+				#if all_abilities_pool.size() > 0:
+					#var random_ability = all_abilities_pool[randi() % all_abilities_pool.size()]
+					#_update_card_content(ability_buttons[i], random_ability)
+	#
+	## Check if all slots settled
+	#if slots_settled.all(func(s): return s):
+		#is_rolling = false
+		#for button in ability_buttons:
+			#button.disabled = false
+		## Enable reroll button if not used yet
+		#if reroll_button and not reroll_used:
+			#reroll_button.disabled = false
 
 func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	current_choices = abilities
@@ -336,10 +337,10 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	# Reset reroll state for this selection
 	reroll_used = false
 	if reroll_button:
-		reroll_button.disabled = true  # Disabled during rolling
+		reroll_button.disabled = false  # Enable immediately (no slot machine)
 		reroll_button.text = "Reroll"
 
-	# Get pool for slot machine effect
+	# Get pool for slot machine effect (kept for reroll functionality)
 	var is_melee = CharacterManager.get_selected_character().attack_type == CharacterData.AttackType.MELEE if CharacterManager else false
 	all_abilities_pool = ActiveAbilityDatabase.get_abilities_for_class(is_melee)
 	if all_abilities_pool.is_empty():
@@ -354,25 +355,28 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	ability_buttons.clear()
 	particle_containers.clear()
 
-	# Reset slot machine state - dynamically sized based on ability count
-	is_rolling = true
-	roll_timer = 0.0
-	slots_settled = []
-	roll_tick_timers = []
-	slot_settle_times = []
-	for i in abilities.size():
-		slots_settled.append(false)
-		roll_tick_timers.append(0.0)
-		# Stagger settle times: first card settles at 0.6s, subsequent cards 0.2s apart
-		slot_settle_times.append(0.6 + i * 0.2)
+	# SLOT MACHINE DISABLED - commented out for fly-in animation
+	# To re-enable: uncomment below and uncomment _process slot machine code
+	#is_rolling = true
+	#roll_timer = 0.0
+	#slots_settled = []
+	#roll_tick_timers = []
+	#slot_settle_times = []
+	#for i in abilities.size():
+		#slots_settled.append(false)
+		#roll_tick_timers.append(0.0)
+		#slot_settle_times.append(0.6 + i * 0.2)
 
-	# Create cards
+	# Create cards with FINAL abilities (no slot machine)
 	for i in abilities.size():
-		var random_start = all_abilities_pool[randi() % all_abilities_pool.size()]
-		var card = _create_ability_card(random_start, i)
-		card.disabled = true
+		var card = _create_ability_card(abilities[i], i)
+		card.disabled = false  # Enable immediately
 		choices_container.add_child(card)
 		ability_buttons.append(card)
+		# Show particle container immediately since no rolling
+		var particle_container = card.get_node_or_null("ParticleContainer")
+		if particle_container:
+			particle_container.visible = true
 
 	visible = true
 	get_tree().paused = true
@@ -934,23 +938,42 @@ func _on_ability_selected(index: int) -> void:
 	if HapticManager:
 		HapticManager.light()
 
-	# Stop all idle animations
-	for button in ability_buttons:
-		_stop_idle_animation(button)
-
 	if index >= 0 and index < current_choices.size():
 		var ability = current_choices[index]
+		var selected_button = ability_buttons[index]
 
-		# Acquire the ability
-		ActiveAbilityManager.acquire_ability(ability)
+		# Disable all buttons to prevent double selection
+		for button in ability_buttons:
+			button.disabled = true
 
-		# Play sound
-		if SoundManager and SoundManager.has_method("play_buff"):
-			SoundManager.play_buff()
+		# Animate the selected card with a pulse
+		_animate_card_selected(selected_button, func():
+			# Acquire the ability after animation
+			ActiveAbilityManager.acquire_ability(ability)
 
-		emit_signal("ability_selected", ability)
+			# Play sound
+			if SoundManager and SoundManager.has_method("play_buff"):
+				SoundManager.play_buff()
 
-		hide_selection()
+			emit_signal("ability_selected", ability)
+			hide_selection()
+		)
+
+func _animate_card_selected(button: Button, on_complete: Callable) -> void:
+	"""Animate the selected card growing bigger."""
+	button.pivot_offset = button.size / 2
+
+	var tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+
+	# Grow bigger
+	tween.tween_property(button, "scale", Vector2(1.15, 1.15), 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+	# Brief hold then complete
+	tween.tween_interval(0.1)
+
+	# Call completion callback
+	tween.tween_callback(on_complete)
 
 func hide_selection() -> void:
 	visible = false
@@ -1020,10 +1043,6 @@ func _on_reroll_pressed() -> void:
 	if reroll_used or is_rolling:
 		return
 
-	# Stop idle animations on all cards before reroll
-	for button in ability_buttons:
-		_stop_idle_animation(button)
-
 	# Mark as used
 	reroll_used = true
 	if reroll_button:
@@ -1042,54 +1061,148 @@ func _on_reroll_pressed() -> void:
 
 	current_choices = new_choices
 
-	# Restart the slot machine animation with new choices
-	is_rolling = true
-	roll_timer = 0.0
-	# Reset arrays based on current choices count
-	slots_settled = []
-	roll_tick_timers = []
-	slot_settle_times = []
-	for i in current_choices.size():
-		slots_settled.append(false)
-		roll_tick_timers.append(0.0)
-		slot_settle_times.append(0.6 + i * 0.2)
-
-	# Disable ability buttons during rolling
+	# Clear old cards and recreate with new abilities (fly-in animation)
 	for button in ability_buttons:
-		button.disabled = true
+		button.queue_free()
+	ability_buttons.clear()
+	particle_containers.clear()
+
+	# Create new cards with final abilities
+	for i in current_choices.size():
+		var card = _create_ability_card(current_choices[i], i)
+		card.disabled = false
+		choices_container.add_child(card)
+		ability_buttons.append(card)
+		# Show particle container immediately
+		var particle_container = card.get_node_or_null("ParticleContainer")
+		if particle_container:
+			particle_container.visible = true
+
+	# Animate the new cards flying in
+	_animate_reroll_entrance()
+
+	# SLOT MACHINE DISABLED - old reroll logic commented out
+	#is_rolling = true
+	#roll_timer = 0.0
+	#slots_settled = []
+	#roll_tick_timers = []
+	#slot_settle_times = []
+	#for i in current_choices.size():
+		#slots_settled.append(false)
+		#roll_tick_timers.append(0.0)
+		#slot_settle_times.append(0.6 + i * 0.2)
+	#for button in ability_buttons:
+		#button.disabled = true
+
+func _animate_reroll_entrance() -> void:
+	"""Animate cards flying in after reroll - from top corners with weight."""
+	call_deferred("_animate_cards_fly_in")
 
 func _animate_entrance() -> void:
+	# Animate the panel fading in quickly
 	if panel:
-		panel.scale = Vector2(0.8, 0.8)
 		panel.modulate.a = 0.0
-		panel.pivot_offset = panel.size / 2
-
 		var tween = create_tween()
 		tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tween.set_parallel(true)
-		tween.tween_property(panel, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-		tween.tween_property(panel, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+		tween.tween_property(panel, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
 
+	# Animate title with a bounce
 	if title_label:
 		title_label.scale = Vector2(1.5, 1.5)
 		title_label.pivot_offset = Vector2(title_label.size.x / 2, title_label.size.y / 2)
 
 		var title_tween = create_tween()
 		title_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		title_tween.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+		title_tween.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
 
-	for i in ability_buttons.size():
-		var button = ability_buttons[i]
-		button.modulate.a = 0.0
-		var original_pos = button.position
-		button.position.y += 50
+	# Fly-in animation from corners - deferred to allow layout to complete
+	call_deferred("_animate_cards_fly_in")
 
-		var card_tween = create_tween()
-		card_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		card_tween.tween_interval(0.1 * i)
-		card_tween.set_parallel(true)
-		card_tween.tween_property(button, "position:y", original_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-		card_tween.tween_property(button, "modulate:a", 1.0, 0.2).set_ease(Tween.EASE_OUT)
+func _animate_cards_fly_in() -> void:
+	"""Animate cards flying in sequentially from top-left, top-middle, top-right."""
+	_animate_card_fly_in_sequential(0)
+
+func _animate_card_fly_in_sequential(index: int) -> void:
+	"""Animate a single card flying in, then trigger the next one."""
+	if index >= ability_buttons.size():
+		return
+
+	# Starting positions: top-left, top-center, top-right
+	var start_offsets = [
+		Vector2(-400, -500),  # Top-left
+		Vector2(0, -600),     # Top-center (higher arc)
+		Vector2(400, -500),   # Top-right
+	]
+
+	var button = ability_buttons[index]
+	button.modulate.a = 0.0
+	button.pivot_offset = button.size / 2
+	var original_pos = button.position
+	var original_scale = Vector2(1.0, 1.0)
+
+	# Get start offset (cycle through if more than 3 cards)
+	var offset = start_offsets[index % start_offsets.size()]
+	button.position += offset
+	button.scale = Vector2(0.6, 0.6)
+
+	var card_tween = create_tween()
+	card_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+
+	# Phase 1: Fly in with acceleration (ease in)
+	card_tween.set_parallel(true)
+	card_tween.tween_property(button, "position", original_pos, 0.3).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	card_tween.tween_property(button, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
+	card_tween.tween_property(button, "scale", Vector2(1.05, 0.95), 0.3).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+
+	# Phase 2: Impact squash
+	card_tween.chain()
+	card_tween.set_parallel(true)
+	card_tween.tween_property(button, "scale", Vector2(1.1, 0.9), 0.05).set_ease(Tween.EASE_OUT)
+	card_tween.tween_callback(_spawn_dust_particles.bind(button))
+	card_tween.tween_callback(func():
+		if SoundManager and SoundManager.has_method("play_ding"):
+			SoundManager.play_ding()
+	)
+
+	# Phase 3: Bounce back to normal
+	card_tween.chain()
+	card_tween.tween_property(button, "scale", Vector2(0.97, 1.03), 0.06).set_ease(Tween.EASE_OUT)
+	card_tween.chain()
+	card_tween.tween_property(button, "scale", original_scale, 0.1).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
+
+	# Trigger next card after this one lands
+	card_tween.chain().tween_callback(_animate_card_fly_in_sequential.bind(index + 1))
+
+func _spawn_dust_particles(button: Button) -> void:
+	"""Spawn dust particles at the bottom of the card on impact."""
+	var particle_count = 8
+	var card_bottom = button.global_position + Vector2(button.size.x / 2, button.size.y + 20)
+
+	for j in particle_count:
+		var dust = ColorRect.new()
+		dust.size = Vector2(randf_range(4, 10), randf_range(4, 10))
+		dust.color = Color(0.8, 0.75, 0.6, 0.9)  # Dusty tan color
+		dust.position = card_bottom + Vector2(randf_range(-60, 60), randf_range(-10, 10))
+		dust.pivot_offset = dust.size / 2
+		dust.z_index = 10
+		add_child(dust)
+
+		# Animate dust particle
+		var dust_tween = create_tween()
+		dust_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		dust_tween.set_parallel(true)
+
+		# Random outward velocity
+		var angle = randf_range(-PI * 0.8, -PI * 0.2)  # Mostly upward arc
+		var distance = randf_range(30, 80)
+		var target_pos = dust.position + Vector2(cos(angle), sin(angle)) * distance
+
+		dust_tween.tween_property(dust, "position", target_pos, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		dust_tween.tween_property(dust, "modulate:a", 0.0, 0.4).set_ease(Tween.EASE_IN)
+		dust_tween.tween_property(dust, "scale", Vector2(0.3, 0.3), 0.4).set_ease(Tween.EASE_IN)
+
+		# Clean up
+		dust_tween.chain().tween_callback(dust.queue_free)
 
 # ============================================
 # PARTICLE EFFECTS
@@ -1245,66 +1358,66 @@ func _update_particle_container(container: Control, rarity: ActiveAbilityData.Ra
 			child_index += 1
 
 # ============================================
-# IDLE ANIMATIONS
+# IDLE ANIMATIONS - DISABLED
 # ============================================
 
-func _start_idle_animation(button: Button) -> void:
-	"""Start a subtle idle flutter animation on the card."""
-	if not is_instance_valid(button):
-		return
+#func _start_idle_animation(button: Button) -> void:
+	#"""Start a subtle idle flutter animation on the card."""
+	#if not is_instance_valid(button):
+		#return
+	#
+	## Store original position for reference
+	#var original_y = button.position.y
+	#button.set_meta("original_y", original_y)
+	#button.pivot_offset = button.size / 2
+	#
+	## Create looping idle animation - gentle floating motion
+	#var idle_tween = create_tween()
+	#idle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	#idle_tween.set_loops()
+	#
+	#var float_amount = 3.0
+	#var float_duration = 2.0 + randf() * 0.5  # Slight randomness for organic feel
+	#
+	#idle_tween.tween_property(button, "position:y", original_y - float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#idle_tween.tween_property(button, "position:y", original_y + float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#idle_tween.tween_property(button, "position:y", original_y, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#
+	#button.set_meta("idle_tween", idle_tween)
+	#
+	## Also add subtle rotation sway
+	#var sway_tween = create_tween()
+	#sway_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	#sway_tween.set_loops()
+	#
+	#var sway_amount = 0.015  # Subtle rotation in radians
+	#var sway_duration = 3.0 + randf() * 0.5
+	#
+	#sway_tween.tween_property(button, "rotation", sway_amount, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#sway_tween.tween_property(button, "rotation", -sway_amount, sway_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#sway_tween.tween_property(button, "rotation", 0.0, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	#
+	#button.set_meta("sway_tween", sway_tween)
 
-	# Store original position for reference
-	var original_y = button.position.y
-	button.set_meta("original_y", original_y)
-	button.pivot_offset = button.size / 2
-
-	# Create looping idle animation - gentle floating motion
-	var idle_tween = create_tween()
-	idle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	idle_tween.set_loops()
-
-	var float_amount = 3.0
-	var float_duration = 2.0 + randf() * 0.5  # Slight randomness for organic feel
-
-	idle_tween.tween_property(button, "position:y", original_y - float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	idle_tween.tween_property(button, "position:y", original_y + float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	idle_tween.tween_property(button, "position:y", original_y, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-
-	button.set_meta("idle_tween", idle_tween)
-
-	# Also add subtle rotation sway
-	var sway_tween = create_tween()
-	sway_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	sway_tween.set_loops()
-
-	var sway_amount = 0.015  # Subtle rotation in radians
-	var sway_duration = 3.0 + randf() * 0.5
-
-	sway_tween.tween_property(button, "rotation", sway_amount, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	sway_tween.tween_property(button, "rotation", -sway_amount, sway_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-	sway_tween.tween_property(button, "rotation", 0.0, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
-
-	button.set_meta("sway_tween", sway_tween)
-
-func _stop_idle_animation(button: Button) -> void:
-	"""Stop the idle animation on a card."""
-	if not is_instance_valid(button):
-		return
-
-	# Kill any running idle tweens
-	if button.has_meta("idle_tween"):
-		var idle_tween = button.get_meta("idle_tween") as Tween
-		if idle_tween and idle_tween.is_valid():
-			idle_tween.kill()
-		button.remove_meta("idle_tween")
-
-	if button.has_meta("sway_tween"):
-		var sway_tween = button.get_meta("sway_tween") as Tween
-		if sway_tween and sway_tween.is_valid():
-			sway_tween.kill()
-		button.remove_meta("sway_tween")
-
-	# Reset position and rotation
-	if button.has_meta("original_y"):
-		button.position.y = button.get_meta("original_y")
-	button.rotation = 0.0
+#func _stop_idle_animation(button: Button) -> void:
+	#"""Stop the idle animation on a card."""
+	#if not is_instance_valid(button):
+		#return
+	#
+	## Kill any running idle tweens
+	#if button.has_meta("idle_tween"):
+		#var idle_tween = button.get_meta("idle_tween") as Tween
+		#if idle_tween and idle_tween.is_valid():
+			#idle_tween.kill()
+		#button.remove_meta("idle_tween")
+	#
+	#if button.has_meta("sway_tween"):
+		#var sway_tween = button.get_meta("sway_tween") as Tween
+		#if sway_tween and sway_tween.is_valid():
+			#sway_tween.kill()
+		#button.remove_meta("sway_tween")
+	#
+	## Reset position and rotation
+	#if button.has_meta("original_y"):
+		#button.position.y = button.get_meta("original_y")
+	#button.rotation = 0.0

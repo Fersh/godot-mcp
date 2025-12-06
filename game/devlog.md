@@ -5,7 +5,7 @@
 ## Date: 2025-12-06 - Item Tier System & Weapon Type Expansion
 
 ### Summary
-Implemented a difficulty-based item tier system where items scale based on the difficulty they drop from, not time survived. Added STAFF weapon type for casters and updated character weapon mappings. Added Mythic rarity exclusive to Endless mode.
+Implemented a difficulty-based item tier system where items scale based on the difficulty they drop from, not time survived. Added STAFF weapon type for casters and updated character weapon mappings. Added Mythic rarity exclusive to Endless mode. Added dedicated axe sprites and expanded weapon variety.
 
 ### Key Design Goals
 - Items are tied to difficulty tier, not survival time
@@ -128,6 +128,41 @@ Added STAFF weapon type for caster characters, replacing MAGIC (books) for mages
 - Staff of Infinite Power - channels limitless energy
 - Chaos Staff - unpredictable magical effects
 
+#### Axe Items Added (Barbarian, Minotaur, Ratfolk)
+
+Added dedicated axe sprite folder with `_no_effect` icon variants.
+
+**Base Items:**
+- Axe - `axe_basic` (Icon1)
+- Hatchet - `hatchet_basic` (Icon2)
+- Battle Axe - `battle_axe_basic` (Icon3)
+- Cleaver - `cleaver_basic` (Icon4)
+
+**Epic Axes:**
+- Bloodthirst - vampirism ability (Icon23)
+- Berserker's Fury - frenzy ability (Icon24)
+- Skull Splitter - high crit (Icon26)
+
+**Legendary Axes:**
+- Worldsplitter - scaling damage (Icon36)
+- Gorehowl - eviscerate ability (Icon39)
+- The Mangler - finishing move (Icon43)
+
+**Reserved:** Icons 45-48 left unused for future mythic items.
+
+#### Spear Items Updated
+
+Updated all spear items to use `_no_effect` icon variants for consistency.
+
+**Base Items:**
+- Spear (Icon1), Javelin (Icon10), Pike (Icon11), Halberd (Icon12)
+
+**Epic Spears:**
+- Staff of Wisdom (Icon20), Beast's Claw Spear (Icon25)
+
+**Legendary Spears:**
+- Staff of Enlightenment (Icon36), Primal Rage Spear (Icon40)
+
 ---
 
 ### 6. Files Modified
@@ -142,9 +177,10 @@ Added STAFF weapon type for caster characters, replacing MAGIC (books) for mages
 - Added migration for legacy items without tier
 
 **item_database.gd:**
-- Added 4 base staff items
-- Added 3 Epic staff items
-- Added 3 Legendary staff items
+- Added 4 base staff items, 3 Epic staffs, 3 Legendary staffs
+- Added 4 base axe items, 3 Epic axes, 3 Legendary axes
+- Added 4 base spear variants (Spear, Javelin, Pike, Halberd)
+- Updated all spear icons to use `_no_effect` variants
 - Updated `_weapon_type_matches_character()` for new characters
 - Added STAFF to `WEAPON_TYPE_NAMES`
 
