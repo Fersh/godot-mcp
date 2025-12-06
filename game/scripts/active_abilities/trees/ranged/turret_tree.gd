@@ -34,7 +34,7 @@ static func _create_base() -> ActiveAbilityData:
 		ActiveAbilityData.TargetType.SELF,
 		15.0
 	).with_damage(20.0, 0.8) \
-	 .with_range(250.0) \
+	 .with_range(220.0) \
 	 .with_duration(10.0) \
 	 .with_effect("sentry_turret")
 
@@ -48,7 +48,7 @@ static func _create_rapid_sentry() -> ActiveAbilityData:
 		ActiveAbilityData.TargetType.SELF,
 		12.0
 	).with_damage(15.0, 0.7) \
-	 .with_range(250.0) \
+	 .with_range(220.0) \
 	 .with_duration(12.0) \
 	 .with_effect("rapid_sentry") \
 	 .with_prerequisite("sentry_turret", 0) \

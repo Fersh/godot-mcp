@@ -167,6 +167,11 @@ func show_choices(abilities: Array) -> void:
 		var random_start = all_abilities_pool[randi() % all_abilities_pool.size()]
 		var card = create_ability_card(random_start, i)
 		card.disabled = true  # Disable until rolling completes
+		# Store trigger card info if this slot is for a trigger card
+		if _is_trigger_card(current_choices[i]):
+			var trigger_ability = current_choices[i].get("ability")
+			card.set_meta("is_trigger_slot", true)
+			card.set_meta("trigger_desc", "Choose upgrade for " + trigger_ability.name)
 		choices_container.add_child(card)
 		ability_buttons.append(card)
 
@@ -1409,10 +1414,15 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 				vbox.add_child(name_label)
 				vbox.move_child(name_label, 1)
 
-	# Update description label (child 2)
-	var desc_label = vbox.get_child(2) as Label
+	# Update description label
+	# For trigger card slots, always use the stored trigger description (not the random ability's)
+	var desc_label = vbox.get_node_or_null("DescLabel") as Label
 	if desc_label:
-		desc_label.text = ability_desc
+		if button.has_meta("is_trigger_slot") and button.get_meta("is_trigger_slot") and not is_final_reveal:
+			# During rolling, keep the trigger card description
+			desc_label.text = button.get_meta("trigger_desc", ability_desc)
+		else:
+			desc_label.text = ability_desc
 
 	# Update stats container (child 3) - stats removed from all upgrade cards per design
 	var stats_container = vbox.get_node_or_null("StatsContainer") as VBoxContainer
@@ -2128,6 +2138,10 @@ func _show_branch_cards(branches: Array[ActiveAbilityData]) -> void:
 		card.disabled = false  # Enable immediately (no rolling)
 		choices_container.add_child(card)
 		ability_buttons.append(card)
+		# Make particle container visible since we're showing final state (not rolling)
+		var particle_container = card.get_node_or_null("ParticleContainer")
+		if particle_container:
+			particle_container.visible = true
 		_animate_card_in(card, i)
 
 	# Show cancel button
@@ -2275,6 +2289,10 @@ func _on_cancel_pressed() -> void:
 		card.disabled = false
 		choices_container.add_child(card)
 		ability_buttons.append(card)
+		# Make particle container visible since we're showing final state (not rolling)
+		var particle_container = card.get_node_or_null("ParticleContainer")
+		if particle_container:
+			particle_container.visible = true
 		_animate_card_in(card, i)
 
 func _on_branch_selected(branch: ActiveAbilityData) -> void:

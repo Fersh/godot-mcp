@@ -184,10 +184,11 @@ func _award_ability_unlocks() -> void:
 	var unlocked_ultimates: Array = []
 
 	# Call on_game_completed which returns unlocks via signal
+	# Note: Must use append_array() instead of assignment to modify outer scope arrays
 	UnlocksManager.abilities_unlocked.connect(func(passives, actives, ultimates):
-		unlocked_passives = passives
-		unlocked_actives = actives
-		unlocked_ultimates = ultimates
+		unlocked_passives.append_array(passives)
+		unlocked_actives.append_array(actives)
+		unlocked_ultimates.append_array(ultimates)
 	, CONNECT_ONE_SHOT)
 
 	UnlocksManager.on_game_completed()
