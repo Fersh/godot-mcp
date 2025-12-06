@@ -137,6 +137,7 @@ func is_character_unlocked(character_id: String) -> bool:
 	# Chad (barbarian) requires beating Hell difficulty
 	if character_id == "barbarian":
 		return has_beaten_difficulty(DifficultyManager.DifficultyTier.NIGHTMARE)  # Hell is NIGHTMARE enum
+	# All other characters (including new ones) are unlocked by default
 	return true
 
 func has_beaten_difficulty(tier: int) -> bool:
@@ -375,7 +376,7 @@ func get_overall_unlock_progress() -> float:
 	"""Returns 0.0-1.0 progress for overall unlocks."""
 	var total_princesses = 21
 	var total_difficulties = 7
-	var total_characters = 7
+	var total_characters = 17  # Updated for all characters
 	var total_locked_abilities = get_total_locked_passives() + get_total_locked_actives() + get_total_locked_ultimates()
 	var total_elites = get_total_unique_elites()
 
@@ -410,7 +411,11 @@ func get_total_upgrades() -> int:
 
 func _count_unlocked_characters() -> int:
 	var count = 0
-	var character_ids = ["archer", "knight", "beast", "mage", "monk", "barbarian", "assassin"]
+	var character_ids = [
+		"archer", "knight", "beast", "mage", "monk", "barbarian", "assassin",
+		"golem", "orc", "minotaur", "cyclops", "lizardfolk_king",
+		"skeleton_king", "shardsoul_slayer", "necromancer", "kobold_priest", "ratfolk"
+	]
 	for id in character_ids:
 		if is_character_unlocked(id):
 			count += 1

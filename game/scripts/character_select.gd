@@ -27,7 +27,7 @@ var is_playing_attack: bool = false
 var attack_display_timer: float = 0.0
 const IDLE_DURATION: float = 4.0  # Seconds of idle before attack
 const ATTACK_ANIM_SPEED: float = 12.0
-const SELECTOR_ANIM_SPEED: float = 8.0
+const SELECTOR_ANIM_SPEED: float = 5.0  # Slower for smoother idle animations
 
 # Font for placeholder "?" labels
 var pixelify_font: Font = null
@@ -68,27 +68,51 @@ func _style_header() -> void:
 
 func _process(delta: float) -> void:
 	# Update animation for preview sprite
-	if preview_sprite and selected_index < characters_list.size():
-		var char_data: CharacterData = characters_list[selected_index]
+	if preview_sprite and selected_index >= 0 and selected_index < characters_list.size():
+		var char_data = characters_list[selected_index]
+		if char_data == null:
+			return
+
+		# Get correct animation rows for special characters
+		var idle_row = char_data.row_idle
+		var attack_row = char_data.row_attack
+		var idle_frames = max(1, char_data.frames_idle)  # Prevent divide by zero
+		var attack_frames = max(1, char_data.frames_attack)
+
+		# Special handling for characters with direction-based sprite sheets
+		match char_data.id:
+			"minotaur":
+				# Minotaur has left-facing rows at offset 10
+				idle_row = 10  # Left-facing idle
+				attack_row = 13  # Left-facing attack (row 3 + 10)
+				idle_frames = 5
+				attack_frames = 10
+				preview_sprite.flip_h = false
+			"skeleton_king":
+				# Skeleton King faces left by default, flip sprite
+				preview_sprite.flip_h = true
+			"orc":
+				# Orc faces left by default, flip sprite
+				preview_sprite.flip_h = true
+			_:
+				preview_sprite.flip_h = false
 
 		if is_playing_attack:
 			# Playing attack animation
 			animation_timer += delta * ATTACK_ANIM_SPEED
-			var frame_count = char_data.frames_attack
-			var current_frame = int(animation_timer) % frame_count
-			preview_sprite.frame = char_data.row_attack * char_data.hframes + current_frame
+			var current_frame = int(animation_timer) % attack_frames
+			preview_sprite.frame = attack_row * char_data.hframes + current_frame
 
 			# Check if attack animation completed
-			if animation_timer >= frame_count:
+			if animation_timer >= attack_frames:
 				is_playing_attack = false
 				animation_timer = 0.0
 				attack_display_timer = 0.0
 		else:
 			# Playing idle animation
 			animation_timer += delta * 8.0
-			var frame_count = char_data.frames_idle
-			var current_frame = int(animation_timer) % frame_count
-			preview_sprite.frame = char_data.row_idle * char_data.hframes + current_frame
+			var current_frame = int(animation_timer) % idle_frames
+			preview_sprite.frame = idle_row * char_data.hframes + current_frame
 
 			# Check if it's time to play attack
 			attack_display_timer += delta
@@ -100,13 +124,29 @@ func _process(delta: float) -> void:
 	selector_anim_timer += delta * SELECTOR_ANIM_SPEED
 	for i in selector_sprites.size():
 		if i < characters_list.size():
-			var char_data: CharacterData = characters_list[i]
+			var char_data = characters_list[i]
 			var sprite: Sprite2D = selector_sprites[i]
-			if not sprite:
+			if not sprite or char_data == null:
 				continue
-			var frame_count = char_data.frames_idle
+
+			var idle_row = char_data.row_idle
+			var frame_count = max(1, char_data.frames_idle)  # Prevent divide by zero
+
+			# Special handling for characters with direction-based sprite sheets
+			match char_data.id:
+				"minotaur":
+					# Minotaur has left-facing rows at offset 10
+					idle_row = 10  # Left-facing idle
+					frame_count = 5
+				"skeleton_king":
+					# Skeleton King faces left by default, flip sprite
+					sprite.flip_h = true
+				"orc":
+					# Orc faces left by default, flip sprite
+					sprite.flip_h = true
+
 			var current_frame = int(selector_anim_timer) % frame_count
-			sprite.frame = char_data.row_idle * char_data.hframes + current_frame
+			sprite.frame = idle_row * char_data.hframes + current_frame
 
 func _setup_preview_panel() -> void:
 	# Style the preview panel - darker and less transparent like equipment screen
@@ -230,14 +270,34 @@ func _setup_preview_panel() -> void:
 func _create_selector_buttons() -> void:
 	var all_chars = CharacterManager.get_all_characters()
 
-	# Reorder to: ranger, knight, monk, mage, beast, assassin, barbarian
-	var order = ["archer", "knight", "monk", "mage", "beast", "assassin", "barbarian"]
+	# Reorder: original 7 first, then new characters in thematic groups
+	# Row 1: archer, knight, monk, mage, beast
+	# Row 2: assassin, barbarian, golem, orc, minotaur
+	# Row 3: cyclops, lizardfolk_king, skeleton_king, shardsoul_slayer, necromancer
+	# Row 4: kobold_priest, ratfolk, (3 placeholders)
+	var order = [
+		"archer", "knight", "monk", "mage", "beast",
+		"assassin", "barbarian", "golem", "orc", "minotaur",
+		"cyclops", "lizardfolk_king", "skeleton_king", "shardsoul_slayer", "necromancer",
+		"kobold_priest", "ratfolk"
+	]
 	characters_list = []
+	print("CharacterSelect: Building character list from %d available characters" % all_chars.size())
 	for id in order:
+		var found = false
 		for char_data in all_chars:
+			if char_data == null:
+				print("CharacterSelect: WARNING - null character in all_chars")
+				continue
+			if not (char_data is CharacterData):
+				print("CharacterSelect: WARNING - non-CharacterData object: %s" % typeof(char_data))
+				continue
 			if char_data.id == id:
 				characters_list.append(char_data)
+				found = true
 				break
+		if not found:
+			print("CharacterSelect: WARNING - Character '%s' not found!" % id)
 
 	selector_sprites = []  # Reset sprites array
 	for i in characters_list.size():
@@ -257,8 +317,8 @@ func _create_selector_buttons() -> void:
 			selector_buttons.append(result.panel)
 			selector_sprites.append(result.sprite)
 
-	# Add 5 locked placeholder slots (reduced from 7 since we added 2 new characters)
-	for i in 5:
+	# Add 3 locked placeholder slots to fill out the grid (17 chars + 3 = 20, 4 rows of 5)
+	for i in 3:
 		selector_container.add_child(_create_placeholder_button())
 
 func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary:
@@ -318,6 +378,34 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 		"assassin":
 			sprite_scale = 1.62  # Reduced 10% more to match other characters
 			sprite_pos = Vector2(38, 33)  # Moved up 5px
+		# New characters
+		"golem":
+			sprite_scale = 1.8  # 32x32 frames - smaller to fit
+			sprite_pos = Vector2(38, 37)  # Move up 5px
+		"orc":
+			sprite_scale = 2.0  # 32x32 frames
+		"minotaur":
+			sprite_scale = 0.8  # 96x96 frames - smaller
+			sprite_pos = Vector2(38, 42)
+		"cyclops":
+			sprite_scale = 1.1  # 64x64 frames - 10% bigger
+			sprite_pos = Vector2(38, 40)  # Move up 5px
+		"lizardfolk_king":
+			sprite_scale = 0.9  # 128x64 frames - smaller
+			sprite_pos = Vector2(38, 45)  # Center better
+		"skeleton_king":
+			sprite_scale = 1.0  # 96x96 frames
+			sprite_pos = Vector2(38, 42)
+		"shardsoul_slayer":
+			sprite_scale = 1.1  # 64x64 frames - smaller
+			sprite_pos = Vector2(38, 32)  # Move up
+		"necromancer":
+			sprite_scale = 1.8  # 32x32 frames - 10% smaller
+		"kobold_priest":
+			sprite_scale = 2.0  # 32x32 frames
+		"ratfolk":
+			sprite_scale = 1.5  # 64x32 frames
+			sprite_pos = Vector2(38, 42)  # Adjust for wide sprite
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -366,7 +454,7 @@ func _create_placeholder_button() -> PanelContainer:
 	return panel
 
 func _create_locked_character_button(char_data: CharacterData, index: int) -> PanelContainer:
-	"""Create a locked character button with a lock icon and requirement text."""
+	"""Create a locked character button with a big red question mark."""
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(80, 80)
 	panel.set_meta("index", index)
@@ -385,33 +473,21 @@ func _create_locked_character_button(char_data: CharacterData, index: int) -> Pa
 	style.corner_radius_bottom_right = 6
 	panel.add_theme_stylebox_override("panel", style)
 
-	# VBox for lock icon and text
-	var vbox = VBoxContainer.new()
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 4)
-
+	# Center container for question mark
 	var center = CenterContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	center.add_child(vbox)
 	panel.add_child(center)
 
-	# Lock icon (using text for now)
-	var lock_label = Label.new()
-	lock_label.text = "🔒"
-	lock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lock_label.add_theme_font_size_override("font_size", 26)
-	vbox.add_child(lock_label)
-
-	# Character hint
-	var hint_label = Label.new()
-	hint_label.text = "Hell"
-	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# Big red question mark
+	var question_label = Label.new()
+	question_label.text = "?"
+	question_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	if pixelify_font:
-		hint_label.add_theme_font_override("font", pixelify_font)
-	hint_label.add_theme_font_size_override("font_size", 12)
-	hint_label.add_theme_color_override("font_color", Color(0.6, 0.4, 0.4, 0.9))
-	vbox.add_child(hint_label)
+		question_label.add_theme_font_override("font", pixelify_font)
+	question_label.add_theme_font_size_override("font_size", 40)
+	question_label.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3, 1.0))  # Red
+	center.add_child(question_label)
 
 	# Clickable button overlay (shows locked message)
 	var button = Button.new()
@@ -434,11 +510,16 @@ func _on_locked_character_pressed(char_data: CharacterData) -> void:
 
 func _select_current_character() -> void:
 	var current = CharacterManager.get_selected_character()
+	if current == null:
+		_set_selected(0)  # Default to first character
+		return
 	for i in characters_list.size():
 		var char_data: CharacterData = characters_list[i]
 		if char_data.id == current.id:
 			_set_selected(i)
-			break
+			return
+	# Character not found in list, default to first
+	_set_selected(0)
 
 func _set_selected(index: int) -> void:
 	selected_index = index
@@ -465,12 +546,18 @@ func _set_selected(index: int) -> void:
 	_update_preview()
 
 func _update_preview() -> void:
-	if selected_index >= characters_list.size():
+	if selected_index < 0 or selected_index >= characters_list.size():
 		return
 	if not preview_sprite:
 		return
 
-	var char_data: CharacterData = characters_list[selected_index]
+	var char_data = characters_list[selected_index]
+	if char_data == null:
+		print("CharacterSelect: ERROR - char_data is null at index %d" % selected_index)
+		return
+	if not (char_data is CharacterData):
+		print("CharacterSelect: ERROR - char_data is not CharacterData, type: %s" % typeof(char_data))
+		return
 
 	# Update name
 	if preview_name_label:
@@ -493,6 +580,27 @@ func _update_preview() -> void:
 			class_type_text = "Barbarian"
 		"assassin":
 			class_type_text = "Assassin"
+		# New characters
+		"golem":
+			class_type_text = "Tank"
+		"orc":
+			class_type_text = "Warrior"
+		"minotaur":
+			class_type_text = "Minotaur"
+		"cyclops":
+			class_type_text = "Cyclops"
+		"lizardfolk_king":
+			class_type_text = "Lizard"
+		"skeleton_king":
+			class_type_text = "Undead"
+		"shardsoul_slayer":
+			class_type_text = "Slayer"
+		"necromancer":
+			class_type_text = "Summoner"
+		"kobold_priest":
+			class_type_text = "Priest"
+		"ratfolk":
+			class_type_text = "Rogue"
 	if preview_class_label:
 		preview_class_label.text = class_type_text
 
@@ -519,6 +627,27 @@ func _update_preview() -> void:
 			preview_scale = 2.1  # Similar to monk (96x96 frames)
 		"assassin":
 			preview_scale = 2.1  # Match monk size
+		# New characters
+		"golem":
+			preview_scale = 2.2  # 32x32 frames - smaller
+		"orc":
+			preview_scale = 2.5  # 32x32 frames
+		"minotaur":
+			preview_scale = 1.1  # 96x96 frames - smaller
+		"cyclops":
+			preview_scale = 1.4  # 64x64 frames - smaller
+		"lizardfolk_king":
+			preview_scale = 1.3  # 128x64 frames - smaller
+		"skeleton_king":
+			preview_scale = 1.3  # 96x96 frames
+		"shardsoul_slayer":
+			preview_scale = 1.5  # 64x64 frames - smaller
+		"necromancer":
+			preview_scale = 2.2  # 32x32 frames - 10% smaller
+		"kobold_priest":
+			preview_scale = 2.5  # 32x32 frames
+		"ratfolk":
+			preview_scale = 2.0  # 64x32 frames
 	preview_sprite.scale = Vector2(preview_scale, preview_scale)
 	preview_sprite.position = preview_pos
 	preview_sprite.offset = preview_offset
@@ -711,34 +840,47 @@ func _style_back_button(button: Button) -> void:
 	button.add_theme_constant_override("shadow_offset_x", 2)
 	button.add_theme_constant_override("shadow_offset_y", 2)
 
-func _show_locked_notification(char_data: CharacterData) -> void:
+func _show_locked_notification(_char_data: CharacterData) -> void:
 	"""Show a notification explaining how to unlock this character."""
 	var notification = CanvasLayer.new()
 	notification.layer = 100
 	add_child(notification)
 
+	# Black background panel
+	var panel = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0, 0, 0, 0.9)
+	panel_style.corner_radius_top_left = 10
+	panel_style.corner_radius_top_right = 10
+	panel_style.corner_radius_bottom_left = 10
+	panel_style.corner_radius_bottom_right = 10
+	panel_style.content_margin_left = 30
+	panel_style.content_margin_right = 30
+	panel_style.content_margin_top = 20
+	panel_style.content_margin_bottom = 20
+	panel.add_theme_stylebox_override("panel", panel_style)
+	notification.add_child(panel)
+
 	var label = Label.new()
-	label.text = "Beat Hell difficulty to unlock %s!" % char_data.display_name
+	label.text = "Beat Hell difficulty to unlock character"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.set_anchors_preset(Control.PRESET_CENTER)
-	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	label.grow_vertical = Control.GROW_DIRECTION_BOTH
 
 	if pixelify_font:
 		label.add_theme_font_override("font", pixelify_font)
-	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_font_size_override("font_size", 24)
 	label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4, 1))
-	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1.0))
-	label.add_theme_constant_override("shadow_offset_x", 3)
-	label.add_theme_constant_override("shadow_offset_y", 3)
 
-	notification.add_child(label)
+	panel.add_child(label)
 
 	# Animate in and fade out
-	label.modulate.a = 0.0
+	panel.modulate.a = 0.0
 	var tween = create_tween()
-	tween.tween_property(label, "modulate:a", 1.0, 0.2)
+	tween.tween_property(panel, "modulate:a", 1.0, 0.2)
 	tween.tween_interval(1.5)
-	tween.tween_property(label, "modulate:a", 0.0, 0.5)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(func(): notification.queue_free())

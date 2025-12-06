@@ -8,7 +8,17 @@ enum CharacterType {
 	MAGE,
 	MONK,
 	BARBARIAN,
-	ASSASSIN
+	ASSASSIN,
+	GOLEM,
+	ORC,
+	MINOTAUR,
+	CYCLOPS,
+	LIZARDFOLK_KING,
+	SKELETON_KING,
+	SHARDSOUL_SLAYER,
+	NECROMANCER,
+	KOBOLD_PRIEST,
+	RATFOLK
 }
 
 enum AttackType {
@@ -536,5 +546,556 @@ static func create_assassin() -> CharacterData:
 	# Passive
 	data.passive_name = "Shadow Dance"
 	data.passive_description = "After hitting 5 enemies, vanish and dash to nearest enemy dealing +100% damage."
+
+	return data
+
+# ============================================
+# NEW ENEMY-BASED PLAYABLE CHARACTERS
+# ============================================
+
+static func create_golem() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "golem"
+	data.display_name = "The Slow One"
+	data.description = "An ancient construct of stone. Slow but indestructible, crushing all in its path."
+	data.character_type = CharacterType.GOLEM
+	data.attack_type = AttackType.MELEE
+
+	# Ultimate tank - slowest but toughest
+	data.base_health = 55.0           # HIGHEST in game
+	data.base_speed = 95.0            # Slowest
+	data.base_attack_cooldown = 1.5   # Very slow swings
+	data.base_damage = 2.0            # Devastating hits
+	data.attack_range = 70.0          # Big arms
+
+	# Combat stats - pure tank
+	data.base_crit_rate = 0.03        # Minimal
+	data.base_block_rate = 0.10       # Highest block
+	data.base_dodge_rate = 0.0        # Cannot dodge - too big
+	data.base_armor = 4               # Highest base armor
+
+	# Sprite config (Golem: 10 cols x 10 rows, 32x32 frames)
+	# 15% bigger than enemy (enemy is 2.5, so player is 2.875)
+	data.frame_size = Vector2(32, 32)
+	data.hframes = 10
+	data.vframes = 10
+	data.sprite_scale = Vector2(2.875, 2.875)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2
+	data.row_attack_up = 2
+	data.row_attack_down = 2
+	data.row_damage = 3
+	data.row_death = 4
+
+	# Frame counts
+	data.frames_idle = 10
+	data.frames_move = 5
+	data.frames_attack = 5
+	data.frames_attack_up = 5
+	data.frames_attack_down = 5
+	data.frames_damage = 5
+	data.frames_death = 10
+
+	# Passive
+	data.passive_name = "Tectonic Endurance"
+	data.passive_description = "20% damage reduction. Every 5 hits taken triggers a ground pound AOE."
+
+	return data
+
+static func create_orc() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "orc"
+	data.display_name = "The Grunt"
+	data.description = "A brutish warrior. Simple but effective, with relentless aggression."
+	data.character_type = CharacterType.ORC
+	data.attack_type = AttackType.MELEE
+
+	# Balanced melee brawler
+	data.base_health = 32.0
+	data.base_speed = 130.0
+	data.base_attack_cooldown = 0.9
+	data.base_damage = 1.4
+	data.attack_range = 55.0
+
+	# Combat stats - straightforward fighter
+	data.base_crit_rate = 0.06
+	data.base_block_rate = 0.04
+	data.base_dodge_rate = 0.04
+	data.base_armor = 2
+
+	# Sprite config (Orc: 8 cols x 8 rows, 32x32 frames)
+	# 15% bigger than enemy
+	data.frame_size = Vector2(32, 32)
+	data.hframes = 8
+	data.vframes = 8
+	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+
+	# Animation rows (from enemy.gd)
+	data.row_idle = 0
+	data.row_move = 2
+	data.row_attack = 5
+	data.row_attack_up = 5
+	data.row_attack_down = 5
+	data.row_damage = 6
+	data.row_death = 7
+
+	# Frame counts
+	data.frames_idle = 4
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 3
+	data.frames_death = 6
+
+	# Passive
+	data.passive_name = "Bloodrage"
+	data.passive_description = "Gain +5% damage for each enemy killed (max 25%). Resets between rooms."
+
+	return data
+
+static func create_minotaur() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "minotaur"
+	data.display_name = "The Bullsh*t"
+	data.description = "A raging beast of legend. Charges into battle with devastating ground slams."
+	data.character_type = CharacterType.MINOTAUR
+	data.attack_type = AttackType.MELEE
+
+	# Heavy bruiser with AOE potential
+	data.base_health = 45.0
+	data.base_speed = 120.0
+	data.base_attack_cooldown = 1.2
+	data.base_damage = 1.8
+	data.attack_range = 90.0
+
+	# Combat stats - aggressive tank
+	data.base_crit_rate = 0.07
+	data.base_block_rate = 0.06
+	data.base_dodge_rate = 0.03
+	data.base_armor = 3
+
+	# Sprite config (Minotaur: 10 cols x 20 rows, 96x96 frames)
+	# Already big - keep same scale
+	data.frame_size = Vector2(96, 96)
+	data.hframes = 10
+	data.vframes = 20
+	data.sprite_scale = Vector2(1.5, 1.5)
+
+	# Animation rows (uses left-facing rows via offset)
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 3      # AOE slam
+	data.row_attack_up = 4   # Melee swing
+	data.row_attack_down = 5 # Melee swing 2
+	data.row_damage = 7
+	data.row_death = 9
+
+	# Frame counts
+	data.frames_idle = 5
+	data.frames_move = 8
+	data.frames_attack = 10
+	data.frames_attack_up = 6
+	data.frames_attack_down = 6
+	data.frames_damage = 3
+	data.frames_death = 6
+
+	# Taunt animation (row 2)
+	data.row_taunt = 2
+	data.frames_taunt = 5
+
+	# Passive
+	data.passive_name = "Stampede"
+	data.passive_description = "Attacks have 15% chance to trigger ground slam dealing AOE damage."
+
+	return data
+
+static func create_cyclops() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "cyclops"
+	data.display_name = "The One Eyed Monster"
+	data.description = "A towering giant with a deadly eye beam. Slow but devastating from any range."
+	data.character_type = CharacterType.CYCLOPS
+	data.attack_type = AttackType.MELEE  # Primary is melee, but has ranged special
+
+	# Slow powerhouse with ranged options
+	data.base_health = 48.0
+	data.base_speed = 100.0
+	data.base_attack_cooldown = 1.3
+	data.base_damage = 1.9
+	data.attack_range = 80.0
+
+	# Combat stats - tough and hits hard
+	data.base_crit_rate = 0.05
+	data.base_block_rate = 0.08
+	data.base_dodge_rate = 0.02
+	data.base_armor = 3
+
+	# Sprite config (Cyclops: 15 cols x 20 rows, 64x64 frames)
+	# 15% bigger than enemy
+	data.frame_size = Vector2(64, 64)
+	data.hframes = 15
+	data.vframes = 20
+	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 3      # Stomp
+	data.row_attack_up = 4   # Throw
+	data.row_attack_down = 3
+	data.row_damage = 5
+	data.row_death = 6
+
+	# Frame counts
+	data.frames_idle = 15
+	data.frames_move = 12
+	data.frames_attack = 13
+	data.frames_attack_up = 3
+	data.frames_attack_down = 13
+	data.frames_damage = 5
+	data.frames_death = 9
+
+	# Passive
+	data.passive_name = "All-Seeing Eye"
+	data.passive_description = "Every 8 seconds, fire a laser beam dealing damage to all enemies in a line."
+
+	return data
+
+static func create_lizardfolk_king() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "lizardfolk_king"
+	data.display_name = "The Cold Blood"
+	data.description = "An ancient reptilian tyrant. Regenerates health and poisons foes with every strike."
+	data.character_type = CharacterType.LIZARDFOLK_KING
+	data.attack_type = AttackType.MELEE
+
+	# Regenerating tank with debuffs
+	data.base_health = 42.0
+	data.base_speed = 130.0
+	data.base_attack_cooldown = 1.1
+	data.base_damage = 1.5
+	data.attack_range = 75.0
+
+	# Combat stats - durable with some offense
+	data.base_crit_rate = 0.06
+	data.base_block_rate = 0.08
+	data.base_dodge_rate = 0.04
+	data.base_armor = 2
+
+	# Sprite config (Lizardfolk King: 8 cols x 6 rows, 128x64 frames)
+	# 15% bigger than enemy (enemy uses default 2.0)
+	data.frame_size = Vector2(128, 64)
+	data.hframes = 8
+	data.vframes = 6
+	data.sprite_scale = Vector2(2.3, 2.3)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 2
+	data.row_attack = 3
+	data.row_attack_up = 3
+	data.row_attack_down = 3
+	data.row_damage = 4
+	data.row_death = 5
+
+	# Taunt/Intimidate
+	data.row_taunt = 1
+	data.frames_taunt = 8
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 5
+	data.frames_death = 8
+
+	# Passive
+	data.passive_name = "Cold Blooded"
+	data.passive_description = "Regenerate 2% HP/sec when not hit for 2s. Attacks apply poison."
+
+	return data
+
+static func create_skeleton_king() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "skeleton_king"
+	data.display_name = "The Leech King"
+	data.description = "A fallen monarch risen again. Commands the dead and drains life from foes."
+	data.character_type = CharacterType.SKELETON_KING
+	data.attack_type = AttackType.MELEE
+
+	# Lifesteal bruiser with summons
+	data.base_health = 38.0
+	data.base_speed = 125.0
+	data.base_attack_cooldown = 1.0
+	data.base_damage = 1.6
+	data.attack_range = 70.0
+
+	# Combat stats - balanced undead lord
+	data.base_crit_rate = 0.08
+	data.base_block_rate = 0.05
+	data.base_dodge_rate = 0.05
+	data.base_armor = 2
+
+	# Sprite config (Skeleton King: 9 cols x 7 rows, 96x96 frames)
+	# 15% bigger than enemy
+	data.frame_size = Vector2(96, 96)
+	data.hframes = 9
+	data.vframes = 7
+	data.sprite_scale = Vector2(2.3, 2.3)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2
+	data.row_attack_up = 2
+	data.row_attack_down = 2
+	data.row_damage = 5
+	data.row_death = 6
+
+	# Command/Summon animation
+	data.row_taunt = 3
+	data.frames_taunt = 7
+
+	# Leap attack row
+	data.row_attack_alt = 4
+	data.frames_attack_alt = 9
+	data.has_alt_attack = true
+
+	# Frame counts
+	data.frames_idle = 4
+	data.frames_move = 9
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 4
+	data.frames_death = 9
+
+	# Passive
+	data.passive_name = "Soul Leech"
+	data.passive_description = "Heal 8% of damage dealt. Summon a skeleton minion every 15 seconds."
+
+	return data
+
+static func create_shardsoul_slayer() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "shardsoul_slayer"
+	data.display_name = "The Reaper"
+	data.description = "A savage predator that hunts the weak. Executes low-health enemies with lethal efficiency."
+	data.character_type = CharacterType.SHARDSOUL_SLAYER
+	data.attack_type = AttackType.MELEE
+
+	# Execute specialist - fast and deadly
+	data.base_health = 25.0
+	data.base_speed = 150.0
+	data.base_attack_cooldown = 0.7
+	data.base_damage = 1.4
+	data.attack_range = 60.0
+
+	# Combat stats - high crit, mobile
+	data.base_crit_rate = 0.15
+	data.base_block_rate = 0.0
+	data.base_dodge_rate = 0.12
+	data.base_armor = 1
+
+	# Sprite config (Shardsoul: 8 cols x 5 rows, 64x64 frames)
+	# Already big at 1.8, keep same
+	data.frame_size = Vector2(64, 64)
+	data.hframes = 8
+	data.vframes = 5
+	data.sprite_scale = Vector2(1.8, 1.8)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 0
+	data.row_attack = 1
+	data.row_attack_up = 1
+	data.row_attack_down = 1
+	data.row_damage = 2
+	data.row_death = 3
+
+	# Lunge/Special
+	data.row_attack_alt = 4
+	data.frames_attack_alt = 6
+	data.has_alt_attack = true
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 5
+	data.frames_death = 4
+
+	# Passive
+	data.passive_name = "Death's Embrace"
+	data.passive_description = "+30% damage to enemies below 40% HP. Killing grants +15% speed for 3s."
+
+	return data
+
+static func create_necromancer() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "necromancer"
+	data.display_name = "The Plus One"
+	data.description = "A dark summoner who commands the dead. Fragile alone, but never truly alone."
+	data.character_type = CharacterType.NECROMANCER
+	data.attack_type = AttackType.RANGED
+
+	# Summoner - weak personally, strong with minions
+	data.base_health = 22.0
+	data.base_speed = 110.0
+	data.base_attack_cooldown = 1.8
+	data.base_damage = 1.2
+	data.attack_range = 200.0
+
+	# Combat stats - fragile caster
+	data.base_crit_rate = 0.06
+	data.base_block_rate = 0.0
+	data.base_dodge_rate = 0.08
+	data.base_armor = 0
+
+	# Sprite config (Necromancer: 8 cols x 6 rows, 32x32 frames)
+	# 15% bigger than enemy (enemy is 2.0)
+	data.frame_size = Vector2(32, 32)
+	data.hframes = 8
+	data.vframes = 6
+	data.sprite_scale = Vector2(2.3, 2.3)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 3      # Attack spell
+	data.row_attack_up = 3
+	data.row_attack_down = 3
+	data.row_damage = 4
+	data.row_death = 5
+
+	# Summon cast animation
+	data.row_attack_alt = 2  # Summon cast
+	data.frames_attack_alt = 8
+	data.has_alt_attack = false  # Don't randomly pick - summon is passive
+
+	# Frame counts
+	data.frames_idle = 8
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 4
+	data.frames_death = 8
+
+	# Passive
+	data.passive_name = "Eternal Legion"
+	data.passive_description = "Summon up to 3 skeleton minions. When a minion dies, gain a Soul Shard."
+
+	return data
+
+static func create_kobold_priest() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "kobold_priest"
+	data.display_name = "The Chihuahua"
+	data.description = "A twisted priest who corrupts foes and drains their essence. Debuffs empower your attacks."
+	data.character_type = CharacterType.KOBOLD_PRIEST
+	data.attack_type = AttackType.RANGED
+
+	# Debuffer/support with self-sustain
+	data.base_health = 26.0
+	data.base_speed = 115.0
+	data.base_attack_cooldown = 1.5
+	data.base_damage = 1.4
+	data.attack_range = 220.0
+
+	# Combat stats - squishy but sustaining
+	data.base_crit_rate = 0.07
+	data.base_block_rate = 0.02
+	data.base_dodge_rate = 0.06
+	data.base_armor = 0
+
+	# Sprite config (Kobold Priest: 8 cols x 5 rows, 32x32 frames)
+	# 15% bigger than enemy (enemy is 2.0)
+	data.frame_size = Vector2(32, 32)
+	data.hframes = 8
+	data.vframes = 5
+	data.sprite_scale = Vector2(2.3, 2.3)
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2
+	data.row_attack_up = 2
+	data.row_attack_down = 2
+	data.row_damage = 3
+	data.row_death = 4
+
+	# Frame counts
+	data.frames_idle = 4
+	data.frames_move = 8
+	data.frames_attack = 8
+	data.frames_attack_up = 8
+	data.frames_attack_down = 8
+	data.frames_damage = 4
+	data.frames_death = 7
+
+	# Passive
+	data.passive_name = "Life Exchange"
+	data.passive_description = "Attacks apply Corruption. At 5 stacks, heal 15% HP and reset stacks."
+
+	return data
+
+static func create_ratfolk() -> CharacterData:
+	var data = CharacterData.new()
+	data.id = "ratfolk"
+	data.display_name = "The NYC Sewer System"
+	data.description = "A nimble vermin warrior. Strikes with blinding speed and slips away before retaliation."
+	data.character_type = CharacterType.RATFOLK
+	data.attack_type = AttackType.MELEE
+
+	# Ultra-fast glass cannon - fastest attacker in game
+	data.base_health = 18.0           # Fragile
+	data.base_speed = 160.0           # Very fast
+	data.base_attack_cooldown = 0.5   # Fastest attacks
+	data.base_damage = 1.0            # Lower per-hit damage
+	data.attack_range = 50.0          # Short melee
+
+	# Combat stats - evasive and crit-focused
+	data.base_crit_rate = 0.12        # High crit
+	data.base_block_rate = 0.0        # No blocking - too fast to stand still
+	data.base_dodge_rate = 0.18       # High dodge
+	data.base_armor = 0               # No armor - relies on speed
+
+	# Sprite config (Ratfolk: 12 cols x 5 rows, 64x32 frames)
+	# 15% bigger than enemy
+	data.frame_size = Vector2(64, 32)
+	data.hframes = 12
+	data.vframes = 5
+	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+
+	# Animation rows
+	data.row_idle = 0
+	data.row_move = 1
+	data.row_attack = 2
+	data.row_attack_up = 2
+	data.row_attack_down = 2
+	data.row_damage = 3
+	data.row_death = 4
+
+	# Frame counts
+	data.frames_idle = 4
+	data.frames_move = 8
+	data.frames_attack = 12
+	data.frames_attack_up = 12
+	data.frames_attack_down = 12
+	data.frames_damage = 4
+	data.frames_death = 5
+
+	# Passive
+	data.passive_name = "Scurry"
+	data.passive_description = "After attacking, gain +20% dodge for 1s. Every 3rd attack deals double damage."
 
 	return data

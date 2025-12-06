@@ -190,7 +190,7 @@ func _update_princess_button_state() -> void:
 	else:
 		# Restore normal pink style
 		_style_pink_button_small(princesses_button)
-		princesses_button.text = "PRINCESSES"
+		princesses_button.text = "PRINCESS"
 
 func _style_locked_button_small(button: Button) -> void:
 	"""Style a button as locked/disabled (small version)."""

@@ -213,7 +213,11 @@ func _style_button(button: Button, base_color: Color) -> void:
 	button.add_theme_stylebox_override("focus", style)
 	button.add_theme_color_override("font_color", COLOR_TEXT)
 
-const CHARACTER_IDS = ["archer", "knight", "monk", "mage", "beast", "assassin", "barbarian"]
+const CHARACTER_IDS = [
+	"archer", "knight", "monk", "mage", "beast", "assassin", "barbarian",
+	"golem", "orc", "minotaur", "cyclops", "lizardfolk_king",
+	"skeleton_king", "shardsoul_slayer", "necromancer", "kobold_priest", "ratfolk"
+]
 const CHARACTER_NAMES = {
 	"archer": "RANGER",
 	"knight": "KNIGHT",
@@ -221,7 +225,17 @@ const CHARACTER_NAMES = {
 	"mage": "WIZARD",
 	"beast": "BEAST",
 	"assassin": "ASSASSIN",
-	"barbarian": "BARBARIAN"
+	"barbarian": "CHAD",
+	"golem": "MONOLITH",
+	"orc": "GRUNT",
+	"minotaur": "BULLSH*T",
+	"cyclops": "ONE EYED",
+	"lizardfolk_king": "COLD BLOOD",
+	"skeleton_king": "LEECH KING",
+	"shardsoul_slayer": "REAPER",
+	"necromancer": "PLUS ONE",
+	"kobold_priest": "CHIHUAHUA",
+	"ratfolk": "NYC SEWER"
 }
 
 var character_dropdown: OptionButton = null
