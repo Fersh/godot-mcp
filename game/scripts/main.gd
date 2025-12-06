@@ -49,12 +49,12 @@ var challenge_bg_texture = preload("res://assets/enviro/diff_1.png")
 # Tile-based background system
 var tile_background = null
 var tile_background_script = preload("res://scripts/tile_background.gd")
-var use_tile_background: bool = false  # Toggle between tile-based and static background
+var use_tile_background: bool = true  # Toggle between tile-based and static background
 
 # Painted arena system (hand-painted TileMap for challenge mode)
 var painted_arena = null
 var painted_arena_scene: PackedScene = null
-var use_painted_arena: bool = true  # Use painted arena for challenge mode instead of procedural
+var use_painted_arena: bool = false  # Use painted arena for challenge mode instead of procedural
 
 func _ready() -> void:
 	add_to_group("main")
