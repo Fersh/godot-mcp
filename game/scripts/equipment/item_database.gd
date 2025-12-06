@@ -206,14 +206,14 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.10},
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon5_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon3_no_effect.png"
 	},
 	"cleaver_basic": {
 		"display_name": "Cleaver",
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.07, "crit_chance": 0.04},
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon8_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon4_no_effect.png"
 	},
 	"mace_basic": {
 		"display_name": "Mace",
@@ -595,7 +595,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.15, "crit_chance": 0.08},
 		"grants_ability": "vampirism",
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon20_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon23_no_effect.png"
 	},
 	"berserker_axe": {
 		"display_name": "Berserker's Fury",
@@ -604,7 +604,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.18, "attack_speed": 0.10},
 		"grants_ability": "frenzy",
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon22_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon24_no_effect.png"
 	},
 	"skull_splitter": {
 		"display_name": "Skull Splitter",
@@ -612,7 +612,7 @@ const EPIC_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.20, "crit_chance": 0.12},
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon25_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon26_no_effect.png"
 	},
 
 	# Weapons - Staffs (Mage, Priest, Necromancer)
@@ -927,7 +927,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.35, "crit_chance": 0.20},
 		"grants_equipment_ability": "eviscerate",
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon38_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon39_no_effect.png"
 	},
 	"mangler": {
 		"display_name": "The Mangler",
@@ -936,7 +936,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.28, "attack_speed": 0.20, "crit_chance": 0.12},
 		"grants_equipment_ability": "finishing_move",
-		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon40_no_effect.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon43_no_effect.png"
 	},
 
 	# Weapons - Staffs (Mage, Priest, Necromancer) - Legendary
