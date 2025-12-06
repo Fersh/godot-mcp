@@ -18,37 +18,38 @@ const COLOR_SPEED = "#00FFFF"        # Speed/Haste effects
 const COLOR_CC = "#9370DB"           # Crowd control (non-elemental)
 const COLOR_BUFF = "#FFD700"         # Buffs/Empowerment
 const COLOR_SUMMON = "#B19CD9"       # Summons/Minions
+const COLOR_LOOT = "#FFD700"         # Drops/Loot/Coins (gold color)
 
 # Keyword categories - order matters for proper matching
 # More specific phrases should come before shorter ones
 
 static var FIRE_KEYWORDS: Array[String] = [
-	"burning ground", "burning", "burn", "fire trail", "fire ring", "fire",
+	"burning ground", "burning", "burns", "burn", "fire trail", "fire ring", "fire",
 	"fireball", "flame wall", "flame orbit", "flame", "flames",
-	"ignite", "ignites", "blazing trail", "blazing", "magma", "lava",
+	"ignite", "ignites", "igniting", "blazing trail", "blazing", "magma", "lava",
 	"meteor swarm", "meteor strike", "meteor", "meteors"
 ]
 
 static var ICE_KEYWORDS: Array[String] = [
-	"freezing", "freeze", "frozen", "frost nova", "frost orbit", "frostbite", "frost",
-	"chilling", "chill", "chilled", "ice barricade", "ice nova", "ice shard", "ice",
-	"cold", "slowing", "slowed", "slow"
+	"freezing", "freezes", "freeze", "frozen", "frost nova", "frost orbit", "frostbite", "frost",
+	"chilling", "chills", "chill", "chilled", "ice barricade", "ice nova", "ice shard", "ice",
+	"cold", "slowing", "slows", "slowed", "slow"
 ]
 
 static var LIGHTNING_KEYWORDS: Array[String] = [
 	"chain lightning", "lightning storm", "lightning strike", "lightning",
-	"thunderstorm", "thundershock", "thunder", "shock", "shocked",
+	"thunderstorm", "thundershock", "thunder", "shock", "shocked", "shocks",
 	"static charge", "static", "electric", "arc", "arcs",
-	"stunning", "stunned", "stun"
+	"stunning", "stunned", "stuns", "stun"
 ]
 
 static var POISON_KEYWORDS: Array[String] = [
-	"poisoned", "poison", "toxic cloud", "toxic tip", "toxic traits", "toxic",
-	"venom", "toxin"
+	"poisoned", "poisons", "poisoning", "poison", "toxic cloud", "toxic tip", "toxic traits", "toxic",
+	"venom", "venomous", "toxin"
 ]
 
 static var BLEED_KEYWORDS: Array[String] = [
-	"bleeding", "bleed", "crimson edge", "crimson", "physical"
+	"bleeding", "bleeds", "bleed", "crimson edge", "crimson", "physical"
 ]
 
 static var HEAL_KEYWORDS: Array[String] = [
@@ -76,15 +77,16 @@ static var SPEED_KEYWORDS: Array[String] = [
 static var DAMAGE_KEYWORDS: Array[String] = [
 	"critical hit", "crit chance", "crit", "critical",
 	"execute", "executes", "executing", "execution",
-	"knockback", "damage"
+	"knockback", "damaging", "damages", "damage"
 ]
 
 static var CC_KEYWORDS: Array[String] = [
-	"rooted", "root", "roots",
+	"rooted", "root", "roots", "rooting",
 	"taunt", "taunts", "taunting",
-	"confuse", "confused", "confusing",
-	"fear", "flee", "terrify",
-	"weaken", "weakens", "weakening"
+	"confuse", "confused", "confusing", "confusion",
+	"charmed", "charming", "charms", "charm",
+	"fear", "fears", "fearing", "flee", "fleeing", "terrify", "terrifying", "terror",
+	"weaken", "weakens", "weakening", "weakened"
 ]
 
 static var BUFF_KEYWORDS: Array[String] = [
@@ -108,7 +110,17 @@ static var SUMMON_KEYWORDS: Array[String] = [
 	"spectral archers", "spectral sword", "spectral",
 	"ghostly wolves", "wolves", "wolf",
 	"chicken", "chickens",
-	"decoy"
+	"decoy", "decoys"
+]
+
+static var LOOT_KEYWORDS: Array[String] = [
+	"dropping", "drops", "drop",
+	"loot", "looting",
+	"coins", "coin",
+	"gold", "treasure",
+	"pickups", "pickup",
+	"gems", "gem",
+	"xp"
 ]
 
 ## Format a description string with BBCode colors and bold
@@ -134,8 +146,10 @@ static func format(text: String) -> String:
 	result = _format_keywords(result, CC_KEYWORDS, COLOR_CC)
 	result = _format_keywords(result, BUFF_KEYWORDS, COLOR_BUFF)
 	result = _format_keywords(result, SUMMON_KEYWORDS, COLOR_SUMMON)
+	result = _format_keywords(result, LOOT_KEYWORDS, COLOR_LOOT)
 
-	return result
+	# Wrap in center tags for center alignment
+	return "[center]" + result + "[/center]"
 
 ## Format numbers and percentages with bold white
 static func _format_numbers(text: String) -> String:
