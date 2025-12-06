@@ -2,6 +2,92 @@
 
 ---
 
+## Date: 2025-12-06 - Nightfall Lighting & Map Theme System
+
+### Summary
+Added nightfall lighting effect to darken the arena for atmosphere. Refactored jungle tile system with auto-calculated edge tiles from center positions. Consolidated all difficulties to use forest/Pitiful theme temporarily while jungle tile coordinates are verified.
+
+### Key Changes
+
+#### 1. Nightfall Lighting Effect
+Added atmospheric darkening using CanvasModulate for a subtle nightfall feel.
+
+**Implementation:**
+```gdscript
+func _apply_nightfall_effect() -> void:
+    var modulate = CanvasModulate.new()
+    modulate.name = "NightfallModulate"
+    modulate.color = Color(0.7, 0.7, 0.85)  # Subtle darkening with slight blue tint
+    add_child(modulate)
+    generated_tiles.append(modulate)
+```
+
+**Visual Effect:**
+- 30% overall darkening
+- Slight blue tint for evening atmosphere
+- Applied scene-wide via CanvasModulate (zero performance cost)
+
+#### 2. Jungle Tile Edge System (Infrastructure)
+Created auto-calculated edge tile system for jungle theme. Instead of manually defining all 9 tiles (center + 8 edges), only center coordinates are needed.
+
+**Edge Offset System:**
+```gdscript
+const EDGE_OFFSETS := {
+    "center": Vector2i(0, 0),
+    "top": Vector2i(0, -1),
+    "bottom": Vector2i(0, 1),
+    "left": Vector2i(-1, 0),
+    "right": Vector2i(1, 0),
+    "top_left": Vector2i(-1, -1),
+    "top_right": Vector2i(1, -1),
+    "bottom_left": Vector2i(-1, 1),
+    "bottom_right": Vector2i(1, 1),
+}
+```
+
+**Jungle Tile Centers Defined:**
+| Tile Type | Center Coordinates |
+|-----------|-------------------|
+| Grass (3 variants) | (1,34), (6,34), (11,34) |
+| Tall Grass (3 variants) | (1,37), (6,37), (11,37) |
+| Dirt | (1,31) |
+| Water | (6,31) |
+| Border | (11,34) |
+
+**Helper Function:**
+```gdscript
+func _get_jungle_tile(center: Vector2i, edge_type: String) -> Rect2i:
+    var offset = EDGE_OFFSETS.get(edge_type, Vector2i(0, 0))
+    var tile_coord = center + offset
+    return Rect2i(tile_coord.x * JUNGLE_TILE_SIZE, tile_coord.y * JUNGLE_TILE_SIZE, JUNGLE_TILE_SIZE, JUNGLE_TILE_SIZE)
+```
+
+#### 3. Theme Consolidation
+Temporarily disabled jungle theme for all difficulties. All maps now use the forest/Pitiful theme while jungle tile coordinates are verified.
+
+**Before:** Easy+ difficulties used jungle theme
+**After:** All difficulties use forest theme
+
+```gdscript
+func _determine_theme() -> void:
+    # TODO: Re-enable jungle theme once tile coordinates are verified
+    use_jungle_theme = false
+    current_tileset_path = TILESET_PATH_PITIFUL
+```
+
+#### 4. Tile Scaling Fix
+Fixed jungle tiles (16px) to scale 2x when rendered to match forest tiles (32px).
+
+### Files Modified
+- `game/scripts/tile_background.gd` - Nightfall effect, edge offset system, theme consolidation, tile scaling
+
+### Future Work
+- Verify jungle tileset coordinates against actual sprite sheet
+- Re-enable jungle theme with corrected tile positions
+- Consider per-difficulty nightfall intensity
+
+---
+
 ## Date: 2025-12-06 - Item Tier System & Weapon Type Expansion
 
 ### Summary

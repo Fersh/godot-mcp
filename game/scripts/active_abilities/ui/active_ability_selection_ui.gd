@@ -1096,7 +1096,10 @@ func _on_reroll_pressed() -> void:
 
 func _animate_reroll_entrance() -> void:
 	"""Animate cards flying in after reroll - from top corners with weight."""
-	call_deferred("_animate_cards_fly_in")
+	# Wait for layout to complete before animating
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_animate_cards_fly_in()
 
 func _animate_entrance() -> void:
 	# Animate the panel fading in quickly
@@ -1104,7 +1107,7 @@ func _animate_entrance() -> void:
 		panel.modulate.a = 0.0
 		var tween = create_tween()
 		tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tween.tween_property(panel, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
+		tween.tween_property(panel, "modulate:a", 1.0, 0.1).set_ease(Tween.EASE_OUT)
 
 	# Animate title with a bounce
 	if title_label:
@@ -1113,13 +1116,18 @@ func _animate_entrance() -> void:
 
 		var title_tween = create_tween()
 		title_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		title_tween.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+		title_tween.tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.25).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
 
-	# Fly-in animation from corners - deferred to allow layout to complete
-	call_deferred("_animate_cards_fly_in")
+	# Fly-in animation from corners - wait for layout to complete
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_animate_cards_fly_in()
 
 func _animate_cards_fly_in() -> void:
 	"""Animate cards flying in sequentially from top-left, top-middle, top-right."""
+	# Hide all cards initially so they're not visible before their animation
+	for button in ability_buttons:
+		button.modulate.a = 0.0
 	_animate_card_fly_in_sequential(0)
 
 func _animate_card_fly_in_sequential(index: int) -> void:
@@ -1129,13 +1137,12 @@ func _animate_card_fly_in_sequential(index: int) -> void:
 
 	# Starting positions: top-left, top-center, top-right
 	var start_offsets = [
-		Vector2(-400, -500),  # Top-left
-		Vector2(0, -600),     # Top-center (higher arc)
-		Vector2(400, -500),   # Top-right
+		Vector2(-300, -400),  # Top-left
+		Vector2(0, -450),     # Top-center
+		Vector2(300, -400),   # Top-right
 	]
 
 	var button = ability_buttons[index]
-	button.modulate.a = 0.0
 	button.pivot_offset = button.size / 2
 	var original_pos = button.position
 	var original_scale = Vector2(1.0, 1.0)
@@ -1143,35 +1150,50 @@ func _animate_card_fly_in_sequential(index: int) -> void:
 	# Get start offset (cycle through if more than 3 cards)
 	var offset = start_offsets[index % start_offsets.size()]
 	button.position += offset
-	button.scale = Vector2(0.6, 0.6)
+	button.scale = Vector2(0.5, 0.5)
 
 	var card_tween = create_tween()
 	card_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
-	# Phase 1: Fly in with acceleration (ease in)
+	# Phase 1: Fly in VERY FAST with acceleration
 	card_tween.set_parallel(true)
-	card_tween.tween_property(button, "position", original_pos, 0.3).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
-	card_tween.tween_property(button, "modulate:a", 1.0, 0.15).set_ease(Tween.EASE_OUT)
-	card_tween.tween_property(button, "scale", Vector2(1.05, 0.95), 0.3).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	card_tween.tween_property(button, "position", original_pos, 0.08).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	card_tween.tween_property(button, "modulate:a", 1.0, 0.04).set_ease(Tween.EASE_OUT)
+	card_tween.tween_property(button, "scale", Vector2(1.08, 0.92), 0.08).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
-	# Phase 2: Impact squash
+	# Phase 2: Big impact squash
 	card_tween.chain()
 	card_tween.set_parallel(true)
-	card_tween.tween_property(button, "scale", Vector2(1.1, 0.9), 0.05).set_ease(Tween.EASE_OUT)
+	card_tween.tween_property(button, "scale", Vector2(1.2, 0.82), 0.02).set_ease(Tween.EASE_OUT)
 	card_tween.tween_callback(_spawn_dust_particles.bind(button))
-	card_tween.tween_callback(func():
-		if SoundManager and SoundManager.has_method("play_ding"):
-			SoundManager.play_ding()
-	)
+	card_tween.tween_callback(_play_land_sound)
 
-	# Phase 3: Bounce back to normal
+	# Phase 3: Overshoot bounce
 	card_tween.chain()
-	card_tween.tween_property(button, "scale", Vector2(0.97, 1.03), 0.06).set_ease(Tween.EASE_OUT)
+	card_tween.tween_property(button, "scale", Vector2(0.9, 1.12), 0.03).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+	# Phase 4: Second smaller bounce
 	card_tween.chain()
-	card_tween.tween_property(button, "scale", original_scale, 0.1).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
+	card_tween.tween_property(button, "scale", Vector2(1.05, 0.96), 0.025).set_ease(Tween.EASE_IN_OUT)
+
+	# Phase 5: Settle to normal
+	card_tween.chain()
+	card_tween.tween_property(button, "scale", original_scale, 0.04).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 
 	# Trigger next card after this one lands
 	card_tween.chain().tween_callback(_animate_card_fly_in_sequential.bind(index + 1))
+
+func _play_land_sound() -> void:
+	"""Play the landing sound at 25% volume."""
+	var sound_path = "res://assets/sounds/land.mp3"
+	if ResourceLoader.exists(sound_path):
+		var player = AudioStreamPlayer.new()
+		player.stream = load(sound_path)
+		player.volume_db = -12.0  # 25% volume
+		player.bus = "SFX" if AudioServer.get_bus_index("SFX") >= 0 else "Master"
+		add_child(player)
+		player.play()
+		player.finished.connect(player.queue_free)
 
 func _spawn_dust_particles(button: Button) -> void:
 	"""Spawn dust particles at the bottom of the card on impact."""
