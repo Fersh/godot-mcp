@@ -540,7 +540,7 @@ func _get_mapped_effect(effect_id: String) -> String:
 			return "parry_pixel"
 		"block_pixel":
 			return "block_pixel"
-		"throw_weapon_pixel":
+		"throw_weapon", "throw_weapon_pixel":
 			return "throw_weapon_pixel"
 		"roar_pixel":
 			return "roar_pixel"

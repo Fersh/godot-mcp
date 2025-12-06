@@ -27,6 +27,13 @@ var blade_rotation := 0.0
 # Impact sparks
 var impact_sparks := []
 
+# Blood particles
+var blood_particles := []
+
+# Colors
+const BLOOD_COLOR = Color(0.8, 0.1, 0.1, 1.0)
+const BLOOD_DARK = Color(0.5, 0.05, 0.05, 0.9)
+
 func _ready() -> void:
 	# Auto-cleanup after max time
 	await get_tree().create_timer(5.0).timeout
@@ -114,6 +121,17 @@ func _process(delta: float) -> void:
 		if spark.alpha <= 0:
 			impact_sparks.remove_at(i)
 
+	# Update blood particles
+	for i in range(blood_particles.size() - 1, -1, -1):
+		var p = blood_particles[i]
+		p.pos += p.velocity * delta
+		p.velocity.y += 350 * delta  # Gravity
+		p.velocity *= 0.97  # Drag
+		p.alpha -= delta * 1.8
+		p.size = max(p.size - delta * 3, 2)
+		if p.alpha <= 0:
+			blood_particles.remove_at(i)
+
 	queue_redraw()
 
 func _on_hit_target() -> void:
@@ -135,9 +153,25 @@ func _on_hit_target() -> void:
 				"alpha": 1.0
 			})
 
+		# Spawn blood explosion!
+		_spawn_blood_at(current_pos)
+
 	# Wait before next bounce
 	waiting_for_next = true
 	wait_timer = bounce_delay
+
+func _spawn_blood_at(pos: Vector2) -> void:
+	# Burst of blood droplets in all directions
+	for i in range(12):
+		var angle = randf() * TAU
+		var speed = randf_range(80, 200)
+		blood_particles.append({
+			"pos": pos,
+			"velocity": Vector2(cos(angle), sin(angle)) * speed + Vector2(0, randf_range(-30, 0)),
+			"alpha": 1.0,
+			"size": randf_range(3, 8),
+			"is_dark": randf() < 0.3
+		})
 
 func _draw() -> void:
 	# Convert to local space
@@ -165,6 +199,15 @@ func _draw() -> void:
 			var color = Color(1.0, 0.85, 0.4, spark.alpha)
 			var pos = ((spark.pos - global_position) / pixel_size).floor() * pixel_size
 			draw_rect(Rect2(pos, Vector2(pixel_size, pixel_size)), color)
+
+	# Draw blood particles
+	for p in blood_particles:
+		if p.alpha > 0:
+			var color = BLOOD_DARK if p.get("is_dark", false) else BLOOD_COLOR
+			color.a = p.alpha
+			var pos = ((p.pos - global_position) / pixel_size).floor() * pixel_size
+			var size = int(p.size)
+			draw_rect(Rect2(pos, Vector2(size, size)), color)
 
 	# Draw blade at current position
 	_draw_spinning_blade(local_pos, blade_rotation)

@@ -23,6 +23,11 @@ var hit_enemies_this_tick: Array = []
 
 # Visual effects
 var energy_particles := []
+var blood_particles := []
+
+# Blood colors
+const BLOOD_COLOR = Color(0.8, 0.1, 0.1, 1.0)
+const BLOOD_DARK = Color(0.5, 0.05, 0.05, 0.9)
 
 func _ready() -> void:
 	pass
@@ -91,6 +96,17 @@ func _process(delta: float) -> void:
 		if p.alpha <= 0:
 			energy_particles.remove_at(i)
 
+	# Update blood particles
+	for i in range(blood_particles.size() - 1, -1, -1):
+		var p = blood_particles[i]
+		p.pos += p.velocity * delta
+		p.velocity.y += 300 * delta  # Gravity
+		p.velocity *= 0.97  # Drag
+		p.alpha -= delta * 1.5
+		p.size = max(p.size - delta * 2, 2)
+		if p.alpha <= 0:
+			blood_particles.remove_at(i)
+
 	queue_redraw()
 
 func _deal_damage_tick() -> void:
@@ -110,12 +126,25 @@ func _deal_damage_tick() -> void:
 				enemy.take_damage(tick_damage)
 				hit_enemies_this_tick.append(enemy)
 
-				# Spawn hit spark
-				var hit_dir = (enemy.global_position - global_position).normalized()
-				for j in range(3):
+				# Spawn blood explosion at enemy position
+				var enemy_local = enemy.global_position - global_position
+				var hit_dir = enemy_local.normalized()
+				for j in range(8):
+					var angle = hit_dir.angle() + randf_range(-0.7, 0.7)
+					var speed = randf_range(60, 140)
+					blood_particles.append({
+						"pos": enemy_local,
+						"velocity": Vector2(cos(angle), sin(angle)) * speed + Vector2(0, randf_range(-20, 0)),
+						"alpha": 1.0,
+						"size": randf_range(3, 7),
+						"is_dark": randf() < 0.3
+					})
+
+				# Also spawn a few energy sparks for blade hit effect
+				for j in range(2):
 					var angle = hit_dir.angle() + randf_range(-0.5, 0.5)
 					energy_particles.append({
-						"pos": enemy.global_position - global_position,
+						"pos": enemy_local,
 						"alpha": 1.0,
 						"velocity": Vector2(cos(angle), sin(angle)) * randf_range(80, 150)
 					})
@@ -138,6 +167,15 @@ func _draw() -> void:
 			var color = Color(0.6, 0.7, 1.0, p.alpha * 0.5 * alpha_mult)
 			var pos = (p.pos / pixel_size).floor() * pixel_size
 			draw_rect(Rect2(pos, Vector2(pixel_size, pixel_size)), color)
+
+	# Draw blood particles
+	for p in blood_particles:
+		if p.alpha > 0:
+			var color = BLOOD_DARK if p.get("is_dark", false) else BLOOD_COLOR
+			color.a = p.alpha * alpha_mult
+			var pos = (p.pos / pixel_size).floor() * pixel_size
+			var size = int(p.size)
+			draw_rect(Rect2(pos, Vector2(size, size)), color)
 
 	# Draw blades
 	for blade in blades:

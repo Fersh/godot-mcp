@@ -1507,15 +1507,13 @@ func _execute_roar_blood_rage(ability: ActiveAbilityData, player: Node2D) -> voi
 func _execute_throw_weapon(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Base: Throw weapon at enemy for heavy damage"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
 	var target = _get_nearest_enemy(player.global_position, ability.range_distance)
-	if target:
-		direction = (target.global_position - player.global_position).normalized()
 
-	# Spawn thrown weapon projectile
+	# Spawn thrown weapon projectile that flies to target
 	var proj = _spawn_effect("throw_weapon", player.global_position)
 	if proj and proj.has_method("setup"):
-		proj.setup(direction, ability.projectile_speed, damage, 1)
+		var speed = ability.projectile_speed if ability.projectile_speed > 0 else 600.0
+		proj.setup(player.global_position, target, damage, speed)
 	else:
 		# Fallback: instant damage to nearest
 		if target:
