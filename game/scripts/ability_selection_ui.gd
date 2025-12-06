@@ -864,6 +864,10 @@ func _style_button_for_ability(button: Button, ability) -> void:
 	pressed_style.bg_color = pressed_style.bg_color.darkened(0.1)
 	button.add_theme_stylebox_override("pressed", pressed_style)
 
+	# Disabled style - same as normal to prevent background disappearing on selection
+	var disabled_style = style.duplicate()
+	button.add_theme_stylebox_override("disabled", disabled_style)
+
 func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1714,13 +1718,8 @@ func _animate_card_selected(button: Button, on_complete: Callable) -> void:
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
-	# Grow bigger
-	tween.tween_property(button, "scale", Vector2(1.15, 1.15), 0.15).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-
-	# Brief hold then complete
-	tween.tween_interval(0.1)
-
-	# Call completion callback
+	# Grow bigger then immediately complete
+	tween.tween_property(button, "scale", Vector2(1.15, 1.15), 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_callback(on_complete)
 
 func hide_selection() -> void:

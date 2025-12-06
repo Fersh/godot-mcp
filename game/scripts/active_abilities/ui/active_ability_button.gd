@@ -7,7 +7,9 @@ signal pressed()
 var button_size := Vector2(120, 120)  # Configurable size, set by parent
 const COOLDOWN_COLOR := Color(0.0, 0.0, 0.0, 0.95)  # 95% black overlay
 const READY_COLOR := Color(1.0, 1.0, 1.0, 1.0)
-const PRESSED_SCALE := 0.9
+const PRESSED_SCALE := 0.92
+const PRESSED_OFFSET := Vector2(2, 4)  # Slight down-right offset when pressed
+const PRESSED_DARKEN := 0.7  # Darken to 70% brightness when pressed
 const DODGE_COLOR := Color(0.4, 0.8, 1.0)  # Cyan for dodge
 const BORDER_WIDTH := 3
 const LONG_PRESS_TIME := 2.0  # Time to hold before showing tooltip on touch
@@ -42,6 +44,10 @@ var skillshot_start_pos: Vector2 = Vector2.ZERO
 var skillshot_current_pos: Vector2 = Vector2.ZERO
 var skillshot_aim_direction: Vector2 = Vector2.ZERO
 var aim_indicator: Node2D = null
+
+# Pressed state for visual feedback
+var is_button_pressed: bool = false
+var press_visual_amount: float = 0.0  # 0 = not pressed, 1 = fully pressed
 
 var pixel_font: Font = null
 var desc_font: Font = null
@@ -135,11 +141,36 @@ func _draw() -> void:
 	var center = button_size / 2
 	var radius = button_size.x / 2 - BORDER_WIDTH
 
-	# Draw outer border circle
-	draw_circle(center, radius + BORDER_WIDTH, border_color)
+	# Apply pressed offset to center
+	var press_offset = PRESSED_OFFSET * press_visual_amount
+	var draw_center = center + press_offset
 
-	# Draw inner background circle
-	draw_circle(center, radius, bg_color)
+	# Calculate pressed darkening
+	var press_darken = lerp(1.0, PRESSED_DARKEN, press_visual_amount)
+
+	# Draw drop shadow when pressed (appears behind button)
+	if press_visual_amount > 0:
+		var shadow_color = Color(0.0, 0.0, 0.0, 0.4 * press_visual_amount)
+		var shadow_offset = Vector2(0, 2) * (1.0 - press_visual_amount)
+		draw_circle(center + shadow_offset, radius + BORDER_WIDTH, shadow_color)
+
+	# Draw outer border circle (darkened when pressed)
+	var current_border_color = Color(
+		border_color.r * press_darken,
+		border_color.g * press_darken,
+		border_color.b * press_darken,
+		border_color.a
+	)
+	draw_circle(draw_center, radius + BORDER_WIDTH, current_border_color)
+
+	# Draw inner background circle (darkened when pressed)
+	var current_bg_color = Color(
+		bg_color.r * press_darken,
+		bg_color.g * press_darken,
+		bg_color.b * press_darken,
+		bg_color.a
+	)
+	draw_circle(draw_center, radius, current_bg_color)
 
 	# Draw icon clipped to circle
 	if icon_texture.texture:
@@ -151,22 +182,33 @@ func _draw() -> void:
 		var draw_size = tex_size * scale_factor
 
 		# Center the icon
-		var draw_pos = center - draw_size / 2
+		var draw_pos = draw_center - draw_size / 2
 
-		# Draw the icon with circular clipping using stencil technique
-		# We'll draw the texture and then use the polygon to mask it
+		# Draw the icon with circular clipping - apply pressed darkening
 		var icon_color = icon_texture.modulate if icon_texture.modulate else Color.WHITE
-		_draw_texture_clipped_to_circle(tex, center, radius, icon_color)
+		icon_color = Color(
+			icon_color.r * press_darken,
+			icon_color.g * press_darken,
+			icon_color.b * press_darken,
+			icon_color.a
+		)
+		_draw_texture_clipped_to_circle(tex, draw_center, radius, icon_color)
 
 	# Draw skillshot indicator for abilities that support aiming
 	if ability and ability.supports_skillshot():
-		_draw_skillshot_indicator(center, radius)
+		_draw_skillshot_indicator(draw_center, radius)
 
 	# Draw cooldown overlay from top down (fills from bottom up as it becomes ready)
 	if cooldown_percent > 0:
 		var overlay_color = COOLDOWN_COLOR
 		# Draw overlay covering top portion, shrinking as cooldown completes
-		_draw_bottom_up_cooldown(center, radius, cooldown_percent, overlay_color)
+		_draw_bottom_up_cooldown(draw_center, radius, cooldown_percent, overlay_color)
+
+	# Draw inner shadow when pressed for depth effect
+	if press_visual_amount > 0:
+		var inner_shadow_alpha = 0.35 * press_visual_amount
+		var inner_shadow_color = Color(0.0, 0.0, 0.0, inner_shadow_alpha)
+		_draw_inner_shadow(draw_center, radius, inner_shadow_color)
 
 func _draw_texture_clipped_to_circle(tex: Texture2D, center: Vector2, radius: float, modulate: Color) -> void:
 	# Create circular UV mapping to draw texture clipped to circle
@@ -283,6 +325,33 @@ func _draw_bottom_up_cooldown(center: Vector2, radius: float, percent: float, co
 
 	if points.size() > 2:
 		draw_colored_polygon(points, color)
+
+func _draw_inner_shadow(center: Vector2, radius: float, color: Color) -> void:
+	# Draw a gradient arc at the top of the circle to simulate pressed-in lighting
+	# This creates the illusion of depth when the button is pressed
+	var segments = 24
+	var shadow_depth = radius * 0.15  # How far the shadow extends inward
+
+	# Draw gradient from edge inward at the top portion of the circle
+	for i in range(5):  # Multiple rings for gradient effect
+		var t = float(i) / 5.0
+		var inner_radius = radius - (shadow_depth * t)
+		var ring_alpha = color.a * (1.0 - t)  # Fade out toward center
+		var ring_color = Color(color.r, color.g, color.b, ring_alpha)
+
+		# Draw only the top arc (from about 10 o'clock to 2 o'clock)
+		var points = PackedVector2Array()
+		var start_angle = -PI * 0.8  # Start at ~10 o'clock
+		var end_angle = -PI * 0.2    # End at ~2 o'clock
+
+		for j in range(segments + 1):
+			var angle_t = float(j) / segments
+			var angle = lerp(start_angle, end_angle, angle_t)
+			points.append(center + Vector2(cos(angle), sin(angle)) * inner_radius)
+
+		# Draw as polyline (just the arc, not filled)
+		if points.size() > 1:
+			draw_polyline(points, ring_color, 2.0)
 
 func _draw_skillshot_indicator(center: Vector2, radius: float) -> void:
 	# Subtle scope/reticle - 8 lines radiating from edge toward center
@@ -438,6 +507,8 @@ func _on_gui_input(event: InputEvent) -> void:
 			is_touch_held = true
 			touch_hold_timer = 0.0
 			touch_triggered_tooltip = false
+			# Visual press feedback
+			_set_pressed(true)
 			# Start tracking for potential skillshot
 			if _can_skillshot():
 				skillshot_start_pos = event.position
@@ -447,6 +518,8 @@ func _on_gui_input(event: InputEvent) -> void:
 		else:
 			# Touch released
 			is_touch_held = false
+			# Visual release feedback
+			_set_pressed(false)
 			# Always hide tooltip on release
 			_hide_tooltip()
 			if skillshot_active:
@@ -484,6 +557,8 @@ func _on_gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
+				# Visual press feedback
+				_set_pressed(true)
 				# Start tracking for potential skillshot
 				if _can_skillshot():
 					skillshot_start_pos = get_global_mouse_position()
@@ -494,6 +569,8 @@ func _on_gui_input(event: InputEvent) -> void:
 			else:
 				# Mouse released
 				is_touch_held = false
+				# Visual release feedback
+				_set_pressed(false)
 				# Always hide tooltip on release
 				_hide_tooltip()
 				if skillshot_active:
@@ -539,9 +616,32 @@ func _on_button_pressed() -> void:
 		ActiveAbilityManager.use_ability(slot_index)
 
 func _animate_press() -> void:
+	# Quick bounce animation after button action (in addition to held press state)
 	var tween = create_tween()
 	tween.tween_property(self, "scale", Vector2(PRESSED_SCALE, PRESSED_SCALE), 0.05)
 	tween.tween_property(self, "scale", Vector2.ONE, 0.1)
+
+func _set_pressed(pressed: bool) -> void:
+	"""Set the visual pressed state with smooth animation."""
+	is_button_pressed = pressed
+
+	# Animate press_visual_amount for smooth press/release
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT if pressed else Tween.EASE_IN)
+	tween.set_trans(Tween.TRANS_QUAD)
+
+	if pressed:
+		# Quick press down
+		tween.tween_property(self, "press_visual_amount", 1.0, 0.06)
+		tween.parallel().tween_property(self, "scale", Vector2(PRESSED_SCALE, PRESSED_SCALE), 0.06)
+	else:
+		# Slightly slower release with subtle bounce
+		tween.tween_property(self, "press_visual_amount", 0.0, 0.1)
+		tween.parallel().tween_property(self, "scale", Vector2(1.02, 1.02), 0.05)
+		tween.tween_property(self, "scale", Vector2.ONE, 0.08)
+
+	# Trigger redraw during animation
+	tween.tween_callback(queue_redraw)
 
 func _process(delta: float) -> void:
 	# Update cooldown display
@@ -551,6 +651,10 @@ func _process(delta: float) -> void:
 		_update_charge_indicator()
 	elif slot_index >= 0 and ability:
 		update_cooldown(ActiveAbilityManager.get_cooldown_percent(slot_index))
+
+	# Redraw when pressed visual is animating
+	if press_visual_amount > 0.01 or is_button_pressed:
+		queue_redraw()
 
 	# Handle touch hold for tooltip (only if not dragging for skillshot)
 	if is_touch_held and not touch_triggered_tooltip and not skillshot_active:
