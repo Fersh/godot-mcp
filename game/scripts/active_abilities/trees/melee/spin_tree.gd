@@ -53,7 +53,7 @@ static func _create_blade_vortex() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		25.0
-	).with_damage(10.0, 0.5) \
+	).with_damage(60.0, 1.2) \
 	 .with_aoe(150.0) \
 	 .with_duration(3.0) \
 	 .with_effect("vortex") \
@@ -69,7 +69,7 @@ static func _create_bladestorm() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
 		30.0
-	).with_damage(15.0, 0.8) \
+	).with_damage(80.0, 1.5) \
 	 .with_aoe(180.0) \
 	 .with_duration(5.0) \
 	 .with_movement() \

@@ -741,9 +741,9 @@ func _execute_whirlwind_base(ability: ActiveAbilityData, player: Node2D) -> void
 	"""Base Whirlwind - sustained spinning attack"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during whirlwind
+	# Allow player movement with -50% speed during whirlwind
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
 	# Spawn whirlwind effect that follows player and deals damage over time
 	var whirlwind = _spawn_effect("whirlwind", player.global_position)
@@ -762,26 +762,40 @@ func _execute_spin_vortex(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Sustained spinning with pull - creates a vortex that pulls enemies"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during vortex
+	# Allow player movement with -50% speed during vortex
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
-	# Spawn sustained vortex effect that pulls enemies over time
+	# Spawn base whirlwind visual on top of vortex (follows player)
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
+
+	# Spawn sustained vortex effect that pulls enemies over time (follows player)
 	var vortex_scene = load("res://scripts/active_abilities/effects/vortex_effect.gd")
 	if vortex_scene:
 		var vortex = Node2D.new()
 		vortex.set_script(vortex_scene)
 		vortex.global_position = player.global_position
 		player.get_parent().add_child(vortex)
-		# Setup: duration, radius, damage per second, pull strength, follow target (null = stationary)
-		vortex.setup(ability.duration, ability.radius, damage / ability.duration, 120.0, null)
+		# Setup: duration, radius, damage per second, pull strength, follow target (player)
+		vortex.setup(ability.duration, ability.radius, damage / ability.duration, 120.0, player)
 
 	_spawn_effect("spin", player.global_position)
-	_play_sound("swing")
+	_play_sound("whirlwind")
 
 func _execute_spin_bladestorm(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Move freely while spinning - vortex follows player"""
 	var damage = _get_damage(ability)
+
+	# Spawn base whirlwind visual that follows player
+	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
+	if base_whirl and base_whirl.has_method("setup"):
+		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# Spawn sustained vortex effect that follows the player and pulls enemies
 	var vortex_scene = load("res://scripts/active_abilities/effects/vortex_effect.gd")
@@ -799,16 +813,16 @@ func _execute_spin_bladestorm(ability: ActiveAbilityData, player: Node2D) -> voi
 		player.start_bladestorm(ability.duration)
 
 	_spawn_effect("spin", player.global_position)
-	_play_sound("swing")
+	_play_sound("whirlwind")
 	_screen_shake("small")
 
 func _execute_spin_deflect(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Deflect projectiles - uses base spin effect"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during deflect
+	# Allow player movement with -50% speed during deflect
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
@@ -827,9 +841,9 @@ func _execute_spin_mirror(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Reflected projectiles home in - uses base spin effect"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during mirror dance
+	# Allow player movement with -50% speed during mirror dance
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
 	var enemies = _get_enemies_in_radius(player.global_position, ability.radius)
 
@@ -853,9 +867,9 @@ func _execute_spin_fiery(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Fire trail whirlwind"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during fiery whirlwind
+	# Allow player movement with -50% speed during fiery whirlwind
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
 	# Spawn base whirlwind effect
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
@@ -873,9 +887,9 @@ func _execute_spin_inferno(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 3 SIGNATURE: Massive fire tornado"""
 	var damage = _get_damage(ability)
 
-	# Lock player movement during inferno
+	# Allow player movement with -50% speed during inferno
 	if ActiveAbilityManager:
-		ActiveAbilityManager.start_channeling(ability.duration)
+		ActiveAbilityManager.start_channeling(ability.duration, 0.5)
 
 	# Spawn base whirlwind effect
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)

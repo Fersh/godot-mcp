@@ -1013,7 +1013,7 @@ func _physics_process(delta: float) -> void:
 
 	var direction := Vector2.ZERO
 
-	# Check if movement is locked (channeling ability)
+	# Check if movement is completely locked (e.g., during dodge)
 	var movement_locked = ActiveAbilityManager and ActiveAbilityManager.is_movement_locked()
 
 	if not movement_locked:
@@ -1042,6 +1042,9 @@ func _physics_process(delta: float) -> void:
 	# Apply Swift Dodge speed bonus
 	if AbilityManager:
 		effective_speed *= AbilityManager.get_swift_dodge_speed_multiplier()
+	# Apply channeling speed penalty (e.g., whirlwind = 50% speed)
+	if ActiveAbilityManager:
+		effective_speed *= ActiveAbilityManager.get_channeling_speed_mult()
 	velocity = direction * effective_speed
 	move_and_slide()
 

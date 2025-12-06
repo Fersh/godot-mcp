@@ -43,28 +43,29 @@ class IconCircleDrawer extends Control:
 		# Subtle scope/reticle - 8 lines radiating from edge toward center
 		var indicator_color = Color(1.0, 1.0, 1.0, 0.6)
 		var outline_color = Color(0.0, 0.0, 0.0, 0.4)
-		var line_length = radius * 0.25  # Shorter lines
-		var line_width = 2.0  # Thinner
-		var outline_width = 4.0
+		var line_length = radius * 0.25  # Base length for cardinal lines
 
 		# 8 directions - 4 cardinal + 4 diagonal
 		var angles = [
-			0,           # Right
+			0,           # Right (3pm)
 			PI * 0.25,   # Bottom-right diagonal
-			PI * 0.5,    # Bottom
+			PI * 0.5,    # Bottom (6pm)
 			PI * 0.75,   # Bottom-left diagonal
-			PI,          # Left
+			PI,          # Left (9pm)
 			PI * 1.25,   # Top-left diagonal
-			PI * 1.5,    # Top
+			PI * 1.5,    # Top (12pm)
 			PI * 1.75    # Top-right diagonal
 		]
 
-		# Diagonal lines are shorter (near the middle area)
 		for i in range(angles.size()):
 			var angle = angles[i]
 			var dir = Vector2(cos(angle), sin(angle))
-			var is_diagonal = (i % 2 == 1)
-			var this_length = line_length * 0.6 if is_diagonal else line_length
+			var is_cardinal = (i % 2 == 0)  # 0, 2, 4, 6 are cardinal (12pm, 3pm, 6pm, 9pm)
+
+			# Cardinal lines: thicker and longer; Diagonal lines: thinner and shorter
+			var this_length = line_length if is_cardinal else line_length * 0.4
+			var line_width = 3.0 if is_cardinal else 1.5
+			var outline_width = 5.0 if is_cardinal else 3.0
 
 			var start = center + dir * radius  # Touch the edge
 			var end = center + dir * (radius - this_length)

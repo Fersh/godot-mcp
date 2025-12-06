@@ -6,6 +6,7 @@ extends Node2D
 var radius: float = 120.0
 var duration: float = 2.0
 var pixel_size: int = 4
+var follow_target: Node2D = null
 
 var _time: float = 0.0
 var _slash_arcs: Array[Dictionary] = []
@@ -30,6 +31,9 @@ func _ready() -> void:
 func setup(p_radius: float, p_duration: float = 2.0) -> void:
 	radius = p_radius
 	duration = p_duration
+
+func set_follow_target(target: Node2D) -> void:
+	follow_target = target
 
 func _generate_slash_arcs() -> void:
 	# Multiple rotating slash arcs
@@ -65,6 +69,9 @@ func _generate_dust_vortex() -> void:
 		})
 
 func _process(_delta: float) -> void:
+	# Follow target if set
+	if follow_target and is_instance_valid(follow_target):
+		global_position = follow_target.global_position
 	queue_redraw()
 
 func _draw() -> void:

@@ -27,9 +27,10 @@ var is_dodging: bool = false
 var dodge_charges: int = 1  # Default 1 charge, can be 2 with Double Charge
 var max_dodge_charges: int = 1
 
-# Channeling state - locks player movement during certain abilities
+# Channeling state - can slow or lock player movement during certain abilities
 var is_channeling: bool = false
 var channeling_timer: float = 0.0
+var channeling_speed_mult: float = 0.0  # 0.0 = locked, 0.5 = 50% speed, 1.0 = normal
 
 # Keyboard input state (to prevent holding key = spam)
 var _dodge_key_held: bool = false
@@ -154,22 +155,31 @@ func register_player(p: Node2D) -> void:
 	player = p
 
 # ============================================
-# CHANNELING (Movement Lock)
+# CHANNELING (Movement Slow/Lock)
 # ============================================
 
-func start_channeling(duration: float) -> void:
-	"""Lock player movement for the specified duration."""
+func start_channeling(duration: float, speed_mult: float = 0.0) -> void:
+	"""Start channeling with optional movement speed multiplier.
+	speed_mult: 0.0 = fully locked, 0.5 = 50% speed, 1.0 = normal speed"""
 	is_channeling = true
 	channeling_timer = duration
+	channeling_speed_mult = speed_mult
 
 func stop_channeling() -> void:
-	"""Unlock player movement."""
+	"""Stop channeling and restore normal movement."""
 	is_channeling = false
 	channeling_timer = 0.0
+	channeling_speed_mult = 0.0
 
 func is_movement_locked() -> bool:
-	"""Check if player movement is currently locked."""
-	return is_channeling or is_dodging
+	"""Check if player movement is completely locked."""
+	return (is_channeling and channeling_speed_mult <= 0.0) or is_dodging
+
+func get_channeling_speed_mult() -> float:
+	"""Get the current channeling speed multiplier (1.0 if not channeling)."""
+	if is_channeling:
+		return channeling_speed_mult
+	return 1.0
 
 # ============================================
 # ABILITY SLOT MANAGEMENT
