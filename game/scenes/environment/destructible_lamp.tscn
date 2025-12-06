@@ -11,7 +11,7 @@ z_index = 0
 collision_layer = 8
 collision_mask = 0
 script = ExtResource("1_script")
-max_health = 30.0
+max_health = 100.0
 obstacle_type = "lamp"
 
 [node name="Sprite" type="Sprite2D" parent="."]

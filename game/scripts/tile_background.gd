@@ -161,6 +161,10 @@ var decoration_sprites: Array[Sprite2D] = []
 var overlay_sprites: Array[Sprite2D] = []
 var tree_sprites: Array[Sprite2D] = []
 var lamp_nodes: Array[Node2D] = []
+var chest_node: Node2D = null
+
+# Track placed tree positions for chest spawn check
+var placed_tree_positions: Array[Vector2] = []
 
 var arena_offset_x: float = 0.0
 var arena_offset_y: float = 0.0
@@ -219,6 +223,9 @@ func generate_arena() -> void:
 	# Tall grass disabled - not using yellow or green grass overlays
 	# _generate_tall_grass_clusters()
 	_generate_small_decorations()
+
+	# Step 4: Spawn one treasure chest in a valid location
+	_spawn_treasure_chest(scaled_tile_size)
 
 func _define_central_clearing() -> void:
 	"""Define the central open area where combat happens."""
@@ -629,6 +636,9 @@ func _generate_trees_structured() -> void:
 	"""Generate destructible trees with proper spacing (at least 1 tile apart)."""
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
+	# Clear tracked positions
+	placed_tree_positions.clear()
+
 	# Load destructible tree scene
 	var tree_scene = load("res://scenes/environment/destructible_tree.tscn")
 	if not tree_scene:
@@ -724,6 +734,7 @@ func _generate_trees_structured() -> void:
 		add_child(tree_instance)
 		tree_sprites.append(tree_instance)
 		placed_tree_tiles.append(Vector2i(x, y))
+		placed_tree_positions.append(pos)  # Track world position for chest spawn
 		trees_placed += 1
 
 func _generate_lamps_along_roads() -> void:
@@ -981,6 +992,68 @@ func _generate_small_decorations() -> void:
 			add_child(sprite)
 			decoration_sprites.append(sprite)
 
+func _spawn_treasure_chest(scaled_tile_size: float) -> void:
+	"""Spawn a single treasure chest in a valid random location."""
+	var chest_scene = load("res://scenes/environment/treasure_chest.tscn")
+	if not chest_scene:
+		push_warning("Could not load treasure_chest.tscn")
+		return
+
+	var min_tree_distance = scaled_tile_size * 2.0  # Keep away from trees
+	var attempts = 0
+	var max_attempts = 100
+
+	while attempts < max_attempts:
+		attempts += 1
+
+		# Pick a random tile position (avoiding borders)
+		var x = rng.randi_range(border_thickness + 3, arena_width_tiles - border_thickness - 3)
+		var y = rng.randi_range(border_thickness + 3, arena_height_tiles - border_thickness - 3)
+
+		# Skip water tiles
+		if _is_water_tile(x, y):
+			continue
+
+		# Skip road tiles (optional, but chests on roads are fine)
+		# Skip central clearing to make it more hidden
+		if _is_in_central_clearing(x, y):
+			continue
+
+		var pos = Vector2(
+			arena_offset_x + x * scaled_tile_size + scaled_tile_size / 2,
+			arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
+		)
+
+		# Check distance from all trees
+		var too_close_to_tree = false
+		for tree_pos in placed_tree_positions:
+			if pos.distance_to(tree_pos) < min_tree_distance:
+				too_close_to_tree = true
+				break
+		if too_close_to_tree:
+			continue
+
+		# Check distance from water (buffer zone)
+		var near_water = false
+		for wy in range(-1, 2):
+			for wx in range(-1, 2):
+				if _is_water_tile(x + wx, y + wy):
+					near_water = true
+					break
+			if near_water:
+				break
+		if near_water:
+			continue
+
+		# Valid position found - spawn the chest
+		chest_node = chest_scene.instantiate()
+		chest_node.position = pos
+		chest_node.z_index = int(pos.y / 10)
+		add_child(chest_node)
+		return
+
+	push_warning("Could not find valid position for treasure chest after %d attempts" % max_attempts)
+
 func _clear_tiles() -> void:
 	for tile in generated_tiles:
 		if is_instance_valid(tile):
@@ -1015,6 +1088,12 @@ func _clear_tiles() -> void:
 	water_positions.clear()
 	dirt_positions.clear()
 	road_waypoints.clear()
+	placed_tree_positions.clear()
+
+	# Clear treasure chest
+	if chest_node and is_instance_valid(chest_node):
+		chest_node.queue_free()
+		chest_node = null
 
 func regenerate(new_seed: int = 0) -> void:
 	generation_seed = new_seed

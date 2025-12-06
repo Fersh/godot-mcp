@@ -5,7 +5,7 @@ extends StaticBody2D
 
 signal destroyed(obstacle: Node2D)
 
-@export var max_health: float = 50.0
+@export var max_health: float = 175.0
 @export var obstacle_type: String = "tree"  # "tree", "rock", "branch"
 @export var show_health_bar: bool = true
 
@@ -16,8 +16,8 @@ var is_destroyed: bool = false
 
 # Transparency when characters are behind
 const NORMAL_ALPHA: float = 1.0
-const PLAYER_BEHIND_ALPHA: float = 0.2   # 20% opacity when player is behind
-const ENEMY_BEHIND_ALPHA: float = 0.5    # 50% opacity when enemy is behind
+const PLAYER_BEHIND_ALPHA: float = 0.4   # 40% opacity when player is behind
+const ENEMY_BEHIND_ALPHA: float = 0.6    # 60% opacity when enemy is behind
 var current_alpha: float = 1.0
 var target_alpha: float = 1.0
 const ALPHA_LERP_SPEED: float = 8.0
@@ -41,7 +41,12 @@ func _ready() -> void:
 
 	# Set z_index based on Y position for proper depth sorting
 	# Trees lower on screen (higher Y) render on top of things higher on screen
-	z_index = int(global_position.y / 10)
+	# Add +1 to ensure obstacles render slightly above enemies at same Y position
+	z_index = int(global_position.y / 10) + 1
+
+	# Ensure sprite renders on top of enemies behind the tree
+	if sprite:
+		sprite.z_index = 1  # Relative to parent, ensures it's above enemies
 
 	# Find player
 	await get_tree().process_frame
@@ -72,23 +77,25 @@ func _process(delta: float) -> void:
 	_check_characters_behind()
 
 func _check_characters_behind() -> void:
-	# Calculate the tree's visual bounds
-	var tree_width = 40.0  # Default width
-	if sprite and sprite.texture:
-		tree_width = sprite.texture.get_width() * sprite.scale.y * scale.x
+	# Calculate the tree's collision/trunk width (much narrower than visual)
+	var trunk_width = 24.0  # Narrow width for "directly behind" check
+	if collision_shape and collision_shape.shape is RectangleShape2D:
+		trunk_width = collision_shape.shape.size.x * scale.x
 
-	var max_horizontal = tree_width * 0.6  # Slightly wider than tree for smooth transition
+	var max_horizontal = trunk_width * 0.5  # Only directly behind the trunk
 
-	# Check if player is behind (player takes priority)
+	# Check if player is DIRECTLY behind (within trunk width)
 	var player_is_behind = false
 	if player and is_instance_valid(player):
 		var horizontal_dist = abs(player.global_position.x - global_position.x)
 		# Player is "behind" visually if their Y is LESS than the tree's position
 		# (lower Y = higher on screen = behind the tree in top-down view)
-		if player.global_position.y < global_position.y and horizontal_dist < max_horizontal:
+		# Also check they're close enough vertically (within 60 pixels)
+		var vertical_dist = global_position.y - player.global_position.y
+		if vertical_dist > 0 and vertical_dist < 60 and horizontal_dist < max_horizontal:
 			player_is_behind = true
 
-	# Check if any enemies are behind
+	# Check if any enemies are DIRECTLY behind
 	var enemy_is_behind = false
 	enemies_behind.clear()
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -96,7 +103,8 @@ func _check_characters_behind() -> void:
 		if not is_instance_valid(enemy):
 			continue
 		var horizontal_dist = abs(enemy.global_position.x - global_position.x)
-		if enemy.global_position.y < global_position.y and horizontal_dist < max_horizontal:
+		var vertical_dist = global_position.y - enemy.global_position.y
+		if vertical_dist > 0 and vertical_dist < 60 and horizontal_dist < max_horizontal:
 			enemy_is_behind = true
 			enemies_behind.append(enemy)
 
@@ -253,16 +261,27 @@ func _create_particle_texture() -> Texture2D:
 	return ImageTexture.create_from_image(image)
 
 func _create_health_bar() -> void:
-	# Simple health bar above the obstacle
+	# Health bar above the obstacle with border styling
 	var bar_container = Node2D.new()
 	bar_container.name = "HealthBar"
 	bar_container.position = Vector2(0, -40)
 	bar_container.visible = false  # Only show when damaged
+	bar_container.z_index = 100  # Always render above obstacles
+	bar_container.z_as_relative = false  # Use absolute z-index
 	add_child(bar_container)
 
-	# Background
+	# Border (slightly larger, dark outline)
+	var border = ColorRect.new()
+	border.name = "Border"
+	border.color = Color(0.1, 0.1, 0.1, 1.0)  # Dark border, 100% opacity
+	border.size = Vector2(36, 8)
+	border.position = Vector2(-18, -2)
+	bar_container.add_child(border)
+
+	# Background (inside border)
 	var bg = ColorRect.new()
-	bg.color = Color(0.2, 0.2, 0.2, 0.8)
+	bg.name = "Background"
+	bg.color = Color(0.15, 0.15, 0.15, 1.0)  # Dark gray, 100% opacity
 	bg.size = Vector2(32, 4)
 	bg.position = Vector2(-16, 0)
 	bar_container.add_child(bg)
@@ -270,7 +289,7 @@ func _create_health_bar() -> void:
 	# Health fill
 	var fill = ColorRect.new()
 	fill.name = "Fill"
-	fill.color = Color(0.2, 0.8, 0.2)
+	fill.color = Color(0.2, 0.8, 0.2, 1.0)  # Green, 100% opacity
 	fill.size = Vector2(32, 4)
 	fill.position = Vector2(-16, 0)
 	bar_container.add_child(fill)
@@ -286,6 +305,9 @@ var show_timer: float = 0.0
 const SHOW_DURATION: float = 3.0
 
 func _process(delta: float) -> void:
+	# Keep health bar at 100% opacity regardless of parent's alpha
+	modulate.a = 1.0
+
 	if visible:
 		show_timer -= delta
 		if show_timer <= 0:
@@ -298,8 +320,8 @@ func update_health(current: float, max_val: float) -> void:
 	if fill:
 		var ratio = clamp(current / max_val, 0.0, 1.0)
 		fill.size.x = 32 * ratio
-		# Color from green to red
-		fill.color = Color(1.0 - ratio, ratio, 0.2)
+		# Color from green to red with 100% opacity
+		fill.color = Color(1.0 - ratio, ratio, 0.2, 1.0)
 """
 	script.reload()
 	return script
