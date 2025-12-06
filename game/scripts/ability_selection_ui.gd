@@ -268,12 +268,12 @@ func create_ability_card(ability, index: int) -> Button:
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
-		# Use tier-based color for passive abilities
+		# Use tier-based color for passive abilities, white for active abilities
 		if display_ability is AbilityData:
 			var next_rank = _get_passive_next_rank(display_ability)
 			name_label.add_theme_color_override("font_color", _get_tier_color(next_rank))
 		else:
-			name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
+			name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White for active abilities
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		name_label.custom_minimum_size = Vector2(0, 44)  # Min height for 2 lines
 		if pixel_font:
@@ -296,7 +296,7 @@ func create_ability_card(ability, index: int) -> Button:
 	desc_label.text = ability_desc
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP  # Top-aligned
-	desc_label.add_theme_font_size_override("font_size", 14)
+	desc_label.add_theme_font_size_override("font_size", 16)
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1398,13 +1398,13 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 				vbox.add_child(name_rich)
 				vbox.move_child(name_rich, 1)
 		else:
-			# Regular label - use tier-based colors for passives
+			# Regular label - use tier-based colors for passives, white for active abilities
 			var name_color: Color
 			if display_ability is AbilityData:
 				var next_rank = _get_passive_next_rank(display_ability)
 				name_color = _get_tier_color(next_rank)
 			else:
-				name_color = _get_rarity_color(display_ability)
+				name_color = Color(1.0, 1.0, 1.0)  # White for active abilities
 
 			if name_node is Label:
 				name_node.text = ability_name

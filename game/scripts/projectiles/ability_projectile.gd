@@ -20,7 +20,7 @@ var hit_enemies: Array = []
 
 func _ready() -> void:
 	collision_layer = 2
-	collision_mask = 4
+	collision_mask = 12  # Layer 4 (enemies) + Layer 8 (obstacles)
 	_setup_sprite()
 	rotation = direction.angle()
 

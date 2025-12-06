@@ -629,7 +629,7 @@ func _create_tooltip() -> void:
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 13)
+	desc_label.add_theme_font_size_override("font_size", 15)
 	desc_label.add_theme_color_override("font_color", Color.WHITE)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 200
@@ -728,7 +728,7 @@ func _update_tooltip_content() -> void:
 
 		if name_label:
 			name_label.text = ability.name
-			name_label.add_theme_color_override("font_color", rarity_color.lightened(0.3))
+			name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White for all active abilities
 		if desc_label:
 			desc_label.text = ability.description
 		if cd_label:

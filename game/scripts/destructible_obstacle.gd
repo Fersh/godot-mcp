@@ -14,9 +14,10 @@ var current_health: float
 var health_bar: Node2D = null
 var is_destroyed: bool = false
 
-# Transparency when player behind
+# Transparency when characters are behind
 const NORMAL_ALPHA: float = 1.0
-const BEHIND_ALPHA: float = 0.35
+const PLAYER_BEHIND_ALPHA: float = 0.2   # 20% opacity when player is behind
+const ENEMY_BEHIND_ALPHA: float = 0.5    # 50% opacity when enemy is behind
 var current_alpha: float = 1.0
 var target_alpha: float = 1.0
 const ALPHA_LERP_SPEED: float = 8.0
@@ -26,8 +27,9 @@ const ALPHA_LERP_SPEED: float = 8.0
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var detection_area: Area2D = $DetectionArea
 
-# Player reference
+# Character references
 var player: Node2D = null
+var enemies_behind: Array[Node2D] = []
 
 func _ready() -> void:
 	add_to_group("obstacles")
@@ -66,33 +68,43 @@ func _process(delta: float) -> void:
 		if sprite:
 			sprite.modulate.a = current_alpha
 
-	# Check if player is behind us (player Y > our Y means behind in top-down view)
-	_check_player_behind()
+	# Check if player or enemies are behind us
+	_check_characters_behind()
 
-func _check_player_behind() -> void:
-	if not player or not is_instance_valid(player):
-		target_alpha = NORMAL_ALPHA
-		return
-
+func _check_characters_behind() -> void:
 	# Calculate the tree's visual bounds
-	var tree_top = global_position.y
 	var tree_width = 40.0  # Default width
-
 	if sprite and sprite.texture:
-		# Tree sprite is offset upward, so the visual top is above global_position
-		var sprite_height = sprite.texture.get_height() * sprite.scale.y
-		tree_top = global_position.y + sprite.position.y - sprite_height / 2
-		tree_width = sprite.texture.get_width() * sprite.scale.x
+		tree_width = sprite.texture.get_width() * sprite.scale.y * scale.x
 
-	# Player is "behind" visually if their Y is LESS than the tree's position
-	# (lower Y = higher on screen = behind the tree in top-down view)
-	var horizontal_dist = abs(player.global_position.x - global_position.x)
 	var max_horizontal = tree_width * 0.6  # Slightly wider than tree for smooth transition
 
-	# Only make transparent if player is BEHIND (lower Y, meaning visually behind/above in top-down)
-	# AND horizontally overlapping with the tree
-	if player.global_position.y < global_position.y and horizontal_dist < max_horizontal:
-		target_alpha = BEHIND_ALPHA
+	# Check if player is behind (player takes priority)
+	var player_is_behind = false
+	if player and is_instance_valid(player):
+		var horizontal_dist = abs(player.global_position.x - global_position.x)
+		# Player is "behind" visually if their Y is LESS than the tree's position
+		# (lower Y = higher on screen = behind the tree in top-down view)
+		if player.global_position.y < global_position.y and horizontal_dist < max_horizontal:
+			player_is_behind = true
+
+	# Check if any enemies are behind
+	var enemy_is_behind = false
+	enemies_behind.clear()
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		var horizontal_dist = abs(enemy.global_position.x - global_position.x)
+		if enemy.global_position.y < global_position.y and horizontal_dist < max_horizontal:
+			enemy_is_behind = true
+			enemies_behind.append(enemy)
+
+	# Set target alpha - player takes priority over enemies
+	if player_is_behind:
+		target_alpha = PLAYER_BEHIND_ALPHA  # 20% opacity
+	elif enemy_is_behind:
+		target_alpha = ENEMY_BEHIND_ALPHA   # 50% opacity
 	else:
 		target_alpha = NORMAL_ALPHA
 

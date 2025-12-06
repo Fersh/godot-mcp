@@ -594,22 +594,22 @@ func _create_tile_sprite(pos: Vector2, region: Rect2i, _tile_type: String = "lig
 # ============================================
 
 func _generate_trees_structured() -> void:
-	"""Generate trees in border areas and corners, avoiding roads and central clearing."""
+	"""Generate destructible trees with proper spacing (at least 1 tile apart)."""
 	var scaled_tile_size = TILE_SIZE * tile_scale
 
-	var loaded_trees: Array[Texture2D] = []
-	for path in tree_textures:
-		var tex = load(path)
-		if tex:
-			loaded_trees.append(tex)
-
-	if loaded_trees.is_empty():
+	# Load destructible tree scene
+	var tree_scene = load("res://scenes/environment/destructible_tree.tscn")
+	if not tree_scene:
+		push_warning("Could not load destructible_tree.tscn")
 		return
+
+	# Track placed tree tile positions for spacing check
+	var placed_tree_tiles: Array[Vector2i] = []
 
 	# Place trees primarily in border regions (forested edges)
 	var trees_placed = 0
 	var attempts = 0
-	var max_attempts = tree_count * 5
+	var max_attempts = tree_count * 10
 
 	while trees_placed < tree_count and attempts < max_attempts:
 		attempts += 1
@@ -654,23 +654,44 @@ func _generate_trees_structured() -> void:
 		if too_close_to_road:
 			continue
 
+		# Check minimum distance from other trees (at least 1 tile apart)
+		var too_close_to_tree = false
+		for placed_tile in placed_tree_tiles:
+			if abs(placed_tile.x - x) <= 1 and abs(placed_tile.y - y) <= 1:
+				too_close_to_tree = true
+				break
+		if too_close_to_tree:
+			continue
+
 		var pos = Vector2(
-			arena_offset_x + x * scaled_tile_size + rng.randf_range(-10, 10),
-			arena_offset_y + y * scaled_tile_size + rng.randf_range(-10, 10)
+			arena_offset_x + x * scaled_tile_size,
+			arena_offset_y + y * scaled_tile_size
 		)
 
-		var tree_tex = loaded_trees[rng.randi() % loaded_trees.size()]
+		# Instantiate destructible tree
+		var tree_instance = tree_scene.instantiate()
+		tree_instance.position = pos
+		tree_instance.scale = Vector2(tree_scale, tree_scale)
 
-		var sprite = Sprite2D.new()
-		sprite.texture = tree_tex
-		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		sprite.scale = Vector2(tree_scale, tree_scale)
-		sprite.position = pos
-		sprite.offset = Vector2(0, -tree_tex.get_height() / 2)
-		sprite.z_index = int(pos.y / 10)
+		# Randomize tree texture
+		var tree_textures_loaded: Array[Texture2D] = []
+		for path in tree_textures:
+			var tex = load(path)
+			if tex:
+				tree_textures_loaded.append(tex)
 
-		add_child(sprite)
-		tree_sprites.append(sprite)
+		if not tree_textures_loaded.is_empty():
+			var random_tex = tree_textures_loaded[rng.randi() % tree_textures_loaded.size()]
+			var sprite_node = tree_instance.get_node_or_null("Sprite")
+			if sprite_node:
+				sprite_node.texture = random_tex
+			var shadow_node = tree_instance.get_node_or_null("Shadow")
+			if shadow_node:
+				shadow_node.texture = random_tex
+
+		add_child(tree_instance)
+		tree_sprites.append(tree_instance)
+		placed_tree_tiles.append(Vector2i(x, y))
 		trees_placed += 1
 
 func _generate_lamps_along_roads() -> void:
