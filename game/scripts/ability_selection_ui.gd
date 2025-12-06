@@ -938,7 +938,7 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		ability_desc = ability.description if ability else ""
 		is_upgrade = _is_active_ability_upgrade(ability)
 
-	# Children: 0=top_spacer, 1=name, 2=desc, 3=stats_container, 4=rank_container, 5=new_upgrade_label, 6=bottom_spacer
+	# Children: 0=top_spacer, 1=name, 2=desc, 3=stats_container, 4=rank_container, 5=label_spacer, 6=new_upgrade_label, 7=bottom_spacer
 	# Update name (child 1) - could be Label or RichTextLabel
 	var name_node = vbox.get_child(1)
 	if name_node:
@@ -1069,8 +1069,50 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 			# Keep particles hidden during rolling
 			particle_container.visible = false
 
-	# Update button style
-	_style_button_for_ability(button, display_ability)
+	# Update button style - use original ability to detect trigger cards correctly
+	_style_button_for_ability(button, ability)
+
+	# Update rank circle (child 4 = RankContainer)
+	var rank_container = vbox.get_node_or_null("RankContainer") as HBoxContainer
+	if rank_container and is_final_reveal:
+		# Clear existing rank circle
+		for child in rank_container.get_children():
+			child.queue_free()
+		# Calculate next rank
+		var next_rank = 1
+		if is_trigger:
+			# Trigger cards show the NEXT tier based on current ability
+			match display_ability.tier:
+				ActiveAbilityData.AbilityTier.BASE:
+					next_rank = 2
+				ActiveAbilityData.AbilityTier.BRANCH:
+					next_rank = 3
+				_:
+					next_rank = 2
+		elif display_ability is AbilityData:
+			next_rank = AbilityManager.get_next_ability_rank(display_ability.id)
+		elif display_ability is ActiveAbilityData:
+			match display_ability.tier:
+				ActiveAbilityData.AbilityTier.BASE:
+					next_rank = 1
+				ActiveAbilityData.AbilityTier.BRANCH:
+					next_rank = 2
+				ActiveAbilityData.AbilityTier.SIGNATURE:
+					next_rank = 3
+		var rank_circle = _create_rank_circle(display_ability, next_rank)
+		rank_container.add_child(rank_circle)
+
+	# Update New/Upgrade label (after the spacer, before bottom_spacer)
+	var new_upgrade_label = vbox.get_node_or_null("NewUpgradeLabel") as Label
+	if new_upgrade_label and is_final_reveal:
+		var is_passive_upgrade = false
+		if display_ability is AbilityData:
+			is_passive_upgrade = AbilityManager.get_ability_rank(display_ability.id) > 0
+		new_upgrade_label.text = "Upgrade" if (is_passive_upgrade or is_upgrade) else "New"
+		if is_passive_upgrade or is_upgrade:
+			new_upgrade_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))
+		else:
+			new_upgrade_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.3))
 
 func _on_ability_selected(index: int) -> void:
 	# Don't allow selection while rolling
