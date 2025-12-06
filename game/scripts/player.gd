@@ -145,6 +145,13 @@ var is_stealthed: bool = false
 var stealth_timer: float = 0.0
 var is_playing_disappear: bool = false  # Track if playing vanish animation
 
+# Necromancer Eternal Legion system (summon skeletons)
+var has_eternal_legion: bool = false
+var legion_max_summons: int = 3
+var legion_summon_cooldown: float = 10.0
+var legion_summon_timer: float = 0.0
+var legion_summons: Array = []  # Track summoned skeletons
+
 # Mage-specific death animation
 var death_frame_skip: int = 1  # Skip N frames (1 = every frame, 2 = every other)
 var death_spans_rows: bool = false  # Death animation spans multiple rows
@@ -328,6 +335,8 @@ func _load_character_data() -> void:
 		sprite.scale = character_data.sprite_scale
 		base_sprite_offset = character_data.sprite_offset
 		sprite.offset = base_sprite_offset
+		# Prevent texture bleeding between sprite sheet frames
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	# Setup animation rows
 	row_idle = character_data.row_idle
@@ -496,6 +505,14 @@ func _apply_character_passive() -> void:
 	if bonuses.get("is_hybrid_attacker", 0.0) > 0.0:
 		is_hybrid_attacker = true
 		assassin_melee_range = bonuses.get("assassin_melee_range", 70.0)
+
+	# Initialize Necromancer Eternal Legion system
+	has_eternal_legion = bonuses.get("has_eternal_legion", 0.0) > 0.0
+	if has_eternal_legion:
+		legion_max_summons = int(bonuses.get("legion_max_summons", 3))
+		legion_summon_cooldown = bonuses.get("legion_summon_cooldown", 10.0)
+		legion_summon_timer = 0.0  # Start summoning immediately
+		legion_summons = []
 
 func _apply_permanent_upgrades() -> void:
 	if not PermanentUpgrades:
@@ -1072,6 +1089,10 @@ func _physics_process(delta: float) -> void:
 		else:
 			fire_trail_timer = 0.0  # Reset timer when standing still
 
+	# Necromancer Eternal Legion - summon skeletons periodically
+	if has_eternal_legion:
+		_update_eternal_legion(delta)
+
 	# Apply recoil to actual position BEFORE clamping
 	if recoil_offset.length() > 0.1:
 		position += recoil_offset * delta * 60  # Apply as movement
@@ -1328,6 +1349,14 @@ func spawn_single_arrow(direction: Vector2) -> void:
 	# Set mage orb visual if playing as mage
 	if character_data and character_data.id == "mage":
 		arrow.is_mage_orb = true
+
+	# Set kobold orb visual if playing as kobold priest
+	if character_data and character_data.id == "kobold_priest":
+		arrow.is_kobold_orb = true
+
+	# Set necro orb visual if playing as necromancer
+	if character_data and character_data.id == "necromancer":
+		arrow.is_necro_orb = true
 
 	# Pass ability info to arrow (includes permanent upgrades)
 	if AbilityManager:
@@ -2979,6 +3008,64 @@ func get_arcane_focus_multiplier() -> float:
 	if not has_arcane_focus or arcane_focus_stacks <= 0:
 		return 1.0
 	return 1.0 + (arcane_focus_stacks * arcane_focus_per_stack)
+
+# ============================================
+# NECROMANCER ETERNAL LEGION SYSTEM
+# ============================================
+
+func _update_eternal_legion(delta: float) -> void:
+	"""Update the Necromancer's skeleton summoning."""
+	# Clean up dead summons from array
+	legion_summons = legion_summons.filter(func(s): return is_instance_valid(s) and s != null)
+
+	# Update summon timer
+	legion_summon_timer += delta
+
+	# Check if we can summon
+	if legion_summon_timer >= legion_summon_cooldown and legion_summons.size() < legion_max_summons:
+		_summon_skeleton()
+		legion_summon_timer = 0.0
+
+func _summon_skeleton() -> void:
+	"""Summon a skeleton minion for the Necromancer."""
+	var SkeletonMinion = load("res://scripts/abilities/skeleton_minion.gd")
+	if SkeletonMinion == null:
+		return
+
+	var skeleton = Node2D.new()
+	skeleton.set_script(SkeletonMinion)
+	skeleton.owner_player = self
+	skeleton.lifetime = 999999.0  # Effectively infinite - stays until killed
+	skeleton.health = 50.0  # Tankier than ability version
+	skeleton.damage = base_damage * 15.0  # Scale with player damage
+	skeleton.speed = 120.0
+
+	# Spawn near player
+	var spawn_offset = Vector2(randf_range(-50, 50), randf_range(-50, 50))
+	skeleton.global_position = global_position + spawn_offset
+
+	get_tree().current_scene.add_child(skeleton)
+	legion_summons.append(skeleton)
+
+	# Spawn effect
+	var particles = CPUParticles2D.new()
+	particles.global_position = skeleton.global_position
+	particles.emitting = true
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 12
+	particles.lifetime = 0.4
+	particles.direction = Vector2.UP
+	particles.spread = 180.0
+	particles.initial_velocity_min = 30.0
+	particles.initial_velocity_max = 60.0
+	particles.gravity = Vector2(0, 100)
+	particles.color = Color(0.5, 0.8, 0.5, 1.0)  # Green tint
+	get_tree().current_scene.add_child(particles)
+
+	# Auto-cleanup particles
+	var timer = get_tree().create_timer(1.0)
+	timer.timeout.connect(particles.queue_free)
 
 # ============================================
 # RANGER HEARTSEEKER SYSTEM

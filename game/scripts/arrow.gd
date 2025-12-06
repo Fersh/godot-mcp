@@ -27,6 +27,8 @@ var has_knockback: bool = false
 var knockback_force: float = 0.0
 var speed_multiplier: float = 1.0
 var is_mage_orb: bool = false
+var is_kobold_orb: bool = false  # White magic orb for Kobold Priest
+var is_necro_orb: bool = false  # Dark skull orb for Necromancer
 var is_assassin_dagger: bool = false
 
 signal enemy_hit  # For Assassin Shadow Dance tracking
@@ -54,6 +56,14 @@ func _ready() -> void:
 	# Transform into mage orb if needed
 	if is_mage_orb:
 		_setup_mage_orb()
+
+	# Transform into kobold orb if needed
+	if is_kobold_orb:
+		_setup_kobold_orb()
+
+	# Transform into necro orb if needed
+	if is_necro_orb:
+		_setup_necro_orb()
 
 	# Transform into assassin dagger if needed
 	if is_assassin_dagger:
@@ -143,6 +153,98 @@ func _setup_mage_orb() -> void:
 	glow.color = Color(0.2, 0.4, 0.9, 0.6)  # Darker blue, semi-transparent
 	glow.z_index = -1
 	orb.add_child(glow)
+
+	# Reset rotation since orb is circular
+	rotation = 0
+
+func _setup_kobold_orb() -> void:
+	# Remove arrow visuals
+	var sprite = get_node_or_null("Sprite")
+	var tip = get_node_or_null("Tip")
+	if sprite:
+		sprite.queue_free()
+	if tip:
+		tip.queue_free()
+
+	# Create white pixel orb
+	var orb = Node2D.new()
+	orb.name = "KoboldOrb"
+	add_child(orb)
+
+	# Core orb (bright white center)
+	var core = Polygon2D.new()
+	var core_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		core_points.append(Vector2(cos(angle), sin(angle)) * 4)
+	core.polygon = core_points
+	core.color = Color(1.0, 1.0, 1.0, 1.0)  # Pure white
+	orb.add_child(core)
+
+	# Outer glow (light gray)
+	var glow = Polygon2D.new()
+	var glow_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		glow_points.append(Vector2(cos(angle), sin(angle)) * 7)
+	glow.polygon = glow_points
+	glow.color = Color(0.9, 0.9, 0.95, 0.6)  # Light gray, semi-transparent
+	glow.z_index = -1
+	orb.add_child(glow)
+
+	# Reset rotation since orb is circular
+	rotation = 0
+
+func _setup_necro_orb() -> void:
+	# Remove arrow visuals
+	var sprite = get_node_or_null("Sprite")
+	var tip = get_node_or_null("Tip")
+	if sprite:
+		sprite.queue_free()
+	if tip:
+		tip.queue_free()
+
+	# Create dark skull orb
+	var orb = Node2D.new()
+	orb.name = "NecroOrb"
+	add_child(orb)
+
+	# Core orb (sickly green center)
+	var core = Polygon2D.new()
+	var core_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		core_points.append(Vector2(cos(angle), sin(angle)) * 5)
+	core.polygon = core_points
+	core.color = Color(0.5, 0.9, 0.4, 1.0)  # Sickly green
+	orb.add_child(core)
+
+	# Outer glow (dark purple)
+	var glow = Polygon2D.new()
+	var glow_points: PackedVector2Array = []
+	for i in 8:
+		var angle = i * TAU / 8
+		glow_points.append(Vector2(cos(angle), sin(angle)) * 8)
+	glow.polygon = glow_points
+	glow.color = Color(0.4, 0.2, 0.5, 0.6)  # Dark purple, semi-transparent
+	glow.z_index = -1
+	orb.add_child(glow)
+
+	# Skull face details (two eye sockets)
+	var left_eye = Polygon2D.new()
+	var right_eye = Polygon2D.new()
+	var eye_points: PackedVector2Array = []
+	for i in 6:
+		var angle = i * TAU / 6
+		eye_points.append(Vector2(cos(angle), sin(angle)) * 1.5)
+	left_eye.polygon = eye_points
+	right_eye.polygon = eye_points
+	left_eye.color = Color(0.1, 0.0, 0.15, 1.0)  # Dark void
+	right_eye.color = Color(0.1, 0.0, 0.15, 1.0)
+	left_eye.position = Vector2(-2, -1)
+	right_eye.position = Vector2(2, -1)
+	orb.add_child(left_eye)
+	orb.add_child(right_eye)
 
 	# Reset rotation since orb is circular
 	rotation = 0
@@ -440,6 +542,12 @@ func _setup_trail() -> void:
 	# Will be updated based on arrow type
 	if is_mage_orb:
 		trail_color = Color(0.4, 0.7, 1.0, 0.7)  # Blue for mage
+		trail_line.width = 4.0
+	elif is_kobold_orb:
+		trail_color = Color(1.0, 1.0, 1.0, 0.7)  # White for kobold priest
+		trail_line.width = 4.0
+	elif is_necro_orb:
+		trail_color = Color(0.5, 0.9, 0.4, 0.7)  # Sickly green for necromancer
 		trail_line.width = 4.0
 
 	trail_line.default_color = trail_color

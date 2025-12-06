@@ -56,7 +56,17 @@ var equipped_items: Dictionary = {
 	"monk": {},
 	"beast": {},
 	"barbarian": {},
-	"assassin": {}
+	"assassin": {},
+	"golem": {},
+	"orc": {},
+	"minotaur": {},
+	"cyclops": {},
+	"lizardfolk_king": {},
+	"skeleton_king": {},
+	"shardsoul_slayer": {},
+	"necromancer": {},
+	"kobold_priest": {},
+	"ratfolk": {}
 }
 
 # Track next unique item ID
@@ -511,6 +521,11 @@ func get_item(item_id: String) -> ItemData:
 			return item
 	return null
 
+# Ensure character exists in equipped_items dictionary
+func _ensure_character_exists(character_id: String) -> void:
+	if not equipped_items.has(character_id):
+		equipped_items[character_id] = {}
+
 # Equip item to character
 func equip_item(item_id: String, character_id: String, slot: ItemData.Slot) -> bool:
 	var item = get_item(item_id)
@@ -524,6 +539,9 @@ func equip_item(item_id: String, character_id: String, slot: ItemData.Slot) -> b
 	# Unequip from current owner if any
 	if item.equipped_by != "":
 		unequip_item_from_character(item.equipped_by, item.slot)
+
+	# Ensure character exists in equipped_items
+	_ensure_character_exists(character_id)
 
 	# Unequip current item in slot if any
 	var current_item_id = equipped_items[character_id].get(slot, "")
@@ -545,6 +563,7 @@ func equip_item(item_id: String, character_id: String, slot: ItemData.Slot) -> b
 
 # Unequip item from character's slot
 func unequip_item_from_character(character_id: String, slot: ItemData.Slot) -> void:
+	_ensure_character_exists(character_id)
 	var item_id = equipped_items[character_id].get(slot, "")
 	if item_id == "":
 		return
@@ -560,6 +579,7 @@ func unequip_item_from_character(character_id: String, slot: ItemData.Slot) -> v
 
 # Get equipped item for character in slot
 func get_equipped_item(character_id: String, slot: ItemData.Slot) -> ItemData:
+	_ensure_character_exists(character_id)
 	var item_id = equipped_items[character_id].get(slot, "")
 	if item_id == "":
 		return null
@@ -567,6 +587,7 @@ func get_equipped_item(character_id: String, slot: ItemData.Slot) -> ItemData:
 
 # Get all equipped items for character
 func get_all_equipped_items(character_id: String) -> Array[ItemData]:
+	_ensure_character_exists(character_id)
 	var items: Array[ItemData] = []
 	for slot in equipped_items[character_id]:
 		var item = get_equipped_item(character_id, slot)
@@ -696,19 +717,20 @@ func save_data() -> void:
 		file.store_var(save_data)
 		file.close()
 
+# All character IDs for equipment system
+const ALL_CHARACTER_IDS = [
+	"archer", "knight", "mage", "monk", "beast", "barbarian", "assassin",
+	"golem", "orc", "minotaur", "cyclops", "lizardfolk_king",
+	"skeleton_king", "shardsoul_slayer", "necromancer", "kobold_priest", "ratfolk"
+]
+
 # Reset all equipment (for settings reset)
 func reset_all_equipment() -> void:
 	inventory.clear()
 	pending_items.clear()
-	equipped_items = {
-		"archer": {},
-		"knight": {},
-		"mage": {},
-		"monk": {},
-		"beast": {},
-		"barbarian": {},
-		"assassin": {}
-	}
+	equipped_items = {}
+	for char_id in ALL_CHARACTER_IDS:
+		equipped_items[char_id] = {}
 	next_item_id = 1
 	save_data()
 	inventory_changed.emit()
@@ -725,10 +747,10 @@ func load_data() -> void:
 
 		if data is Dictionary:
 			next_item_id = data.get("next_item_id", 1)
-			equipped_items = data.get("equipped_items", {"archer": {}, "knight": {}, "mage": {}, "monk": {}, "beast": {}})
+			equipped_items = data.get("equipped_items", {})
 
-			# Ensure all characters exist
-			for char_id in ["archer", "knight", "mage", "monk", "beast", "barbarian", "assassin"]:
+			# Ensure all characters exist in equipped_items
+			for char_id in ALL_CHARACTER_IDS:
 				if not equipped_items.has(char_id):
 					equipped_items[char_id] = {}
 

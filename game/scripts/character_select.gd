@@ -272,14 +272,13 @@ func _create_selector_buttons() -> void:
 
 	# Reorder: original 7 first, then new characters in thematic groups
 	# Row 1: archer, knight, monk, mage, beast
-	# Row 2: assassin, barbarian, golem, orc, minotaur
-	# Row 3: cyclops, lizardfolk_king, skeleton_king, shardsoul_slayer, necromancer
-	# Row 4: kobold_priest, ratfolk, (3 placeholders)
+	# Row 2: assassin, barbarian, golem, lizardfolk_king, shardsoul_slayer
+	# Row 3: necromancer, kobold_priest, ratfolk, (2 placeholders)
+	# COMMENTED OUT: orc, minotaur, cyclops, skeleton_king
 	var order = [
 		"archer", "knight", "monk", "mage", "beast",
-		"assassin", "barbarian", "golem", "orc", "minotaur",
-		"cyclops", "lizardfolk_king", "skeleton_king", "shardsoul_slayer", "necromancer",
-		"kobold_priest", "ratfolk"
+		"assassin", "barbarian", "golem", "lizardfolk_king", "shardsoul_slayer",
+		"necromancer", "kobold_priest", "ratfolk"
 	]
 	characters_list = []
 	print("CharacterSelect: Building character list from %d available characters" % all_chars.size())
@@ -688,7 +687,7 @@ func _update_preview() -> void:
 	passive_title_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	preview_passive_container.add_child(passive_title_container)
 	var passive_title = Label.new()
-	passive_title.text = "Trait: " + char_data.passive_name
+	passive_title.text = "Specialty: " + char_data.passive_name
 	passive_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	passive_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	passive_title.add_theme_font_size_override("font_size", 14)

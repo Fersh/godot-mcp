@@ -575,11 +575,11 @@ static func create_golem() -> CharacterData:
 	data.base_armor = 4               # Highest base armor
 
 	# Sprite config (Golem: 10 cols x 10 rows, 32x32 frames)
-	# 15% bigger than enemy (enemy is 2.5, so player is 2.875)
+	# Reduced 30% (~56px visual)
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 10
 	data.vframes = 10
-	data.sprite_scale = Vector2(2.875, 2.875)
+	data.sprite_scale = Vector2(1.75, 1.75)
 
 	# Animation rows
 	data.row_idle = 0
@@ -627,11 +627,11 @@ static func create_orc() -> CharacterData:
 	data.base_armor = 2
 
 	# Sprite config (Orc: 8 cols x 8 rows, 32x32 frames)
-	# 15% bigger than enemy
+	# Player-sized (5% smaller than knight ~76px visual)
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 8
 	data.vframes = 8
-	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+	data.sprite_scale = Vector2(2.375, 2.375)
 
 	# Animation rows (from enemy.gd)
 	data.row_idle = 0
@@ -679,11 +679,11 @@ static func create_minotaur() -> CharacterData:
 	data.base_armor = 3
 
 	# Sprite config (Minotaur: 10 cols x 20 rows, 96x96 frames)
-	# Already big - keep same scale
+	# Player-sized (96x96 frames need small scale for ~86px visual)
 	data.frame_size = Vector2(96, 96)
 	data.hframes = 10
 	data.vframes = 20
-	data.sprite_scale = Vector2(1.5, 1.5)
+	data.sprite_scale = Vector2(0.9, 0.9)
 
 	# Animation rows (uses left-facing rows via offset)
 	data.row_idle = 0
@@ -735,11 +735,11 @@ static func create_cyclops() -> CharacterData:
 	data.base_armor = 3
 
 	# Sprite config (Cyclops: 15 cols x 20 rows, 64x64 frames)
-	# 15% bigger than enemy
+	# Player-sized (64x64 frames need ~1.3 scale for ~83px visual)
 	data.frame_size = Vector2(64, 64)
 	data.hframes = 15
 	data.vframes = 20
-	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+	data.sprite_scale = Vector2(1.3, 1.3)
 
 	# Animation rows
 	data.row_idle = 0
@@ -787,11 +787,11 @@ static func create_lizardfolk_king() -> CharacterData:
 	data.base_armor = 2
 
 	# Sprite config (Lizardfolk King: 8 cols x 6 rows, 128x64 frames)
-	# 15% bigger than enemy (enemy uses default 2.0)
+	# Increased 30% from 0.7
 	data.frame_size = Vector2(128, 64)
 	data.hframes = 8
 	data.vframes = 6
-	data.sprite_scale = Vector2(2.3, 2.3)
+	data.sprite_scale = Vector2(0.91, 0.91)
 
 	# Animation rows
 	data.row_idle = 0
@@ -843,11 +843,11 @@ static func create_skeleton_king() -> CharacterData:
 	data.base_armor = 2
 
 	# Sprite config (Skeleton King: 9 cols x 7 rows, 96x96 frames)
-	# 15% bigger than enemy
+	# Player-sized (96x96 frames need ~0.9 scale for ~86px visual)
 	data.frame_size = Vector2(96, 96)
 	data.hframes = 9
 	data.vframes = 7
-	data.sprite_scale = Vector2(2.3, 2.3)
+	data.sprite_scale = Vector2(0.9, 0.9)
 
 	# Animation rows
 	data.row_idle = 0
@@ -904,11 +904,11 @@ static func create_shardsoul_slayer() -> CharacterData:
 	data.base_armor = 1
 
 	# Sprite config (Shardsoul: 8 cols x 5 rows, 64x64 frames)
-	# Already big at 1.8, keep same
+	# Player-sized (64x64 frames need ~1.4 scale for ~90px visual)
 	data.frame_size = Vector2(64, 64)
 	data.hframes = 8
 	data.vframes = 5
-	data.sprite_scale = Vector2(1.8, 1.8)
+	data.sprite_scale = Vector2(1.4, 1.4)
 
 	# Animation rows
 	data.row_idle = 0
@@ -961,11 +961,11 @@ static func create_necromancer() -> CharacterData:
 	data.base_armor = 0
 
 	# Sprite config (Necromancer: 8 cols x 6 rows, 32x32 frames)
-	# 15% bigger than enemy (enemy is 2.0)
+	# Reduced 30% (~56px visual)
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 8
 	data.vframes = 6
-	data.sprite_scale = Vector2(2.3, 2.3)
+	data.sprite_scale = Vector2(1.75, 1.75)
 
 	# Animation rows
 	data.row_idle = 0
@@ -992,7 +992,7 @@ static func create_necromancer() -> CharacterData:
 
 	# Passive
 	data.passive_name = "Eternal Legion"
-	data.passive_description = "Summon up to 3 skeleton minions. When a minion dies, gain a Soul Shard."
+	data.passive_description = "Summon a skeleton minion every 10 seconds (max 3)."
 
 	return data
 
@@ -1017,12 +1017,12 @@ static func create_kobold_priest() -> CharacterData:
 	data.base_dodge_rate = 0.06
 	data.base_armor = 0
 
-	# Sprite config (Kobold Priest: 8 cols x 5 rows, 32x32 frames)
-	# 15% bigger than enemy (enemy is 2.0)
+	# Sprite config (Kobold Priest: 8 cols x 6 rows, 32x32 frames)
+	# Player-sized (kobold is smaller ~64px visual)
 	data.frame_size = Vector2(32, 32)
 	data.hframes = 8
-	data.vframes = 5
-	data.sprite_scale = Vector2(2.3, 2.3)
+	data.vframes = 6
+	data.sprite_scale = Vector2(2.0, 2.0)
 
 	# Animation rows
 	data.row_idle = 0
@@ -1070,11 +1070,11 @@ static func create_ratfolk() -> CharacterData:
 	data.base_armor = 0               # No armor - relies on speed
 
 	# Sprite config (Ratfolk: 12 cols x 5 rows, 64x32 frames)
-	# 15% bigger than enemy
+	# Increased 50% from 1.3
 	data.frame_size = Vector2(64, 32)
 	data.hframes = 12
 	data.vframes = 5
-	data.sprite_scale = Vector2(2.3, 2.3)  # 15% bigger than 2.0
+	data.sprite_scale = Vector2(1.95, 1.95)
 
 	# Animation rows
 	data.row_idle = 0

@@ -113,30 +113,30 @@ func _init_characters() -> void:
 	golem.sprite_texture = golem_texture
 	characters["golem"] = golem
 
-	# Create orc - The Grunt
-	var orc = CharacterData.create_orc()
-	orc.sprite_texture = orc_texture
-	characters["orc"] = orc
+	# Create orc - The Grunt (COMMENTED OUT)
+	#var orc = CharacterData.create_orc()
+	#orc.sprite_texture = orc_texture
+	#characters["orc"] = orc
 
-	# Create minotaur - The Bullsh*t
-	var minotaur = CharacterData.create_minotaur()
-	minotaur.sprite_texture = minotaur_texture
-	characters["minotaur"] = minotaur
+	# Create minotaur - The Bullsh*t (COMMENTED OUT)
+	#var minotaur = CharacterData.create_minotaur()
+	#minotaur.sprite_texture = minotaur_texture
+	#characters["minotaur"] = minotaur
 
-	# Create cyclops - The One Eyed Monster
-	var cyclops = CharacterData.create_cyclops()
-	cyclops.sprite_texture = cyclops_texture
-	characters["cyclops"] = cyclops
+	# Create cyclops - The One Eyed Monster (COMMENTED OUT)
+	#var cyclops = CharacterData.create_cyclops()
+	#cyclops.sprite_texture = cyclops_texture
+	#characters["cyclops"] = cyclops
 
 	# Create lizardfolk king - The Cold Blood
 	var lizardfolk_king = CharacterData.create_lizardfolk_king()
 	lizardfolk_king.sprite_texture = lizardfolk_king_texture
 	characters["lizardfolk_king"] = lizardfolk_king
 
-	# Create skeleton king - The Leech King
-	var skeleton_king = CharacterData.create_skeleton_king()
-	skeleton_king.sprite_texture = skeleton_king_texture
-	characters["skeleton_king"] = skeleton_king
+	# Create skeleton king - The Leech King (COMMENTED OUT)
+	#var skeleton_king = CharacterData.create_skeleton_king()
+	#skeleton_king.sprite_texture = skeleton_king_texture
+	#characters["skeleton_king"] = skeleton_king
 
 	# Create shardsoul slayer - The Reaper
 	var shardsoul_slayer = CharacterData.create_shardsoul_slayer()
