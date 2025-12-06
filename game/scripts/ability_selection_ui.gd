@@ -236,7 +236,12 @@ func create_ability_card(ability, index: int) -> Button:
 		name_label.text = ability_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
-		name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
+		# Use tier-based color for passive abilities
+		if display_ability is AbilityData:
+			var next_rank = _get_passive_next_rank(display_ability)
+			name_label.add_theme_color_override("font_color", _get_tier_color(next_rank))
+		else:
+			name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
@@ -380,6 +385,7 @@ func _get_rarity_name(ability) -> String:
 
 func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 	## Create rarity tag that works for both AbilityData and ActiveAbilityData
+	## For passive abilities (AbilityData), uses tier-based coloring instead of rarity
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	center.anchor_left = 0
@@ -393,12 +399,20 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 
 	var tag_style = StyleBoxFlat.new()
 	var is_upgrade = _is_active_ability_upgrade(ability)
+	var tag_text: String
 
 	if is_upgrade:
 		# All upgrade cards get green tag
 		tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
+		tag_text = "Upgrade"
+	elif ability is AbilityData:
+		# Passive abilities use tier-based colors
+		var next_rank = _get_passive_next_rank(ability)
+		tag_style.bg_color = _get_tier_color(next_rank)
+		tag_text = _get_tier_name(next_rank)
 	else:
 		tag_style.bg_color = _get_rarity_color(ability)
+		tag_text = _get_rarity_name(ability)
 
 	tag_style.set_corner_radius_all(4)
 	tag_style.content_margin_left = 10
@@ -409,10 +423,7 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 
 	var label = Label.new()
 	label.name = "RarityLabel"
-	if is_upgrade:
-		label.text = "Upgrade"  # Same text for T2 and T3
-	else:
-		label.text = _get_rarity_name(ability)
+	label.text = tag_text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
@@ -495,23 +506,44 @@ func _create_rarity_tag(rarity: AbilityData.Rarity) -> CenterContainer:
 
 func _create_particle_container_for_ability(ability) -> Control:
 	## Create particle container for either type
-	## Upgrades get green flame particles (T3 gets more intense flames)
+	## Passive abilities get tier-based flames (rank 1=white, rank 2=blue, rank 3=purple)
+	## Active upgrades get green flame particles with rank-based intensity
 	var is_upgrade = _is_active_ability_upgrade(ability)
 
 	if is_upgrade:
-		# Green flames for upgrade abilities - T3 gets enhanced flames
-		var is_signature = ability is ActiveAbilityData and ability.is_signature()
-		return _create_upgrade_particle_container(is_signature)
+		# Green flames for upgrade abilities - rank determines intensity
+		var target_rank = 2  # Default to rank 2
+		if ability is ActiveAbilityData:
+			if ability.is_signature():
+				target_rank = 3
+			else:
+				target_rank = 2
+		return _create_upgrade_particle_container(target_rank)
 
 	# Handle Dictionary trigger cards
 	if ability is Dictionary:
-		return _create_upgrade_particle_container(false)
+		# Determine target rank from the trigger card's current ability tier
+		var trigger_ability = ability.get("ability")
+		var target_rank = 2  # Default
+		if trigger_ability and trigger_ability is ActiveAbilityData:
+			match trigger_ability.tier:
+				ActiveAbilityData.AbilityTier.BASE:
+					target_rank = 2  # Upgrading to T2
+				ActiveAbilityData.AbilityTier.BRANCH:
+					target_rank = 3  # Upgrading to T3
+		return _create_upgrade_particle_container(target_rank)
+
+	# Passive abilities use tier-based particles (not rarity-based)
+	if ability is AbilityData:
+		var next_rank = _get_passive_next_rank(ability)
+		var tier_rarity = _get_tier_rarity(next_rank)
+		return _create_particle_container(tier_rarity)
 
 	if ability is ActiveAbilityData:
 		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
 		var passive_rarity = _map_active_to_passive_rarity(ability.rarity)
 		return _create_particle_container(passive_rarity)
-	return _create_particle_container(ability.rarity)
+	return _create_particle_container(AbilityData.Rarity.COMMON)
 
 func _map_active_to_passive_rarity(active_rarity) -> AbilityData.Rarity:
 	## Map ActiveAbilityData rarity to AbilityData rarity for particle effects
@@ -530,23 +562,104 @@ func _map_active_to_passive_rarity(active_rarity) -> AbilityData.Rarity:
 			return AbilityData.Rarity.COMMON
 
 func _is_common_rarity(ability) -> bool:
-	## Check if ability is common rarity (works for both types)
+	## Check if ability should be treated as "common" for reveal effects
+	## For passives, tier 1 = common (no special effects)
 	if ability is Dictionary:
 		return false  # Trigger cards are never common
+	if ability is AbilityData:
+		# Passive abilities: tier 1 = common (no effects)
+		var next_rank = _get_passive_next_rank(ability)
+		return next_rank == 1
 	if ability is ActiveAbilityData:
 		return ability.rarity == ActiveAbilityData.Rarity.COMMON
-	return ability.rarity == AbilityData.Rarity.COMMON
+	return true  # Default to common for unknown types
 
 func _get_passive_rarity(ability) -> AbilityData.Rarity:
-	## Get passive rarity enum (maps ActiveAbilityData rarity if needed)
+	## Get rarity enum for reveal effects - uses tier-based rarity for passives
 	if ability is Dictionary:
 		# Trigger card - use ability inside or default to RARE
 		if ability.has("ability") and ability.ability:
 			return _map_active_to_passive_rarity(ability.ability.rarity)
 		return AbilityData.Rarity.RARE
+	if ability is AbilityData:
+		# Passive abilities use tier-based rarity for effects
+		var next_rank = _get_passive_next_rank(ability)
+		return _get_tier_rarity(next_rank)
 	if ability is ActiveAbilityData:
 		return _map_active_to_passive_rarity(ability.rarity)
-	return ability.rarity
+	return AbilityData.Rarity.COMMON
+
+# ============================================
+# TIER-BASED STYLING FOR PASSIVE ABILITIES
+# ============================================
+
+func _get_passive_next_rank(ability) -> int:
+	## Get the next rank for a passive ability (1, 2, or 3)
+	if ability is AbilityData:
+		return AbilityManager.get_next_ability_rank(ability.id)
+	return 1
+
+func _get_tier_rarity(rank: int) -> AbilityData.Rarity:
+	## Map rank to equivalent rarity for color/particle purposes
+	## Rank 1 = COMMON (white), Rank 2 = RARE (blue), Rank 3 = EPIC (purple)
+	match rank:
+		1:
+			return AbilityData.Rarity.COMMON
+		2:
+			return AbilityData.Rarity.RARE
+		3:
+			return AbilityData.Rarity.EPIC
+		_:
+			return AbilityData.Rarity.COMMON
+
+func _get_tier_color(rank: int) -> Color:
+	## Get color based on tier rank
+	## Rank 1 = white/gray, Rank 2 = blue, Rank 3 = purple
+	match rank:
+		1:
+			return Color(0.9, 0.9, 0.9)  # White/gray (COMMON)
+		2:
+			return Color(0.3, 0.5, 1.0)  # Blue (RARE)
+		3:
+			return Color(0.6, 0.2, 0.8)  # Purple (EPIC)
+		_:
+			return Color(0.9, 0.9, 0.9)
+
+func _get_tier_name(rank: int) -> String:
+	## Get tier name for display
+	match rank:
+		1:
+			return "Tier 1"
+		2:
+			return "Tier 2"
+		3:
+			return "Tier 3"
+		_:
+			return "Tier 1"
+
+func _get_tier_bg_color(rank: int) -> Color:
+	## Get background color for card based on tier
+	match rank:
+		1:
+			return Color(0.15, 0.15, 0.18, 0.98)  # Dark gray (COMMON)
+		2:
+			return Color(0.1, 0.15, 0.25, 0.98)   # Dark blue (RARE)
+		3:
+			return Color(0.15, 0.1, 0.2, 0.98)    # Dark purple (EPIC)
+		_:
+			return Color(0.15, 0.15, 0.18, 0.98)
+
+func _get_tier_border_color(rank: int) -> Color:
+	## Get border color for card based on tier
+	match rank:
+		1:
+			return Color(0.4, 0.4, 0.4)    # Gray (COMMON)
+		2:
+			return Color(0.3, 0.5, 1.0)    # Blue (RARE)
+		3:
+			return Color(0.6, 0.2, 0.8)    # Purple (EPIC)
+		_:
+			return Color(0.4, 0.4, 0.4)
 
 func _style_button_for_ability(button: Button, ability) -> void:
 	## Style button for either AbilityData or ActiveAbilityData (with upgrade styling)
@@ -559,29 +672,16 @@ func _style_button_for_ability(button: Button, ability) -> void:
 		style.bg_color = Color(0.08, 0.18, 0.1, 0.98)
 		style.border_color = Color(0.2, 0.9, 0.3)
 		style.set_border_width_all(4)  # Thicker border for upgrades
+	elif ability is AbilityData:
+		# Passive abilities use tier-based styling (not rarity-based)
+		var next_rank = _get_passive_next_rank(ability)
+		style.bg_color = _get_tier_bg_color(next_rank)
+		style.border_color = _get_tier_border_color(next_rank)
+		style.set_border_width_all(3)
 	else:
-		# Standard passive ability styling
-		var rarity = ability.rarity
-		if ability is AbilityData:
-			match rarity:
-				AbilityData.Rarity.COMMON:
-					style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
-					style.border_color = Color(0.4, 0.4, 0.4)
-				AbilityData.Rarity.RARE:
-					style.bg_color = Color(0.1, 0.15, 0.25, 0.98)
-					style.border_color = Color(0.3, 0.5, 1.0)
-				AbilityData.Rarity.EPIC:
-					style.bg_color = Color(0.15, 0.1, 0.2, 0.98)
-					style.border_color = AbilityData.get_rarity_color(rarity)
-				AbilityData.Rarity.LEGENDARY:
-					style.bg_color = Color(0.2, 0.18, 0.1, 0.98)
-					style.border_color = AbilityData.get_rarity_color(rarity)
-				AbilityData.Rarity.MYTHIC:
-					style.bg_color = Color(0.18, 0.08, 0.1, 0.98)
-					style.border_color = AbilityData.get_rarity_color(rarity)
-				_:
-					style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
-					style.border_color = Color(0.4, 0.4, 0.4)
+		# Fallback for unknown types
+		style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
+		style.border_color = Color(0.4, 0.4, 0.4)
 		style.set_border_width_all(3)
 
 	style.set_corner_radius_all(12)
@@ -722,9 +822,9 @@ func _get_particle_density(rarity: AbilityData.Rarity) -> float:
 		_:
 			return 0.0
 
-func _create_upgrade_particle_container(is_signature: bool = false) -> Control:
+func _create_upgrade_particle_container(target_rank: int = 2) -> Control:
 	## Create green flame particles for upgrade abilities
-	## T3/Signature abilities get more intense flames
+	## Rank 2 = smaller flames, Rank 3 = bigger/more intense flames
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -732,9 +832,19 @@ func _create_upgrade_particle_container(is_signature: bool = false) -> Control:
 	container.clip_contents = false
 
 	var green_color = Color(0.2, 0.93, 0.35)  # Bright green
-	# T3 gets more intense and denser flames
-	var intensity = 2.2 if is_signature else 1.5
-	var density = 22.0 if is_signature else 14.0
+	# Rank 3 gets more intense and denser flames than rank 2
+	var intensity: float
+	var density: float
+	match target_rank:
+		2:
+			intensity = 1.5
+			density = 14.0
+		3:
+			intensity = 2.2
+			density = 22.0
+		_:
+			intensity = 1.5
+			density = 14.0
 
 	# Create main top particle strip (behind card, rising above)
 	var top_particles = ColorRect.new()
@@ -843,12 +953,23 @@ func _update_particle_container(container: Control, rarity: AbilityData.Rarity) 
 				child.material.set_shader_parameter("particle_density", density * 0.5)
 			child_index += 1
 
-func _update_particle_container_to_upgrade(container: Control) -> void:
+func _update_particle_container_to_upgrade(container: Control, target_rank: int = 2) -> void:
 	## Update an existing particle container to use green upgrade colors
+	## Rank 2 = smaller flames, Rank 3 = bigger/more intense flames
 	container.visible = true
 	var green_color = Color(0.2, 0.93, 0.35)  # Bright green
-	var intensity = 1.5
-	var density = 14.0
+	var intensity: float
+	var density: float
+	match target_rank:
+		2:
+			intensity = 1.5
+			density = 14.0
+		3:
+			intensity = 2.2
+			density = 22.0
+		_:
+			intensity = 1.5
+			density = 14.0
 
 	# Update all particle strips to green
 	var child_index = 0
@@ -987,10 +1108,17 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 				vbox.add_child(name_rich)
 				vbox.move_child(name_rich, 1)
 		else:
-			# Regular label
+			# Regular label - use tier-based colors for passives
+			var name_color: Color
+			if display_ability is AbilityData:
+				var next_rank = _get_passive_next_rank(display_ability)
+				name_color = _get_tier_color(next_rank)
+			else:
+				name_color = _get_rarity_color(display_ability)
+
 			if name_node is Label:
 				name_node.text = ability_name
-				name_node.add_theme_color_override("font_color", _get_rarity_color(display_ability))
+				name_node.add_theme_color_override("font_color", name_color)
 			elif name_node is RichTextLabel:
 				# Replace RichTextLabel with Label
 				var name_label = Label.new()
@@ -998,7 +1126,7 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 				name_label.text = ability_name
 				name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 				name_label.add_theme_font_size_override("font_size", 18)
-				name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
+				name_label.add_theme_color_override("font_color", name_color)
 				name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 				if pixel_font:
 					name_label.add_theme_font_override("font", pixel_font)
@@ -1042,28 +1170,49 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 		var rarity_tag = center_container.get_child(0) as PanelContainer
 		if rarity_tag:
 			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+			var tag_text: String
 			if is_upgrade:
 				# All upgrades (including triggers) get green tag
 				tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
+				tag_text = "Upgrade"
+			elif display_ability is AbilityData:
+				# Passive abilities use tier-based colors
+				var next_rank = _get_passive_next_rank(display_ability)
+				tag_style.bg_color = _get_tier_color(next_rank)
+				tag_text = _get_tier_name(next_rank)
 			else:
 				tag_style.bg_color = _get_rarity_color(display_ability)
+				tag_text = _get_rarity_name(display_ability)
 			rarity_tag.add_theme_stylebox_override("panel", tag_style)
 			var rarity_label = rarity_tag.get_child(0) as Label
 			if rarity_label:
-				if is_upgrade:
-					rarity_label.text = "Upgrade"  # Same for T2, T3, and triggers
-				else:
-					rarity_label.text = _get_rarity_name(display_ability)
+				rarity_label.text = tag_text
 
 	# Update particle container (child 2 of button) - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control
 	if particle_container:
 		if is_final_reveal:
 			if is_upgrade:
-				# Green flames for upgrades - update existing container to green
-				_update_particle_container_to_upgrade(particle_container)
+				# Green flames for upgrades - determine target rank
+				var target_rank = 2
+				if is_trigger:
+					# Trigger card - determine target from current ability tier
+					if display_ability is ActiveAbilityData:
+						match display_ability.tier:
+							ActiveAbilityData.AbilityTier.BASE:
+								target_rank = 2
+							ActiveAbilityData.AbilityTier.BRANCH:
+								target_rank = 3
+				elif display_ability is ActiveAbilityData:
+					target_rank = 3 if display_ability.is_signature() else 2
+				_update_particle_container_to_upgrade(particle_container, target_rank)
+			elif display_ability is AbilityData:
+				# Passive abilities use tier-based particles
+				var next_rank = _get_passive_next_rank(display_ability)
+				var tier_rarity = _get_tier_rarity(next_rank)
+				_update_particle_container(particle_container, tier_rarity)
 			else:
-				var passive_rarity = display_ability.rarity if display_ability is AbilityData else _map_active_to_passive_rarity(display_ability.rarity)
+				var passive_rarity = _map_active_to_passive_rarity(display_ability.rarity)
 				_update_particle_container(particle_container, passive_rarity)
 		else:
 			# Keep particles hidden during rolling
