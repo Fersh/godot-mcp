@@ -175,9 +175,9 @@ func attack() -> void:
 	if current_target and current_target.has_method("take_damage"):
 		current_target.take_damage(damage)
 
-		# Try to draw aggro from the enemy we attacked
+		# Try to draw aggro from the enemy we attacked (85% chance for skeletons)
 		if current_target.has_method("draw_aggro"):
-			current_target.draw_aggro(self)
+			current_target.draw_aggro(self, 0.85)
 
 	# Attack visual - bone slash
 	var slash = Line2D.new()

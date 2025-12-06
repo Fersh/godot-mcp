@@ -194,7 +194,7 @@ func create_ability_card(ability, index: int) -> Button:
 	## Create a banner-shaped card for abilities
 	## Rectangle on top with a triangle point at the bottom
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 360)  # Banner size +40px height
+	button.custom_minimum_size = Vector2(240, 400)  # Banner size including 40px triangle
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -373,8 +373,10 @@ func create_ability_card(ability, index: int) -> Button:
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_right", 12)
 	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.add_theme_constant_override("margin_bottom", 52)  # 12 + 40 for triangle area
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	margin.add_child(vbox)
+	vbox.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 
 	button.add_child(margin)
 
@@ -385,6 +387,7 @@ func create_ability_card(ability, index: int) -> Button:
 	else:
 		rarity_tag = _create_rarity_tag_for_ability(display_ability)
 	rarity_tag.name = "RarityTag"
+	rarity_tag.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	button.add_child(rarity_tag)
 
 	# Add particle effect container
@@ -413,13 +416,12 @@ func create_ability_card(ability, index: int) -> Button:
 
 func _create_banner_point(ability) -> Control:
 	## Create the triangle point at the bottom of the banner card
+	## Button is 400px tall - triangle occupies the bottom 40px
 	var container = Control.new()
 	container.name = "BannerPointContainer"
 	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	container.anchor_top = 1.0
-	container.anchor_bottom = 1.0
-	container.offset_top = 0
-	container.offset_bottom = 40  # Triangle height
+	container.offset_top = -40  # 40px above bottom
+	container.offset_bottom = 0  # At bottom
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Create triangle using a Polygon2D
@@ -798,6 +800,7 @@ func _get_tier_border_color(rank: int) -> Color:
 
 func _style_button_for_ability(button: Button, ability) -> void:
 	## Style button for either AbilityData or ActiveAbilityData (with upgrade styling)
+	## Button is 400px tall - stylebox draws full height, triangle overlays the bottom 40px
 	var style = StyleBoxFlat.new()
 	var is_upgrade = _is_active_ability_upgrade(ability)
 	var is_trigger = ability is Dictionary
@@ -819,7 +822,7 @@ func _style_button_for_ability(button: Button, ability) -> void:
 		style.border_color = Color(0.4, 0.4, 0.4)
 		style.set_border_width_all(3)
 
-	# Banner shape: rounded top corners, flat bottom for triangle attachment
+	# Banner shape: rounded top corners, flat bottom (triangle covers the bottom)
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
 	style.corner_radius_bottom_left = 0
@@ -2208,12 +2211,11 @@ func _animate_card_in(button: Button, index: int) -> void:
 	tween.tween_property(button, "modulate:a", 1.0, 0.2)
 
 func _show_cancel_button() -> void:
-	"""Show Cancel button for branch selection mode."""
+	"""Show Cancel button for branch selection mode - positioned at bottom of screen."""
 	if cancel_button == null:
 		cancel_button = Button.new()
 		cancel_button.text = "Cancel"
 		cancel_button.custom_minimum_size = Vector2(180, 44)
-		cancel_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 
 		# Style the button (match reroll button styling)
 		var style = StyleBoxFlat.new()
@@ -2242,28 +2244,27 @@ func _show_cancel_button() -> void:
 
 		cancel_button.pressed.connect(_on_cancel_pressed)
 
-		# Add below the choices container
-		var parent = choices_container.get_parent()
-		if parent:
-			var spacer = Control.new()
-			spacer.custom_minimum_size = Vector2(0, 20)
-			spacer.name = "CancelSpacer"
-			parent.add_child(spacer)
-			parent.add_child(cancel_button)
+		# Position absolutely at bottom of panel, not in VBox flow
+		cancel_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		cancel_button.anchor_left = 0.5
+		cancel_button.anchor_right = 0.5
+		cancel_button.anchor_top = 1.0
+		cancel_button.anchor_bottom = 1.0
+		cancel_button.offset_left = -90  # Half of button width
+		cancel_button.offset_right = 90
+		cancel_button.offset_top = -80  # 44px button + 36px margin from bottom
+		cancel_button.offset_bottom = -36
+		cancel_button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+
+		# Add to panel (not VBox) so it doesn't affect layout
+		panel.add_child(cancel_button)
 
 	cancel_button.visible = true
-	# Also show the spacer
-	var spacer = choices_container.get_parent().get_node_or_null("CancelSpacer")
-	if spacer:
-		spacer.visible = true
 
 func _hide_cancel_button() -> void:
 	"""Hide Cancel button."""
 	if cancel_button:
 		cancel_button.visible = false
-	var spacer = choices_container.get_parent().get_node_or_null("CancelSpacer")
-	if spacer:
-		spacer.visible = false
 
 func _on_cancel_pressed() -> void:
 	"""Handle Cancel button press - return to normal selection."""

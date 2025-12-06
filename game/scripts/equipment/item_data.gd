@@ -22,12 +22,13 @@ enum WeaponType {
 	NONE,
 	MELEE,    # Generic melee (legacy, use specific types below)
 	RANGED,   # Bows for rangers
-	MAGIC,    # Books/staves for mages
+	MAGIC,    # Books (legacy, use STAFF instead)
 	DAGGER,   # Daggers for assassins
 	SWORD,    # Swords for knights
-	AXE,      # Axes for barbarians
+	AXE,      # Axes for barbarians, minotaur, ratfolk
 	SPEAR,    # Spears for monks
-	MACE      # Maces (future)
+	MACE,     # Maces (future)
+	STAFF     # Staffs for mages, priest, necromancer
 }
 
 # Rarity colors
@@ -60,13 +61,37 @@ const WEAPON_TYPE_NAMES: Dictionary = {
 	WeaponType.NONE: "Weapon",
 	WeaponType.MELEE: "Melee",
 	WeaponType.RANGED: "Bow",
-	WeaponType.MAGIC: "Staff",
+	WeaponType.MAGIC: "Book",
 	WeaponType.DAGGER: "Dagger",
 	WeaponType.SWORD: "Sword",
 	WeaponType.AXE: "Axe",
 	WeaponType.SPEAR: "Spear",
-	WeaponType.MACE: "Mace"
+	WeaponType.MACE: "Mace",
+	WeaponType.STAFF: "Staff"
 }
+
+# Tier names for difficulty-based item scaling
+const TIER_NAMES: Dictionary = {
+	0: "Pitiful",
+	1: "Easy",
+	2: "Normal",
+	3: "Nightmare",
+	4: "Hell",
+	5: "Inferno",
+	6: "Thanksgiving"
+}
+
+# Tier stat multipliers - Hell (1.5x) is current baseline
+const TIER_MULTIPLIERS: Dictionary = {
+	0: 0.50,   # Pitiful
+	1: 0.70,   # Easy
+	2: 0.90,   # Normal
+	3: 1.15,   # Nightmare
+	4: 1.50,   # Hell (current baseline)
+	5: 2.00,   # Inferno
+	6: 2.50,   # Thanksgiving
+}
+# Endless tiers (7+): 2.50 + (tier - 6) * 0.20
 
 # Drop weights by rarity (base %, modified by game time and enemy type)
 const BASE_DROP_WEIGHTS: Dictionary = {
@@ -143,26 +168,45 @@ const AFFIX_STAT_RANGES: Dictionary = {
 # Affix-triggered mini abilities (from prefix/suffix)
 @export var affix_abilities: Array = []  # Array of ability IDs from AFFIX_ABILITIES
 
-# Item level (affects stat rolls)
+# Item level (legacy - now using tier instead)
 @export var item_level: int = 1
+
+# Difficulty tier (0-6 for difficulties, 7+ for endless)
+@export var tier: int = 0
 
 # Who has this equipped (character ID or empty)
 @export var equipped_by: String = ""
 
 func get_full_name() -> String:
-	# Epic and Legendary always use unique display_name (no prefix/suffix in name)
-	if rarity == Rarity.EPIC or rarity == Rarity.LEGENDARY:
-		return display_name
+	var base_name: String
 
-	# Common and Rare use procedural naming
-	var name_parts = []
-	if prefix != "":
-		name_parts.append(prefix)
-	name_parts.append(display_name)
-	if suffix != "":
-		name_parts.append(suffix)
+	# Epic, Legendary, Mythic always use unique display_name (no prefix/suffix in name)
+	if rarity == Rarity.EPIC or rarity == Rarity.LEGENDARY or rarity == Rarity.MYTHIC:
+		base_name = display_name
+	else:
+		# Common and Rare use procedural naming
+		var name_parts = []
+		if prefix != "":
+			name_parts.append(prefix)
+		name_parts.append(display_name)
+		if suffix != "":
+			name_parts.append(suffix)
+		base_name = " ".join(name_parts)
 
-	return " ".join(name_parts)
+	# Append tier name
+	var tier_name = get_tier_name()
+	return "%s (%s)" % [base_name, tier_name]
+
+func get_tier_name() -> String:
+	if tier >= 7:
+		return "Endless"
+	return TIER_NAMES.get(tier, "Pitiful")
+
+func get_tier_multiplier() -> float:
+	if tier >= 7:
+		# Endless scaling: 2.50 + 0.20 per tier above 6
+		return 2.50 + (tier - 6) * 0.20
+	return TIER_MULTIPLIERS.get(tier, 0.50)
 
 func get_rarity_color() -> Color:
 	return RARITY_COLORS.get(rarity, Color.WHITE)
@@ -277,6 +321,7 @@ func duplicate_item() -> ItemData:
 	new_item.grants_equipment_ability = grants_equipment_ability
 	new_item.affix_abilities = affix_abilities.duplicate()
 	new_item.item_level = item_level
+	new_item.tier = tier
 	new_item.equipped_by = equipped_by
 	return new_item
 
@@ -298,6 +343,7 @@ func to_save_dict() -> Dictionary:
 		"grants_equipment_ability": grants_equipment_ability,
 		"affix_abilities": affix_abilities,
 		"item_level": item_level,
+		"tier": tier,
 		"equipped_by": equipped_by
 	}
 
@@ -319,6 +365,14 @@ static func from_save_dict(data: Dictionary) -> ItemData:
 	item.affix_abilities = data.get("affix_abilities", [])
 	item.item_level = data.get("item_level", 1)
 	item.equipped_by = data.get("equipped_by", "")
+
+	# Load tier, default to 0 for legacy items
+	# Migration: old items without tier get tier based on item_level
+	if data.has("tier"):
+		item.tier = data.get("tier", 0)
+	else:
+		# Legacy migration: estimate tier from item_level
+		item.tier = min(6, max(0, int(data.get("item_level", 1) / 5)))
 
 	# Migration: Convert old rarity values to new system
 	# Old: 0=COMMON, 1=MAGIC, 2=RARE, 3=UNIQUE, 4=LEGENDARY

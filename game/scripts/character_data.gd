@@ -850,13 +850,14 @@ static func create_skeleton_king() -> CharacterData:
 	data.base_dodge_rate = 0.05
 	data.base_armor = 2
 
-	# Sprite config (Skeleton King: 10 cols x 7 rows, 128x96 frames)
-	# Sprite sheet is 1280x672, with 10 columns of 128px wide frames (character centered within)
-	# Player-sized (make 15% bigger than 0.9 = 1.035)
-	data.frame_size = Vector2(128, 96)
-	data.hframes = 10
+	# Sprite config (Skeleton King: 9 cols x 7 rows, 96x96 frames)
+	# Player-sized (15% bigger than 0.9 = 1.035)
+	data.frame_size = Vector2(96, 96)
+	data.hframes = 9
 	data.vframes = 7
 	data.sprite_scale = Vector2(1.035, 1.035)  # 15% bigger than 0.9
+	# Use region_rect to clip sprite sheet to exact dimensions (prevents frame shifting)
+	data.sprite_region = Rect2(0, 0, 864, 672)  # 9 cols * 96 = 864, 7 rows * 96 = 672
 
 	# Animation rows
 	data.row_idle = 0

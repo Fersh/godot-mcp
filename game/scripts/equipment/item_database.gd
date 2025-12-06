@@ -238,34 +238,34 @@ const BASE_ITEMS: Dictionary = {
 		"base_stats": {"damage": 0.04, "melee_range": 0.15},
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon1.png"
 	},
-	# BOOKS - Mage weapon (1-48 scaling, 1=common, 48=mythic)
-	"book_basic": {
-		"display_name": "Tome",
+	# STAFFS - Mage, Priest, Necromancer weapon
+	"staff_basic": {
+		"display_name": "Staff",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.05, "crit_chance": 0.03},
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
 	},
-	"grimoire_basic": {
-		"display_name": "Grimoire",
+	"arcane_staff": {
+		"display_name": "Arcane Staff",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.06, "attack_speed": 0.05},
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon5.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
 	},
-	"spellbook_basic": {
-		"display_name": "Spellbook",
+	"crystal_staff": {
+		"display_name": "Crystal Staff",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
-		"base_stats": {"damage": 0.04, "xp_gain": 0.05},
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon10.png"
+		"weapon_type": ItemData.WeaponType.STAFF,
+		"base_stats": {"damage": 0.04, "crit_chance": 0.06},
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
 	},
-	"codex_basic": {
-		"display_name": "Codex",
+	"dark_staff": {
+		"display_name": "Dark Staff",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.07},
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon15.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
 	},
 
 	# WEAPONS - Ranged (using Bow folder)
@@ -545,24 +545,33 @@ const EPIC_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon25.png"
 	},
 
-	# Weapons - Books (Mage)
-	"forbidden_tome": {
-		"display_name": "Forbidden Tome",
-		"description": "Don't read page 394.",
+	# Weapons - Staffs (Mage, Priest, Necromancer)
+	"forbidden_staff": {
+		"display_name": "Forbidden Staff",
+		"description": "Don't touch the glowing end.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.15, "crit_chance": 0.10},
 		"grants_ability": "lightning_strike",
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_5.png"
 	},
-	"necronomicon": {
-		"display_name": "Necronomicon Jr.",
-		"description": "The kids' edition. Less tentacles.",
+	"necromancer_staff": {
+		"display_name": "Necromancer's Rod",
+		"description": "Smells like death. And victory.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.12, "max_hp": 0.10},
 		"grants_ability": "death_explosion",
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_3.png"
+	},
+	"priest_staff": {
+		"display_name": "Holy Staff",
+		"description": "Blessed by the gods. Probably.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.STAFF,
+		"base_stats": {"damage": 0.10, "max_hp": 0.15},
+		"grants_ability": "healing_wave",
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_4.png"
 	},
 
 	# Weapons - Ranged (using Bow folder - unique icons 31-40)
@@ -831,33 +840,33 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon48.png"
 	},
 
-	# Weapons - Books (Mage) - Legendary
-	"reality_codex": {
-		"display_name": "Codex of Reality",
+	# Weapons - Staffs (Mage, Priest, Necromancer) - Legendary
+	"reality_staff": {
+		"display_name": "Staff of Reality",
 		"description": "Warning: May cause existential dread.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.25, "crit_chance": 0.20, "attack_speed": 0.10},
 		"grants_equipment_ability": "random_effects",
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_5.png"
 	},
-	"book_of_infinite_pages": {
-		"display_name": "Book of Infinite Pages",
-		"description": "You'll never finish reading it.",
+	"staff_of_infinite_power": {
+		"display_name": "Staff of Infinite Power",
+		"description": "Handle with care. Seriously.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.20, "max_hp": 0.20, "xp_gain": 0.15},
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon45.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_2.png"
 	},
-	"tome_of_chaos": {
-		"display_name": "Tome of Pure Chaos",
-		"description": "Even the author didn't know what they wrote.",
+	"chaos_staff": {
+		"display_name": "Staff of Pure Chaos",
+		"description": "Even the maker didn't know what it does.",
 		"slot": ItemData.Slot.WEAPON,
-		"weapon_type": ItemData.WeaponType.MAGIC,
+		"weapon_type": ItemData.WeaponType.STAFF,
 		"base_stats": {"damage": 0.30, "crit_chance": 0.15},
 		"grants_equipment_ability": "random_effects",
-		"icon_path": "res://assets/sprites/items/books/PNG/Transperent/Icon48.png"
+		"icon_path": "res://assets/sprites/items/Magic/TRANSPARENT/Staves/staff_1.png"
 	},
 
 	# Weapons - Ranged
@@ -1421,15 +1430,23 @@ static func _weapon_type_matches_character(weapon_type: int, character_id: Strin
 		"archer":
 			return weapon_type == ItemData.WeaponType.RANGED
 		"mage":
-			return weapon_type == ItemData.WeaponType.MAGIC
+			return weapon_type == ItemData.WeaponType.STAFF
 		"assassin":
 			return weapon_type == ItemData.WeaponType.DAGGER
 		"knight":
 			return weapon_type in [ItemData.WeaponType.SWORD, ItemData.WeaponType.MELEE]
 		"barbarian":
-			return weapon_type in [ItemData.WeaponType.AXE, ItemData.WeaponType.MELEE]  # MACE excluded - no images yet
+			return weapon_type in [ItemData.WeaponType.AXE, ItemData.WeaponType.MELEE]
 		"monk":
 			return weapon_type in [ItemData.WeaponType.SPEAR, ItemData.WeaponType.MELEE]
 		"beast":
 			return false  # Beast fights with claws, no weapons
+		"minotaur":
+			return weapon_type == ItemData.WeaponType.AXE
+		"ratfolk":
+			return weapon_type == ItemData.WeaponType.AXE
+		"kobold_priest":
+			return weapon_type == ItemData.WeaponType.STAFF
+		"necromancer":
+			return weapon_type == ItemData.WeaponType.STAFF
 	return true  # Unknown character, allow all

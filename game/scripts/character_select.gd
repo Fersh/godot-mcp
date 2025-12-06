@@ -273,12 +273,12 @@ func _create_selector_buttons() -> void:
 	# Reorder: original 7 first, then new characters in thematic groups
 	# Row 1: archer, knight, monk, mage, beast
 	# Row 2: assassin, barbarian, golem, lizardfolk_king, shardsoul_slayer
-	# Row 3: necromancer, kobold_priest, ratfolk, minotaur, skeleton_king
-	# COMMENTED OUT: orc, cyclops
+	# Row 3: necromancer, kobold_priest, ratfolk, minotaur
+	# COMMENTED OUT: orc, cyclops, skeleton_king
 	var order = [
 		"archer", "knight", "monk", "mage", "beast",
 		"assassin", "barbarian", "golem", "lizardfolk_king", "shardsoul_slayer",
-		"necromancer", "kobold_priest", "ratfolk", "minotaur", "skeleton_king"
+		"necromancer", "kobold_priest", "ratfolk", "minotaur"
 	]
 	characters_list = []
 	print("CharacterSelect: Building character list from %d available characters" % all_chars.size())
@@ -397,8 +397,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_scale = 0.9  # 128x64 frames - smaller
 			sprite_pos = Vector2(38, 45)  # Center better
 		"skeleton_king":
-			sprite_scale = 0.75  # 128x96 frames - adjusted for wider frame
-			sprite_pos = Vector2(38, 40)  # Centered
+			sprite_scale = 1.0  # 96x96 frames
+			sprite_pos = Vector2(38, 42)
 		"shardsoul_slayer":
 			sprite_scale = 1.1  # 64x64 frames - smaller
 			sprite_pos = Vector2(38, 32)  # Move up
@@ -650,7 +650,7 @@ func _update_preview() -> void:
 		"lizardfolk_king":
 			preview_scale = 1.3  # 128x64 frames - smaller
 		"skeleton_king":
-			preview_scale = 1.0  # 128x96 frames - adjusted for wider frame
+			preview_scale = 1.3  # 96x96 frames
 		"shardsoul_slayer":
 			preview_scale = 1.5  # 64x64 frames - smaller
 		"necromancer":

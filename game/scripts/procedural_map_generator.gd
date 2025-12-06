@@ -439,74 +439,157 @@ func _generate_pitiful_ground(tiles_x: int, tiles_y: int) -> void:
 				decoration_tilemap.set_cell(tile_pos, 0, deco)
 
 func _generate_jungle_ground(tiles_x: int, tiles_y: int) -> void:
-	# Jungle theme: Use grass tiles, tall grass, and jungle decorations
+	# Jungle theme: Use grass tiles with proper edge blending, tall grass, and decorations
 	var tall_grass_tilemap = get_node_or_null("TallGrassTileMap")
 
-	# Place base grass patches with different shades for variety
+	# Track which tiles are part of which grass patch for edge detection
+	var grass_patch_map: Dictionary = {}  # Vector2i -> shade_index (1=dark, 2=darkest)
 	var grass_shades = [JUNGLE_GRASS_LIGHT, JUNGLE_GRASS_DARK, JUNGLE_GRASS_DARKEST]
 
-	# Create patches of darker grass for visual interest
-	var patch_count = 80  # Number of darker grass patches
+	# Step 1: Create grass patches and record which tiles belong to each
+	var patch_count = 150  # More patches for better coverage
 	for _i in range(patch_count):
 		var patch_x = rng.randi_range(5, tiles_x - 5)
 		var patch_y = rng.randi_range(5, tiles_y - 5)
-		var patch_size = rng.randi_range(3, 8)
-		var shade = grass_shades[rng.randi_range(1, 2)]  # Dark or darkest
+		var patch_size = rng.randi_range(4, 12)  # Larger patches
+		var shade_idx = rng.randi_range(1, 2)  # Dark or darkest
 
-		# Create irregular patch
+		# Create irregular patch shape
 		for py in range(-patch_size, patch_size + 1):
 			for px in range(-patch_size, patch_size + 1):
 				var dist = sqrt(px * px + py * py)
-				if dist <= patch_size * rng.randf_range(0.6, 1.0):
+				if dist <= patch_size * rng.randf_range(0.5, 1.0):
 					var tx = patch_x + px
 					var ty = patch_y + py
 					if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
-						var tile_pos = Vector2i(tx, ty)
-						ground_tilemap.set_cell(tile_pos, 0, shade["center"])
+						var tile_key = Vector2i(tx, ty)
+						grass_patch_map[tile_key] = shade_idx
 
-	# Place tall grass in clusters (animated)
+	# Step 2: Place grass tiles with proper edge detection
+	for tile_key in grass_patch_map:
+		var shade_idx = grass_patch_map[tile_key]
+		var shade = grass_shades[shade_idx]
+		var tx = tile_key.x
+		var ty = tile_key.y
+
+		# Check neighbors to determine which tile type to use
+		var has_top = grass_patch_map.has(Vector2i(tx, ty - 1)) and grass_patch_map[Vector2i(tx, ty - 1)] == shade_idx
+		var has_bottom = grass_patch_map.has(Vector2i(tx, ty + 1)) and grass_patch_map[Vector2i(tx, ty + 1)] == shade_idx
+		var has_left = grass_patch_map.has(Vector2i(tx - 1, ty)) and grass_patch_map[Vector2i(tx - 1, ty)] == shade_idx
+		var has_right = grass_patch_map.has(Vector2i(tx + 1, ty)) and grass_patch_map[Vector2i(tx + 1, ty)] == shade_idx
+
+		# Determine tile type based on neighbors
+		var tile_type: String = "center"
+
+		if not has_top and not has_left and has_bottom and has_right:
+			tile_type = "top_left"
+		elif not has_top and not has_right and has_bottom and has_left:
+			tile_type = "top_right"
+		elif not has_bottom and not has_left and has_top and has_right:
+			tile_type = "bottom_left"
+		elif not has_bottom and not has_right and has_top and has_left:
+			tile_type = "bottom_right"
+		elif not has_top and has_bottom:
+			tile_type = "top"
+		elif not has_bottom and has_top:
+			tile_type = "bottom"
+		elif not has_left and has_right:
+			tile_type = "left"
+		elif not has_right and has_left:
+			tile_type = "right"
+
+		ground_tilemap.set_cell(tile_key, 0, shade[tile_type])
+
+	# Step 3: Add light grass patches in gaps for more variety
+	var light_patch_count = 60
+	for _i in range(light_patch_count):
+		var patch_x = rng.randi_range(8, tiles_x - 8)
+		var patch_y = rng.randi_range(8, tiles_y - 8)
+		var patch_size = rng.randi_range(2, 5)
+
+		for py in range(-patch_size, patch_size + 1):
+			for px in range(-patch_size, patch_size + 1):
+				var dist = sqrt(px * px + py * py)
+				if dist <= patch_size * 0.8:
+					var tx = patch_x + px
+					var ty = patch_y + py
+					var tile_key = Vector2i(tx, ty)
+					# Only place if not already covered by darker grass
+					if not grass_patch_map.has(tile_key):
+						if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
+							ground_tilemap.set_cell(tile_key, 0, JUNGLE_GRASS_LIGHT["center"])
+
+	# Step 4: Place tall grass in clusters
 	var tall_grass_shades = [JUNGLE_TALL_GRASS_LIGHT, JUNGLE_TALL_GRASS_DARK, JUNGLE_TALL_GRASS_DARKEST]
-	var tall_grass_cluster_count = 120
+	var tall_grass_cluster_count = 200  # More clusters
 
 	for _i in range(tall_grass_cluster_count):
 		var cluster_x = rng.randi_range(10, tiles_x - 10)
 		var cluster_y = rng.randi_range(10, tiles_y - 10)
-		var cluster_size = rng.randi_range(2, 5)
+		var cluster_size = rng.randi_range(2, 6)
 		var shade = tall_grass_shades[rng.randi() % tall_grass_shades.size()]
 
-		# Check not on path
-		var key = "%d_%d" % [cluster_x, cluster_y]
-		if key in path_cells:
+		# Check not on path (spawn area check - paths are generated later but we check center)
+		var center_tile = Vector2(MAP_SIZE / 2 / TILE_SIZE, MAP_SIZE / 2 / TILE_SIZE)
+		var dist_from_center = Vector2(cluster_x, cluster_y).distance_to(center_tile)
+		if dist_from_center < (SPAWN_AREA_RADIUS / TILE_SIZE) + 5:
+			continue
+
+		# Check not on path corridors
+		var on_path = false
+		var center_x = tiles_x / 2
+		var center_y = tiles_y / 2
+		var path_half_width = (PATH_WIDTH / TILE_SIZE) / 2 + 2
+
+		# Check if on vertical path (north-south)
+		if abs(cluster_x - center_x) < path_half_width:
+			on_path = true
+		# Check if on horizontal path (east-west)
+		if abs(cluster_y - center_y) < path_half_width:
+			on_path = true
+
+		if on_path:
 			continue
 
 		for py in range(-cluster_size, cluster_size + 1):
 			for px in range(-cluster_size, cluster_size + 1):
-				if rng.randf() < 0.6:  # Sparse within cluster
+				if rng.randf() < 0.7:  # Denser within cluster
 					var tx = cluster_x + px
 					var ty = cluster_y + py
 					if tx >= 0 and tx < tiles_x and ty >= 0 and ty < tiles_y:
-						var check_key = "%d_%d" % [tx, ty]
-						if check_key in path_cells:
+						# Skip if on path
+						if abs(tx - center_x) < path_half_width or abs(ty - center_y) < path_half_width:
 							continue
 						var tile_pos = Vector2i(tx, ty)
-						# Use center tile for tall grass (animation handled separately)
 						if tall_grass_tilemap:
 							tall_grass_tilemap.set_cell(tile_pos, 0, shade["center"])
 						else:
 							decoration_tilemap.set_cell(tile_pos, 0, shade["center"])
 
-	# Scatter individual decorations (jungle flowers, plants)
+	# Step 5: Scatter individual decorations (jungle flowers, plants) - like Pitiful does
 	for y in range(tiles_y):
 		for x in range(tiles_x):
-			if rng.randf() < 0.005:  # Slightly denser than pitiful
+			# Higher density for more visual interest
+			if rng.randf() < 0.008:
 				var tile_pos = Vector2i(x, y)
-				# Check not on path
-				var key = "%d_%d" % [x, y]
-				if key in path_cells:
+
+				# Skip paths and spawn area
+				var center_x = tiles_x / 2
+				var center_y = tiles_y / 2
+				var path_half_width = (PATH_WIDTH / TILE_SIZE) / 2 + 1
+
+				if abs(x - center_x) < path_half_width or abs(y - center_y) < path_half_width:
 					continue
+
+				var dist_from_center = Vector2(x, y).distance_to(Vector2(center_x, center_y))
+				if dist_from_center < (SPAWN_AREA_RADIUS / TILE_SIZE) + 3:
+					continue
+
 				# Random decoration from jungle decorations
 				var deco = JUNGLE_DECORATIONS[rng.randi() % JUNGLE_DECORATIONS.size()]
 				decoration_tilemap.set_cell(tile_pos, 0, deco)
+
+	print("ProceduralMapGenerator: Generated jungle ground with %d grass patches" % grass_patch_map.size())
 
 func _generate_water_boundary() -> void:
 	# Create water around the edges using ColorRects for clean appearance

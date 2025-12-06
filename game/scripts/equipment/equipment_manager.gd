@@ -85,6 +85,17 @@ func reset_run() -> void:
 func update_game_time(time: float) -> void:
 	current_game_time = time
 
+# Tier multipliers for difficulty-based scaling
+const TIER_MULTIPLIERS: Dictionary = {
+	0: 0.50,   # Pitiful
+	1: 0.70,   # Easy
+	2: 0.90,   # Normal
+	3: 1.15,   # Nightmare
+	4: 1.50,   # Hell (current baseline)
+	5: 2.00,   # Inferno
+	6: 2.50,   # Thanksgiving
+}
+
 # Generate a new item drop
 func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> ItemData:
 	var item = ItemData.new()
@@ -104,7 +115,7 @@ func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> Item
 		slot = _get_random_slot()
 	item.slot = slot
 
-	# Determine rarity based on game time and enemy type
+	# Determine rarity based on enemy type (no time scaling)
 	var rarity = _roll_rarity(enemy_type)
 	item.rarity = rarity
 
@@ -118,14 +129,41 @@ func generate_item(enemy_type: String = "normal", forced_slot: int = -1) -> Item
 			_generate_epic_item(item, slot, character_id)
 		ItemData.Rarity.LEGENDARY:
 			_generate_legendary_item(item, slot, character_id)
+		ItemData.Rarity.MYTHIC:
+			_generate_mythic_item(item, slot, character_id)
 
-	# Set item level based on game time
-	item.item_level = max(1, int(current_game_time / 30.0) + 1)
+	# Set tier based on difficulty (replaces item_level scaling)
+	item.tier = _get_tier_from_difficulty()
+	item.item_level = item.tier + 1  # Keep for legacy compatibility
 
-	# Scale stats with item level
-	_scale_item_stats(item)
+	# Apply tier multiplier to stats (replaces _scale_item_stats)
+	_apply_tier_scaling(item)
 
 	return item
+
+func _get_tier_from_difficulty() -> int:
+	if DifficultyManager and DifficultyManager.is_endless_mode():
+		# Endless: tier 7 base, +1 per 5 minutes
+		var minutes = DifficultyManager.endless_game_time / 60.0
+		return 7 + int(minutes / 5.0)
+	if DifficultyManager:
+		return DifficultyManager.current_difficulty
+	return 0
+
+func _get_tier_multiplier(tier: int) -> float:
+	if tier >= 7:
+		# Endless scaling: 2.50 + 0.20 per tier above 6
+		return 2.50 + (tier - 6) * 0.20
+	return TIER_MULTIPLIERS.get(tier, 0.50)
+
+func _apply_tier_scaling(item: ItemData) -> void:
+	var mult = _get_tier_multiplier(item.tier)
+
+	for stat in item.base_stats:
+		item.base_stats[stat] *= mult
+
+	for stat in item.magic_stats:
+		item.magic_stats[stat] *= mult
 
 func _get_random_slot() -> ItemData.Slot:
 	var slots = [
@@ -148,23 +186,24 @@ func _get_random_slot() -> ItemData.Slot:
 	return weighted[randi() % weighted.size()]
 
 func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
-	# Base weights
+	# Base weights - STATIC, no time-based scaling
 	var weights = ItemData.BASE_DROP_WEIGHTS.duplicate()
 
-	# Time bonus: much slower scaling - meaningful rarity shift takes 10+ minutes
-	# Every 120 seconds (2 min), small shift toward rarer items
-	var time_bonus = current_game_time / 120.0
+	# Mythic: Endless only, after 5 minutes
+	if DifficultyManager and DifficultyManager.is_endless_mode():
+		var endless_time = DifficultyManager.endless_game_time
+		if endless_time >= 300.0:  # 5 minutes
+			# Start at 0.3%, scale to 1.5% over time
+			var mythic_chance = 0.3 + min((endless_time - 300.0) / 1500.0, 1.2)
+			weights[ItemData.Rarity.MYTHIC] = mythic_chance
 
-	# Common drops more slowly - floor at 35% (was 20%)
-	weights[ItemData.Rarity.COMMON] = max(35.0, weights[ItemData.Rarity.COMMON] - time_bonus * 2.0)
-	# Rare increases slowly
-	weights[ItemData.Rarity.RARE] += time_bonus * 1.0
-	# Epic requires time investment - very slow scaling, capped
-	weights[ItemData.Rarity.EPIC] = min(weights[ItemData.Rarity.EPIC] + time_bonus * 0.4, 20.0)
-	# Legendary extremely rare - very slow scaling, capped
-	weights[ItemData.Rarity.LEGENDARY] = min(weights[ItemData.Rarity.LEGENDARY] + time_bonus * 0.1, 5.0)
+			# Enemy type bonuses for Mythic
+			if enemy_type == "elite":
+				weights[ItemData.Rarity.MYTHIC] *= 2.0
+			elif enemy_type == "boss":
+				weights[ItemData.Rarity.MYTHIC] *= 4.0
 
-	# Enemy type bonus (reduced multipliers)
+	# Enemy type bonus (no time-based modifiers)
 	match enemy_type:
 		"elite":
 			weights[ItemData.Rarity.EPIC] *= 1.5
@@ -183,7 +222,8 @@ func _roll_rarity(enemy_type: String) -> ItemData.Rarity:
 	var roll = randf() * total
 	var cumulative = 0.0
 
-	for r in [ItemData.Rarity.LEGENDARY, ItemData.Rarity.EPIC,
+	# Check from highest rarity to lowest
+	for r in [ItemData.Rarity.MYTHIC, ItemData.Rarity.LEGENDARY, ItemData.Rarity.EPIC,
 			  ItemData.Rarity.RARE, ItemData.Rarity.COMMON]:
 		cumulative += weights[r]
 		if roll <= cumulative:
@@ -397,25 +437,23 @@ func _generate_epic_item(item: ItemData, slot: ItemData.Slot, character_id: Stri
 		var stat = stat_keys[i]
 		item.base_stats[stat] = _roll_stat(stat, false)
 
-	# Roll prefix + suffix stats (hidden in name - Epic has unique names) - slot-filtered
-	var prefix_data = _get_slot_filtered_prefix(slot)
-	var suffix_data = _get_slot_filtered_suffix(slot)
-
+	# Roll ONE affix (prefix OR suffix) - Epic uses unique names so affix isn't shown
 	item.magic_stats = {}
 	item.affix_abilities = []
-	for stat in prefix_data.stats:
-		if stat == "affix_ability":
-			item.affix_abilities.append(prefix_data.stats.affix_ability)
-		else:
-			item.magic_stats[stat] = _roll_stat(stat, true)
-	for stat in suffix_data.stats:
-		if stat == "affix_ability":
-			if not item.affix_abilities.has(suffix_data.stats.affix_ability):
+	if randf() > 0.5:
+		var prefix_data = _get_slot_filtered_prefix(slot)
+		for stat in prefix_data.stats:
+			if stat == "affix_ability":
+				item.affix_abilities.append(prefix_data.stats.affix_ability)
+			else:
+				item.magic_stats[stat] = _roll_stat(stat, true)
+	else:
+		var suffix_data = _get_slot_filtered_suffix(slot)
+		for stat in suffix_data.stats:
+			if stat == "affix_ability":
 				item.affix_abilities.append(suffix_data.stats.affix_ability)
-		elif item.magic_stats.has(stat):
-			item.magic_stats[stat] += _roll_stat(stat, true)
-		else:
-			item.magic_stats[stat] = _roll_stat(stat, true)
+			else:
+				item.magic_stats[stat] = _roll_stat(stat, true)
 
 func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
 	var legendary_ids = ItemDatabase.get_legendary_items_for_slot(slot, character_id)
@@ -463,6 +501,65 @@ func _generate_legendary_item(item: ItemData, slot: ItemData.Slot, character_id:
 		else:
 			item.magic_stats[stat] = _roll_stat(stat, true)
 
+func _generate_mythic_item(item: ItemData, slot: ItemData.Slot, character_id: String = "") -> void:
+	# Mythic = stronger Epic with +1 base stat
+	# Start with Epic generation
+	var epic_ids = ItemDatabase.get_epic_items_for_slot(slot, character_id)
+	if epic_ids.size() == 0:
+		# Fallback to Legendary if no Epic items for this slot
+		_generate_legendary_item(item, slot, character_id)
+		item.rarity = ItemData.Rarity.MYTHIC
+		return
+
+	var epic_id = epic_ids[randi() % epic_ids.size()]
+	var epic = ItemDatabase.EPIC_ITEMS[epic_id]
+
+	item.base_id = epic_id
+	item.display_name = epic.get("display_name", "Mythic Item")
+	item.description = epic.get("description", "")
+	item.icon_path = epic.get("icon_path", "")
+	item.weapon_type = epic.get("weapon_type", ItemData.WeaponType.NONE)
+	item.grants_equipment_ability = epic.get("grants_equipment_ability", "")
+
+	# Roll 3-4 base stats (one more than Epic's 2-3)
+	var template_stats = epic.get("base_stats", {})
+	item.base_stats = {}
+	var num_stats = randi_range(3, 4)
+	var stat_keys = template_stats.keys()
+
+	# First add template stats
+	for i in range(mini(num_stats, stat_keys.size())):
+		var stat = stat_keys[i]
+		item.base_stats[stat] = _roll_stat(stat, false)
+
+	# If we need more stats, add from slot-allowed stats
+	var allowed_stats = SLOT_ALLOWED_STATS.get(slot, [])
+	while item.base_stats.size() < num_stats and allowed_stats.size() > 0:
+		var stat = allowed_stats[randi() % allowed_stats.size()]
+		if not item.base_stats.has(stat):
+			item.base_stats[stat] = _roll_stat(stat, false)
+
+	# Roll ONE affix (prefix OR suffix) - same as Epic
+	item.magic_stats = {}
+	item.affix_abilities = []
+	if randf() > 0.5:
+		var prefix_data = _get_slot_filtered_prefix(slot)
+		item.prefix = prefix_data.name
+		for stat in prefix_data.stats:
+			if stat == "affix_ability":
+				item.affix_abilities.append(prefix_data.stats.affix_ability)
+			else:
+				item.magic_stats[stat] = _roll_stat(stat, true) * 1.25  # 25% stronger affixes
+	else:
+		var suffix_data = _get_slot_filtered_suffix(slot)
+		item.suffix = suffix_data.name
+		for stat in suffix_data.stats:
+			if stat == "affix_ability":
+				item.affix_abilities.append(suffix_data.stats.affix_ability)
+			else:
+				item.magic_stats[stat] = _roll_stat(stat, true) * 1.25  # 25% stronger affixes
+
+# Legacy function - kept for compatibility but no longer used for new items
 func _scale_item_stats(item: ItemData) -> void:
 	# Scale base stats with item level (5% per level)
 	var level_multiplier = 1.0 + (item.item_level - 1) * 0.05
@@ -475,19 +572,12 @@ func _scale_item_stats(item: ItemData) -> void:
 
 # Check if an item should drop from this enemy
 func should_drop_item(enemy_type: String = "normal") -> bool:
-	var base_chance = 0.004  # 0.4% base drop rate
-
-	# Time bonus - slower scaling, caps at +0.8% over 20 minutes
-	var time_bonus = min(current_game_time / 1200.0 * 0.008, 0.008)
-	base_chance += time_bonus
-
-	# Cap normal enemy drop rate at 1.5%
-	base_chance = min(base_chance, 0.015)
+	var base_chance = 0.004  # 0.4% base drop rate - STATIC, no time bonus
 
 	# Enemy type bonus
 	match enemy_type:
 		"elite":
-			base_chance *= 2.5  # Reduced from 3.0
+			base_chance *= 2.5
 			base_chance = min(base_chance, 0.04)  # Cap elite drops at 4%
 		"boss":
 			base_chance = 1.0  # Guaranteed drop
@@ -914,6 +1004,7 @@ func combine_items(item_ids: Array) -> ItemData:
 	var slot = -1
 	var rarity = -1
 	var weapon_type = -1
+	var lowest_tier = 999  # Track lowest tier among inputs
 
 	# Validate all items
 	for item_id in item_ids:
@@ -936,17 +1027,13 @@ func combine_items(item_ids: Array) -> ItemData:
 		elif slot == ItemData.Slot.WEAPON and item.weapon_type != weapon_type:
 			return null
 
+		# Track lowest tier
+		lowest_tier = min(lowest_tier, item.tier)
 		items.append(item)
 
 	# Remove the 3 items from inventory
 	for item in items:
 		inventory.erase(item)
-
-	# Calculate average item level for the new item
-	var avg_level = 0
-	for item in items:
-		avg_level += item.item_level
-	avg_level = max(1, avg_level / 3)
 
 	# Generate new item with higher rarity
 	var new_rarity = rarity + 1  # Next rarity tier
@@ -955,7 +1042,6 @@ func combine_items(item_ids: Array) -> ItemData:
 	next_item_id += 1
 	new_item.slot = slot as ItemData.Slot
 	new_item.rarity = new_rarity as ItemData.Rarity
-	new_item.item_level = avg_level
 	# Preserve weapon type from combined items
 	if slot == ItemData.Slot.WEAPON:
 		new_item.weapon_type = weapon_type as ItemData.WeaponType
@@ -974,8 +1060,10 @@ func combine_items(item_ids: Array) -> ItemData:
 		ItemData.Rarity.LEGENDARY:
 			_generate_legendary_item(new_item, new_item.slot, character_id)
 
-	# Scale stats with item level
-	_scale_item_stats(new_item)
+	# Set tier to lowest input tier and apply tier scaling
+	new_item.tier = lowest_tier
+	new_item.item_level = lowest_tier + 1  # Legacy compatibility
+	_apply_tier_scaling(new_item)
 
 	# Add to inventory
 	inventory.append(new_item)

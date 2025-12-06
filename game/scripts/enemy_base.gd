@@ -468,13 +468,16 @@ func _update_aggro(delta: float) -> void:
 		aggro_target = null
 		aggro_timer = 0.0
 
-func draw_aggro(minion: Node2D) -> void:
+func draw_aggro(minion: Node2D, custom_chance: float = -1.0) -> void:
 	"""Called when a minion attacks this enemy. May cause enemy to target the minion."""
 	if is_dying:
 		return
 
+	# Use custom chance if provided, otherwise use default
+	var chance = custom_chance if custom_chance >= 0.0 else AGGRO_CHANCE
+
 	# Only have a chance to aggro
-	if randf() > AGGRO_CHANCE:
+	if randf() > chance:
 		return
 
 	# Set the minion as our target
@@ -952,7 +955,7 @@ func try_drop_health_potion() -> void:
 	# Check for player's health drop multiplier (Ratfolk Scavenger passive)
 	var drop_multiplier: float = 1.0
 	if CharacterManager:
-		var bonuses = CharacterManager.get_character_bonuses()
+		var bonuses = CharacterManager.get_passive_bonuses()
 		if bonuses.get("has_scavenger", 0) > 0:
 			drop_multiplier = bonuses.get("health_drop_multiplier", 1.0)
 

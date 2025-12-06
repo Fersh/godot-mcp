@@ -371,7 +371,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 
 func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 360)  # Banner size +40px height
+	button.custom_minimum_size = Vector2(240, 400)  # Banner size including 40px triangle
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -467,8 +467,10 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_right", 12)
 	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.add_theme_constant_override("margin_bottom", 52)  # 12 + 40 for triangle area
+	margin.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	margin.add_child(vbox)
+	vbox.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 
 	button.add_child(margin)
 
@@ -482,8 +484,10 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	icon_container.anchor_bottom = 0
 	icon_container.offset_top = -40  # Half outside the card (icon is 80px, so -40 puts half outside)
 	icon_container.offset_bottom = 40
+	icon_container.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	var icon_circle = _create_icon_circle(ability)
 	icon_circle.name = "IconCircle"
+	icon_circle.mouse_filter = Control.MOUSE_FILTER_PASS
 	icon_container.add_child(icon_circle)
 	button.add_child(icon_container)
 
@@ -491,12 +495,14 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	if ability.is_upgrade():
 		var tier_banner = _create_tier_banner(ability)
 		tier_banner.name = "TierBanner"
+		tier_banner.mouse_filter = Control.MOUSE_FILTER_PASS
 		button.add_child(tier_banner)
 
 	# Prerequisite indicator showing what ability this upgrades from
 	if ability.is_upgrade():
 		var prereq_indicator = _create_prerequisite_indicator(ability)
 		prereq_indicator.name = "PrereqIndicator"
+		prereq_indicator.mouse_filter = Control.MOUSE_FILTER_PASS
 		button.add_child(prereq_indicator)
 
 	# Add particle effect container (starts hidden, shown after card settles)
@@ -650,7 +656,7 @@ func _style_button(button: Button, _rarity: ActiveAbilityData.Rarity, _ability: 
 	style.border_color = Color(0.2, 0.9, 0.3)  # Green border
 
 	style.set_border_width_all(4)
-	# Banner shape: rounded top corners, flat bottom for triangle attachment
+	# Banner shape: rounded top corners, flat bottom (triangle covers the bottom)
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
 	style.corner_radius_bottom_left = 0
@@ -670,12 +676,11 @@ func _style_button(button: Button, _rarity: ActiveAbilityData.Rarity, _ability: 
 
 func _create_banner_point() -> Control:
 	"""Create the triangle point at the bottom of the banner card."""
+	## Button is 400px tall - triangle occupies the bottom 40px
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	container.anchor_top = 1.0
-	container.anchor_bottom = 1.0
-	container.offset_top = 0
-	container.offset_bottom = 40  # Height of triangle
+	container.offset_top = -40  # 40px above bottom
+	container.offset_bottom = 0  # At bottom
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Green colors for active ability cards

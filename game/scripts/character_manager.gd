@@ -133,10 +133,10 @@ func _init_characters() -> void:
 	lizardfolk_king.sprite_texture = lizardfolk_king_texture
 	characters["lizardfolk_king"] = lizardfolk_king
 
-	# Create skeleton king - The Leech King
-	var skeleton_king = CharacterData.create_skeleton_king()
-	skeleton_king.sprite_texture = skeleton_king_texture
-	characters["skeleton_king"] = skeleton_king
+	# Create skeleton king - The Leech King (COMMENTED OUT)
+	#var skeleton_king = CharacterData.create_skeleton_king()
+	#skeleton_king.sprite_texture = skeleton_king_texture
+	#characters["skeleton_king"] = skeleton_king
 
 	# Create shardsoul slayer - The Reaper
 	var shardsoul_slayer = CharacterData.create_shardsoul_slayer()
