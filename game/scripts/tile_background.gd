@@ -713,7 +713,9 @@ func _generate_trees_structured() -> void:
 		# Instantiate destructible tree
 		var tree_instance = tree_scene.instantiate()
 		tree_instance.position = pos
-		tree_instance.scale = Vector2(tree_scale, tree_scale)
+		# Randomize tree size from 1x to 2x the base tree_scale
+		var random_scale = tree_scale * rng.randf_range(1.0, 2.0)
+		tree_instance.scale = Vector2(random_scale, random_scale)
 
 		# Randomize tree texture
 		var tree_textures_loaded: Array[Texture2D] = []
@@ -996,27 +998,22 @@ func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 	"""Spawn a single treasure chest in a valid random location."""
 	var chest_scene = load("res://scenes/environment/treasure_chest.tscn")
 	if not chest_scene:
-		push_warning("Could not load treasure_chest.tscn")
+		push_error("TreasureChest: Could not load treasure_chest.tscn")
 		return
 
-	var min_tree_distance = scaled_tile_size * 2.0  # Keep away from trees
+	var min_tree_distance = scaled_tile_size * 1.5  # Keep away from trees (reduced from 2.0)
 	var attempts = 0
-	var max_attempts = 100
+	var max_attempts = 200  # Increased attempts
 
 	while attempts < max_attempts:
 		attempts += 1
 
 		# Pick a random tile position (avoiding borders)
-		var x = rng.randi_range(border_thickness + 3, arena_width_tiles - border_thickness - 3)
-		var y = rng.randi_range(border_thickness + 3, arena_height_tiles - border_thickness - 3)
+		var x = rng.randi_range(border_thickness + 2, arena_width_tiles - border_thickness - 2)
+		var y = rng.randi_range(border_thickness + 2, arena_height_tiles - border_thickness - 2)
 
 		# Skip water tiles
 		if _is_water_tile(x, y):
-			continue
-
-		# Skip road tiles (optional, but chests on roads are fine)
-		# Skip central clearing to make it more hidden
-		if _is_in_central_clearing(x, y):
 			continue
 
 		var pos = Vector2(
@@ -1033,16 +1030,8 @@ func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 		if too_close_to_tree:
 			continue
 
-		# Check distance from water (buffer zone)
-		var near_water = false
-		for wy in range(-1, 2):
-			for wx in range(-1, 2):
-				if _is_water_tile(x + wx, y + wy):
-					near_water = true
-					break
-			if near_water:
-				break
-		if near_water:
+		# Check if directly on water tile (skip adjacent water check for more positions)
+		if _is_water_tile(x, y):
 			continue
 
 		# Valid position found - spawn the chest
@@ -1050,9 +1039,10 @@ func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 		chest_node.position = pos
 		chest_node.z_index = int(pos.y / 10)
 		add_child(chest_node)
+		print("TreasureChest: Spawned at position ", pos, " after ", attempts, " attempts")
 		return
 
-	push_warning("Could not find valid position for treasure chest after %d attempts" % max_attempts)
+	push_error("TreasureChest: Could not find valid position after %d attempts" % max_attempts)
 
 func _clear_tiles() -> void:
 	for tile in generated_tiles:

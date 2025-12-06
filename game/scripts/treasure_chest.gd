@@ -5,9 +5,9 @@ extends Area2D
 signal opened(reward_type: String, reward_data: Dictionary)
 
 @export var chest_textures: Array[String] = [
-	"res://assets/enviro/gowl/Rocks and Chest/IronChest/1.png",
-	"res://assets/enviro/gowl/Rocks and Chest/IronChest/2.png",
-	"res://assets/enviro/gowl/Rocks and Chest/IronChest/3.png"
+	"res://assets/enviro/gowl/Rocks and Chest/Chest/IronChest/1.png",
+	"res://assets/enviro/gowl/Rocks and Chest/Chest/IronChest/2.png",
+	"res://assets/enviro/gowl/Rocks and Chest/Chest/IronChest/3.png"
 ]
 
 var is_opened: bool = false
@@ -30,14 +30,18 @@ func _ready() -> void:
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sprite.scale = Vector2(2.5, 2.5)  # Scale up to match game art style
 	if ResourceLoader.exists(chest_textures[0]):
 		sprite.texture = load(chest_textures[0])
+		print("TreasureChest: Loaded texture successfully")
+	else:
+		push_error("TreasureChest: Could not find texture at " + chest_textures[0])
 	add_child(sprite)
 
-	# Create collision shape
+	# Create collision shape (scaled to match sprite)
 	var collision = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
-	shape.size = Vector2(32, 24)
+	shape.size = Vector2(50, 40)  # Larger collision to match scaled sprite
 	collision.shape = shape
 	collision.position = Vector2(0, 4)
 	add_child(collision)
@@ -216,8 +220,10 @@ func _create_treasure_popup(reward_type: String, reward_data: Dictionary) -> Can
 		"item":
 			var item = reward_data.get("item")
 			if item:
-				reward_label.text = "EQUIPMENT:\n%s" % item.get("name", "Mystery Item")
-				reward_label.add_theme_color_override("font_color", _get_rarity_color(item.get("rarity", "common")))
+				# ItemData is a Resource, access properties directly
+				var item_name = item.get_full_name() if item.has_method("get_full_name") else item.display_name
+				reward_label.text = "EQUIPMENT:\n%s" % item_name
+				reward_label.add_theme_color_override("font_color", item.get_rarity_color() if item.has_method("get_rarity_color") else Color.WHITE)
 				# Item will be given when closing popup
 				canvas.set_meta("pending_item", item)
 			else:
