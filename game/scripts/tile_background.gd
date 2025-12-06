@@ -209,8 +209,9 @@ func generate_arena() -> void:
 			if tile_type.begins_with("water"):
 				_create_water_collision(tile_pos, scaled_tile_size)
 
-	# Step 2.5: Generate top border extension (above playable area)
+	# Step 2.5: Generate border extensions
 	_generate_top_border_extension(scaled_tile_size)
+	_generate_water_borders(scaled_tile_size)
 
 	# Step 3: Add overlays and objects (respecting structure)
 	_generate_trees_structured()
@@ -490,6 +491,37 @@ func _generate_top_border_extension(scaled_tile_size: float) -> void:
 				tile_rect = top_border_above_tile  # (2, 10)
 
 			_create_tile_sprite(tile_pos, tile_rect, "top_border")
+
+func _generate_water_borders(scaled_tile_size: float) -> void:
+	"""Generate water tiles on left, right, and bottom edges of the map."""
+	const WATER_BORDER_DEPTH = 10  # 10 tiles of water in each direction
+
+	# Water tile (6,7) = Rect2i(192, 224, 32, 32)
+	var water_tile = Rect2i(192, 224, 32, 32)
+
+	# Left water border
+	for col in range(WATER_BORDER_DEPTH):
+		var tile_x = arena_offset_x - (col + 1) * scaled_tile_size
+		for row in range(arena_height_tiles + WATER_BORDER_DEPTH):
+			var tile_y = arena_offset_y + row * scaled_tile_size
+			_create_tile_sprite(Vector2(tile_x, tile_y), water_tile, "water_border")
+			_create_water_collision(Vector2(tile_x, tile_y), scaled_tile_size)
+
+	# Right water border
+	for col in range(WATER_BORDER_DEPTH):
+		var tile_x = arena_offset_x + (arena_width_tiles + col) * scaled_tile_size
+		for row in range(arena_height_tiles + WATER_BORDER_DEPTH):
+			var tile_y = arena_offset_y + row * scaled_tile_size
+			_create_tile_sprite(Vector2(tile_x, tile_y), water_tile, "water_border")
+			_create_water_collision(Vector2(tile_x, tile_y), scaled_tile_size)
+
+	# Bottom water border
+	for row in range(WATER_BORDER_DEPTH):
+		var tile_y = arena_offset_y + (arena_height_tiles + row) * scaled_tile_size
+		for col in range(-WATER_BORDER_DEPTH, arena_width_tiles + WATER_BORDER_DEPTH):
+			var tile_x = arena_offset_x + col * scaled_tile_size
+			_create_tile_sprite(Vector2(tile_x, tile_y), water_tile, "water_border")
+			_create_water_collision(Vector2(tile_x, tile_y), scaled_tile_size)
 
 func _determine_tile_type(x: int, y: int) -> String:
 	var max_x = arena_width_tiles - 1

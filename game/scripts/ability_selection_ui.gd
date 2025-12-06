@@ -226,7 +226,7 @@ func create_ability_card(ability, index: int) -> Button:
 
 	# Spacer above ability name (for rarity tag + upgrade indicator)
 	var top_spacer = Control.new()
-	top_spacer.custom_minimum_size = Vector2(0, 8 if not is_upgrade else 24)
+	top_spacer.custom_minimum_size = Vector2(0, 18 if not is_upgrade else 34)
 	vbox.add_child(top_spacer)
 
 	# Ability name - use RichTextLabel for upgrades with prefix, or trigger cards

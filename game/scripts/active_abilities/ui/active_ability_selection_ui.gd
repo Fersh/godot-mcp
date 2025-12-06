@@ -378,12 +378,12 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 
 	# Spacer at top (for icon that's half outside)
 	var top_spacer = Control.new()
-	top_spacer.custom_minimum_size = Vector2(0, 50)  # Space for icon overlap
+	top_spacer.custom_minimum_size = Vector2(0, 48)  # Space for icon overlap
 	vbox.add_child(top_spacer)
 
-	# Spacer after icon position (above name) - reduced by 20px
+	# Spacer after icon position (above name)
 	var icon_spacer = Control.new()
-	icon_spacer.custom_minimum_size = Vector2(0, 8)
+	icon_spacer.custom_minimum_size = Vector2(0, 0)
 	vbox.add_child(icon_spacer)
 
 	# Ability name (below icon) - white for all active abilities

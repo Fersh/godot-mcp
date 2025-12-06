@@ -107,6 +107,17 @@ func setup_from_ability(ability, dmg: float, piercing: bool = false) -> void:
 		pierce_count = 99
 
 func _on_body_entered(body: Node2D) -> void:
+	# Handle obstacles (trees, rocks, etc.)
+	if body.is_in_group("obstacles"):
+		if body.has_method("take_damage"):
+			body.take_damage(damage, false)
+		# Projectiles stop on obstacles unless piercing
+		if pierce_count > 0:
+			pierce_count -= 1
+		else:
+			_explode()
+		return
+
 	if not body.is_in_group("enemies"):
 		return
 

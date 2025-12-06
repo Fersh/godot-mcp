@@ -573,25 +573,83 @@ func get_scene_for_type(enemy_type: String) -> PackedScene:
 			return enemy_scene
 
 func get_spawn_position() -> Vector2:
-	# Spawn from all 4 edges of the arena
-	var roll = randf()
+	# Spawn at the edge of the visible screen, but INSIDE the arena (on land)
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		# Fallback to center of arena
+		return Vector2((ARENA_LEFT + ARENA_RIGHT) / 2, (ARENA_TOP + ARENA_BOTTOM) / 2)
+
+	var viewport = get_viewport()
+	if not viewport:
+		return _get_fallback_spawn_position()
+
+	var screen_size = viewport.get_visible_rect().size
+	var camera = viewport.get_camera_2d()
+	var screen_center = player.global_position
+	if camera:
+		screen_center = camera.global_position
+
+	var half_width = screen_size.x / 2.0
+	var half_height = screen_size.y / 2.0
+
+	# Spawn just outside visible screen but inside arena bounds
+	var spawn_offset = 50.0  # Just outside screen edge
+	var margin = 80.0  # Stay away from arena edges (water)
 	var pos: Vector2
-	var margin = 50.0
+	var roll = randf()
+	var attempts = 0
+	var max_attempts = 10
 
-	if roll < 0.25:
-		# Left (spawn just outside left boundary)
-		pos = Vector2(ARENA_LEFT - margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
-	elif roll < 0.5:
-		# Right (spawn just outside right boundary)
-		pos = Vector2(ARENA_RIGHT + margin, randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin))
-	elif roll < 0.75:
-		# Top
-		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_TOP - margin)
-	else:
-		# Bottom
-		pos = Vector2(randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin), ARENA_BOTTOM + margin)
+	while attempts < max_attempts:
+		attempts += 1
 
-	return pos
+		if roll < 0.25:
+			# Left edge of screen
+			pos = Vector2(
+				screen_center.x - half_width - spawn_offset,
+				screen_center.y + randf_range(-half_height * 0.8, half_height * 0.8)
+			)
+		elif roll < 0.5:
+			# Right edge of screen
+			pos = Vector2(
+				screen_center.x + half_width + spawn_offset,
+				screen_center.y + randf_range(-half_height * 0.8, half_height * 0.8)
+			)
+		elif roll < 0.75:
+			# Top edge of screen
+			pos = Vector2(
+				screen_center.x + randf_range(-half_width * 0.8, half_width * 0.8),
+				screen_center.y - half_height - spawn_offset
+			)
+		else:
+			# Bottom edge of screen
+			pos = Vector2(
+				screen_center.x + randf_range(-half_width * 0.8, half_width * 0.8),
+				screen_center.y + half_height + spawn_offset
+			)
+
+		# Clamp to arena bounds (stay on land, avoid water)
+		pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
+		pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
+
+		# If position is valid (inside arena), use it
+		if pos.x > ARENA_LEFT + margin and pos.x < ARENA_RIGHT - margin \
+		   and pos.y > ARENA_TOP + margin and pos.y < ARENA_BOTTOM - margin:
+			return pos
+
+		# Try a different edge
+		roll = randf()
+
+	# Fallback if all attempts failed
+	return _get_fallback_spawn_position()
+
+func _get_fallback_spawn_position() -> Vector2:
+	"""Fallback spawn position inside the arena."""
+	var margin = 100.0
+	return Vector2(
+		randf_range(ARENA_LEFT + margin, ARENA_RIGHT - margin),
+		randf_range(ARENA_TOP + margin, ARENA_BOTTOM - margin)
+	)
 
 func set_arena_bounds(bounds: Rect2) -> void:
 	"""Set the arena boundaries for enemy spawning."""
@@ -640,7 +698,7 @@ func _do_initial_spawn() -> void:
 		get_parent().add_child(enemy)
 
 func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
-	"""Get a spawn position at the edge of the visible screen."""
+	"""Get a spawn position at the edge of the visible screen, clamped to arena bounds."""
 	var viewport = get_viewport()
 	if not viewport:
 		return get_spawn_position()  # Fallback to normal spawn
@@ -659,6 +717,7 @@ func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
 
 	# Spawn just inside the screen edge (with small offset so they're visible immediately)
 	var edge_offset = 30.0  # Pixels inside the screen edge
+	var margin = 80.0  # Stay away from arena edges (water)
 	var pos: Vector2
 	var roll = randf()
 
@@ -674,6 +733,10 @@ func _get_screen_edge_spawn_position(player: Node2D) -> Vector2:
 	else:
 		# Bottom edge
 		pos = Vector2(screen_center.x + randf_range(-half_width * 0.6, half_width * 0.6), screen_center.y + half_height - edge_offset)
+
+	# Clamp to arena bounds (stay on land, avoid water)
+	pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
+	pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
 
 	return pos
 
