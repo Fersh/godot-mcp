@@ -62,6 +62,14 @@ func _ready() -> void:
 	_branch_selector.branch_selected.connect(_on_branch_selected)
 	_branch_selector.selection_cancelled.connect(_on_branch_cancelled)
 
+func _set_mouse_filter_recursive(control: Control, filter: Control.MouseFilter) -> void:
+	## Recursively set mouse_filter on control and all its children
+	## This ensures the entire card is clickable
+	control.mouse_filter = filter
+	for child in control.get_children():
+		if child is Control:
+			_set_mouse_filter_recursive(child, filter)
+
 func _process(delta: float) -> void:
 	if not is_rolling:
 		return
@@ -194,7 +202,7 @@ func create_ability_card(ability, index: int) -> Button:
 	## Create a banner-shaped card for abilities
 	## Rectangle on top with a triangle point at the bottom
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 400)  # Banner size including 40px triangle
+	button.custom_minimum_size = Vector2(240, 360)  # Rectangle area only
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -373,12 +381,13 @@ func create_ability_card(ability, index: int) -> Button:
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_right", 12)
 	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 52)  # 12 + 40 for triangle area
-	margin.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
+	margin.add_theme_constant_override("margin_bottom", 12)
 	margin.add_child(vbox)
-	vbox.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 
 	button.add_child(margin)
+
+	# Make all children pass input to button
+	_set_mouse_filter_recursive(margin, Control.MOUSE_FILTER_PASS)
 
 	# Rarity tag pinned to top - trigger cards show "Upgrade"
 	var rarity_tag: Control
@@ -387,8 +396,8 @@ func create_ability_card(ability, index: int) -> Button:
 	else:
 		rarity_tag = _create_rarity_tag_for_ability(display_ability)
 	rarity_tag.name = "RarityTag"
-	rarity_tag.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	button.add_child(rarity_tag)
+	_set_mouse_filter_recursive(rarity_tag, Control.MOUSE_FILTER_PASS)
 
 	# Add particle effect container
 	var particle_container = _create_particle_container_for_ability(display_ability)
@@ -400,8 +409,8 @@ func create_ability_card(ability, index: int) -> Button:
 	# Style the button (upgrade-aware) - use original ability to detect trigger cards
 	_style_button_for_ability(button, ability)
 
-	# Add banner point (triangle) at the bottom
-	var banner_point = _create_banner_point(ability)
+	# Add banner point (triangle) at the bottom - pass button and index for click handling
+	var banner_point = _create_banner_point(ability, button, index)
 	banner_point.name = "BannerPoint"
 	button.add_child(banner_point)
 
@@ -414,15 +423,24 @@ func create_ability_card(ability, index: int) -> Button:
 
 	return button
 
-func _create_banner_point(ability) -> Control:
+func _create_banner_point(ability, button: Button, index: int) -> Control:
 	## Create the triangle point at the bottom of the banner card
-	## Button is 400px tall - triangle occupies the bottom 40px
+	## Triangle extends 40px below the button rect
 	var container = Control.new()
 	container.name = "BannerPointContainer"
 	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	container.offset_top = -40  # 40px above bottom
-	container.offset_bottom = 0  # At bottom
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.anchor_top = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = 0
+	container.offset_bottom = 40  # Extend below button
+	# Make triangle clickable - trigger button press on click
+	container.mouse_filter = Control.MOUSE_FILTER_STOP
+	container.gui_input.connect(func(event):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_on_ability_selected(index)
+		elif event is InputEventScreenTouch and event.pressed:
+			_on_ability_selected(index)
+	)
 
 	# Create triangle using a Polygon2D
 	var triangle = Polygon2D.new()

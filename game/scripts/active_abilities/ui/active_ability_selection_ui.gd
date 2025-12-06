@@ -283,6 +283,14 @@ func _create_ui() -> void:
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	vbox.add_child(reroll_button)
 
+func _set_mouse_filter_recursive(control: Control, filter: Control.MouseFilter) -> void:
+	## Recursively set mouse_filter on control and all its children
+	## This ensures the entire card is clickable
+	control.mouse_filter = filter
+	for child in control.get_children():
+		if child is Control:
+			_set_mouse_filter_recursive(child, filter)
+
 func _process(delta: float) -> void:
 	if not is_rolling:
 		return
@@ -371,7 +379,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 
 func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 400)  # Banner size including 40px triangle
+	button.custom_minimum_size = Vector2(240, 360)  # Rectangle area only
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -467,12 +475,13 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	margin.add_theme_constant_override("margin_left", 12)
 	margin.add_theme_constant_override("margin_right", 12)
 	margin.add_theme_constant_override("margin_top", 20)
-	margin.add_theme_constant_override("margin_bottom", 52)  # 12 + 40 for triangle area
-	margin.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
+	margin.add_theme_constant_override("margin_bottom", 12)
 	margin.add_child(vbox)
-	vbox.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 
 	button.add_child(margin)
+
+	# Make all children pass input to button
+	_set_mouse_filter_recursive(margin, Control.MOUSE_FILTER_PASS)
 
 	# Icon circle pinned to top (half above, half inside card) - replaces rarity tag
 	var icon_container = CenterContainer.new()
@@ -484,26 +493,25 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	icon_container.anchor_bottom = 0
 	icon_container.offset_top = -40  # Half outside the card (icon is 80px, so -40 puts half outside)
 	icon_container.offset_bottom = 40
-	icon_container.mouse_filter = Control.MOUSE_FILTER_PASS  # Pass input to button
 	var icon_circle = _create_icon_circle(ability)
 	icon_circle.name = "IconCircle"
-	icon_circle.mouse_filter = Control.MOUSE_FILTER_PASS
 	icon_container.add_child(icon_circle)
 	button.add_child(icon_container)
+	_set_mouse_filter_recursive(icon_container, Control.MOUSE_FILTER_PASS)
 
 	# Tier banner for upgrades (UPGRADE or SIGNATURE)
 	if ability.is_upgrade():
 		var tier_banner = _create_tier_banner(ability)
 		tier_banner.name = "TierBanner"
-		tier_banner.mouse_filter = Control.MOUSE_FILTER_PASS
 		button.add_child(tier_banner)
+		_set_mouse_filter_recursive(tier_banner, Control.MOUSE_FILTER_PASS)
 
 	# Prerequisite indicator showing what ability this upgrades from
 	if ability.is_upgrade():
 		var prereq_indicator = _create_prerequisite_indicator(ability)
 		prereq_indicator.name = "PrereqIndicator"
-		prereq_indicator.mouse_filter = Control.MOUSE_FILTER_PASS
 		button.add_child(prereq_indicator)
+		_set_mouse_filter_recursive(prereq_indicator, Control.MOUSE_FILTER_PASS)
 
 	# Add particle effect container (starts hidden, shown after card settles)
 	var particle_container = _create_particle_container(ability.rarity)
@@ -514,8 +522,8 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 
 	_style_button(button, ability.rarity, ability)
 
-	# Add banner point (triangle) at bottom
-	var banner_point = _create_banner_point()
+	# Add banner point (triangle) at bottom - pass index for click handling
+	var banner_point = _create_banner_point(index)
 	banner_point.name = "BannerPoint"
 	button.add_child(banner_point)
 
@@ -674,14 +682,23 @@ func _style_button(button: Button, _rarity: ActiveAbilityData.Rarity, _ability: 
 	pressed_style.bg_color = pressed_style.bg_color.darkened(0.1)
 	button.add_theme_stylebox_override("pressed", pressed_style)
 
-func _create_banner_point() -> Control:
+func _create_banner_point(index: int) -> Control:
 	"""Create the triangle point at the bottom of the banner card."""
-	## Button is 400px tall - triangle occupies the bottom 40px
+	## Triangle extends 40px below the button rect
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	container.offset_top = -40  # 40px above bottom
-	container.offset_bottom = 0  # At bottom
-	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.anchor_top = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = 0
+	container.offset_bottom = 40  # Extend below button
+	# Make triangle clickable - trigger button press on click
+	container.mouse_filter = Control.MOUSE_FILTER_STOP
+	container.gui_input.connect(func(event):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			_on_ability_selected(index)
+		elif event is InputEventScreenTouch and event.pressed:
+			_on_ability_selected(index)
+	)
 
 	# Green colors for active ability cards
 	var bg_color = Color(0.08, 0.18, 0.1, 0.98)

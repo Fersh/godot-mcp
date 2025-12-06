@@ -2,6 +2,189 @@
 
 ---
 
+## Date: 2025-12-06 - Item Tier System & Weapon Type Expansion
+
+### Summary
+Implemented a difficulty-based item tier system where items scale based on the difficulty they drop from, not time survived. Added STAFF weapon type for casters and updated character weapon mappings. Added Mythic rarity exclusive to Endless mode.
+
+### Key Design Goals
+- Items are tied to difficulty tier, not survival time
+- Players constantly need new gear for each difficulty
+- Higher difficulty = stronger items of same rarity
+- Rarity determines number of stats/modifiers
+- Mythic rarity as Endless-only chase items
+
+---
+
+### 1. Tier System Implementation
+
+#### Tier Multipliers
+| Tier | Difficulty | Multiplier | Example Epic Damage |
+|------|------------|------------|---------------------|
+| 0 | Pitiful | 0.50x | ~11% |
+| 1 | Easy | 0.70x | ~15% |
+| 2 | Normal | 0.90x | ~20% |
+| 3 | Nightmare | 1.15x | ~25% |
+| 4 | Hell | 1.50x (baseline) | ~33% |
+| 5 | Inferno | 2.00x | ~44% |
+| 6 | Thanksgiving | 2.50x | ~55% |
+| 7+ | Endless | 2.50 + 0.20/tier | scales infinitely |
+
+**Endless scaling:** Tier 7 at start, +1 tier every 5 minutes survived.
+
+#### Item Name Display
+Items now show tier in parentheses: `"Sword of Flames (Hell)"`, `"Iron Helm (Nightmare)"`
+
+#### Changes from Previous System
+- **Removed:** Time-based item_level scaling
+- **Removed:** Time-based drop rate bonus
+- **Removed:** Time-based rarity shift
+- **Added:** Difficulty tier determines all item power
+
+---
+
+### 2. Rarity System Updates
+
+#### Affix Slots by Rarity
+| Rarity | Base Stats | Affixes | Special |
+|--------|------------|---------|---------|
+| Common | 1-2 | 0 | — |
+| Rare | 2 | 1 (prefix OR suffix) | — |
+| Epic | 2-3 | 1 (prefix OR suffix) | Unique name, equipment ability |
+| Legendary | 2 | 2 (prefix + suffix) | Unique name, grants ability |
+| Mythic | 3-4 | 1 (25% stronger) | Endless-only |
+
+**Epic Fix:** Changed from 2 affixes (prefix + suffix) to 1 affix (prefix OR suffix) to differentiate from Legendary.
+
+#### Mythic Rarity (Endless Only)
+- Only drops in Endless mode after 5 minutes
+- Base chance: 0.3%, scales to 1.5% over time
+- Elite bonus: 2x Mythic chance
+- Boss bonus: 4x Mythic chance
+- Stronger Epic with +1 base stat and 25% stronger affix stats
+
+---
+
+### 3. Drop Rate Changes
+
+#### Static Drop Rates (No Time Scaling)
+| Enemy Type | Drop Chance |
+|------------|-------------|
+| Normal | 0.4% |
+| Elite | 1.0% (2.5x, capped at 4%) |
+| Boss | 100% |
+
+#### Static Rarity Weights
+| Rarity | Weight |
+|--------|--------|
+| Common | 70% |
+| Rare | 22% |
+| Epic | 6.5% |
+| Legendary | 1.5% |
+| Mythic | 0% (Endless only) |
+
+Enemy type still affects rarity (elites/bosses favor higher rarities), but time survived no longer affects drop rates or rarity.
+
+---
+
+### 4. Combine System Update
+
+**Cross-Tier Combine Rule:** When combining 3 items of different tiers, the output uses the **lowest tier** among inputs.
+
+Example: Combining 2 Hell items + 1 Normal item → Output is Normal tier
+
+This prevents "tier laundering" where players combine low-tier items to get high-tier results.
+
+---
+
+### 5. New Weapon Type: STAFF
+
+Added STAFF weapon type for caster characters, replacing MAGIC (books) for mages.
+
+#### Character Weapon Mappings Updated
+| Character | Weapon Type |
+|-----------|-------------|
+| Mage | STAFF (was MAGIC) |
+| Minotaur | AXE |
+| Ratfolk | AXE |
+| Kobold Priest | STAFF |
+| Necromancer | STAFF |
+
+#### Staff Items Added
+
+**Base Items:**
+- Staff (basic) - `staff_basic`
+- Arcane Staff - `arcane_staff`
+- Crystal Staff - `crystal_staff`
+- Dark Staff - `dark_staff`
+
+**Epic Staffs:**
+- Forbidden Staff - grants arcane_burst ability
+- Necromancer's Staff - grants soul_drain ability
+- Priest's Holy Staff - grants divine_smite ability
+
+**Legendary Staffs:**
+- Staff of Reality - bends space around wielder
+- Staff of Infinite Power - channels limitless energy
+- Chaos Staff - unpredictable magical effects
+
+---
+
+### 6. Files Modified
+
+**item_data.gd:**
+- Added `STAFF` to WeaponType enum
+- Added `tier` property (0-6 for difficulties, 7+ for Endless)
+- Added `TIER_NAMES` and `TIER_MULTIPLIERS` constants
+- Updated `get_full_name()` to append tier name
+- Added `get_tier_name()` and `get_tier_multiplier()` methods
+- Updated `duplicate_item()`, `to_save_dict()`, `from_save_dict()` for tier
+- Added migration for legacy items without tier
+
+**item_database.gd:**
+- Added 4 base staff items
+- Added 3 Epic staff items
+- Added 3 Legendary staff items
+- Updated `_weapon_type_matches_character()` for new characters
+- Added STAFF to `WEAPON_TYPE_NAMES`
+
+**equipment_manager.gd:**
+- Added `TIER_MULTIPLIERS` constant
+- Added `_get_tier_from_difficulty()` function
+- Added `_get_tier_multiplier()` function
+- Added `_apply_tier_scaling()` function
+- Added `_generate_mythic_item()` function
+- Updated `generate_item()` to use tier-based generation
+- Updated `_roll_rarity()` to remove time scaling, add Mythic for Endless
+- Updated `should_drop_item()` to remove time bonus
+- Updated `_generate_epic_item()` to use 1 affix only
+- Updated `combine_items()` to use lowest input tier
+
+---
+
+### 7. Stat Ranges Reference
+
+**Base Stat Ranges (before tier multiplier):**
+| Stat | Min | Max |
+|------|-----|-----|
+| damage | 3% | 12% |
+| max_hp | 5% | 15% |
+| attack_speed | 3% | 10% |
+| move_speed | 2% | 8% |
+| crit_chance | 2% | 8% |
+| dodge_chance | 2% | 6% |
+| damage_reduction | 2% | 8% |
+
+**Affix Stat Ranges (before tier multiplier):**
+| Stat | Min | Max |
+|------|-----|-----|
+| damage | 5% | 15% |
+| crit_damage | 15% | 35% |
+| cooldown_reduction | 5% | 12% |
+| aoe_size | 10% | 25% |
+
+---
+
 ## Date: 2025-12-05 - Active Ability Tree Consolidation
 
 ### Summary
