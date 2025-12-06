@@ -39,15 +39,6 @@ func _ready() -> void:
 	collision_layer = 8
 	collision_mask = 0  # Static body, doesn't need to detect
 
-	# Set z_index based on Y position for proper depth sorting
-	# Trees lower on screen (higher Y) render on top of things higher on screen
-	# Add +1 to ensure obstacles render slightly above enemies at same Y position
-	z_index = int(global_position.y / 10) + 1
-
-	# Ensure sprite renders on top of enemies behind the tree
-	if sprite:
-		sprite.z_index = 1  # Relative to parent, ensures it's above enemies
-
 	# Find player
 	await get_tree().process_frame
 	var players = get_tree().get_nodes_in_group("player")
@@ -66,6 +57,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if is_destroyed:
 		return
+
+	# Update z_index based on Y position every frame for proper depth sorting
+	# Use the collision shape's bottom edge (where character feet would be)
+	# Add +1 to ensure obstacles render on top of characters at same Y position
+	var base_y = global_position.y
+	if collision_shape:
+		base_y = global_position.y + collision_shape.position.y + 10  # Bottom of collision
+	z_index = int(base_y / 10) + 1
 
 	# Smoothly lerp alpha
 	if abs(current_alpha - target_alpha) > 0.01:
@@ -187,81 +186,188 @@ func _play_destruction_animation() -> void:
 	tween.chain().tween_callback(queue_free)
 
 func _spawn_destruction_particles() -> void:
-	# Create particle effect based on type - similar to blood splatter effect
+	# Create MASSIVE particle explosion - feels like bursting/shattering
 	var particle_colors: Array[Color] = []
-	var particle_count: int = 12
+	var particle_count: int = 40  # Base particle count - dramatically increased
+	var large_chunk_count: int = 8  # Large debris pieces
 
 	match obstacle_type:
 		"tree":
-			# Green leaves with some brown bark
+			# Green leaves with brown bark - lots of variety
 			particle_colors = [
-				Color(0.15, 0.5, 0.1),   # Dark green
-				Color(0.25, 0.6, 0.15),  # Medium green
-				Color(0.35, 0.7, 0.2),   # Light green
-				Color(0.4, 0.3, 0.15),   # Brown bark
+				Color(0.12, 0.45, 0.08),  # Dark green
+				Color(0.18, 0.55, 0.12),  # Forest green
+				Color(0.25, 0.65, 0.15),  # Medium green
+				Color(0.35, 0.75, 0.2),   # Light green
+				Color(0.45, 0.8, 0.25),   # Bright green
+				Color(0.5, 0.35, 0.15),   # Brown bark
+				Color(0.4, 0.28, 0.12),   # Dark bark
+				Color(0.6, 0.4, 0.2),     # Light bark
 			]
-			particle_count = 16
+			particle_count = 60
+			large_chunk_count = 12
 		"rock":
-			# Gray stone shades
+			# Gray stone shades with variety
 			particle_colors = [
-				Color(0.4, 0.4, 0.4),   # Dark gray
-				Color(0.5, 0.5, 0.5),   # Medium gray
-				Color(0.6, 0.6, 0.6),   # Light gray
-				Color(0.35, 0.35, 0.38), # Blue-gray
+				Color(0.35, 0.35, 0.35),  # Dark gray
+				Color(0.45, 0.45, 0.45),  # Medium dark gray
+				Color(0.55, 0.55, 0.55),  # Medium gray
+				Color(0.65, 0.65, 0.65),  # Light gray
+				Color(0.75, 0.75, 0.75),  # Very light gray
+				Color(0.4, 0.38, 0.42),   # Blue-gray
+				Color(0.5, 0.48, 0.45),   # Warm gray
 			]
-			particle_count = 12
+			particle_count = 50
+			large_chunk_count = 10
 		"lamp":
-			# Brown wood pieces
+			# Wood pieces with glass shards
 			particle_colors = [
 				Color(0.45, 0.28, 0.12),  # Dark brown
 				Color(0.55, 0.35, 0.15),  # Medium brown
 				Color(0.65, 0.42, 0.2),   # Light brown
-				Color(0.3, 0.2, 0.1),     # Very dark brown
+				Color(0.35, 0.22, 0.1),   # Very dark brown
+				Color(0.75, 0.5, 0.25),   # Tan
+				Color(0.9, 0.85, 0.7),    # Glass shard (yellowish)
+				Color(0.95, 0.9, 0.8),    # Glass highlight
 			]
-			particle_count = 10
+			particle_count = 35
+			large_chunk_count = 6
 		"branch":
-			# Brown wood
+			# Brown wood splinters
 			particle_colors = [
 				Color(0.4, 0.25, 0.1),
 				Color(0.5, 0.32, 0.14),
 				Color(0.35, 0.2, 0.08),
+				Color(0.55, 0.38, 0.18),
+				Color(0.45, 0.3, 0.12),
 			]
-			particle_count = 8
+			particle_count = 25
+			large_chunk_count = 5
 		_:
-			particle_colors = [Color(0.5, 0.5, 0.5)]
-			particle_count = 8
+			particle_colors = [Color(0.5, 0.5, 0.5), Color(0.6, 0.6, 0.6)]
+			particle_count = 30
+			large_chunk_count = 6
 
-	# Spawn particles with varied sizes and colors
+	# Spawn LARGE debris chunks first (bigger, slower, more impactful)
+	for i in range(large_chunk_count):
+		var chunk = Sprite2D.new()
+		chunk.texture = _create_chunk_texture()
+		chunk.modulate = particle_colors[randi() % particle_colors.size()]
+		chunk.global_position = global_position + Vector2(randf_range(-20, 20), randf_range(-40, 0))
+		chunk.scale = Vector2(1.0, 1.0) * randf_range(1.5, 3.0)
+		chunk.z_index = z_index + 2
+		get_parent().add_child(chunk)
+
+		# Large chunks burst outward dramatically then fall with gravity
+		var tween = create_tween()
+		var burst_dir = Vector2(randf_range(-1, 1), randf_range(-0.8, -0.2)).normalized()
+		var burst_distance = randf_range(80, 150)
+		var mid_pos = chunk.global_position + burst_dir * burst_distance
+		var end_pos = mid_pos + Vector2(0, randf_range(60, 120))  # Fall down
+
+		tween.set_parallel(true)
+		# Arc motion - up then down
+		tween.tween_property(chunk, "global_position", mid_pos, 0.25).set_ease(Tween.EASE_OUT)
+		tween.chain().tween_property(chunk, "global_position", end_pos, 0.4).set_ease(Tween.EASE_IN)
+		tween.set_parallel(true)
+		tween.tween_property(chunk, "rotation", randf_range(-6, 6), 0.65)
+		tween.tween_property(chunk, "scale", chunk.scale * 0.2, 0.65).set_delay(0.2)
+		tween.tween_property(chunk, "modulate:a", 0.0, 0.3).set_delay(0.4)
+		tween.chain().tween_callback(chunk.queue_free)
+
+	# Spawn many small particles for dust/debris cloud
 	for i in range(particle_count):
 		var particle = Sprite2D.new()
 		particle.texture = _create_particle_texture()
 		particle.modulate = particle_colors[randi() % particle_colors.size()]
-		particle.global_position = global_position + Vector2(randf_range(-25, 25), randf_range(-30, 10))
-		particle.scale = Vector2(1.0, 1.0) * randf_range(0.8, 2.0)
+		# Spread particles across the whole obstacle area
+		particle.global_position = global_position + Vector2(randf_range(-35, 35), randf_range(-50, 10))
+		particle.scale = Vector2(1.0, 1.0) * randf_range(0.5, 2.0)
 		particle.z_index = z_index + 1
 		get_parent().add_child(particle)
 
-		# Animate particle - burst outward and fall
+		# Animate particle - explosive burst in all directions
 		var tween = create_tween()
-		var burst_dir = Vector2(randf_range(-1, 1), randf_range(-1, -0.3)).normalized()
-		var burst_distance = randf_range(40, 80)
-		var end_pos = particle.global_position + burst_dir * burst_distance + Vector2(0, randf_range(20, 50))
+		var burst_dir = Vector2(randf_range(-1, 1), randf_range(-1, 0.5)).normalized()
+		var burst_distance = randf_range(50, 120)
+		var end_pos = particle.global_position + burst_dir * burst_distance + Vector2(0, randf_range(10, 40))
 
+		var duration = randf_range(0.4, 0.8)
 		tween.set_parallel(true)
-		tween.tween_property(particle, "global_position", end_pos, randf_range(0.4, 0.7)).set_ease(Tween.EASE_OUT)
-		tween.tween_property(particle, "modulate:a", 0.0, randf_range(0.5, 0.8)).set_delay(0.1)
-		tween.tween_property(particle, "rotation", randf_range(-4, 4), 0.6)
-		tween.tween_property(particle, "scale", particle.scale * 0.3, 0.6)
+		tween.tween_property(particle, "global_position", end_pos, duration).set_ease(Tween.EASE_OUT)
+		tween.tween_property(particle, "modulate:a", 0.0, duration).set_delay(0.05)
+		tween.tween_property(particle, "rotation", randf_range(-5, 5), duration)
+		tween.tween_property(particle, "scale", particle.scale * randf_range(0.1, 0.4), duration)
 		tween.chain().tween_callback(particle.queue_free)
 
+	# Add a dust cloud poof effect
+	_spawn_dust_cloud()
+
 func _create_particle_texture() -> Texture2D:
-	# Create a simple square texture for particles (like blood effect)
+	# Create a simple square texture for particles
 	var image = Image.create(6, 6, false, Image.FORMAT_RGBA8)
 	image.fill(Color.WHITE)
 	return ImageTexture.create_from_image(image)
 
+func _create_chunk_texture() -> Texture2D:
+	# Create a larger irregular chunk texture
+	var size = randi_range(8, 14)
+	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	image.fill(Color.WHITE)
+	return ImageTexture.create_from_image(image)
+
+func _spawn_dust_cloud() -> void:
+	# Spawn fading dust particles that expand outward
+	var dust_count = 20
+	var dust_color = Color(0.6, 0.55, 0.45, 0.6)  # Brownish dust
+
+	match obstacle_type:
+		"tree":
+			dust_color = Color(0.4, 0.5, 0.35, 0.5)  # Greenish dust
+		"rock":
+			dust_color = Color(0.5, 0.5, 0.5, 0.5)   # Gray dust
+		"lamp":
+			dust_color = Color(0.55, 0.45, 0.35, 0.5)  # Brown dust
+
+	for i in range(dust_count):
+		var dust = Sprite2D.new()
+		dust.texture = _create_dust_texture()
+		dust.modulate = dust_color
+		dust.modulate.a = randf_range(0.3, 0.6)
+		dust.global_position = global_position + Vector2(randf_range(-30, 30), randf_range(-40, 0))
+		dust.scale = Vector2(1.0, 1.0) * randf_range(2.0, 4.0)
+		dust.z_index = z_index + 3
+		get_parent().add_child(dust)
+
+		# Dust expands and fades
+		var tween = create_tween()
+		var expand_dir = Vector2(randf_range(-1, 1), randf_range(-0.5, 0.5)).normalized()
+		var end_pos = dust.global_position + expand_dir * randf_range(40, 80)
+
+		tween.set_parallel(true)
+		tween.tween_property(dust, "global_position", end_pos, randf_range(0.5, 1.0)).set_ease(Tween.EASE_OUT)
+		tween.tween_property(dust, "scale", dust.scale * randf_range(1.5, 2.5), randf_range(0.5, 1.0))
+		tween.tween_property(dust, "modulate:a", 0.0, randf_range(0.6, 1.0))
+		tween.chain().tween_callback(dust.queue_free)
+
+func _create_dust_texture() -> Texture2D:
+	# Create a soft circular dust texture
+	var size = 16
+	var image = Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var center = Vector2(size / 2.0, size / 2.0)
+	var radius = size / 2.0
+
+	for y in range(size):
+		for x in range(size):
+			var dist = Vector2(x, y).distance_to(center)
+			var alpha = clamp(1.0 - (dist / radius), 0.0, 1.0)
+			alpha = alpha * alpha  # Soft falloff
+			image.set_pixel(x, y, Color(1, 1, 1, alpha))
+
+	return ImageTexture.create_from_image(image)
+
 func _create_health_bar() -> void:
-	# Health bar above the obstacle with border styling
+	# Health bar above the obstacle - matches enemy health bar size (40x6)
 	var bar_container = Node2D.new()
 	bar_container.name = "HealthBar"
 	bar_container.position = Vector2(0, -40)
@@ -270,28 +376,20 @@ func _create_health_bar() -> void:
 	bar_container.z_as_relative = false  # Use absolute z-index
 	add_child(bar_container)
 
-	# Border (slightly larger, dark outline)
-	var border = ColorRect.new()
-	border.name = "Border"
-	border.color = Color(0.1, 0.1, 0.1, 1.0)  # Dark border, 100% opacity
-	border.size = Vector2(36, 8)
-	border.position = Vector2(-18, -2)
-	bar_container.add_child(border)
-
-	# Background (inside border)
+	# Background - matches enemy health bar
 	var bg = ColorRect.new()
 	bg.name = "Background"
-	bg.color = Color(0.15, 0.15, 0.15, 1.0)  # Dark gray, 100% opacity
-	bg.size = Vector2(32, 4)
-	bg.position = Vector2(-16, 0)
+	bg.color = Color(0.2, 0.2, 0.2, 1.0)
+	bg.size = Vector2(40, 6)
+	bg.position = Vector2(-20, -3)
 	bar_container.add_child(bg)
 
 	# Health fill
 	var fill = ColorRect.new()
 	fill.name = "Fill"
-	fill.color = Color(0.2, 0.8, 0.2, 1.0)  # Green, 100% opacity
-	fill.size = Vector2(32, 4)
-	fill.position = Vector2(-16, 0)
+	fill.color = Color(0.2, 0.8, 0.2, 1.0)
+	fill.size = Vector2(40, 6)
+	fill.position = Vector2(-20, -3)
 	bar_container.add_child(fill)
 
 	health_bar = bar_container
@@ -303,6 +401,7 @@ func _create_health_bar_script() -> GDScript:
 
 var show_timer: float = 0.0
 const SHOW_DURATION: float = 3.0
+const BAR_WIDTH: float = 40.0
 
 func _process(delta: float) -> void:
 	# Keep health bar at 100% opacity regardless of parent's alpha
@@ -319,8 +418,8 @@ func update_health(current: float, max_val: float) -> void:
 	var fill = get_node_or_null("Fill")
 	if fill:
 		var ratio = clamp(current / max_val, 0.0, 1.0)
-		fill.size.x = 32 * ratio
-		# Color from green to red with 100% opacity
+		fill.size.x = BAR_WIDTH * ratio
+		# Color from green to red
 		fill.color = Color(1.0 - ratio, ratio, 0.2, 1.0)
 """
 	script.reload()

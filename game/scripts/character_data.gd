@@ -229,7 +229,7 @@ static func create_beast() -> CharacterData:
 
 	# Glass cannon - very fast, high damage, low health
 	data.base_health = 18.0
-	data.base_speed = 178.2  # Reduced 10%
+	data.base_speed = 151.47  # Reduced 15% from 178.2
 	data.base_attack_cooldown = 0.65  # Very fast attacks
 	data.base_damage = 1.8
 	data.attack_range = 65.0  # Melee reach
@@ -481,7 +481,7 @@ static func create_assassin() -> CharacterData:
 
 	# Assassin stats - glass cannon with highest speed and crit
 	data.base_health = 16.0  # Lowest HP
-	data.base_speed = 171.0  # Fastest character, reduced 10%
+	data.base_speed = 145.35  # Reduced 15% from 171.0
 	data.base_attack_cooldown = 0.6  # Very fast strikes
 	data.base_damage = 1.3
 	data.attack_range = 175.0  # Reduced 50% from 350

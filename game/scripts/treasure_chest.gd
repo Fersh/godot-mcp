@@ -260,8 +260,6 @@ func _give_coins(amount: int) -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	if player and player.has_method("add_gold"):
 		player.add_gold(amount)
-	elif CurrencyManager:
-		CurrencyManager.add_coins(amount)
 
 func _get_rarity_color(rarity: String) -> Color:
 	match rarity:

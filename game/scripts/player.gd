@@ -2773,6 +2773,40 @@ func dash_toward(target_pos: Vector2) -> void:
 	if SoundManager:
 		SoundManager.play_dash()
 
+func dash(direction: Vector2, distance: float, duration: float = 0.2) -> void:
+	"""Dash in a direction for a distance over duration (used by active abilities like Quick Roll)."""
+	# Normalize direction to ensure consistent speed
+	direction = direction.normalized()
+
+	# Calculate end position
+	var end_pos = global_position + direction * distance
+
+	# Clamp to dynamic arena bounds to prevent dashing out of the map
+	if arena_bounds.size.x > 0 and arena_bounds.size.y > 0:
+		end_pos.x = clamp(end_pos.x, arena_bounds.position.x + arena_margin, arena_bounds.end.x - arena_margin)
+		end_pos.y = clamp(end_pos.y, arena_bounds.position.y + arena_margin, arena_bounds.end.y - arena_margin)
+
+	# Update facing direction based on dash direction
+	if direction.x > 0.1:
+		facing_right = true
+		if sprite:
+			sprite.flip_h = false
+	elif direction.x < -0.1:
+		facing_right = false
+		if sprite:
+			sprite.flip_h = true
+
+	# Create tween for smooth dash movement
+	var tween = create_tween()
+	tween.tween_property(self, "global_position", end_pos, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_EXPO)
+
+	# Spawn visual effect
+	_spawn_dash_smoke()
+
+	# Play sound
+	if SoundManager:
+		SoundManager.play_dash()
+
 func _update_active_ability_timers(delta: float) -> void:
 	"""Update timers for active ability effects."""
 	# Update invulnerability timer
