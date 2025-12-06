@@ -226,9 +226,11 @@ func create_ability_card(ability, index: int) -> Button:
 		name_label.name = "NameLabel"
 		name_label.text = ability_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
 		name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White text
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_label.custom_minimum_size = Vector2(0, 44)  # Min height for 2 lines
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
 		vbox.add_child(name_label)
@@ -240,6 +242,7 @@ func create_ability_card(ability, index: int) -> Button:
 		name_rich.scroll_active = false
 		name_rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		name_rich.add_theme_font_size_override("normal_font_size", 18)
+		name_rich.custom_minimum_size = Vector2(0, 44)  # Min height for 2 lines
 		if pixel_font:
 			name_rich.add_theme_font_override("normal_font", pixel_font)
 		# Build compound name: [green]Prefix[/color] [rarity]BaseName[/color] [gold]Suffix[/gold]
@@ -253,6 +256,7 @@ func create_ability_card(ability, index: int) -> Button:
 		name_label.name = "NameLabel"
 		name_label.text = ability_name
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.add_theme_font_size_override("font_size", 18)
 		# Use tier-based color for passive abilities
 		if display_ability is AbilityData:
@@ -261,16 +265,22 @@ func create_ability_card(ability, index: int) -> Button:
 		else:
 			name_label.add_theme_color_override("font_color", _get_rarity_color(display_ability))
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_label.custom_minimum_size = Vector2(0, 44)  # Min height for 2 lines
 		if pixel_font:
 			name_label.add_theme_font_override("font", pixel_font)
 		vbox.add_child(name_label)
+
+	# Spacer below name
+	var name_spacer = Control.new()
+	name_spacer.custom_minimum_size = Vector2(0, 40)  # 40px margin below title
+	vbox.add_child(name_spacer)
 
 	# Description
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.text = ability_desc
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP  # Top-aligned
 	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1484,6 +1494,48 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 	# Update button style - use original ability to detect trigger cards correctly
 	_style_button_for_ability(button, ability)
 
+	# Update banner point colors on final reveal
+	if is_final_reveal:
+		var banner_point = button.get_node_or_null("BannerPoint")
+		if banner_point:
+			var fill_color: Color
+			var border_color: Color
+			var border_width: float = 3.0
+
+			if is_upgrade or is_trigger:
+				# Green for all active ability upgrades and trigger cards
+				fill_color = Color(0.08, 0.18, 0.1, 0.98)
+				border_color = Color(0.2, 0.9, 0.3)
+				border_width = 4.0
+			elif display_ability is AbilityData:
+				var next_rank = _get_passive_next_rank(display_ability)
+				fill_color = _get_tier_bg_color(next_rank)
+				border_color = _get_tier_border_color(next_rank)
+			else:
+				fill_color = Color(0.15, 0.15, 0.18, 0.98)
+				border_color = Color(0.4, 0.4, 0.4)
+
+			# Update stored metadata
+			banner_point.set_meta("fill_color", fill_color)
+			banner_point.set_meta("border_color", border_color)
+			banner_point.set_meta("border_width", border_width)
+
+			# Update triangle fill
+			var triangle = banner_point.get_node_or_null("TriangleFill") as Polygon2D
+			if triangle:
+				triangle.color = fill_color
+
+			# Update borders
+			var left_border = banner_point.get_node_or_null("LeftBorder") as Line2D
+			if left_border:
+				left_border.default_color = border_color
+				left_border.width = border_width
+
+			var right_border = banner_point.get_node_or_null("RightBorder") as Line2D
+			if right_border:
+				right_border.default_color = border_color
+				right_border.width = border_width
+
 	# Update rank circle (child 4 = RankContainer)
 	var rank_container = vbox.get_node_or_null("RankContainer") as HBoxContainer
 	if rank_container and is_final_reveal:
@@ -2270,8 +2322,8 @@ func _create_rank_circle(ability, next_rank: int) -> Control:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 14)
-	# Use black text for gold (max rank) backgrounds, white for others
-	if is_max_rank:
+	# Use black text for rank 2 (green) and rank 3 (gold) backgrounds, white for rank 1
+	if next_rank >= 2:
 		label.add_theme_color_override("font_color", Color.BLACK)
 	else:
 		label.add_theme_color_override("font_color", Color.WHITE)

@@ -24,8 +24,8 @@ var player: Node2D = null
 # Pixel font for UI
 var pixel_font: Font = null
 
-# Victory screen
-var victory_ui: CanvasLayer = null
+# Game over scene for victory
+var game_over_scene: PackedScene = preload("res://scenes/game_over.tscn")
 
 # Signals
 signal milestone_reached(milestone_index: int)
@@ -302,156 +302,33 @@ func _create_notification(text: String, color: Color, font_size: int) -> CanvasL
 	return canvas
 
 func _show_victory_screen() -> void:
-	"""Show the victory screen."""
+	"""Show the victory screen using the game over screen with victory styling."""
 	# Pause the game
 	get_tree().paused = true
 
-	victory_ui = CanvasLayer.new()
-	victory_ui.layer = 110
-	victory_ui.process_mode = Node.PROCESS_MODE_ALWAYS
-	add_child(victory_ui)
+	# Instantiate the game over screen
+	var game_over = game_over_scene.instantiate()
 
-	# Background overlay
-	var bg = ColorRect.new()
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0, 0, 0, 0.85)
-	bg.mouse_filter = Control.MOUSE_FILTER_STOP
-	victory_ui.add_child(bg)
+	# Set victory mode before adding to tree (so _ready() applies victory styling)
+	game_over.set_is_victory(true)
 
-	# Main container
-	var container = VBoxContainer.new()
-	container.set_anchors_preset(Control.PRESET_CENTER)
-	container.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	container.grow_vertical = Control.GROW_DIRECTION_BOTH
-	container.alignment = BoxContainer.ALIGNMENT_CENTER
-	container.add_theme_constant_override("separation", 30)
-	victory_ui.add_child(container)
+	# Get stats for the screen
+	var level = 1
+	var kills = 0
+	if StatsManager:
+		var run = StatsManager.get_run_stats()
+		level = run.level
+		kills = run.kills
+	game_over.set_stats(level, game_time, kills)
 
-	# Victory title
-	var title = Label.new()
-	title.text = "VICTORY!"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		title.add_theme_font_override("font", pixel_font)
-	title.add_theme_font_size_override("font_size", 66)
-	title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	title.add_theme_color_override("font_shadow_color", Color(0.4, 0.3, 0.0, 1.0))
-	title.add_theme_constant_override("shadow_offset_x", 4)
-	title.add_theme_constant_override("shadow_offset_y", 4)
-	container.add_child(title)
-
-	# Difficulty completed
-	var difficulty_label = Label.new()
-	var diff_name = DifficultyManager.get_difficulty_name() if DifficultyManager else "Unknown"
-	difficulty_label.text = "%s Completed!" % diff_name
-	difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		difficulty_label.add_theme_font_override("font", pixel_font)
-	difficulty_label.add_theme_font_size_override("font_size", 26)
-	var diff_color = DifficultyManager.get_difficulty_color() if DifficultyManager else Color.WHITE
-	difficulty_label.add_theme_color_override("font_color", diff_color)
-	container.add_child(difficulty_label)
-
-	# Time display
-	var time_label = Label.new()
-	var mins = int(game_time) / 60
-	var secs = int(game_time) % 60
-	time_label.text = "Time: %d:%02d" % [mins, secs]
-	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		time_label.add_theme_font_override("font", pixel_font)
-	time_label.add_theme_font_size_override("font_size", 20)
-	time_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
-	container.add_child(time_label)
-
-	# Buttons
-	var button_container = HBoxContainer.new()
-	button_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	button_container.add_theme_constant_override("separation", 20)
-	container.add_child(button_container)
-
-	# Continue button (play again at same difficulty)
-	var continue_btn = Button.new()
-	continue_btn.text = "Play Again"
-	continue_btn.custom_minimum_size = Vector2(150, 50)
-	continue_btn.pressed.connect(_on_play_again)
-	_style_button(continue_btn, Color(0.2, 0.75, 0.3))
-	button_container.add_child(continue_btn)
-
-	# Menu button
-	var menu_btn = Button.new()
-	menu_btn.text = "Main Menu"
-	menu_btn.custom_minimum_size = Vector2(150, 50)
-	menu_btn.pressed.connect(_on_main_menu)
-	_style_button(menu_btn, Color(0.4, 0.4, 0.5))
-	button_container.add_child(menu_btn)
-
-	# Animate entry
-	container.modulate.a = 0.0
-	container.scale = Vector2(0.8, 0.8)
-	container.pivot_offset = container.size / 2
-
-	var tween = create_tween()
-	tween.tween_property(container, "modulate:a", 1.0, 0.3)
-	tween.parallel().tween_property(container, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	# Add to the tree
+	add_child(game_over)
 
 	# Celebration effects
 	if JuiceManager:
 		JuiceManager.shake_medium()
 	if HapticManager:
 		HapticManager.heavy()
-
-func _style_button(button: Button, color: Color) -> void:
-	"""Apply consistent styling to buttons."""
-	var style = StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_width_left = 3
-	style.border_width_right = 3
-	style.border_width_top = 3
-	style.border_width_bottom = 6
-	style.border_color = color.darkened(0.4)
-	style.set_corner_radius_all(6)
-	button.add_theme_stylebox_override("normal", style)
-
-	var hover = style.duplicate()
-	hover.bg_color = color.lightened(0.15)
-	button.add_theme_stylebox_override("hover", hover)
-
-	var pressed = style.duplicate()
-	pressed.bg_color = color.darkened(0.15)
-	pressed.border_width_top = 5
-	pressed.border_width_bottom = 4
-	button.add_theme_stylebox_override("pressed", pressed)
-
-	if pixel_font:
-		button.add_theme_font_override("font", pixel_font)
-	button.add_theme_font_size_override("font_size", 16)
-
-func _on_play_again() -> void:
-	"""Restart the game at the same difficulty."""
-	if SoundManager:
-		SoundManager.play_click()
-	if HapticManager:
-		HapticManager.light()
-
-	# Reset run stats
-	if StatsManager:
-		StatsManager.reset_run()
-	if AbilityManager:
-		AbilityManager.reset()
-
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/main.tscn")
-
-func _on_main_menu() -> void:
-	"""Return to main menu."""
-	if SoundManager:
-		SoundManager.play_click()
-	if HapticManager:
-		HapticManager.light()
-
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 func get_completion_time() -> float:
 	"""Get the time it took to complete the challenge."""

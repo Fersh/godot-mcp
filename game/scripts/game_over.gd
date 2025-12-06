@@ -16,6 +16,7 @@ var final_kills: int = 0
 var final_coins: int = 0
 var final_points: int = 0
 var player_gave_up: bool = false
+var is_victory: bool = false
 
 # Settings dropdown
 var settings_dropdown: PanelContainer = null
@@ -32,8 +33,15 @@ func _ready() -> void:
 	add_to_group("game_over_ui")
 	play_again_button.pressed.connect(_on_play_again_pressed)
 
-	# Set title based on whether player gave up (set before _ready via set_gave_up)
-	if player_gave_up and title_label:
+	# Set title based on game outcome (set before _ready via set_gave_up/set_is_victory)
+	if is_victory and title_label:
+		title_label.text = "VICTORY!"
+		title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))  # Gold
+		# Update background color for victory
+		var bg = $Panel/ColorRect
+		if bg:
+			bg.color = Color(0.05, 0.08, 0.05, 0.95)  # Dark green tint
+	elif player_gave_up and title_label:
 		title_label.text = "YOU COWARD"
 
 	# Show difficulty info for challenge mode deaths
@@ -108,6 +116,9 @@ func set_gave_up(gave_up: bool) -> void:
 	player_gave_up = gave_up
 	if player_gave_up and title_label:
 		title_label.text = "YOU COWARD"
+
+func set_is_victory(victory: bool) -> void:
+	is_victory = victory
 
 func format_time(seconds: float) -> String:
 	var mins = int(seconds) / 60

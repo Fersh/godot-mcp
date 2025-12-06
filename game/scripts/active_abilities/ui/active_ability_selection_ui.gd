@@ -224,7 +224,7 @@ func _create_ui() -> void:
 	# Choices container - centered horizontally (spacing matches passive selection)
 	choices_container = HBoxContainer.new()
 	choices_container.name = "ChoicesContainer"
-	choices_container.add_theme_constant_override("separation", 40)
+	choices_container.add_theme_constant_override("separation", 60)
 	choices_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	choices_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(choices_container)
@@ -381,21 +381,23 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	icon_spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(icon_spacer)
 
-	# Ability name (below icon) - colored by rarity
+	# Ability name (below icon) - white for all active abilities
 	var name_label = Label.new()
 	name_label.name = "NameLabel"
 	name_label.text = ability.name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
-	name_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
+	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.custom_minimum_size = Vector2(0, 44)  # Min height for 2 lines
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
 
 	# Spacer below name
 	var name_spacer = Control.new()
-	name_spacer.custom_minimum_size = Vector2(0, 10)
+	name_spacer.custom_minimum_size = Vector2(0, 40)  # 40px margin below title
 	vbox.add_child(name_spacer)
 
 	# Description
@@ -403,7 +405,7 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	desc_label.name = "DescLabel"
 	desc_label.text = ability.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	desc_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP  # Top-aligned
 	desc_label.add_theme_font_size_override("font_size", 14)
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -736,7 +738,7 @@ func _create_icon_circle(ability: ActiveAbilityData) -> Control:
 	var icon_drawer = IconCircleDrawer.new()
 	icon_drawer.icon_size = ICON_SIZE
 	icon_drawer.border_width = BORDER_WIDTH
-	icon_drawer.border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+	icon_drawer.border_color = Color(0.2, 0.9, 0.3)  # Green border for all active abilities
 	icon_drawer.bg_color = Color(0.1, 0.1, 0.15, 1.0)
 	icon_drawer.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
 	icon_drawer.size = Vector2(ICON_SIZE, ICON_SIZE)
@@ -771,7 +773,7 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 		if icon_circle and icon_circle.get_child_count() > 0:
 			var icon_drawer = icon_circle.get_child(0) as IconCircleDrawer
 			if icon_drawer:
-				icon_drawer.border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+				icon_drawer.border_color = Color(0.2, 0.9, 0.3)  # Green border for all active abilities
 				var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
 				if ResourceLoader.exists(icon_path):
 					icon_drawer.icon_texture = load(icon_path)
@@ -783,11 +785,11 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 				icon_drawer.queue_redraw()
 
 	# Children: 0=top_spacer, 1=icon_spacer, 2=name, 3=name_spacer, 4=desc, 5=upgradeable, 6=cooldown, 7=bottom_spacer
-	# Update name (child 2) - set color to rarity
+	# Update name (child 2) - white for all active abilities
 	var name_label = vbox.get_child(2) as Label
 	if name_label:
 		name_label.text = ability.name
-		name_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
+		name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White
 
 	# Update description (child 4)
 	var desc_label = vbox.get_child(4) as Label

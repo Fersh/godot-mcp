@@ -96,8 +96,8 @@ func _create_ui() -> void:
 	touch_area.mouse_entered.connect(_on_mouse_entered)
 	touch_area.mouse_exited.connect(_on_mouse_exited)
 
-	# Store border color for drawing
-	border_color = Color(0.5, 0.5, 0.5, 1.0)
+	# Store border color for drawing - white for all buttons
+	border_color = Color(1.0, 1.0, 1.0, 1.0)
 	bg_color = Color(0.1, 0.1, 0.15, 1.0)
 
 	# Charge indicator label (top right corner, for dodge with Double Charge)
@@ -120,7 +120,7 @@ func _create_ui() -> void:
 	# Create tooltip (initially hidden)
 	_create_tooltip()
 
-var border_color: Color = Color(0.5, 0.5, 0.5, 1.0)
+var border_color: Color = Color(1.0, 1.0, 1.0, 1.0)
 var bg_color: Color = Color(0.1, 0.1, 0.15, 1.0)
 
 func _draw() -> void:
@@ -340,7 +340,7 @@ func setup_empty(p_slot: int) -> void:
 	slot_index = p_slot
 	is_dodge = false
 
-	border_color = Color(0.3, 0.3, 0.3, 0.5)
+	border_color = Color(1.0, 1.0, 1.0, 0.5)  # White but semi-transparent for empty
 	icon_texture.texture = null
 
 	# Show "?" or empty indicator
@@ -350,10 +350,8 @@ func setup_empty(p_slot: int) -> void:
 	queue_redraw()
 
 func _update_border_color() -> void:
-	if not ability:
-		return
-
-	border_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+	# White border for all ability buttons
+	border_color = Color(1.0, 1.0, 1.0, 1.0)
 
 func _load_icon() -> void:
 	if not ability:

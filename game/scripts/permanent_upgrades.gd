@@ -328,6 +328,7 @@ func get_all_bonuses() -> Dictionary:
 		"revive": 0,
 		"starting_abilities": 0,
 		"melee_swing_count": 0,
+		"attack_range": 0.0,
 	}
 
 	for id in upgrade_ranks:
