@@ -1035,20 +1035,53 @@ func _execute_slam_meteor(ability: ActiveAbilityData, player: Node2D) -> void:
 # ============================================
 
 func _execute_dash_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 2: Chain 3 dashes in quick succession"""
+	"""Tier 2: Chain 3 dashes to nearest enemies"""
 	var damage = _get_damage(ability)
-	var direction = _get_attack_direction(player)
 	var dash_duration = 0.12
 	var dash_distance = ability.range_distance
+
+	# Find up to 3 nearest enemies within range
+	var all_enemies = _get_enemies_in_radius(player.global_position, dash_distance)
+	all_enemies.sort_custom(func(a, b):
+		return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position)
+	)
+	var target_enemies = all_enemies.slice(0, 3)
+
+	# Track which enemies we've already targeted (to find new ones each dash)
+	var targeted_enemies: Array = []
 
 	# Chain 3 dashes using a tween for timing
 	var tween = player.create_tween()
 
 	for i in range(3):
-		# Capture current position at start of each dash
+		# Capture index for closure
+		var dash_index = i
 		tween.tween_callback(func():
 			var start_pos = player.global_position
-			var end_pos = start_pos + direction * dash_distance
+			var end_pos: Vector2
+
+			# Find nearest untargeted enemy from current position
+			var current_enemies = _get_enemies_in_radius(start_pos, dash_distance)
+			current_enemies.sort_custom(func(a, b):
+				return start_pos.distance_to(a.global_position) < start_pos.distance_to(b.global_position)
+			)
+
+			var target_enemy: Node2D = null
+			for enemy in current_enemies:
+				if enemy not in targeted_enemies and is_instance_valid(enemy):
+					target_enemy = enemy
+					targeted_enemies.append(enemy)
+					break
+
+			if target_enemy:
+				# Dash to enemy position (slightly in front)
+				var dir_to_enemy = (target_enemy.global_position - start_pos).normalized()
+				var dist_to_enemy = start_pos.distance_to(target_enemy.global_position)
+				end_pos = start_pos + dir_to_enemy * min(dist_to_enemy - 20, dash_distance)
+			else:
+				# No enemy found, dash in attack direction
+				var direction = _get_attack_direction(player)
+				end_pos = start_pos + direction * dash_distance
 
 			# Clamp to arena bounds
 			end_pos.x = clamp(end_pos.x, -60, 1596)
@@ -1057,9 +1090,9 @@ func _execute_dash_blade_rush(ability: ActiveAbilityData, player: Node2D) -> voi
 			# Spawn effect at start
 			_spawn_effect("blade_rush", start_pos)
 
-			# Damage enemies in dash path
-			var enemies = _get_enemies_in_radius(start_pos + direction * dash_distance * 0.5, dash_distance * 0.7)
-			for enemy in enemies:
+			# Damage enemies near the dash endpoint
+			var hit_enemies = _get_enemies_in_radius(end_pos, 60)
+			for enemy in hit_enemies:
 				_deal_damage_to_enemy(enemy, damage)
 
 			# Move player
