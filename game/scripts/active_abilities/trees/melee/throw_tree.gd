@@ -63,7 +63,7 @@ static func _create_blade_storm() -> ActiveAbilityData:
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.SELF,
 		18.0
-	).with_damage(25.0, 0.8) \
+	).with_damage(60.0, 1.2) \
 	 .with_aoe(120.0) \
 	 .with_duration(8.0) \
 	 .with_effect("orbital_blades") \

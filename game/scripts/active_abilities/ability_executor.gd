@@ -663,6 +663,10 @@ func _get_mapped_effect(effect_id: String) -> String:
 		# Dash T3
 		"omnislash":
 			return "omnislash_pixel"
+		"omnislash_sequence":
+			return "omnislash_sequence"
+		"anime_slash":
+			return "anime_slash"
 		"shadow_legion":
 			return "shadow_legion_pixel"
 		# Combo T3

@@ -2,6 +2,60 @@
 
 ---
 
+## Date: 2025-12-05 - Trigger Card System Overhaul
+
+### Summary
+Complete fix for active ability upgrade display system. All active ability upgrades now appear as "trigger cards" showing the current equipped ability name (not upgrade branch names). Clicking a trigger card opens branch selection to choose the specific upgrade path.
+
+### Key Fixes
+
+#### 1. Trigger Card System for ALL Levels
+Active ability upgrades now always display as trigger cards instead of raw ActiveAbilityData objects:
+- **Levels 3, 7, 12**: Guaranteed one trigger card
+- **Other levels**: 50% chance per slot for trigger card (unchanged behavior, but now displays correctly)
+
+**Before**: Showed upgrade branch names like "Fiery Whirlwind", "Vacuum Whirlwind" as separate cards
+**After**: Shows single trigger card with current ability name "Whirlwind", click to see upgrade options
+
+#### 2. Trigger Card Display
+- **Title**: Current equipped ability name (e.g., "Whirlwind", not "Fiery Whirlwind")
+- **Description**: "Choose upgrade for [ability name]"
+- **Border**: Green with dark green-tinted background
+- **Rank**: Shows NEXT tier (2 if upgrading T1, 3 if upgrading T2)
+- **Footer**: "Upgrade" in green
+
+#### 3. Stats Removed from Upgrade Cards
+Removed stat change display (+X% damage, -Y% cooldown) from:
+- Trigger cards (first screen)
+- Branch selection cards (second screen)
+Players now see ability descriptions instead.
+
+#### 4. Visual Polish
+- Ability name text: Changed from green to **white** on all screens
+- 10px margin added above New/Upgrade footer text
+- Rank square now has 4px border radius (slightly rounded corners)
+- Button styling updates correctly on slot machine reveal (was showing wrong colors until clicked)
+
+### Technical Changes
+
+**ability_manager.gd:**
+- `get_random_abilities()` now uses `_get_all_active_upgrade_triggers()` instead of `_get_active_ability_upgrades()` - ensures trigger cards are used at all levels
+- `get_passive_choices_with_active_upgrade()` adds ONE guaranteed trigger at levels 3, 7, 12
+- Added debug prints to trace trigger card creation
+
+**ability_selection_ui.gd:**
+- `create_ability_card()` - Fixed trigger card title to use `display_ability.name` (not `base_name`)
+- `update_card_content()` - Now restyles button, updates rank circle, and updates New/Upgrade label on final reveal
+- `_style_button_for_ability()` - Now called with original ability (not display_ability) to correctly detect trigger cards
+- `_format_compound_name_full()` - All text now white (removed green prefix/suffix coloring)
+- `_create_rank_circle()` - Uses Panel with StyleBoxFlat for border radius
+
+### Files Modified
+- `game/scripts/abilities/ability_manager.gd` - Trigger card generation for all levels
+- `game/scripts/ability_selection_ui.gd` - Display fixes, styling updates, stat removal
+
+---
+
 ## Date: 2025-12-05 - Passive & Active Ability Upgrade System Redesign
 
 ### Summary

@@ -1072,29 +1072,31 @@ func _execute_dash_blade_rush(ability: ActiveAbilityData, player: Node2D) -> voi
 		tween.tween_interval(dash_duration + 0.05)
 
 func _execute_dash_omnislash(ability: ActiveAbilityData, player: Node2D) -> void:
-	"""Tier 3 SIGNATURE: Teleport between enemies, massive damage"""
+	"""Tier 3 SIGNATURE: Dash between enemies with anime katana slashes"""
 	var damage = _get_damage(ability)
 
 	# SIGNATURE: Invulnerable during omnislash
 	if player.has_method("set_invulnerable"):
 		player.set_invulnerable(ability.invulnerability_duration)
 
-	# Get up to 8 enemies
+	# Get up to 8 enemies, sorted by distance
 	var enemies = _get_enemies_in_radius(player.global_position, ability.range_distance)
+	enemies.sort_custom(func(a, b):
+		return player.global_position.distance_to(a.global_position) < player.global_position.distance_to(b.global_position)
+	)
 	enemies = enemies.slice(0, 8)
 
-	for enemy in enemies:
-		if is_instance_valid(enemy):
-			# Teleport to enemy
-			player.global_position = enemy.global_position
-			# Strike 3 times
-			for j in range(3):
-				_deal_damage_to_enemy(enemy, damage)
-			_spawn_effect("omnislash_hit", enemy.global_position)
+	if enemies.size() > 0:
+		# Spawn the omnislash sequence effect which handles all the dashing and slashing
+		var sequence = _spawn_effect("omnislash_sequence", player.global_position)
+		if sequence and sequence.has_method("setup"):
+			sequence.setup(player, enemies, damage, 3)  # 3 hits per enemy
+	else:
+		# No enemies - just do a cool pose effect
+		_spawn_effect("omnislash", player.global_position)
 
 	_play_sound("omnislash")
 	_screen_shake("large")
-	_impact_pause(0.2)
 
 func _execute_dash_afterimage(ability: ActiveAbilityData, player: Node2D) -> void:
 	"""Tier 2: Leave exploding clone"""
