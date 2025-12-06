@@ -97,6 +97,9 @@ func _init_upgrade_definitions() -> void:
 	_add_upgrade("viral_payload", "Weaken", "Enemies have reduced health", "virus",
 		Category.COMBAT, 11, 400, 1.6, 5, 0.10, "enemy_health_reduction", "-%d%% enemy health")
 
+	_add_upgrade("extended_reach", "Range", "Increase attack range (ranged only)", "range",
+		Category.COMBAT, 12, 150, 1.4, 5, 0.15, "attack_range", "+%d%% attack range")
+
 	# Survival Upgrades - ordered by importance/commonality
 	_add_upgrade("core_integrity", "Health", "Increase maximum health", "health",
 		Category.SURVIVAL, 0, 100, 1.4, 5, 0.20, "max_hp", "+%d%% max HP")

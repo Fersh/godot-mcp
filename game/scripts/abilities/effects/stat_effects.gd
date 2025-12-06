@@ -241,6 +241,12 @@ func get_melee_area_multiplier() -> float:
 func get_melee_range_multiplier() -> float:
 	return 1.0 + _manager.stat_modifiers.get("melee_range", 0.0) + _get_equipment_stat("melee_range")
 
+func get_attack_range_multiplier() -> float:
+	var perm_bonus = 0.0
+	if PermanentUpgrades:
+		perm_bonus = PermanentUpgrades.get_all_bonuses().get("attack_range", 0.0)
+	return 1.0 + _manager.stat_modifiers.get("attack_range", 0.0) + _get_equipment_stat("attack_range") + perm_bonus
+
 func get_melee_knockback() -> float:
 	return _manager.melee_knockback
 

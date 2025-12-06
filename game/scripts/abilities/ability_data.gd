@@ -35,6 +35,7 @@ enum EffectType {
 	CRIT_CHANCE,
 	LUCK,
 	SIZE,
+	ATTACK_RANGE,       # Ranged attack range increase
 
 	# Special effects
 	REGEN,

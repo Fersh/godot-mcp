@@ -231,7 +231,7 @@ func _create_ui() -> void:
 
 	# Spacer before reroll button
 	var reroll_spacer = Control.new()
-	reroll_spacer.custom_minimum_size = Vector2(0, 20)
+	reroll_spacer.custom_minimum_size = Vector2(0, 60)
 	vbox.add_child(reroll_spacer)
 
 	# Reroll button - red with white font like Refund All
@@ -363,7 +363,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 
 func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 320)  # Banner size (matches passive cards)
+	button.custom_minimum_size = Vector2(240, 360)  # Banner size +40px height
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -371,22 +371,14 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vbox.add_theme_constant_override("separation", 4)
 
-	# Spacer at top (for rarity tag)
+	# Spacer at top (for icon that's half outside)
 	var top_spacer = Control.new()
-	top_spacer.custom_minimum_size = Vector2(0, 8)
+	top_spacer.custom_minimum_size = Vector2(0, 50)  # Space for icon overlap
 	vbox.add_child(top_spacer)
 
-	# Icon circle container (centered) - now at top
-	var icon_container = CenterContainer.new()
-	icon_container.name = "IconContainer"
-	var icon_circle = _create_icon_circle(ability)
-	icon_circle.name = "IconCircle"
-	icon_container.add_child(icon_circle)
-	vbox.add_child(icon_container)
-
-	# Spacer after icon (above name) - 20px added
+	# Spacer after icon position (above name) - reduced by 20px
 	var icon_spacer = Control.new()
-	icon_spacer.custom_minimum_size = Vector2(0, 28)
+	icon_spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(icon_spacer)
 
 	# Ability name (below icon) - colored by rarity
@@ -400,6 +392,11 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	if pixel_font:
 		name_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(name_label)
+
+	# Spacer below name
+	var name_spacer = Control.new()
+	name_spacer.custom_minimum_size = Vector2(0, 10)
+	vbox.add_child(name_spacer)
 
 	# Description
 	var desc_label = Label.new()
@@ -455,10 +452,20 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 
 	button.add_child(margin)
 
-	# Rarity tag pinned to top (half above, half inside card)
-	var rarity_tag = _create_rarity_tag(ability.rarity)
-	rarity_tag.name = "RarityTag"
-	button.add_child(rarity_tag)
+	# Icon circle pinned to top (half above, half inside card) - replaces rarity tag
+	var icon_container = CenterContainer.new()
+	icon_container.name = "IconContainer"
+	icon_container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	icon_container.anchor_left = 0
+	icon_container.anchor_right = 1
+	icon_container.anchor_top = 0
+	icon_container.anchor_bottom = 0
+	icon_container.offset_top = -40  # Half outside the card (icon is 80px, so -40 puts half outside)
+	icon_container.offset_bottom = 40
+	var icon_circle = _create_icon_circle(ability)
+	icon_circle.name = "IconCircle"
+	icon_container.add_child(icon_circle)
+	button.add_child(icon_container)
 
 	# Tier banner for upgrades (UPGRADE or SIGNATURE)
 	if ability.is_upgrade():
@@ -757,11 +764,10 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if not vbox:
 		return
 
-	# Children: 0=top_spacer, 1=icon_container, 2=icon_spacer, 3=name, 4=desc, 5=upgradeable, 6=cooldown, 7=bottom_spacer
-	# Update icon circle (child 1 is icon_container)
-	var icon_container = vbox.get_child(1) as CenterContainer
-	if icon_container and icon_container.get_child_count() > 0:
-		var icon_circle = icon_container.get_child(0)
+	# Update icon circle (now positioned on button, not in vbox)
+	var icon_container = button.get_node_or_null("IconContainer") as CenterContainer
+	if icon_container:
+		var icon_circle = icon_container.get_node_or_null("IconCircle")
 		if icon_circle and icon_circle.get_child_count() > 0:
 			var icon_drawer = icon_circle.get_child(0) as IconCircleDrawer
 			if icon_drawer:
@@ -776,8 +782,9 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 				icon_drawer.show_skillshot_indicator = ability.supports_skillshot()
 				icon_drawer.queue_redraw()
 
-	# Update name (child 3) - set color to rarity
-	var name_label = vbox.get_child(3) as Label
+	# Children: 0=top_spacer, 1=icon_spacer, 2=name, 3=name_spacer, 4=desc, 5=upgradeable, 6=cooldown, 7=bottom_spacer
+	# Update name (child 2) - set color to rarity
+	var name_label = vbox.get_child(2) as Label
 	if name_label:
 		name_label.text = ability.name
 		name_label.add_theme_color_override("font_color", ActiveAbilityData.get_rarity_color(ability.rarity))
@@ -799,9 +806,6 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	var cooldown_label = vbox.get_child(6) as Label
 	if cooldown_label:
 		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
-
-	# Keep rarity tag as green "Active" for all active ability cards
-	# (No need to update - it stays constant during slot machine)
 
 	# Update particle container - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control

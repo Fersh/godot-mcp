@@ -251,6 +251,24 @@ static func get_abilities() -> Array[AbilityData]:
 			"Projectiles strongly home toward enemies"
 		),
 
+		# Far Shot (Ranged) - Attack Range Upgrade Tree
+		AbilityData.new(
+			"far_shot",
+			"Far Shot",
+			"+25% attack range",
+			AbilityData.Rarity.COMMON,
+			AbilityData.Type.RANGED_ONLY,
+			[{effect_type = AbilityData.EffectType.ATTACK_RANGE, value = 0.25}]
+		).with_rank_effects(
+			[{effect_type = AbilityData.EffectType.ATTACK_RANGE, value = 0.25}],
+			[{effect_type = AbilityData.EffectType.ATTACK_RANGE, value = 0.50}],
+			[{effect_type = AbilityData.EffectType.ATTACK_RANGE, value = 0.75}]
+		).with_rank_descriptions(
+			"+25% attack range",
+			"+50% attack range",
+			"+75% attack range"
+		),
+
 		# Kill Streak Passives
 		AbilityData.new(
 			"rampage",

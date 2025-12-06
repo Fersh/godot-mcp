@@ -128,7 +128,11 @@ func show_choices(abilities: Array) -> void:
 			is_passive_level = true
 			break
 	if title_label:
-		title_label.visible = not is_passive_level
+		if is_passive_level:
+			title_label.visible = true
+			title_label.text = "CHOOSE UPGRADE"
+		else:
+			title_label.visible = true
 	if subtitle_container:
 		subtitle_container.visible = not is_passive_level
 
@@ -177,7 +181,7 @@ func create_ability_card(ability, index: int) -> Button:
 	## Create a banner-shaped card for abilities
 	## Rectangle on top with a triangle point at the bottom
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(240, 320)  # Narrower, slightly shorter
+	button.custom_minimum_size = Vector2(240, 360)  # Banner size +40px height
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -2206,8 +2210,12 @@ func _on_cancel_pressed() -> void:
 
 	# Restore title visibility based on whether we're at a passive level
 	if title_label:
-		title_label.visible = not is_passive_level
-		title_label.text = "LEVEL UP!"
+		if is_passive_level:
+			title_label.visible = true
+			title_label.text = "CHOOSE UPGRADE"
+		else:
+			title_label.visible = true
+			title_label.text = "LEVEL UP!"
 	if subtitle_container:
 		subtitle_container.visible = not is_passive_level
 	for i in current_choices.size():

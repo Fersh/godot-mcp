@@ -1501,6 +1501,8 @@ func _apply_effects(effects: Array) -> void:
 				stat_modifiers["melee_area"] += value
 			AbilityData.EffectType.MELEE_RANGE:
 				stat_modifiers["melee_range"] += value
+			AbilityData.EffectType.ATTACK_RANGE:
+				stat_modifiers["attack_range"] += value
 			AbilityData.EffectType.BLEEDING:
 				has_bleeding = true
 				bleeding_dps += value
@@ -2260,6 +2262,13 @@ func get_melee_area_multiplier() -> float:
 
 func get_melee_range_multiplier() -> float:
 	return 1.0 + stat_modifiers.get("melee_range", 0.0) + _get_equipment_stat("melee_range")
+
+# Ranged attack range multiplier (for ranged characters)
+func get_attack_range_multiplier() -> float:
+	var perm_bonus = 0.0
+	if PermanentUpgrades:
+		perm_bonus = PermanentUpgrades.get_all_bonuses().get("attack_range", 0.0)
+	return 1.0 + stat_modifiers.get("attack_range", 0.0) + _get_equipment_stat("attack_range") + perm_bonus
 
 # Get max HP bonus from equipment
 func get_equipment_max_hp_bonus() -> float:

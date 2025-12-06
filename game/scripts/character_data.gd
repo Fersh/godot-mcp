@@ -130,7 +130,7 @@ static func create_archer() -> CharacterData:
 	data.base_speed = 145.8  # Reduced 10%
 	data.base_attack_cooldown = 1.07
 	data.base_damage = 1.0
-	data.attack_range = 440.0
+	data.attack_range = 220.0  # Reduced 50% from 440
 
 	# Combat stats - Ranger has higher crit and dodge
 	data.base_crit_rate = 0.08  # 8% base crit
@@ -298,7 +298,7 @@ static func create_mage() -> CharacterData:
 	data.base_speed = 117.45  # Slowest character, reduced 10%
 	data.base_attack_cooldown = 1.4  # Slow attacks
 	data.base_damage = 2.5  # Highest damage multiplier
-	data.attack_range = 440.0  # Same as archer
+	data.attack_range = 220.0  # Reduced 50% from 440
 
 	# Combat stats - High crit damage potential, fragile
 	data.base_crit_rate = 0.10  # 10% base crit
@@ -484,7 +484,7 @@ static func create_assassin() -> CharacterData:
 	data.base_speed = 171.0  # Fastest character, reduced 10%
 	data.base_attack_cooldown = 0.6  # Very fast strikes
 	data.base_damage = 1.3
-	data.attack_range = 350.0  # Ranged attack range (shorter than archer)
+	data.attack_range = 175.0  # Reduced 50% from 350
 
 	# Combat stats - crit and evasion focused
 	data.base_crit_rate = 0.18  # Highest crit

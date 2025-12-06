@@ -1200,7 +1200,11 @@ func try_attack() -> void:
 func find_closest_enemy() -> Node2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest: Node2D = null
-	var closest_dist: float = fire_range  # Only consider enemies within fire range
+	# Apply attack range multiplier for ranged characters
+	var effective_range = fire_range
+	if not is_melee and AbilityManager:
+		effective_range *= AbilityManager.get_attack_range_multiplier()
+	var closest_dist: float = effective_range  # Only consider enemies within fire range
 
 	for enemy in enemies:
 		if is_instance_valid(enemy):
