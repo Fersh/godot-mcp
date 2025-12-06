@@ -107,9 +107,12 @@ var last_position: Vector2 = Vector2.ZERO
 var avoidance_direction: Vector2 = Vector2.ZERO
 var is_avoiding: bool = false
 var avoidance_timer: float = 0.0
-const STUCK_THRESHOLD: float = 0.3  # Time before considered stuck
-const AVOIDANCE_DURATION: float = 0.5  # Time to continue avoiding
-const STUCK_DISTANCE: float = 5.0  # Minimum movement to not be stuck
+const STUCK_THRESHOLD: float = 0.15  # Time before considered stuck (faster detection)
+const AVOIDANCE_DURATION: float = 0.8  # Time to continue avoiding (longer to get around)
+const STUCK_DISTANCE: float = 8.0  # Minimum movement to not be stuck (more sensitive)
+# Obstacle detection mask: Layer 1 (1) + Layer 2 (2) + Layer 4 (8) + Layer 8 (128) = 139
+# This detects water (collision_layer=3, on layers 1+2) and obstacles (collision_layer=8, layer 4)
+const OBSTACLE_DETECTION_MASK: int = 139
 
 # Hit flash
 var flash_timer: float = 0.0
@@ -262,13 +265,23 @@ func _process_behavior(delta: float) -> void:
 				stuck_timer += delta
 			else:
 				stuck_timer = 0.0
-				is_avoiding = false
+				# Don't immediately cancel avoidance - let it complete
+				if not is_avoiding:
+					is_avoiding = false
 
 			# Update avoidance timer
 			if is_avoiding:
 				avoidance_timer -= delta
 				if avoidance_timer <= 0:
 					is_avoiding = false
+
+			# Proactive obstacle detection - check if obstacle ahead BEFORE getting stuck
+			if not is_avoiding:
+				var obstacle_ahead = _check_obstacle_ahead(direction)
+				if obstacle_ahead:
+					is_avoiding = true
+					avoidance_timer = AVOIDANCE_DURATION
+					avoidance_direction = _find_avoidance_direction(direction)
 
 			# If stuck, find an avoidance direction
 			if stuck_timer > STUCK_THRESHOLD and not is_avoiding:
@@ -300,38 +313,63 @@ func _process_behavior(delta: float) -> void:
 		velocity = Vector2.ZERO
 		update_animation(delta, ROW_IDLE, Vector2.ZERO)
 
+func _check_obstacle_ahead(direction: Vector2) -> bool:
+	"""Proactively check if there's an obstacle directly ahead."""
+	var space_state = get_world_2d().direct_space_state
+	var lookahead_distance = 50.0  # Check 50 pixels ahead
+
+	var ray_params = PhysicsRayQueryParameters2D.create(
+		global_position,
+		global_position + direction * lookahead_distance,
+		OBSTACLE_DETECTION_MASK
+	)
+	ray_params.exclude = [self]
+	ray_params.collide_with_areas = true
+
+	var result = space_state.intersect_ray(ray_params)
+	return not result.is_empty()
+
 func _find_avoidance_direction(desired_direction: Vector2) -> Vector2:
 	"""Find a direction to avoid obstacles using raycasting."""
 	var space_state = get_world_2d().direct_space_state
 
-	# Test multiple angles to find a clear path
-	var test_angles = [PI/4, -PI/4, PI/2, -PI/2, PI*3/4, -PI*3/4]
+	# Test multiple angles to find a clear path (12 directions for better coverage)
+	var test_angles = [
+		PI/6, -PI/6,      # 30 degrees
+		PI/4, -PI/4,      # 45 degrees
+		PI/3, -PI/3,      # 60 degrees
+		PI/2, -PI/2,      # 90 degrees (perpendicular)
+		PI*2/3, -PI*2/3,  # 120 degrees
+		PI*3/4, -PI*3/4,  # 135 degrees
+	]
 	var best_direction = desired_direction.rotated(PI/2)  # Default: perpendicular
 	var best_score = -1.0
+	var raycast_distance = 150.0  # Longer raycast for better obstacle detection
 
 	for angle in test_angles:
 		var test_dir = desired_direction.rotated(angle)
 		var ray_params = PhysicsRayQueryParameters2D.create(
 			global_position,
-			global_position + test_dir * 100.0,
-			collision_mask
+			global_position + test_dir * raycast_distance,
+			OBSTACLE_DETECTION_MASK  # Use obstacle mask that includes water
 		)
 		ray_params.exclude = [self]
+		ray_params.collide_with_areas = true  # Detect Area2D water collisions too
 
 		var result = space_state.intersect_ray(ray_params)
 
 		if result.is_empty():
 			# No collision - this direction is clear
 			# Prefer directions closer to the player direction
-			var score = test_dir.dot(desired_direction)
+			var score = test_dir.dot(desired_direction) + 0.5  # Bonus for clear paths
 			if score > best_score:
 				best_score = score
 				best_direction = test_dir
 		else:
 			# Collision found - check distance
 			var hit_distance = global_position.distance_to(result.position)
-			if hit_distance > 60.0:  # Far enough to still be useful
-				var score = test_dir.dot(desired_direction) * (hit_distance / 100.0)
+			if hit_distance > 80.0:  # Far enough to still be useful
+				var score = test_dir.dot(desired_direction) * (hit_distance / raycast_distance)
 				if score > best_score:
 					best_score = score
 					best_direction = test_dir

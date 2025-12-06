@@ -1004,7 +1004,7 @@ func combine_items(item_ids: Array) -> ItemData:
 	var slot = -1
 	var rarity = -1
 	var weapon_type = -1
-	var lowest_tier = 999  # Track lowest tier among inputs
+	var total_tier = 0  # Track total tier for averaging
 
 	# Validate all items
 	for item_id in item_ids:
@@ -1027,8 +1027,8 @@ func combine_items(item_ids: Array) -> ItemData:
 		elif slot == ItemData.Slot.WEAPON and item.weapon_type != weapon_type:
 			return null
 
-		# Track lowest tier
-		lowest_tier = min(lowest_tier, item.tier)
+		# Track total tier for averaging
+		total_tier += item.tier
 		items.append(item)
 
 	# Remove the 3 items from inventory
@@ -1060,9 +1060,10 @@ func combine_items(item_ids: Array) -> ItemData:
 		ItemData.Rarity.LEGENDARY:
 			_generate_legendary_item(new_item, new_item.slot, character_id)
 
-	# Set tier to lowest input tier and apply tier scaling
-	new_item.tier = lowest_tier
-	new_item.item_level = lowest_tier + 1  # Legacy compatibility
+	# Set tier to average of input tiers (rounded) and apply tier scaling
+	var avg_tier = int(round(float(total_tier) / 3.0))
+	new_item.tier = avg_tier
+	new_item.item_level = avg_tier + 1  # Legacy compatibility
 	_apply_tier_scaling(new_item)
 
 	# Add to inventory

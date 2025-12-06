@@ -638,7 +638,7 @@ func _create_water_collision(pos: Vector2, size: float) -> void:
 
 	var collision = CollisionShape2D.new()
 	var shape = RectangleShape2D.new()
-	shape.size = Vector2(size * 0.85, size * 0.85)
+	shape.size = Vector2(size * 0.95, size * 0.95)  # Larger collision to prevent enemies wedging in gaps
 	collision.shape = shape
 
 	body.add_child(collision)

@@ -42,6 +42,8 @@ var combine_mode: bool = false
 var combine_selection: Array[ItemData] = []
 var pending_sell_item: ItemData = null
 var confirm_dialog: ConfirmationDialog = null
+var current_slot_filter: int = -1  # -1 = All, otherwise ItemData.Slot value
+var slot_filter_buttons: Array[Button] = []
 
 @onready var header: PanelContainer = $Header
 @onready var back_button: Button = $BackButton
@@ -52,6 +54,7 @@ var confirm_dialog: ConfirmationDialog = null
 @onready var stats_panel: PanelContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel
 @onready var stats_container: VBoxContainer = $Panel/VBoxContainer/MainRow/LeftColumn/StatsPanel/StatsContainer
 @onready var inventory_panel: PanelContainer = $Panel/VBoxContainer/MainRow/InventoryPanel
+@onready var inventory_section: VBoxContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection
 @onready var inventory_scroll: ScrollContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer
 @onready var inventory_grid: GridContainer = $Panel/VBoxContainer/MainRow/InventoryPanel/InventorySection/ScrollContainer/InventoryGrid
 @onready var popup_panel: PanelContainer = $PopupPanel
@@ -71,6 +74,7 @@ func _ready() -> void:
 	_setup_ui_style()
 	_setup_top_coins_display()
 	_setup_character_row()
+	_setup_slot_filter_tabs()
 	_refresh_display()
 
 func _setup_confirmation_dialog() -> void:
@@ -219,23 +223,23 @@ const CHARACTER_IDS = [
 	"skeleton_king", "shardsoul_slayer", "necromancer", "kobold_priest", "ratfolk"
 ]
 const CHARACTER_NAMES = {
-	"archer": "RANGER",
-	"knight": "KNIGHT",
-	"monk": "MONK",
-	"mage": "WIZARD",
-	"beast": "BEAST",
-	"assassin": "ASSASSIN",
-	"barbarian": "CHAD",
-	"golem": "MONOLITH",
-	"orc": "GRUNT",
-	"minotaur": "BULLSH*T",
-	"cyclops": "ONE EYED",
-	"lizardfolk_king": "COLD BLOOD",
-	"skeleton_king": "LEECH KING",
-	"shardsoul_slayer": "REAPER",
-	"necromancer": "PLUS ONE",
-	"kobold_priest": "CHIHUAHUA",
-	"ratfolk": "NYC SEWER"
+	"archer": "Rob N. Hood",
+	"knight": "Sir Aldric",
+	"monk": "Namaste",
+	"mage": "Bandalf",
+	"beast": "Gary",
+	"assassin": "Stabitha",
+	"barbarian": "Chad",
+	"golem": "Boulder",
+	"orc": "Greg",
+	"minotaur": "Bullsh*t",
+	"cyclops": "Glasses",
+	"lizardfolk_king": "Liz",
+	"skeleton_king": "Bonathan",
+	"shardsoul_slayer": "Reaper",  # "Don't Fear Me"
+	"necromancer": "Steve",
+	"kobold_priest": "Yip-Yap",
+	"ratfolk": "Pizza Rat"
 }
 
 var character_dropdown: OptionButton = null
@@ -252,7 +256,7 @@ func _setup_character_row() -> void:
 	character_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	character_tabs.add_theme_constant_override("separation", 10)
 
-	# Left side: Character dropdown + Combine button (no label)
+	# Left side: Character dropdown + Sort dropdown + Combine button
 	var left_container = HBoxContainer.new()
 	left_container.add_theme_constant_override("separation", 10)
 
@@ -260,7 +264,9 @@ func _setup_character_row() -> void:
 	for i in range(CHARACTER_IDS.size()):
 		var char_id = CHARACTER_IDS[i]
 		character_dropdown.add_item(CHARACTER_NAMES[char_id], i)
-	character_dropdown.custom_minimum_size = Vector2(150, 36)
+	character_dropdown.custom_minimum_size = Vector2(130, 36)
+	character_dropdown.fit_to_longest_item = false
+	character_dropdown.clip_text = true
 	if pixel_font:
 		character_dropdown.add_theme_font_override("font", pixel_font)
 	character_dropdown.add_theme_font_size_override("font_size", 16)
@@ -275,31 +281,16 @@ func _setup_character_row() -> void:
 	character_dropdown.item_selected.connect(_on_character_selected)
 	left_container.add_child(character_dropdown)
 
-	# Combine button next to character select
-	combine_button = Button.new()
-	combine_button.custom_minimum_size = Vector2(100, 36)
-	if pixel_font:
-		combine_button.add_theme_font_override("font", pixel_font)
-	combine_button.add_theme_font_size_override("font_size", 14)
-	_update_combine_button()
-	combine_button.pressed.connect(_on_combine_button_pressed)
-	left_container.add_child(combine_button)
-
-	character_tabs.add_child(left_container)
-
-	# Spacer to push sort to the right
-	var spacer = Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	character_tabs.add_child(spacer)
-
-	# Right side: Sort dropdown with "Sort by " prefix in items
+	# Sort dropdown - right of character dropdown
 	header_sort_button = OptionButton.new()
-	header_sort_button.add_item("Sort by Rarity", EquipmentManager.SortBy.RARITY)
-	header_sort_button.add_item("Sort by Category", EquipmentManager.SortBy.CATEGORY)
-	header_sort_button.add_item("Sort by Equipped", EquipmentManager.SortBy.EQUIPPED)
-	header_sort_button.add_item("Sort by Name", EquipmentManager.SortBy.NAME)
-	header_sort_button.add_item("Sort by Level", EquipmentManager.SortBy.ITEM_LEVEL)
-	header_sort_button.custom_minimum_size = Vector2(170, 36)
+	header_sort_button.add_item("Rarity", EquipmentManager.SortBy.RARITY)
+	header_sort_button.add_item("Category", EquipmentManager.SortBy.CATEGORY)
+	header_sort_button.add_item("Equipped", EquipmentManager.SortBy.EQUIPPED)
+	header_sort_button.add_item("Name", EquipmentManager.SortBy.NAME)
+	header_sort_button.add_item("Level", EquipmentManager.SortBy.ITEM_LEVEL)
+	header_sort_button.custom_minimum_size = Vector2(130, 36)
+	header_sort_button.fit_to_longest_item = false
+	header_sort_button.clip_text = true
 	if pixel_font:
 		header_sort_button.add_theme_font_override("font", pixel_font)
 	header_sort_button.add_theme_font_size_override("font_size", 16)
@@ -312,7 +303,19 @@ func _setup_character_row() -> void:
 			break
 
 	header_sort_button.item_selected.connect(_on_header_sort_changed)
-	character_tabs.add_child(header_sort_button)
+	left_container.add_child(header_sort_button)
+
+	# Combine button - right of sort dropdown (same spacing as other elements)
+	combine_button = Button.new()
+	combine_button.custom_minimum_size = Vector2(100, 36)
+	if pixel_font:
+		combine_button.add_theme_font_override("font", pixel_font)
+	combine_button.add_theme_font_size_override("font_size", 14)
+	_update_combine_button()
+	combine_button.pressed.connect(_on_combine_button_pressed)
+	left_container.add_child(combine_button)
+
+	character_tabs.add_child(left_container)
 
 	# Align with panels after layout
 	_align_character_row.call_deferred()
@@ -322,29 +325,19 @@ func _align_character_row() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	# Get the positions of equipment panel and inventory panel
+	# Get the positions of equipment panel
 	var equip_rect = equipment_panel.get_global_rect()
-	var inv_rect = inventory_panel.get_global_rect()
 	var tabs_rect = character_tabs.get_global_rect()
 
-	# Calculate margins to align character dropdown with equipment panel left edge
-	# and sort dropdown with inventory panel right edge
+	# Calculate margin to align character dropdown with equipment panel left edge
 	var left_margin = equip_rect.position.x - tabs_rect.position.x
-	var right_margin = tabs_rect.end.x - inv_rect.end.x
 
-	# Create margin container wrapper if needed
-	if left_margin > 0 or right_margin > 0:
-		# Add padding to the character tabs
+	# Add padding to the character tabs if needed
+	if left_margin > 0:
 		var left_spacer = Control.new()
 		left_spacer.custom_minimum_size.x = max(0, left_margin)
 		character_tabs.add_child(left_spacer)
 		character_tabs.move_child(left_spacer, 0)
-
-		# Adjust the right side by adding margin to the sort button container
-		if right_margin > 0:
-			var right_spacer = Control.new()
-			right_spacer.custom_minimum_size.x = max(0, right_margin)
-			character_tabs.add_child(right_spacer)
 
 func _setup_top_coins_display() -> void:
 	# Create coins display in top right (matching main menu style)
@@ -387,6 +380,93 @@ func _setup_top_coins_display() -> void:
 
 	add_child(coins_container)
 
+func _setup_slot_filter_tabs() -> void:
+	# Create tab container for slot filters
+	var tabs_container = HBoxContainer.new()
+	tabs_container.name = "SlotFilterTabs"
+	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	tabs_container.add_theme_constant_override("separation", 4)
+
+	slot_filter_buttons.clear()
+
+	# Filter options: All + each slot type
+	# Short names for tabs to fit better
+	var filter_options = [
+		{"slot": -1, "name": "All"},
+		{"slot": ItemData.Slot.WEAPON, "name": "Wpn"},
+		{"slot": ItemData.Slot.HELMET, "name": "Helm"},
+		{"slot": ItemData.Slot.CHEST, "name": "Chest"},
+		{"slot": ItemData.Slot.BELT, "name": "Belt"},
+		{"slot": ItemData.Slot.LEGS, "name": "Legs"},
+		{"slot": ItemData.Slot.RING, "name": "Ring"},
+	]
+
+	for option in filter_options:
+		var btn = Button.new()
+		btn.text = option.name
+		btn.custom_minimum_size = Vector2(60, 28)
+		if pixel_font:
+			btn.add_theme_font_override("font", pixel_font)
+		btn.add_theme_font_size_override("font_size", 12)
+		btn.pressed.connect(_on_slot_filter_changed.bind(option.slot))
+
+		slot_filter_buttons.append(btn)
+		tabs_container.add_child(btn)
+
+	# Insert tabs after the "Inventory" label (index 0)
+	inventory_section.add_child(tabs_container)
+	inventory_section.move_child(tabs_container, 1)
+
+	# Apply initial styling
+	_update_slot_filter_buttons()
+
+func _update_slot_filter_buttons() -> void:
+	var filter_slots = [-1, ItemData.Slot.WEAPON, ItemData.Slot.HELMET, ItemData.Slot.CHEST, ItemData.Slot.BELT, ItemData.Slot.LEGS, ItemData.Slot.RING]
+
+	for i in range(slot_filter_buttons.size()):
+		var btn = slot_filter_buttons[i]
+		var slot_value = filter_slots[i]
+		var is_selected = (slot_value == current_slot_filter)
+
+		var style = StyleBoxFlat.new()
+		if is_selected:
+			style.bg_color = Color(0.35, 0.30, 0.45, 1.0)
+			style.border_color = Color(0.6, 0.5, 0.7, 1.0)
+		else:
+			style.bg_color = Color(0.12, 0.10, 0.15, 1.0)
+			style.border_color = Color(0.25, 0.22, 0.3, 1.0)
+
+		style.set_border_width_all(2)
+		style.border_width_bottom = 3
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 2
+		style.corner_radius_bottom_right = 2
+		style.content_margin_left = 6
+		style.content_margin_right = 6
+		style.content_margin_top = 2
+		style.content_margin_bottom = 2
+
+		var style_hover = style.duplicate()
+		style_hover.bg_color = style.bg_color.lightened(0.1)
+		style_hover.border_color = style.border_color.lightened(0.15)
+
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_stylebox_override("hover", style_hover)
+		btn.add_theme_stylebox_override("pressed", style)
+		btn.add_theme_stylebox_override("focus", style)
+		btn.add_theme_color_override("font_color", COLOR_TEXT if is_selected else COLOR_TEXT_DIM)
+
+func _on_slot_filter_changed(slot: int) -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+
+	current_slot_filter = slot
+	_update_slot_filter_buttons()
+	_refresh_inventory()
+
 func _style_dropdown(dropdown: OptionButton) -> void:
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.13, 0.18, 1)
@@ -406,6 +486,7 @@ func _style_dropdown(dropdown: OptionButton) -> void:
 	dropdown.add_theme_stylebox_override("pressed", style)
 	dropdown.add_theme_stylebox_override("focus", style)
 	dropdown.add_theme_color_override("font_color", COLOR_TEXT)
+	dropdown.add_theme_constant_override("arrow_margin", 8)
 
 	# Style the popup menu (dropdown items)
 	var popup = dropdown.get_popup()
@@ -504,8 +585,8 @@ func _refresh_equipment_slots() -> void:
 func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
 	container.add_theme_constant_override("separation", 8)
-	# Set consistent width for all slots (matches width with equipped item) - widened by ~17px
-	container.custom_minimum_size = Vector2(107, 0)
+	# Set consistent width for all slots (matches width with equipped item) - increased by 10%
+	container.custom_minimum_size = Vector2(118, 0)
 
 	# Slot label
 	var slot_label = Label.new()
@@ -716,7 +797,16 @@ func _refresh_inventory() -> void:
 		return
 
 	# Get sorted inventory items
-	var items = EquipmentManager.get_sorted_inventory(current_sort as EquipmentManager.SortBy)
+	var all_items = EquipmentManager.get_sorted_inventory(current_sort as EquipmentManager.SortBy)
+
+	# Filter by slot if a filter is selected
+	var items: Array = []
+	if current_slot_filter == -1:
+		items = all_items
+	else:
+		for item in all_items:
+			if item.slot == current_slot_filter:
+				items.append(item)
 
 	# Create 72 slots (6 columns x 12 rows) - scrollable
 	var total_slots = 72
@@ -983,11 +1073,11 @@ func _on_combine_confirmed() -> void:
 			SoundManager.play_buff()
 		if HapticManager:
 			HapticManager.medium()
-		# Show the result
-		_exit_combine_mode()
+		# Stay in combine mode - just clear selection and refresh
+		combine_selection.clear()
 		_update_coins_display()
-		selected_item = result
-		_show_comparison(result)
+		_refresh_inventory()
+		_update_combine_button()
 	else:
 		# Failed - just refresh
 		combine_selection.clear()
@@ -1167,15 +1257,34 @@ func _show_equipped_popup(item: ItemData) -> void:
 	cancel_btn.pressed.connect(_hide_popups)
 	button_row.add_child(cancel_btn)
 
-	var unequip_btn = Button.new()
-	unequip_btn.text = "UNEQUIP"
-	unequip_btn.custom_minimum_size = Vector2(110, 45)
-	_style_button(unequip_btn, Color(0.5, 0.3, 0.2))
+	var action_btn = Button.new()
+	# Check if item is equipped by another character
+	var is_other_character = item.equipped_by != selected_character
+	var can_equip = item.can_be_equipped_by(selected_character)
+
+	if is_other_character and can_equip:
+		# Item is on another character - show EQUIP to swap it
+		action_btn.text = "EQUIP"
+		action_btn.custom_minimum_size = Vector2(110, 45)
+		_style_button(action_btn, Color(0.2, 0.5, 0.3))
+		action_btn.pressed.connect(_on_swap_equip_popup_pressed)
+	elif is_other_character and not can_equip:
+		# Item is on another character but current character can't use it
+		action_btn.text = "WRONG CLASS"
+		action_btn.custom_minimum_size = Vector2(130, 45)
+		_style_button(action_btn, Color(0.3, 0.3, 0.3))
+		action_btn.disabled = true
+	else:
+		# Item is on current character - show UNEQUIP
+		action_btn.text = "UNEQUIP"
+		action_btn.custom_minimum_size = Vector2(110, 45)
+		_style_button(action_btn, Color(0.5, 0.3, 0.2))
+		action_btn.pressed.connect(_on_unequip_popup_pressed)
+
 	if pixel_font:
-		unequip_btn.add_theme_font_override("font", pixel_font)
-	unequip_btn.add_theme_font_size_override("font_size", 16)
-	unequip_btn.pressed.connect(_on_unequip_popup_pressed)
-	button_row.add_child(unequip_btn)
+		action_btn.add_theme_font_override("font", pixel_font)
+	action_btn.add_theme_font_size_override("font_size", 16)
+	button_row.add_child(action_btn)
 
 	button_margin.add_child(button_row)
 	vbox.add_child(button_margin)
@@ -1508,6 +1617,21 @@ func _on_unequip_popup_pressed() -> void:
 		_hide_popups()
 		_refresh_display()
 
+func _on_swap_equip_popup_pressed() -> void:
+	if SoundManager:
+		SoundManager.play_click()
+	if HapticManager:
+		HapticManager.light()
+	if popup_item and EquipmentManager:
+		# Equip the item to the current character (auto-unequips from previous owner)
+		EquipmentManager.equip_item(popup_item.id, selected_character, popup_item.slot)
+		if SoundManager:
+			SoundManager.play_buff()
+		if HapticManager:
+			HapticManager.medium()
+		_hide_popups()
+		_refresh_display()
+
 func _on_equip_comparison_pressed() -> void:
 	if SoundManager:
 		SoundManager.play_click()
@@ -1613,13 +1737,13 @@ func _update_combine_button() -> void:
 	combine_button.disabled = false  # Reset first
 
 	if combine_mode:
-		combine_button.text = "CANCEL"
+		combine_button.text = "Cancel"
 		_style_button(combine_button, Color(0.5, 0.3, 0.2))
 	elif has_combinable:
-		combine_button.text = "COMBINE"
+		combine_button.text = "Combine"
 		_style_button(combine_button, Color(0.4, 0.3, 0.6))
 	else:
-		combine_button.text = "COMBINE"
+		combine_button.text = "Combine"
 		_style_button(combine_button, Color(0.25, 0.25, 0.3))
 		combine_button.disabled = true
 

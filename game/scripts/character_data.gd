@@ -133,7 +133,7 @@ enum AttackType {
 static func create_archer() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "archer"
-	data.display_name = "The Robbin' Hood"
+	data.display_name = "Rob N. Hood"
 	data.description = "Fast and agile. Attacks from range with deadly precision."
 	data.character_type = CharacterType.ARCHER
 	data.attack_type = AttackType.RANGED
@@ -184,7 +184,7 @@ static func create_archer() -> CharacterData:
 static func create_knight() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "knight"
-	data.display_name = "The Armored One"
+	data.display_name = "Sir Aldric"
 	data.description = "Slow but powerful. Cleaves through enemies with melee attacks."
 	data.character_type = CharacterType.KNIGHT
 	data.attack_type = AttackType.MELEE
@@ -235,7 +235,7 @@ static func create_knight() -> CharacterData:
 static func create_beast() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "beast"
-	data.display_name = "The Beast"
+	data.display_name = "Gary"
 	data.description = "Feral and unhinged. Hits fast and hard, dies faster and harder."
 	data.character_type = CharacterType.BEAST
 	data.attack_type = AttackType.MELEE
@@ -301,7 +301,7 @@ static func create_beast() -> CharacterData:
 static func create_mage() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "mage"
-	data.display_name = "The Smart One"
+	data.display_name = "Bandalf"
 	data.description = "Calculating and precise. Slow but devastating magical attacks."
 	data.character_type = CharacterType.MAGE
 	data.attack_type = AttackType.RANGED
@@ -359,7 +359,7 @@ static func create_mage() -> CharacterData:
 static func create_monk() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "monk"
-	data.display_name = "The One Always Meditating"
+	data.display_name = "Namaste"
 	data.description = "Swift and precise. Chains varied staff strikes into devastating combos."
 	data.character_type = CharacterType.MONK
 	data.attack_type = AttackType.MELEE
@@ -425,7 +425,7 @@ static func create_monk() -> CharacterData:
 static func create_barbarian() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "barbarian"
-	data.display_name = "The Chad"
+	data.display_name = "Chad"
 	data.description = "Raw power incarnate. Slow but devastating, with a chance to unleash destructive spin attacks."
 	data.character_type = CharacterType.BARBARIAN
 	data.attack_type = AttackType.MELEE
@@ -487,7 +487,7 @@ static func create_barbarian() -> CharacterData:
 static func create_assassin() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "assassin"
-	data.display_name = "The Sneaky Sneaky"
+	data.display_name = "Stabitha"
 	data.description = "A deadly shadow. Throws daggers from afar, slashes up close, and vanishes to strike with lethal precision."
 	data.character_type = CharacterType.ASSASSIN
 	data.attack_type = AttackType.RANGED  # Base type for fire_range, but is hybrid
@@ -559,7 +559,7 @@ static func create_assassin() -> CharacterData:
 static func create_golem() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "golem"
-	data.display_name = "The Slow One"
+	data.display_name = "Boulder"
 	data.description = "An ancient construct of stone. Slow but indestructible, crushing all in its path."
 	data.character_type = CharacterType.GOLEM
 	data.attack_type = AttackType.MELEE
@@ -611,7 +611,7 @@ static func create_golem() -> CharacterData:
 static func create_orc() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "orc"
-	data.display_name = "The Grunt"
+	data.display_name = "Greg"
 	data.description = "A brutish warrior. Simple but effective, with relentless aggression."
 	data.character_type = CharacterType.ORC
 	data.attack_type = AttackType.MELEE
@@ -663,7 +663,7 @@ static func create_orc() -> CharacterData:
 static func create_minotaur() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "minotaur"
-	data.display_name = "The Bullsh*t"
+	data.display_name = "Bullsh*t"
 	data.description = "A raging beast of legend. Charges into battle with devastating ground slams."
 	data.character_type = CharacterType.MINOTAUR
 	data.attack_type = AttackType.MELEE
@@ -724,7 +724,7 @@ static func create_minotaur() -> CharacterData:
 static func create_cyclops() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "cyclops"
-	data.display_name = "The One Eyed Monster"
+	data.display_name = "Glasses"
 	data.description = "A towering giant with a deadly eye beam. Slow but devastating from any range."
 	data.character_type = CharacterType.CYCLOPS
 	data.attack_type = AttackType.MELEE  # Primary is melee, but has ranged special
@@ -776,7 +776,7 @@ static func create_cyclops() -> CharacterData:
 static func create_lizardfolk_king() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "lizardfolk_king"
-	data.display_name = "The Cold Blood"
+	data.display_name = "Liz"
 	data.description = "An ancient reptilian tyrant. Regenerates health and poisons foes with every strike."
 	data.character_type = CharacterType.LIZARDFOLK_KING
 	data.attack_type = AttackType.MELEE
@@ -832,7 +832,7 @@ static func create_lizardfolk_king() -> CharacterData:
 static func create_skeleton_king() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "skeleton_king"
-	data.display_name = "The Leech King"
+	data.display_name = "Bonathan"
 	data.description = "A fallen monarch risen again. Commands the dead and drains life from foes."
 	data.character_type = CharacterType.SKELETON_KING
 	data.attack_type = AttackType.MELEE
@@ -895,6 +895,7 @@ static func create_skeleton_king() -> CharacterData:
 static func create_shardsoul_slayer() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "shardsoul_slayer"
+	#data.display_name = "Don't Fear Me"
 	data.display_name = "The Reaper"
 	data.description = "A savage predator that hunts the weak. Executes low-health enemies with lethal efficiency."
 	data.character_type = CharacterType.SHARDSOUL_SLAYER
@@ -952,7 +953,7 @@ static func create_shardsoul_slayer() -> CharacterData:
 static func create_necromancer() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "necromancer"
-	data.display_name = "The Plus One"
+	data.display_name = "Steve from Accounting"
 	data.description = "A dark summoner who commands the dead. Fragile alone, but never truly alone."
 	data.character_type = CharacterType.NECROMANCER
 	data.attack_type = AttackType.RANGED
@@ -1009,7 +1010,7 @@ static func create_necromancer() -> CharacterData:
 static func create_kobold_priest() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "kobold_priest"
-	data.display_name = "The Chihuahua"
+	data.display_name = "Prophet Yip-Yap"
 	data.description = "A twisted priest who corrupts foes and drains their essence. Debuffs empower your attacks."
 	data.character_type = CharacterType.KOBOLD_PRIEST
 	data.attack_type = AttackType.RANGED
@@ -1061,7 +1062,7 @@ static func create_kobold_priest() -> CharacterData:
 static func create_ratfolk() -> CharacterData:
 	var data = CharacterData.new()
 	data.id = "ratfolk"
-	data.display_name = "The NYC Sewer System"
+	data.display_name = "Pizza Rat"
 	data.description = "A nimble vermin warrior. Strikes with blinding speed and slips away before retaliation."
 	data.character_type = CharacterType.RATFOLK
 	data.attack_type = AttackType.MELEE
