@@ -250,19 +250,24 @@ func generate_map() -> void:
 	print("ProceduralMapGenerator: Map generation complete!")
 
 func _determine_theme() -> void:
-	# Check if DifficultyManager exists and get current difficulty
-	if Engine.has_singleton("DifficultyManager") or has_node("/root/DifficultyManager"):
-		var diff_manager = get_node_or_null("/root/DifficultyManager")
-		if diff_manager:
-			var current_diff = diff_manager.get_current_difficulty()
-			# Pitiful (JUVENILE = 0) uses Nature.png, all others use jungle
-			use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
-			print("ProceduralMapGenerator: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
-			return
-
-	# Default to Pitiful theme if no difficulty manager
+	# TEMP: Force Pitiful theme for all difficulties while debugging jungle theme
 	use_jungle_theme = false
-	print("ProceduralMapGenerator: No difficulty manager found, using default theme")
+	print("ProceduralMapGenerator: Using Pitiful theme (jungle disabled for debugging)")
+	return
+
+	# Check if DifficultyManager exists and get current difficulty
+	#if Engine.has_singleton("DifficultyManager") or has_node("/root/DifficultyManager"):
+	#	var diff_manager = get_node_or_null("/root/DifficultyManager")
+	#	if diff_manager:
+	#		var current_diff = diff_manager.get_current_difficulty()
+	#		# Pitiful (JUVENILE = 0) uses Nature.png, all others use jungle
+	#		use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
+	#		print("ProceduralMapGenerator: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
+	#		return
+	#
+	## Default to Pitiful theme if no difficulty manager
+	#use_jungle_theme = false
+	#print("ProceduralMapGenerator: No difficulty manager found, using default theme")
 
 func _clear_existing() -> void:
 	obstacle_positions.clear()

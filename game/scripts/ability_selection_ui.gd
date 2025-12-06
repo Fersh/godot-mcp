@@ -2262,27 +2262,33 @@ func _show_cancel_button() -> void:
 
 		cancel_button.pressed.connect(_on_cancel_pressed)
 
-		# Position absolutely at bottom of panel, not in VBox flow
+		# Create a Control to hold the cancel button with proper positioning
+		var cancel_container = Control.new()
+		cancel_container.name = "CancelButtonContainer"
+		cancel_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+		cancel_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(cancel_container)
+
+		# Position button at bottom center
 		cancel_button.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-		cancel_button.anchor_left = 0.5
-		cancel_button.anchor_right = 0.5
-		cancel_button.anchor_top = 1.0
-		cancel_button.anchor_bottom = 1.0
 		cancel_button.offset_left = -90  # Half of button width
 		cancel_button.offset_right = 90
 		cancel_button.offset_top = -80  # 44px button + 36px margin from bottom
 		cancel_button.offset_bottom = -36
-		cancel_button.grow_horizontal = Control.GROW_DIRECTION_BOTH
-
-		# Add to panel (not VBox) so it doesn't affect layout
-		panel.add_child(cancel_button)
+		cancel_container.add_child(cancel_button)
 
 	cancel_button.visible = true
+	var container = get_node_or_null("CancelButtonContainer")
+	if container:
+		container.visible = true
 
 func _hide_cancel_button() -> void:
 	"""Hide Cancel button."""
 	if cancel_button:
 		cancel_button.visible = false
+		var container = get_node_or_null("CancelButtonContainer")
+		if container:
+			container.visible = false
 
 func _on_cancel_pressed() -> void:
 	"""Handle Cancel button press - return to normal selection."""
