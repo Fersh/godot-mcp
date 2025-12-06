@@ -118,7 +118,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"chain_reaction",
 			"Chain Reaction",
-			"Status effects spread to 1 nearby enemy on kill",
+			"Burn, poison, and freeze spread to 1 nearby enemy on kill",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CHAIN_REACTION, value = 1.0}]
@@ -127,8 +127,8 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.CHAIN_REACTION, value = 2.0}],
 			[{effect_type = AbilityData.EffectType.CHAIN_REACTION, value = 3.0}]
 		).with_rank_descriptions(
-			"Status effects spread to 1 nearby enemy on kill",
-			"Status effects spread to 2 nearby enemies on kill",
-			"Status effects spread to 3 nearby enemies on kill"
+			"Burn, poison, and freeze spread to 1 nearby enemy on kill",
+			"Burn, poison, and freeze spread to 2 nearby enemies on kill",
+			"Burn, poison, and freeze spread to 3 nearby enemies on kill"
 		).with_prerequisites(["ignite", "frostbite", "toxic_tip", "lightning_strike_proc", "static_charge", "chaotic_strikes"] as Array[String]),
 	]

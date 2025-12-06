@@ -14,7 +14,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"momentum_master",
 			"Momentum Master",
-			"Kill streak timers last 30% longer",
+			"Kill streak damage bonuses last 30% longer",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MOMENTUM_MASTER, value = 0.3}]
@@ -23,9 +23,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.MOMENTUM_MASTER, value = 0.5}],
 			[{effect_type = AbilityData.EffectType.MOMENTUM_MASTER, value = 0.75}]
 		).with_rank_descriptions(
-			"Kill streak timers last 30% longer",
-			"Kill streak timers last 50% longer",
-			"Kill streak timers last 75% longer"
+			"Kill streak damage bonuses last 30% longer",
+			"Kill streak damage bonuses last 50% longer",
+			"Kill streak damage bonuses last 75% longer"
 		).with_prerequisites(["rampage", "killing_frenzy", "massacre"] as Array[String]),
 
 		# ============================================
@@ -36,7 +36,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ability_cascade",
 			"Ability Cascade",
-			"Using an ability has 12% chance to reset another",
+			"Using an ability has 12% chance to reset another cooldown",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ABILITY_CASCADE, value = 0.12}]
@@ -45,9 +45,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.ABILITY_CASCADE, value = 0.20}],
 			[{effect_type = AbilityData.EffectType.ABILITY_CASCADE, value = 0.30}]
 		).with_rank_descriptions(
-			"Using an ability has 12% chance to reset another",
-			"Using an ability has 20% chance to reset another",
-			"Using an ability has 30% chance to reset another"
+			"Using an ability has 12% chance to reset another cooldown",
+			"Using an ability has 20% chance to reset another cooldown",
+			"Using an ability has 30% chance to reset another cooldown"
 		),
 
 		# ============================================

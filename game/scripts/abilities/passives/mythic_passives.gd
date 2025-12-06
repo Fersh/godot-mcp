@@ -30,7 +30,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"transcendence",
 			"Transcendence",
-			"Convert 50% HP to regenerating shields",
+			"Convert 50% HP to regenerating shield",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 0.5}]
@@ -39,9 +39,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 0.75}],
 			[{effect_type = AbilityData.EffectType.TRANSCENDENCE, value = 1.0}]
 		).with_rank_descriptions(
-			"Convert 50% HP to regenerating shields",
-			"Convert 75% HP to regenerating shields",
-			"Convert all HP to regenerating shields"
+			"Convert 50% HP to regenerating shield",
+			"Convert 75% HP to regenerating shield",
+			"Convert all HP to regenerating shield"
 		),
 
 		# Symbiosis - DISABLED: Not fully implemented

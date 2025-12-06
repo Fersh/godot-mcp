@@ -10,7 +10,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ceremonial_dagger",
 			"Ceremonial Dagger",
-			"Kills fire 1 homing dagger at enemies",
+			"Kills launch 1 homing dagger that deals damage",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 1.0}]
@@ -19,16 +19,16 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 2.0}],
 			[{effect_type = AbilityData.EffectType.CEREMONIAL_DAGGER, value = 3.0}]
 		).with_rank_descriptions(
-			"Kills fire 1 homing dagger at enemies",
-			"Kills fire 2 homing daggers at enemies",
-			"Kills fire 3 homing daggers at enemies"
+			"Kills launch 1 homing dagger that deals damage",
+			"Kills launch 2 homing daggers that deal damage",
+			"Kills launch 3 homing daggers that deal damage"
 		),
 
 		# Missile Barrage
 		AbilityData.new(
 			"missile_barrage",
 			"Missile Barrage",
-			"15% chance to fire homing missiles",
+			"15% chance to launch homing missiles that deal damage",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MISSILE_BARRAGE, value = 0.15}]
@@ -37,9 +37,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.MISSILE_BARRAGE, value = 0.25}],
 			[{effect_type = AbilityData.EffectType.MISSILE_BARRAGE, value = 0.35}]
 		).with_rank_descriptions(
-			"15% chance to fire homing missiles",
-			"25% chance to fire homing missiles",
-			"35% chance to fire homing missiles"
+			"15% chance to launch homing missiles that deal damage",
+			"25% chance to launch homing missiles that deal damage",
+			"35% chance to launch homing missiles that deal damage"
 		),
 
 		# Soul Reaper
@@ -172,7 +172,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"empathic_bond",
 			"Empathic Bond",
-			"Auras and orbitals have +50% effect",
+			"Auras and orbitals deal +50% damage",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.EMPATHIC_BOND, value = 1.5}]
@@ -181,9 +181,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.EMPATHIC_BOND, value = 2.0}],
 			[{effect_type = AbilityData.EffectType.EMPATHIC_BOND, value = 2.5}]
 		).with_rank_descriptions(
-			"Auras and orbitals have +50% effect",
-			"Auras and orbitals have double effect",
-			"Auras and orbitals have +150% effect"
+			"Auras and orbitals deal +50% damage",
+			"Auras and orbitals deal double damage",
+			"Auras and orbitals deal +150% damage"
 		).with_prerequisites(["blade_orbit", "flame_orbit", "frost_orbit", "ring_of_fire", "toxic_cloud", "tesla_coil"] as Array[String]),
 
 		# Fortune's Favor

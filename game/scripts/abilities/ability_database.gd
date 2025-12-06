@@ -108,7 +108,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"elemental_infusion",
 			"Elemental Infusion",
-			"Active abilities apply your elemental effects",
+			"Active abilities apply burn, freeze, and poison effects",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ELEMENTAL_INFUSION, value = 1.0}]
@@ -124,7 +124,7 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ability_echo",
 			"Ability Echo",
-			"10% chance for active abilities to trigger twice",
+			"10% chance for active abilities to deal damage twice",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.ABILITY_ECHO, value = 0.10}]
@@ -191,7 +191,7 @@ static func get_common_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"tank",
 			"Tank",
-			"+50 HP, +Size, -10% Speed",
+			"+50 HP, +Size, -10% Move Speed",
 			AbilityData.Rarity.COMMON,
 			AbilityData.Type.STAT_BOOST,
 			[
@@ -245,7 +245,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"adrenaline",
 			"Adrenaline",
-			"Gain Speed boost on kill",
+			"Gain Move Speed boost on kill",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.ADRENALINE, value = 0.3}]  # 30% speed for 2s
@@ -253,7 +253,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"frenzy",
 			"Frenzy",
-			"Attack faster when low HP",
+			"Gain Attack Speed when low HP",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.FRENZY, value = 0.5}]  # +50% attack speed below 30% HP
@@ -310,7 +310,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"concussive_hit",
 			"Concussive Hit",
-			"Attacks push enemies back",
+			"Attacks deal knockback to enemies",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.KNOCKBACK, value = 150.0}]
@@ -326,7 +326,7 @@ static func get_rare_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"time_dilation",
 			"Time Dilation",
-			"Enemies move 10% slower permanently",
+			"Permanently slow enemies by 10%",
 			AbilityData.Rarity.RARE,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.TIME_DILATION, value = 0.1}]  # 10% slow
@@ -357,7 +357,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"orbital_defense",
 			"Orbital Defense",
-			"A projectile orbits around you",
+			"A projectile orbits you, dealing damage on contact",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.SUMMON,
 			[{effect_type = AbilityData.EffectType.ORBITAL, value = 1.0}]
@@ -382,7 +382,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ring_of_fire",
 			"Ring of Fire",
-			"Periodically fires 360-degree spread",
+			"Periodically unleash fire damage in a 360-degree spread",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PERIODIC,
 			[{effect_type = AbilityData.EffectType.RING_OF_FIRE, value = 8.0}]  # projectile count
@@ -409,7 +409,7 @@ static func get_legendary_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"death_detonation",
 			"Death Detonation",
-			"Enemies explode on death",
+			"Enemies explode on death, dealing damage nearby",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.DEATH_EXPLOSION, value = 8.0}]  # explosion damage (toned down)
@@ -464,7 +464,7 @@ static func get_mythic_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"boomerang",
 			"Boomerang",
-			"Projectiles fly out and return, hitting twice",
+			"Projectiles return after firing, dealing damage twice",
 			AbilityData.Rarity.LEGENDARY,
 			AbilityData.Type.RANGED_ONLY,
 			[{effect_type = AbilityData.EffectType.BOOMERANG, value = 1.0}]

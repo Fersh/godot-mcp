@@ -69,7 +69,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"cull_the_weak",
 			"Cull the Weak",
-			"Instantly kill enemies under 20% HP",
+			"Instantly execute enemies under 20% HP",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.CULL_WEAK, value = 0.2}]
@@ -307,7 +307,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"massacre",
 			"Massacre",
-			"+1% damage and speed per kill, resets after 3s",
+			"+1% damage and attack speed per kill, resets after 3s",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.MASSACRE, value = 0.01}]
@@ -316,9 +316,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.MASSACRE, value = 0.02}],
 			[{effect_type = AbilityData.EffectType.MASSACRE, value = 0.03}]
 		).with_rank_descriptions(
-			"+1% damage and speed per kill, resets after 3s",
-			"+2% damage and speed per kill, resets after 3s",
-			"+3% damage and speed per kill, resets after 3s"
+			"+1% damage and attack speed per kill, resets after 3s",
+			"+2% damage and attack speed per kill, resets after 3s",
+			"+3% damage and attack speed per kill, resets after 3s"
 		),
 
 		AbilityData.new(

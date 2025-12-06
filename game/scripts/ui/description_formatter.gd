@@ -64,7 +64,8 @@ static var DEFENSE_KEYWORDS: Array[String] = [
 	"invulnerable", "invulnerability", "divine shield",
 	"damage reduction", "shield bubble", "shield",
 	"armor breaker", "armor", "block", "blocked", "blocks",
-	"parry", "deflect", "deflection", "reflect", "reflects"
+	"parry", "deflect", "deflection", "reflect", "reflects",
+	"invisibility", "invisible"
 ]
 
 static var SPEED_KEYWORDS: Array[String] = [
@@ -77,7 +78,8 @@ static var SPEED_KEYWORDS: Array[String] = [
 static var DAMAGE_KEYWORDS: Array[String] = [
 	"critical hit", "crit chance", "crit", "critical",
 	"execute", "executes", "executing", "execution",
-	"knockback", "damaging", "damages", "damage"
+	"knockback", "damaging", "damages", "damage",
+	"exploding", "explodes", "explode", "explosion"
 ]
 
 static var CC_KEYWORDS: Array[String] = [
@@ -86,7 +88,9 @@ static var CC_KEYWORDS: Array[String] = [
 	"confuse", "confused", "confusing", "confusion",
 	"charmed", "charming", "charms", "charm",
 	"fear", "fears", "fearing", "flee", "fleeing", "terrify", "terrifying", "terror",
-	"weaken", "weakens", "weakening", "weakened"
+	"weaken", "weakens", "weakening", "weakened",
+	"immobilize", "immobilizes", "immobilized",
+	"blind", "blinds", "blinded", "blinding"
 ]
 
 static var BUFF_KEYWORDS: Array[String] = [

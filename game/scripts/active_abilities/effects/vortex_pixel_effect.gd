@@ -5,6 +5,7 @@ extends Node2D
 var pixel_size := 4
 var duration := 0.75
 var elapsed := 0.0
+var follow_target: Node2D = null
 
 # Rotating blade arcs
 var blade_arcs := []
@@ -50,7 +51,14 @@ func _ready() -> void:
 	await get_tree().create_timer(duration + 0.1).timeout
 	queue_free()
 
+func set_follow_target(target: Node2D) -> void:
+	follow_target = target
+
 func _process(delta: float) -> void:
+	# Follow target if set
+	if follow_target and is_instance_valid(follow_target):
+		global_position = follow_target.global_position
+
 	elapsed += delta
 	var progress = elapsed / duration
 

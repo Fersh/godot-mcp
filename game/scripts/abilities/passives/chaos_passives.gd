@@ -166,7 +166,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"ninety_nine_stacks",
 			"99 Stacks",
-			"Your status effects can stack up to 2x.",
+			"Your burn, poison, and freeze effects stack up to 2x.",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.NINETY_NINE_STACKS, value = 2.0}]
@@ -175,9 +175,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.NINETY_NINE_STACKS, value = 3.0}],
 			[{effect_type = AbilityData.EffectType.NINETY_NINE_STACKS, value = 5.0}]
 		).with_rank_descriptions(
-			"Your status effects can stack up to 2x.",
-			"Your status effects can stack up to 3x.",
-			"Your status effects can stack up to 5x."
+			"Your burn, poison, and freeze effects stack up to 2x.",
+			"Your burn, poison, and freeze effects stack up to 3x.",
+			"Your burn, poison, and freeze effects stack up to 5x."
 		),
 
 		# Glass Soul - Damage = missing HP %
@@ -264,7 +264,7 @@ static func get_abilities() -> Array[AbilityData]:
 		AbilityData.new(
 			"haunted",
 			"Haunted",
-			"Every 12th kill spawns a ghost that fights for 5 seconds.",
+			"Every 12th kill summons a ghost that deals damage for 5 seconds.",
 			AbilityData.Rarity.EPIC,
 			AbilityData.Type.ON_KILL,
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 12.0}]
@@ -273,9 +273,9 @@ static func get_abilities() -> Array[AbilityData]:
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 8.0}],
 			[{effect_type = AbilityData.EffectType.HAUNTED, value = 5.0}]
 		).with_rank_descriptions(
-			"Every 12th kill spawns a ghost that fights for 5 seconds.",
-			"Every 8th kill spawns a ghost that fights for 5 seconds.",
-			"Every 5th kill spawns a ghost that fights for 5 seconds."
+			"Every 12th kill summons a ghost that deals damage for 5 seconds.",
+			"Every 8th kill summons a ghost that deals damage for 5 seconds.",
+			"Every 5th kill summons a ghost that deals damage for 5 seconds."
 		),
 
 		# Survivor's Guilt - Buff when summons die (requires a summon)

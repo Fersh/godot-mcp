@@ -252,7 +252,7 @@ static func _create_spinning_attack() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"spinning_attack",
 		"Spinning Attack",
-		"Perform a quick 360 spin, hitting all foes around you.",
+		"Perform a quick 360 spin, dealing damage to all nearby enemies.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.MELEE,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -409,7 +409,7 @@ static func _create_multi_shot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"multi_shot",
 		"Multi-Shot",
-		"Release a spread of arrows hitting multiple enemies in a cone.",
+		"Release a spread of arrows dealing damage to multiple enemies.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.DIRECTION,
@@ -420,7 +420,7 @@ static func _create_quick_roll() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"quick_roll",
 		"Quick Roll",
-		"A faster, shorter cooldown dodge-roll for repositioning.",
+		"A quick dodge-roll with brief invulnerability.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.SELF,
@@ -457,7 +457,7 @@ static func _create_piercing_volley() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"piercing_volley",
 		"Piercing Volley",
-		"Fire projectiles that pierce through all enemies in a line.",
+		"Fire piercing projectiles that damage all enemies in a line.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.DIRECTION,
@@ -468,7 +468,7 @@ static func _create_cluster_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"cluster_bomb",
 		"Cluster Bomb",
-		"Throw a bomb that splits into smaller grenades on impact.",
+		"Throw a bomb that explodes into smaller grenades on impact.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.CLUSTER,
@@ -479,7 +479,7 @@ static func _create_fan_of_knives() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"fan_of_knives",
 		"Fan of Knives",
-		"Unleash a spray of knives in all directions around you.",
+		"Unleash damaging knives in all directions around you.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -505,7 +505,7 @@ static func _create_arrow_storm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"arrow_storm",
 		"Arrow Storm",
-		"Call upon a massive volley blanketing the screen in arrows.",
+		"Rain down a massive volley of arrows, damaging the entire screen.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.RANGED,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -609,7 +609,7 @@ static func _create_blinding_flash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"blinding_flash",
 		"Blinding Flash",
-		"Emanate a flash that blinds enemies, reducing their accuracy.",
+		"Emanate a flash that blinds and slows enemies.",
 		ActiveAbilityData.Rarity.COMMON,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,
@@ -790,7 +790,7 @@ static func _create_glue_bomb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"glue_bomb",
 		"Glue Bomb",
-		"Throw a sticky bomb creating a tar zone for 6 seconds.",
+		"Throw a sticky bomb creating a slowing tar zone for 6 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.CLUSTER,
@@ -902,7 +902,7 @@ static func _create_orbital_strike() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"orbital_strike",
 		"Orbital Strike",
-		"Fire ALL your orbital projectiles at the nearest enemy at once.",
+		"Fire ALL your orbitals at the nearest enemy for massive damage.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.NEAREST_ENEMY,
@@ -1022,7 +1022,7 @@ static func _create_repulsive() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"repulsive",
 		"Repulsive",
-		"Constantly push enemies away from you for 5 seconds.",
+		"Constantly knockback and damage enemies around you for 5 seconds.",
 		ActiveAbilityData.Rarity.RARE,
 		ActiveAbilityData.ClassType.GLOBAL,
 		ActiveAbilityData.TargetType.AREA_AROUND_SELF,

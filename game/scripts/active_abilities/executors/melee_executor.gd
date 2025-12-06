@@ -875,11 +875,15 @@ func _execute_spin_fiery(ability: ActiveAbilityData, player: Node2D) -> void:
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# Spawn flame effect
 	var whirl = _spawn_effect("flame_whirlwind", player.global_position)
 	if whirl and whirl.has_method("setup"):
 		whirl.setup(player, damage, ability.radius, ability.duration)
+	if whirl and whirl.has_method("set_follow_target"):
+		whirl.set_follow_target(player)
 
 	_play_sound("whirlwind")
 
@@ -895,11 +899,15 @@ func _execute_spin_inferno(ability: ActiveAbilityData, player: Node2D) -> void:
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# SIGNATURE: Fire tornado with burning ground
 	var tornado = _spawn_effect("inferno_tornado", player.global_position)
 	if tornado and tornado.has_method("setup"):
 		tornado.setup(ability.duration, ability.radius, damage, 1.0)
+	if tornado and tornado.has_method("set_follow_target"):
+		tornado.set_follow_target(player)
 
 	_play_sound("inferno_tornado")
 	_screen_shake("medium")
@@ -1188,11 +1196,15 @@ func _execute_whirlwind_vacuum(ability: ActiveAbilityData, player: Node2D) -> vo
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# Spawn vacuum effect
 	var whirl = _spawn_effect("vacuum_spin", player.global_position)
 	if whirl and whirl.has_method("setup"):
 		whirl.setup(player, damage, ability.radius, ability.duration, ability.knockback_force)
+	if whirl and whirl.has_method("set_follow_target"):
+		whirl.set_follow_target(player)
 
 	_play_sound("whirlwind")
 
@@ -1204,11 +1216,15 @@ func _execute_whirlwind_singularity(ability: ActiveAbilityData, player: Node2D) 
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# SIGNATURE: Massive pull, damage increases as enemies get closer
 	var singularity = _spawn_effect("singularity", player.global_position)
 	if singularity and singularity.has_method("setup"):
 		singularity.setup(player, damage, ability.radius, ability.duration, ability.knockback_force)
+	if singularity and singularity.has_method("set_follow_target"):
+		singularity.set_follow_target(player)
 
 	_play_sound("singularity")
 	_screen_shake("medium")
@@ -1221,11 +1237,15 @@ func _execute_whirlwind_flame(ability: ActiveAbilityData, player: Node2D) -> voi
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# Spawn flame effect
 	var whirl = _spawn_effect("flame_whirlwind", player.global_position)
 	if whirl and whirl.has_method("setup"):
 		whirl.setup(player, damage, ability.radius, ability.duration)
+	if whirl and whirl.has_method("set_follow_target"):
+		whirl.set_follow_target(player)
 
 	_play_sound("whirlwind")
 
@@ -1237,11 +1257,15 @@ func _execute_whirlwind_inferno(ability: ActiveAbilityData, player: Node2D) -> v
 	var base_whirl = _spawn_effect("whirlwind_pixel", player.global_position)
 	if base_whirl and base_whirl.has_method("setup"):
 		base_whirl.setup(ability.radius, ability.duration)
+	if base_whirl and base_whirl.has_method("set_follow_target"):
+		base_whirl.set_follow_target(player)
 
 	# SIGNATURE: Fire tornado with burning ground
 	var tornado = _spawn_effect("inferno_tornado", player.global_position)
 	if tornado and tornado.has_method("setup"):
 		tornado.setup(ability.duration, ability.radius, damage, 1.0)
+	if tornado and tornado.has_method("set_follow_target"):
+		tornado.set_follow_target(player)
 
 	_play_sound("inferno_tornado")
 	_screen_shake("medium")
