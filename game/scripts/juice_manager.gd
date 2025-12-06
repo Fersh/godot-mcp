@@ -8,10 +8,7 @@ var shake_intensity: float = 0.0
 var shake_rotation: float = 0.0
 var shake_decay: float = 8.0
 
-# Hit stop
-var original_time_scale: float = 1.0
-var hitstop_active: bool = false
-var hitstop_restore_time: int = 0  # Real time when hitstop should end
+# Hit stop (no state needed - just uses timers)
 
 # Player damage freeze cooldown (max 1 every 3 seconds)
 var player_damage_freeze_end_time: int = 0  # Real time when cooldown ends
@@ -46,7 +43,22 @@ var zoom_punch_tween: Tween = null
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+# Safety: track when hitstop started to prevent stuck slow motion
+var _hitstop_start_time: int = 0
+const MAX_HITSTOP_MS: int = 200  # Never allow hitstop longer than 200ms
+
 func _process(delta: float) -> void:
+	# Safety check: if time_scale is slow for too long, force restore it
+	if Engine.time_scale < 1.0 and Engine.time_scale > 0:
+		var current_time = Time.get_ticks_msec()
+		if _hitstop_start_time == 0:
+			_hitstop_start_time = current_time
+		elif current_time - _hitstop_start_time > MAX_HITSTOP_MS:
+			Engine.time_scale = 1.0
+			_hitstop_start_time = 0
+	else:
+		_hitstop_start_time = 0
+
 	# Only process visual effects when not paused
 	if get_tree().paused:
 		return
@@ -171,34 +183,18 @@ func hitstop(duration: float = 0.05) -> void:
 	if GameSettings and not GameSettings.freeze_frames_enabled:
 		return
 
-	var current_time = Time.get_ticks_msec()
-	var new_end_time = current_time + int(duration * 1000)
-
-	# Only capture original scale if not already in hitstop
-	if not hitstop_active:
-		original_time_scale = Engine.time_scale
-		hitstop_active = true
-		# Start the restore timer only once
-		get_tree().create_timer(duration, true, false, true).timeout.connect(_check_restore_time_scale)
-
-	# Extend the hitstop if this new one would end later
-	if new_end_time > hitstop_restore_time:
-		hitstop_restore_time = new_end_time
-
+	# Set time scale to slow
 	Engine.time_scale = 0.05
 
-func _check_restore_time_scale() -> void:
-	"""Check if we should restore time scale or if hitstop was extended."""
-	var current_time = Time.get_ticks_msec()
-	if current_time >= hitstop_restore_time:
-		# Time to restore
-		Engine.time_scale = original_time_scale
-		hitstop_active = false
-		hitstop_restore_time = 0
-	else:
-		# Hitstop was extended, schedule another check
-		var remaining = (hitstop_restore_time - current_time) / 1000.0
-		get_tree().create_timer(remaining, true, false, true).timeout.connect(_check_restore_time_scale)
+	# Schedule restore - use deferred call to avoid issues
+	_schedule_restore(duration)
+
+func _schedule_restore(duration: float) -> void:
+	# Wait using a timer that ignores time scale (last param = true)
+	await get_tree().create_timer(duration, true, false, true).timeout
+	# Restore time scale
+	if Engine.time_scale < 1.0:
+		Engine.time_scale = 1.0
 
 # Micro hitstop for hits (1 frame at 60fps)
 func hitstop_micro() -> void:
