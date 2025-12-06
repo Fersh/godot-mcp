@@ -114,9 +114,10 @@ func _process(delta: float) -> void:
 	# Check if all slots settled
 	if slots_settled.all(func(s): return s):
 		is_rolling = false
-		# Enable button interaction
+		# Enable button interaction and start idle animations
 		for button in ability_buttons:
 			button.disabled = false
+			_start_idle_animation(button)
 
 func show_choices(abilities: Array) -> void:
 	## Show ability choices - can be mixed AbilityData (passives) and trigger card Dictionaries
@@ -2142,13 +2143,35 @@ func _enter_branch_selection_with_upgrades(trigger_ability: ActiveAbilityData, u
 		selection_mode = SelectionMode.NORMAL
 		return
 
+	# Play transition flash effect
+	_play_screen_transition(Color(0.2, 0.9, 0.3, 0.4))  # Green flash for upgrades
+
 	# Animate out current cards
 	for i in range(ability_buttons.size()):
 		_animate_card_out(ability_buttons[i], i)
 
 	# Wait for animation then show branches
-	await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(0.35).timeout
 	_show_branch_cards(branches)
+
+func _play_screen_transition(flash_color: Color) -> void:
+	"""Play a screen flash transition effect."""
+	var flash = ColorRect.new()
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.color = Color(flash_color.r, flash_color.g, flash_color.b, 0.0)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 50
+	add_child(flash)
+
+	var tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	# Flash in
+	tween.tween_property(flash, "color:a", flash_color.a, 0.1).set_ease(Tween.EASE_OUT)
+	# Hold briefly
+	tween.tween_interval(0.05)
+	# Fade out
+	tween.tween_property(flash, "color:a", 0.0, 0.25).set_ease(Tween.EASE_IN)
+	tween.tween_callback(flash.queue_free)
 
 func _show_branch_cards(branches: Array[ActiveAbilityData]) -> void:
 	"""Display branch upgrade cards."""
@@ -2208,25 +2231,89 @@ func _finalize_branch_selection(ability: ActiveAbilityData) -> void:
 	hide_selection()
 
 func _animate_card_out(button: Button, index: int) -> void:
-	"""Animate a card sliding out and fading."""
+	"""Animate a card sliding out with a swoosh effect."""
+	_stop_idle_animation(button)
+	button.pivot_offset = button.size / 2
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween.set_parallel(true)
-	tween.tween_property(button, "modulate:a", 0.0, 0.2)
-	tween.tween_property(button, "position:y", button.position.y + 50, 0.2)
+	# Spin and shrink while fading
+	tween.tween_property(button, "modulate:a", 0.0, 0.25)
+	tween.tween_property(button, "scale", Vector2(0.3, 0.3), 0.25).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(button, "rotation", 0.15, 0.25).set_ease(Tween.EASE_IN)
 
 func _animate_card_in(button: Button, index: int) -> void:
-	"""Animate a card sliding in."""
+	"""Animate a card sliding in with flair."""
 	button.modulate.a = 0.0
+	button.pivot_offset = button.size / 2
+	button.scale = Vector2(0.5, 0.5)
+	button.rotation = -0.1
 	var target_pos = button.position
-	button.position.y += 50
+	button.position.y += 80
 
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-	tween.tween_interval(0.1 * index)
+	tween.tween_interval(0.15 * index)  # Stagger
 	tween.set_parallel(true)
-	tween.tween_property(button, "position:y", target_pos.y, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
-	tween.tween_property(button, "modulate:a", 1.0, 0.2)
+	tween.tween_property(button, "position:y", target_pos.y, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(button, "modulate:a", 1.0, 0.3).set_ease(Tween.EASE_OUT)
+	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+	tween.tween_property(button, "rotation", 0.0, 0.4).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_ELASTIC)
+
+	# Start idle animation after entrance completes
+	tween.chain().tween_callback(_start_idle_animation.bind(button))
+
+func _start_idle_animation(button: Button) -> void:
+	"""Start a subtle idle flutter animation on the card."""
+	if not is_instance_valid(button):
+		return
+
+	button.pivot_offset = button.size / 2
+
+	# Create looping idle animation
+	var idle_tween = create_tween()
+	idle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	idle_tween.set_loops()  # Loop forever
+
+	# Gentle floating motion
+	var float_amount = 3.0
+	var float_duration = 2.0 + randf() * 0.5  # Slightly randomize timing
+
+	idle_tween.tween_property(button, "position:y", button.position.y - float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	idle_tween.tween_property(button, "position:y", button.position.y + float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	idle_tween.tween_property(button, "position:y", button.position.y, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	# Store tween reference so we can kill it later
+	button.set_meta("idle_tween", idle_tween)
+
+	# Also add subtle rotation sway
+	var sway_tween = create_tween()
+	sway_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	sway_tween.set_loops()
+
+	var sway_amount = 0.015
+	var sway_duration = 3.0 + randf() * 0.5
+
+	sway_tween.tween_property(button, "rotation", sway_amount, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	sway_tween.tween_property(button, "rotation", -sway_amount, sway_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	sway_tween.tween_property(button, "rotation", 0.0, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	button.set_meta("sway_tween", sway_tween)
+
+func _stop_idle_animation(button: Button) -> void:
+	"""Stop idle animation on a card."""
+	if not is_instance_valid(button):
+		return
+
+	if button.has_meta("idle_tween"):
+		var tween = button.get_meta("idle_tween")
+		if tween and tween.is_valid():
+			tween.kill()
+
+	if button.has_meta("sway_tween"):
+		var tween = button.get_meta("sway_tween")
+		if tween and tween.is_valid():
+			tween.kill()
 
 func _show_cancel_button() -> void:
 	"""Show Cancel button for branch selection mode - positioned at bottom of screen."""

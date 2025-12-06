@@ -192,7 +192,28 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.AXE,
 		"base_stats": {"damage": 0.08},
-		"icon_path": "res://assets/sprites/items/swords/PNG/Transperent/Icon5.png"
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon1_no_effect.png"
+	},
+	"hatchet_basic": {
+		"display_name": "Hatchet",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.06, "attack_speed": 0.05},
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon2_no_effect.png"
+	},
+	"battle_axe_basic": {
+		"display_name": "Battle Axe",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.10},
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon5_no_effect.png"
+	},
+	"cleaver_basic": {
+		"display_name": "Cleaver",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.07, "crit_chance": 0.04},
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon8_no_effect.png"
 	},
 	"mace_basic": {
 		"display_name": "Mace",
@@ -236,7 +257,28 @@ const BASE_ITEMS: Dictionary = {
 		"slot": ItemData.Slot.WEAPON,
 		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.04, "melee_range": 0.15},
-		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon1.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon1_no_effect.png"
+	},
+	"javelin_basic": {
+		"display_name": "Javelin",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.SPEAR,
+		"base_stats": {"damage": 0.05, "attack_speed": 0.04},
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon10_no_effect.png"
+	},
+	"pike_basic": {
+		"display_name": "Pike",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.SPEAR,
+		"base_stats": {"damage": 0.06, "melee_range": 0.20},
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon11_no_effect.png"
+	},
+	"halberd_basic": {
+		"display_name": "Halberd",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.SPEAR,
+		"base_stats": {"damage": 0.07, "crit_chance": 0.03},
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon12_no_effect.png"
 	},
 	# STAFFS - Mage, Priest, Necromancer weapon
 	"staff_basic": {
@@ -533,7 +575,7 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.12, "attack_speed": 0.12},
 		"grants_ability": "deflect",
-		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon20.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon20_no_effect.png"
 	},
 	"beast_claw": {
 		"display_name": "Beast's Claw Spear",
@@ -542,7 +584,35 @@ const EPIC_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.15, "melee_range": 0.20},
 		"grants_ability": "frenzy",
-		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon25.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon25_no_effect.png"
+	},
+
+	# Weapons - Axes (Barbarian, Minotaur, Ratfolk)
+	"bloodthirst_axe": {
+		"display_name": "Bloodthirst",
+		"description": "It craves violence.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.15, "crit_chance": 0.08},
+		"grants_ability": "vampirism",
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon20_no_effect.png"
+	},
+	"berserker_axe": {
+		"display_name": "Berserker's Fury",
+		"description": "RAAAAAGE!",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.18, "attack_speed": 0.10},
+		"grants_ability": "frenzy",
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon22_no_effect.png"
+	},
+	"skull_splitter": {
+		"display_name": "Skull Splitter",
+		"description": "Does exactly what it says.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.20, "crit_chance": 0.12},
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon25_no_effect.png"
 	},
 
 	# Weapons - Staffs (Mage, Priest, Necromancer)
@@ -828,7 +898,7 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.25, "attack_speed": 0.20, "melee_range": 0.25},
 		"grants_equipment_ability": "holy_smite",
-		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon40.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon36_no_effect.png"
 	},
 	"primal_rage": {
 		"display_name": "Primal Rage Spear",
@@ -837,7 +907,36 @@ const LEGENDARY_ITEMS: Dictionary = {
 		"weapon_type": ItemData.WeaponType.SPEAR,
 		"base_stats": {"damage": 0.30, "melee_range": 0.30, "crit_chance": 0.15},
 		"grants_equipment_ability": "scaling_damage",
-		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon48.png"
+		"icon_path": "res://assets/sprites/items/spear/PNG/Transperent/Icon40_no_effect.png"
+	},
+
+	# Weapons - Axes (Barbarian, Minotaur, Ratfolk) - Legendary
+	"worldsplitter": {
+		"display_name": "Worldsplitter",
+		"description": "Cleaves through reality itself.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.30, "crit_chance": 0.15, "attack_speed": 0.10},
+		"grants_equipment_ability": "scaling_damage",
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon36_no_effect.png"
+	},
+	"gorehowl": {
+		"display_name": "Gorehowl",
+		"description": "It screams with every swing.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.35, "crit_chance": 0.20},
+		"grants_equipment_ability": "eviscerate",
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon38_no_effect.png"
+	},
+	"mangler": {
+		"display_name": "The Mangler",
+		"description": "What remains won't be recognizable.",
+		"slot": ItemData.Slot.WEAPON,
+		"weapon_type": ItemData.WeaponType.AXE,
+		"base_stats": {"damage": 0.28, "attack_speed": 0.20, "crit_chance": 0.12},
+		"grants_equipment_ability": "finishing_move",
+		"icon_path": "res://assets/sprites/items/axes/PNG/Transperent/Icon40_no_effect.png"
 	},
 
 	# Weapons - Staffs (Mage, Priest, Necromancer) - Legendary

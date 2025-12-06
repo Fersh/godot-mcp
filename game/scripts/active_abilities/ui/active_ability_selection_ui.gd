@@ -323,6 +323,8 @@ func _process(delta: float) -> void:
 		is_rolling = false
 		for button in ability_buttons:
 			button.disabled = false
+			# Start idle animations on cards
+			_start_idle_animation(button)
 		# Enable reroll button if not used yet
 		if reroll_button and not reroll_used:
 			reroll_button.disabled = false
@@ -932,6 +934,10 @@ func _on_ability_selected(index: int) -> void:
 	if HapticManager:
 		HapticManager.light()
 
+	# Stop all idle animations
+	for button in ability_buttons:
+		_stop_idle_animation(button)
+
 	if index >= 0 and index < current_choices.size():
 		var ability = current_choices[index]
 
@@ -1013,6 +1019,10 @@ func _on_reroll_pressed() -> void:
 	"""Reroll all 3 ability choices. Can only be used once per selection."""
 	if reroll_used or is_rolling:
 		return
+
+	# Stop idle animations on all cards before reroll
+	for button in ability_buttons:
+		_stop_idle_animation(button)
 
 	# Mark as used
 	reroll_used = true
@@ -1233,3 +1243,68 @@ func _update_particle_container(container: Control, rarity: ActiveAbilityData.Ra
 				child.material.set_shader_parameter("intensity", intensity * 0.8)
 				child.material.set_shader_parameter("particle_density", density * 0.5)
 			child_index += 1
+
+# ============================================
+# IDLE ANIMATIONS
+# ============================================
+
+func _start_idle_animation(button: Button) -> void:
+	"""Start a subtle idle flutter animation on the card."""
+	if not is_instance_valid(button):
+		return
+
+	# Store original position for reference
+	var original_y = button.position.y
+	button.set_meta("original_y", original_y)
+	button.pivot_offset = button.size / 2
+
+	# Create looping idle animation - gentle floating motion
+	var idle_tween = create_tween()
+	idle_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	idle_tween.set_loops()
+
+	var float_amount = 3.0
+	var float_duration = 2.0 + randf() * 0.5  # Slight randomness for organic feel
+
+	idle_tween.tween_property(button, "position:y", original_y - float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	idle_tween.tween_property(button, "position:y", original_y + float_amount, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	idle_tween.tween_property(button, "position:y", original_y, float_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	button.set_meta("idle_tween", idle_tween)
+
+	# Also add subtle rotation sway
+	var sway_tween = create_tween()
+	sway_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	sway_tween.set_loops()
+
+	var sway_amount = 0.015  # Subtle rotation in radians
+	var sway_duration = 3.0 + randf() * 0.5
+
+	sway_tween.tween_property(button, "rotation", sway_amount, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	sway_tween.tween_property(button, "rotation", -sway_amount, sway_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	sway_tween.tween_property(button, "rotation", 0.0, sway_duration / 2).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+
+	button.set_meta("sway_tween", sway_tween)
+
+func _stop_idle_animation(button: Button) -> void:
+	"""Stop the idle animation on a card."""
+	if not is_instance_valid(button):
+		return
+
+	# Kill any running idle tweens
+	if button.has_meta("idle_tween"):
+		var idle_tween = button.get_meta("idle_tween") as Tween
+		if idle_tween and idle_tween.is_valid():
+			idle_tween.kill()
+		button.remove_meta("idle_tween")
+
+	if button.has_meta("sway_tween"):
+		var sway_tween = button.get_meta("sway_tween") as Tween
+		if sway_tween and sway_tween.is_valid():
+			sway_tween.kill()
+		button.remove_meta("sway_tween")
+
+	# Reset position and rotation
+	if button.has_meta("original_y"):
+		button.position.y = button.get_meta("original_y")
+	button.rotation = 0.0

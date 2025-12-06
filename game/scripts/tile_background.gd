@@ -226,19 +226,25 @@ func _ready() -> void:
 	generate_arena()
 
 func _determine_theme() -> void:
+	# TEMP: Force Pitiful/forest theme for all difficulties while debugging jungle theme
+	use_jungle_theme = false
+	current_tileset_path = TILESET_PATH_PITIFUL
+	print("TileBackground: Using Pitiful/forest theme (jungle disabled for debugging)")
+	return
+
 	# Check if DifficultyManager exists and get current difficulty
-	var diff_manager = get_node_or_null("/root/DifficultyManager")
-	if diff_manager:
-		var current_diff = diff_manager.get_current_difficulty()
-		# Pitiful (JUVENILE = 0) uses forest, all others use jungle
-		use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
-		current_tileset_path = TILESET_PATH_JUNGLE if use_jungle_theme else TILESET_PATH_PITIFUL
-		print("TileBackground: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
-	else:
-		# Default to Pitiful theme if no difficulty manager
-		use_jungle_theme = false
-		current_tileset_path = TILESET_PATH_PITIFUL
-		print("TileBackground: No difficulty manager found, using default theme")
+	#var diff_manager = get_node_or_null("/root/DifficultyManager")
+	#if diff_manager:
+	#	var current_diff = diff_manager.get_current_difficulty()
+	#	# Pitiful (JUVENILE = 0) uses forest, all others use jungle
+	#	use_jungle_theme = current_diff > 0  # VERY_EASY (Easy) and above
+	#	current_tileset_path = TILESET_PATH_JUNGLE if use_jungle_theme else TILESET_PATH_PITIFUL
+	#	print("TileBackground: Difficulty tier = %d, use_jungle_theme = %s" % [current_diff, use_jungle_theme])
+	#else:
+	#	# Default to Pitiful theme if no difficulty manager
+	#	use_jungle_theme = false
+	#	current_tileset_path = TILESET_PATH_PITIFUL
+	#	print("TileBackground: No difficulty manager found, using default theme")
 
 func _load_tileset() -> void:
 	tileset_texture = load(current_tileset_path)
