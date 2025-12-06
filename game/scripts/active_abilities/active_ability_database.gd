@@ -66,7 +66,7 @@ static func _register_all_abilities() -> void:
 	# MELEE - COMMON (from trees)
 	# ============================================
 	_register(_create_cleave())
-	_register(_create_shield_bash())
+	# _register(_create_shield_bash())  # Commented out - non-tree ability, consolidating into tree system
 	_register(_create_ground_slam())
 	_register(_create_dash_strike())
 	# Additional melee trees - load base abilities from tree registry
@@ -112,7 +112,7 @@ static func _register_all_abilities() -> void:
 	# RANGED - LEGENDARY
 	# ============================================
 	# _register(_create_arrow_storm())  # Removed - now Rain of Arrows Tree T2
-	_register(_create_ballista_strike())
+	# _register(_create_ballista_strike())  # Removed - now Power Shot Tree T3 (power_shot_ballista)
 	# _register(_create_sentry_network())  # Removed - now Turret Tree T3 (Gatling Network)
 	# _register(_create_rain_of_vengeance())  # Removed - now Rain of Arrows Tree T3 (Arrow Apocalypse)
 	# _register(_create_explosive_decoy())  # Removed - now Decoy Tree T2
@@ -131,7 +131,7 @@ static func _register_all_abilities() -> void:
 	_register(_create_frost_nova())  # Upgraded - merged with Throw Net
 	_register(_create_chain_lightning())
 	# _register(_create_meteor_strike())  # Removed - now Fireball Tree T2 (fireball_meteor)
-	_register(_create_totem_of_frost())
+	# _register(_create_totem_of_frost())  # Removed - now Frost Nova Tree T2 (frost_nova_totem)
 	# _register(_create_shadowstep())  # Removed - now Teleport Tree T2 B (teleport_shadow)
 	_register(_create_time_slow())
 
@@ -147,23 +147,25 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# NEW ABILITIES - ZONE & WALL
 	# ============================================
-	_register(_create_flame_wall())
-	_register(_create_ice_barricade())
-	_register(_create_floor_is_lava())
+	# _register(_create_flame_wall())  # Removed - now Wall Tree BASE
+	# _register(_create_ice_barricade())  # Removed - now Wall Tree T2 (wall_ice)
+	# _register(_create_floor_is_lava())  # Removed - now Wall Tree T3 (wall_lava)
+	_register_from_tree("flame_wall")  # Wall Tree
 
 	# ============================================
 	# NEW ABILITIES - TRAPS
 	# ============================================
 	# _register(_create_bear_trap())  # Removed - now Trap Tree T2 (ranged)
-	_register(_create_glue_bomb())
-	_register(_create_pressure_mine())
+	# _register(_create_glue_bomb())  # Removed - now Snare Tree BASE
+	# _register(_create_pressure_mine())  # Removed - now Snare Tree T2 (snare_mine)
+	_register_from_tree("glue_bomb")  # Snare Tree
 
 	# ============================================
 	# NEW ABILITIES - STEALTH & DECEPTION
 	# ============================================
 	# _register(_create_smoke_bomb())  # Removed - now Smoke Tree BASE (ranged)
 	# _register(_create_now_you_see_me())  # Disabled - needs rework
-	_register(_create_pocket_sand())
+	# _register(_create_pocket_sand())  # Commented out - redundant with frost_nova (AoE CC)
 
 	# ============================================
 	# NEW ABILITIES - SHOUTS
@@ -174,29 +176,29 @@ static func _register_all_abilities() -> void:
 	# ============================================
 	# NEW ABILITIES - CHAOS & UTILITY
 	# ============================================
-	_register(_create_mirror_clone())
-	_register(_create_uno_reverse())
+	# _register(_create_mirror_clone())  # Commented out for now
+	# _register(_create_uno_reverse())  # Removed - now Shield Tree T3 (barrier_reverse)
 	# _register(_create_orbital_strike())  # Removed - now Rain of Arrows Tree T3 Branch B (ranged)
-	_register(_create_summon_party())
-	_register(_create_panic_button())
-	_register(_create_pocket_healer())
-	_register(_create_safe_space())
-	_register(_create_double_or_nothing())
+	# _register(_create_summon_party())  # Commented out - too niche
+	# _register(_create_panic_button())  # Removed - now Shield Tree T2 (barrier_panic)
+	# _register(_create_pocket_healer())  # Removed - now Summon Tree T3 (summon_healer)
+	# _register(_create_safe_space())  # Commented out - redundant with barrier_bubble
+	# _register(_create_double_or_nothing())  # Commented out for now
 
 	# ============================================
 	# NEW ABILITIES - SUMMONS & TRANSFORMS
 	# ============================================
-	_register(_create_release_the_hounds())
-	_register(_create_gigantamax())
-	_register(_create_monster_energy())
-	_register(_create_i_see_red())
+	# _register(_create_release_the_hounds())  # Removed - now Summon Tree T3 (summon_hounds)
+	# _register(_create_gigantamax())  # Removed - now Rampage Tree T3 (rampage_giant)
+	# _register(_create_monster_energy())  # Removed - now Rampage Tree T2 (rampage_energy)
+	# _register(_create_i_see_red())  # Removed - now Rampage Tree T3 (rampage_berserk)
 
 	# ============================================
 	# NEW ABILITIES - CROWD CONTROL
 	# ============================================
 	# vortex removed - now part of spin_tree as spin_vortex (T2)
 	# _register(_create_repulsive())  # Removed - now Gravity Tree T2 B (gravity_repulse)
-	_register(_create_dj_drop())
+	# _register(_create_dj_drop())  # Commented out - redundant with frost_nova (AoE stun)
 
 static func _register(ability: ActiveAbilityData) -> void:
 	_abilities[ability.id] = ability

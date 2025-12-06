@@ -84,6 +84,8 @@ static func _register_all_trees() -> void:
 	_register_tree(CurseTree.create())
 	_register_tree(BlinkTree.create())
 	_register_tree(ThornsTree.create())
+	_register_tree(WallTree.create())
+	_register_tree(SnareTree.create())
 
 static func _register_tree(tree: AbilityTreeNode) -> void:
 	"""Register a tree and build lookup indices"""

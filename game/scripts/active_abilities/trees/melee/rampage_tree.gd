@@ -5,6 +5,8 @@ class_name RampageTree
 # Base: Enter rampage mode for attack speed
 # Branch A (Frenzy): Stack frenzy -> Bloodlust (faster with each kill)
 # Branch B (Fury): Damage increase -> Unstoppable (immune + massive damage)
+# Branch C (Energy): Monster Energy -> Gigantamax (size/power transformation)
+# Branch D (Berserk): I See Red base -> I See Red (full berserk mode)
 
 const BASE_NAME = "Rampage"
 const BASE_ID = "rampage"
@@ -20,6 +22,18 @@ static func create() -> AbilityTreeNode:
 	tree.add_branch(
 		_create_fury(),
 		_create_unstoppable()
+	)
+
+	# Branch C: Energy/Transform path
+	tree.add_branch(
+		_create_monster_energy(),
+		_create_gigantamax()
+	)
+
+	# Branch D: Berserk path
+	tree.add_branch(
+		_create_seeing_red(),
+		_create_i_see_red()
 	)
 
 	return tree
@@ -100,8 +114,70 @@ static func _create_unstoppable() -> ActiveAbilityData:
 	 .with_signature("Immune to CC, +100% damage, move through enemies dealing damage, can't be stopped") \
 	 .with_suffix("of Annihilation", BASE_NAME, "Furious", BASE_ID)
 
+static func _create_monster_energy() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"rampage_energy",
+		"Energized Rampage",
+		"Enter an energized state with +150% attack speed.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.SELF,
+		18.0
+	).with_damage(0.0, 0.0) \
+	 .with_duration(7.0) \
+	 .with_effect("monster_energy") \
+	 .with_prerequisite("rampage", 2) \
+	 .with_prefix("Energized", BASE_NAME, BASE_ID)
+
+static func _create_gigantamax() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"rampage_giant",
+		"Energized Rampage of the Titan",
+		"Grow HUGE! +300% damage, +75% range, but -90% movement speed.",
+		ActiveAbilityData.Rarity.EPIC,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.SELF,
+		40.0
+	).with_damage(0.0, 0.0) \
+	 .with_duration(7.0) \
+	 .with_effect("gigantamax") \
+	 .with_prerequisite("rampage_energy", 2) \
+	 .with_signature("Massive size, +300% damage, +75% attack range, but rooted/slowed") \
+	 .with_suffix("of the Titan", BASE_NAME, "Energized", BASE_ID)
+
+static func _create_seeing_red() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"rampage_red",
+		"Raging Rampage",
+		"Enter a rage state with +75% damage and +50% speed, but take more damage.",
+		ActiveAbilityData.Rarity.RARE,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.SELF,
+		18.0
+	).with_damage(0.0, 0.0) \
+	 .with_duration(8.0) \
+	 .with_effect("seeing_red") \
+	 .with_prerequisite("rampage", 3) \
+	 .with_prefix("Raging", BASE_NAME, BASE_ID)
+
+static func _create_i_see_red() -> ActiveAbilityData:
+	return ActiveAbilityData.new(
+		"rampage_berserk",
+		"Raging Rampage of Fury",
+		"Go full berserk! +150% damage, +75% speed, but take +50% more damage.",
+		ActiveAbilityData.Rarity.EPIC,
+		ActiveAbilityData.ClassType.MELEE,
+		ActiveAbilityData.TargetType.SELF,
+		35.0
+	).with_damage(0.0, 0.0) \
+	 .with_duration(10.0) \
+	 .with_effect("i_see_red") \
+	 .with_prerequisite("rampage_red", 3) \
+	 .with_signature("+150% damage, +75% move speed, +50% incoming damage, unstoppable rage") \
+	 .with_suffix("of Fury", BASE_NAME, "Raging", BASE_ID)
+
 static func get_all_ability_ids() -> Array[String]:
-	return ["rampage", "rampage_frenzy", "rampage_bloodlust", "rampage_fury", "rampage_unstoppable"]
+	return ["rampage", "rampage_frenzy", "rampage_bloodlust", "rampage_fury", "rampage_unstoppable", "rampage_energy", "rampage_giant", "rampage_red", "rampage_berserk"]
 
 static func get_tree_name() -> String:
 	return "Rampage"

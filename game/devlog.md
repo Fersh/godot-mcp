@@ -2,6 +2,83 @@
 
 ---
 
+## Date: 2025-12-05 - Active Ability Tree Consolidation
+
+### Summary
+Major consolidation of standalone active abilities into the 3-tier upgrade tree system. Created 2 new trees, expanded 5 existing trees, and commented out 12 redundant standalone abilities.
+
+### New Trees Created
+
+| Tree | Type | Base Ability | Description |
+|------|------|--------------|-------------|
+| **Wall Tree** | GLOBAL | Flame Wall | Fire/Ice wall abilities (flame_wall, ice_barricade, floor_is_lava) |
+| **Snare Tree** | GLOBAL | Glue Bomb | Trap/slow zone abilities (glue_bomb, pressure_mine) |
+
+### Existing Trees Expanded
+
+| Tree | New Branches | Abilities Added |
+|------|--------------|-----------------|
+| **Power Shot Tree** | Branch C (Ballista) | power_shot_heavy (T2), power_shot_ballista (T3) |
+| **Frost Nova Tree** | Branch C (Totem) | frost_nova_totem (T2), frost_nova_blizzard_totem (T3) |
+| **Shield Tree** | Branch C (Panic/Reflect) | barrier_panic (T2), barrier_reverse (T3) |
+| **Rampage Tree** | Branch C (Energy), Branch D (Berserk) | rampage_energy (T2), rampage_giant (T3), rampage_red (T2), rampage_berserk (T3) |
+| **Summon Tree** | Branch C (Wolves), Branch D (Healer) | summon_wolf (T2), summon_hounds (T3), summon_spirit (T2), summon_healer (T3) |
+
+### Abilities Migrated to Trees (12)
+
+| Old Standalone | New Tree Location | New ID |
+|----------------|-------------------|--------|
+| ballista_strike | Power Shot T3-C | power_shot_ballista |
+| flame_wall | Wall Tree BASE | flame_wall |
+| ice_barricade | Wall Tree T2-B | wall_ice |
+| floor_is_lava | Wall Tree T3-A | wall_lava |
+| totem_of_frost | Frost Nova T2-C | frost_nova_totem |
+| glue_bomb | Snare Tree BASE | glue_bomb |
+| pressure_mine | Snare Tree T2-A | snare_mine |
+| panic_button | Shield Tree T2-C | barrier_panic |
+| uno_reverse | Shield Tree T3-C | barrier_reverse |
+| monster_energy | Rampage T2-C | rampage_energy |
+| i_see_red | Rampage T3-D | rampage_berserk |
+| gigantamax | Rampage T3-C | rampage_giant |
+| release_the_hounds | Summon T3-C | summon_hounds |
+| pocket_healer | Summon T3-D | summon_healer |
+
+### Abilities Commented Out (Redundant/Niche)
+
+| Ability | Reason |
+|---------|--------|
+| shield_bash | Non-tree ability, consolidating |
+| pocket_sand | Redundant with frost_nova (AoE CC) |
+| safe_space | Redundant with barrier_bubble |
+| double_or_nothing | Niche, needs rework |
+| summon_party | Too niche (only useful with summons) |
+| mirror_clone | Needs rework |
+| dj_drop | Redundant with frost_nova (AoE stun) |
+
+### Files Created
+- `game/scripts/active_abilities/trees/global/wall_tree.gd`
+- `game/scripts/active_abilities/trees/global/snare_tree.gd`
+
+### Files Modified
+- `game/scripts/active_abilities/active_ability_database.gd` - Commented out 12 standalone abilities
+- `game/scripts/active_abilities/trees/ability_tree_registry.gd` - Registered Wall and Snare trees
+- `game/scripts/active_abilities/trees/ranged/power_shot_tree.gd` - Added Branch C (Ballista)
+- `game/scripts/active_abilities/trees/global/frost_nova_tree.gd` - Added Branch C (Totem)
+- `game/scripts/active_abilities/trees/global/shield_tree.gd` - Added Branch C (Panic/Reflect)
+- `game/scripts/active_abilities/trees/melee/rampage_tree.gd` - Added Branches C & D (Energy/Berserk)
+- `game/scripts/active_abilities/trees/global/summon_tree.gd` - Added Branches C & D (Wolves/Healer)
+
+### Tree Summary After Changes
+
+| Category | Trees | Total Abilities |
+|----------|-------|-----------------|
+| Melee | 10 | ~60 |
+| Ranged | 20 | ~100 |
+| Global | 17 (was 15) | ~100 |
+| **Total** | **47** | **~260** |
+
+---
+
 ## Date: 2025-12-05 - Trigger Card System Overhaul
 
 ### Summary
