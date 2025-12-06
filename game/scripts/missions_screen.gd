@@ -67,7 +67,7 @@ func _build_ui() -> void:
 	# Dark overlay
 	var overlay = ColorRect.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	overlay.color = Color(0, 0, 0, 0.65)
+	overlay.color = Color(0, 0, 0, 0.8)
 	add_child(overlay)
 
 	# Main VBox container
