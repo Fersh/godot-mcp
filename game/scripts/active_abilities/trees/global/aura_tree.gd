@@ -49,8 +49,7 @@ static func _create_might() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(8.0) \
 	 .with_effect("empower") \
-	 .with_prerequisite("empower", 0) \
-	 .with_prefix("Might", BASE_NAME, BASE_ID)
+	 .with_prerequisite("empower", 0)
 
 static func _create_avatar() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_avatar() -> ActiveAbilityData:
 	 .with_duration(12.0) \
 	 .with_effect("empower") \
 	 .with_prerequisite("empower_might", 0) \
-	 .with_signature("2x size, 100% damage, all attacks are AoE, 25% damage reduction") \
-	 .with_suffix("of the Avatar", BASE_NAME, "Might", BASE_ID)
+	 .with_signature("2x size, 100% damage, all attacks are AoE, 25% damage reduction")
 
 static func _create_speed() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_speed() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(7.0) \
 	 .with_effect("empower") \
-	 .with_prerequisite("empower", 1) \
-	 .with_prefix("Quick", BASE_NAME, BASE_ID)
+	 .with_prerequisite("empower", 1)
 
 static func _create_haste() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_haste() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("empower") \
 	 .with_prerequisite("empower_speed", 1) \
-	 .with_signature("100% attack speed, 50% move speed, afterimages deal 25% damage") \
-	 .with_suffix("of Haste", BASE_NAME, "Quick", BASE_ID)
+	 .with_signature("100% attack speed, 50% move speed, afterimages deal 25% damage")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["empower", "empower_might", "empower_avatar", "empower_speed", "empower_haste"]

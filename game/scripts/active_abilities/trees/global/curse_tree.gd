@@ -51,8 +51,7 @@ static func _create_weakness() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_duration(6.0) \
 	 .with_effect("curse") \
-	 .with_prerequisite("curse", 0) \
-	 .with_prefix("Weakness", BASE_NAME, BASE_ID)
+	 .with_prerequisite("curse", 0)
 
 static func _create_doom() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_doom() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("curse") \
 	 .with_prerequisite("curse_weakness", 0) \
-	 .with_signature("3s delay, then massive damage, damage increased by hits during countdown") \
-	 .with_suffix("of Doom", BASE_NAME, "Weakness", BASE_ID)
+	 .with_signature("3s delay, then massive damage, damage increased by hits during countdown")
 
 static func _create_spread() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -85,8 +83,7 @@ static func _create_spread() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(5.0) \
 	 .with_effect("curse") \
-	 .with_prerequisite("curse", 1) \
-	 .with_prefix("Spreading", BASE_NAME, BASE_ID)
+	 .with_prerequisite("curse", 1)
 
 static func _create_plague() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -103,8 +100,7 @@ static func _create_plague() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("curse") \
 	 .with_prerequisite("curse_spread", 1) \
-	 .with_signature("Jumps to 3 enemies on death, curse stacks increase damage, chain reaction potential") \
-	 .with_suffix("of the Plague", BASE_NAME, "Spreading", BASE_ID)
+	 .with_signature("Jumps to 3 enemies on death, curse stacks increase damage, chain reaction potential")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["curse", "curse_weakness", "curse_doom", "curse_spread", "curse_plague"]

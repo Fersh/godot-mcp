@@ -54,8 +54,7 @@ static func _create_crush() -> ActiveAbilityData:
 	 .with_knockback(-300.0) \
 	 .with_slow(0.5, 4.0) \
 	 .with_effect("gravity_well") \
-	 .with_prerequisite("gravity_well", 0) \
-	 .with_prefix("Crushing", BASE_NAME, BASE_ID)
+	 .with_prerequisite("gravity_well", 0)
 
 static func _create_singularity() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -72,8 +71,7 @@ static func _create_singularity() -> ActiveAbilityData:
 	 .with_knockback(-500.0) \
 	 .with_effect("gravity_well") \
 	 .with_prerequisite("gravity_crush", 0) \
-	 .with_signature("Inescapable pull, damage increases near center, collapse explosion") \
-	 .with_suffix("of the Singularity", BASE_NAME, "Crushing", BASE_ID)
+	 .with_signature("Inescapable pull, damage increases near center, collapse explosion")
 
 static func _create_repulse() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -88,8 +86,7 @@ static func _create_repulse() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_knockback(400.0) \
 	 .with_effect("gravity_well") \
-	 .with_prerequisite("gravity_well", 1) \
-	 .with_prefix("Repulse", BASE_NAME, BASE_ID)
+	 .with_prerequisite("gravity_well", 1)
 
 static func _create_supernova() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -106,8 +103,7 @@ static func _create_supernova() -> ActiveAbilityData:
 	 .with_knockback(600.0) \
 	 .with_effect("gravity_well") \
 	 .with_prerequisite("gravity_repulse", 1) \
-	 .with_signature("Pull in for 1s, then massive explosion, leaves burning ground") \
-	 .with_suffix("of the Supernova", BASE_NAME, "Repulse", BASE_ID)
+	 .with_signature("Pull in for 1s, then massive explosion, leaves burning ground")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["gravity_well", "gravity_crush", "gravity_singularity", "gravity_repulse", "gravity_supernova"]

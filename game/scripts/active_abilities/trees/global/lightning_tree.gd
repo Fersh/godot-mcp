@@ -51,8 +51,7 @@ static func _create_thunderstorm() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_duration(5.0) \
 	 .with_effect("chain_lightning") \
-	 .with_prerequisite("chain_lightning", 0) \
-	 .with_prefix("Storm", BASE_NAME, BASE_ID)
+	 .with_prerequisite("chain_lightning", 0)
 
 static func _create_overload() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -69,8 +68,7 @@ static func _create_overload() -> ActiveAbilityData:
 	 .with_stun(1.5) \
 	 .with_effect("chain_lightning") \
 	 .with_prerequisite("chain_lightning_storm", 0) \
-	 .with_signature("Initial target stunned, chains at double damage to nearby") \
-	 .with_suffix("of Overload", BASE_NAME, "Storm", BASE_ID)
+	 .with_signature("Initial target stunned, chains at double damage to nearby")
 
 static func _create_static_field() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -85,8 +83,7 @@ static func _create_static_field() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(8.0) \
 	 .with_effect("chain_lightning") \
-	 .with_prerequisite("chain_lightning", 1) \
-	 .with_prefix("Static", BASE_NAME, BASE_ID)
+	 .with_prerequisite("chain_lightning", 1)
 
 static func _create_power_surge() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -102,8 +99,7 @@ static func _create_power_surge() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("chain_lightning") \
 	 .with_prerequisite("chain_lightning_static", 1) \
-	 .with_signature("All attacks chain lightning, +20% attack speed") \
-	 .with_suffix("of Power Surge", BASE_NAME, "Static", BASE_ID)
+	 .with_signature("All attacks chain lightning, +20% attack speed")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["chain_lightning", "chain_lightning_storm", "chain_lightning_overload", "chain_lightning_static", "chain_lightning_surge"]

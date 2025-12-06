@@ -126,6 +126,7 @@ var roll_tick_timers: Array[float] = []
 @onready var choices_container: HBoxContainer
 
 var pixel_font: Font = null
+var desc_font: Font = null
 var rarity_particle_shader: Shader = null
 var particle_containers: Array[Control] = []
 
@@ -137,6 +138,10 @@ func _ready() -> void:
 
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load Quicksand font for descriptions
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
+		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
 
 	# Load rarity particle shader
 	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
@@ -400,7 +405,12 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	name_spacer.custom_minimum_size = Vector2(0, 40)  # 40px margin below title
 	vbox.add_child(name_spacer)
 
-	# Description
+	# Description (with padding via MarginContainer)
+	var desc_margin = MarginContainer.new()
+	desc_margin.add_theme_constant_override("margin_left", 10)
+	desc_margin.add_theme_constant_override("margin_right", 10)
+	desc_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.text = ability.description
@@ -410,9 +420,10 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	if pixel_font:
-		desc_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(desc_label)
+	if desc_font:
+		desc_label.add_theme_font_override("font", desc_font)
+	desc_margin.add_child(desc_label)
+	vbox.add_child(desc_margin)
 
 	# Upgradeable indicator - shows for base abilities that have upgrade paths (above cooldown)
 	var upgradeable_label = Label.new()
@@ -784,17 +795,19 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 				icon_drawer.show_skillshot_indicator = ability.supports_skillshot()
 				icon_drawer.queue_redraw()
 
-	# Children: 0=top_spacer, 1=icon_spacer, 2=name, 3=name_spacer, 4=desc, 5=upgradeable, 6=cooldown, 7=bottom_spacer
+	# Children: 0=top_spacer, 1=icon_spacer, 2=name, 3=name_spacer, 4=desc_margin, 5=upgradeable, 6=cooldown, 7=bottom_spacer
 	# Update name (child 2) - white for all active abilities
 	var name_label = vbox.get_child(2) as Label
 	if name_label:
 		name_label.text = ability.name
 		name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White
 
-	# Update description (child 4)
-	var desc_label = vbox.get_child(4) as Label
-	if desc_label:
-		desc_label.text = ability.description
+	# Update description (child 4 is MarginContainer, desc_label is inside)
+	var desc_margin = vbox.get_child(4) as MarginContainer
+	if desc_margin and desc_margin.get_child_count() > 0:
+		var desc_label = desc_margin.get_child(0) as Label
+		if desc_label:
+			desc_label.text = ability.description
 
 	# Update upgradeable indicator (child 5) - only show on final reveal for base abilities in trees
 	var upgradeable_label = vbox.get_child(5) as Label

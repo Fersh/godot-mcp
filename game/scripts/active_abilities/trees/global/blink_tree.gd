@@ -52,8 +52,7 @@ static func _create_phase() -> ActiveAbilityData:
 	 .with_duration(0.5) \
 	 .with_movement() \
 	 .with_effect("blink") \
-	 .with_prerequisite("blink", 0) \
-	 .with_prefix("Phase", BASE_NAME, BASE_ID)
+	 .with_prerequisite("blink", 0)
 
 static func _create_phantom() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -70,8 +69,7 @@ static func _create_phantom() -> ActiveAbilityData:
 	 .with_movement() \
 	 .with_effect("blink") \
 	 .with_prerequisite("blink_phase", 0) \
-	 .with_signature("Invulnerable dash, damage all enemies passed through, reset on kill") \
-	 .with_suffix("of the Phantom", BASE_NAME, "Phase", BASE_ID)
+	 .with_signature("Invulnerable dash, damage all enemies passed through, reset on kill")
 
 static func _create_flash() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -87,8 +85,7 @@ static func _create_flash() -> ActiveAbilityData:
 	 .with_aoe(80.0) \
 	 .with_movement() \
 	 .with_effect("blink") \
-	 .with_prerequisite("blink", 1) \
-	 .with_prefix("Flash", BASE_NAME, BASE_ID)
+	 .with_prerequisite("blink", 1)
 
 static func _create_thunder() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -106,8 +103,7 @@ static func _create_thunder() -> ActiveAbilityData:
 	 .with_stun(0.5) \
 	 .with_effect("blink") \
 	 .with_prerequisite("blink_flash", 1) \
-	 .with_signature("3 rapid blinks, each creates lightning AoE, enemies stunned") \
-	 .with_suffix("of Thunder", BASE_NAME, "Flash", BASE_ID)
+	 .with_signature("3 rapid blinks, each creates lightning AoE, enemies stunned")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["blink", "blink_phase", "blink_phantom", "blink_flash", "blink_thunder"]

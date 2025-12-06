@@ -61,8 +61,7 @@ static func _create_infernal_wall() -> ActiveAbilityData:
 	 .with_aoe(450.0) \
 	 .with_duration(7.0) \
 	 .with_effect("flame_wall") \
-	 .with_prerequisite("flame_wall", 0) \
-	 .with_prefix("Infernal", BASE_NAME, BASE_ID)
+	 .with_prerequisite("flame_wall", 0)
 
 # ============================================
 # TIER 3 - BRANCH A: FLOOR IS LAVA (SIGNATURE)
@@ -71,7 +70,7 @@ static func _create_infernal_wall() -> ActiveAbilityData:
 static func _create_floor_is_lava() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"wall_lava",
-		"Infernal Flame Wall of Magma",
+		"Floor is Lava",
 		"Convert the ground around you to magma, burning all who stand on it.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
@@ -82,8 +81,7 @@ static func _create_floor_is_lava() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("floor_is_lava") \
 	 .with_prerequisite("wall_infernal", 0) \
-	 .with_signature("Massive lava zone around you, constant burn damage, enemies slowed") \
-	 .with_suffix("of Magma", BASE_NAME, "Infernal", BASE_ID)
+	 .with_signature("Massive lava zone around you, constant burn damage, enemies slowed")
 
 # ============================================
 # TIER 2 - BRANCH B: ICE PATH
@@ -103,8 +101,7 @@ static func _create_ice_barricade() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_stun(2.5) \
 	 .with_effect("ice_barricade") \
-	 .with_prerequisite("flame_wall", 1) \
-	 .with_prefix("Frozen", BASE_NAME, BASE_ID)
+	 .with_prerequisite("flame_wall", 1)
 
 # ============================================
 # TIER 3 - BRANCH B: FROZEN FORTRESS (SIGNATURE)
@@ -113,7 +110,7 @@ static func _create_ice_barricade() -> ActiveAbilityData:
 static func _create_frozen_fortress() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"wall_fortress",
-		"Frozen Flame Wall of the Fortress",
+		"Frozen Fortress",
 		"Create an impenetrable ice dome that freezes all enemies inside.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
@@ -125,8 +122,7 @@ static func _create_frozen_fortress() -> ActiveAbilityData:
 	 .with_stun(4.0) \
 	 .with_effect("frozen_fortress") \
 	 .with_prerequisite("wall_ice", 1) \
-	 .with_signature("Ice dome blocks projectiles, freezes all inside for 4s, explodes on end") \
-	 .with_suffix("of the Fortress", BASE_NAME, "Frozen", BASE_ID)
+	 .with_signature("Ice dome blocks projectiles, freezes all inside for 4s, explodes on end")
 
 # ============================================
 # UTILITY FUNCTIONS

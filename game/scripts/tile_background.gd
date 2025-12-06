@@ -57,10 +57,7 @@ var light_field_tiles: Array[Rect2i] = [
 	Rect2i(224, 480, 32, 32),
 ]
 
-var dark_grass_tiles: Array[Rect2i] = [
-	Rect2i(96, 128, 32, 32),
-	Rect2i(288, 128, 32, 32),
-]
+# Dark grass tiles removed - no longer used
 
 # Dirt/road tiles (6,1 area - dirt surrounded by grass)
 var dirt_grass_center: Rect2i = Rect2i(192, 32, 32, 32)
@@ -114,27 +111,27 @@ var water_grass_edges: Dictionary = {
 	"bottom_right": Rect2i(224, 256, 32, 32),
 }
 
+# Outer edge tiles - using new tile positions
+# (2,6) = top-left corner, (3,6) = top, (4,6) = top-right corner
+# (2,7) = left, (4,7) = right
+# (2,8) = bottom-left corner, (3,8) = bottom, (4,8) = bottom-right corner
 var outer_edge_tiles: Dictionary = {
-	"top": Rect2i(96, 96, 32, 32),
-	"bottom": Rect2i(96, 160, 32, 32),
-	"left": Rect2i(64, 128, 32, 32),
-	"right": Rect2i(128, 128, 32, 32),
-	"top_left": Rect2i(64, 96, 32, 32),
-	"top_right": Rect2i(128, 96, 32, 32),
-	"bottom_left": Rect2i(64, 160, 32, 32),
-	"bottom_right": Rect2i(128, 160, 32, 32),
+	"top": Rect2i(96, 192, 32, 32),        # (3, 6)
+	"bottom": Rect2i(96, 256, 32, 32),     # (3, 8)
+	"left": Rect2i(64, 224, 32, 32),       # (2, 7)
+	"right": Rect2i(128, 224, 32, 32),     # (4, 7)
+	"top_left": Rect2i(64, 192, 32, 32),   # (2, 6)
+	"top_right": Rect2i(128, 192, 32, 32), # (4, 6)
+	"bottom_left": Rect2i(64, 256, 32, 32),  # (2, 8)
+	"bottom_right": Rect2i(128, 256, 32, 32), # (4, 8)
 }
 
-var inner_edge_tiles: Dictionary = {
-	"top": Rect2i(288, 96, 32, 32),
-	"bottom": Rect2i(288, 160, 32, 32),
-	"left": Rect2i(256, 128, 32, 32),
-	"right": Rect2i(320, 128, 32, 32),
-	"top_left": Rect2i(256, 96, 32, 32),
-	"top_right": Rect2i(320, 96, 32, 32),
-	"bottom_left": Rect2i(256, 160, 32, 32),
-	"bottom_right": Rect2i(320, 160, 32, 32),
-}
+# Top border extension tiles (above the playable area)
+# (2,11) for main top border, (2,10) for tiles above that
+var top_border_tile: Rect2i = Rect2i(64, 352, 32, 32)      # (2, 11)
+var top_border_above_tile: Rect2i = Rect2i(64, 320, 32, 32) # (2, 10)
+
+# Inner edge tiles removed - no longer used
 
 # Small decorations
 var decoration_tiles: Array[Dictionary] = [
@@ -212,10 +209,14 @@ func generate_arena() -> void:
 			if tile_type.begins_with("water"):
 				_create_water_collision(tile_pos, scaled_tile_size)
 
+	# Step 2.5: Generate top border extension (above playable area)
+	_generate_top_border_extension(scaled_tile_size)
+
 	# Step 3: Add overlays and objects (respecting structure)
 	_generate_trees_structured()
 	_generate_lamps_along_roads()
-	_generate_tall_grass_clusters()
+	# Tall grass disabled - not using yellow or green grass overlays
+	# _generate_tall_grass_clusters()
 	_generate_small_decorations()
 
 func _define_central_clearing() -> void:
@@ -468,6 +469,28 @@ func _generate_border_noise() -> void:
 		border_noise["left_" + str(y)] = noise_left
 		border_noise["right_" + str(y)] = noise_right
 
+func _generate_top_border_extension(scaled_tile_size: float) -> void:
+	"""Generate top border tiles above the playable area so camera doesn't show void."""
+	# Number of rows to extend above the arena
+	const TOP_EXTENSION_ROWS = 6
+
+	for row in range(TOP_EXTENSION_ROWS):
+		var y_offset = -(row + 1)  # -1, -2, -3, -4, -5, -6
+		var tile_y = arena_offset_y + y_offset * scaled_tile_size
+
+		for x in range(arena_width_tiles):
+			var tile_x = arena_offset_x + x * scaled_tile_size
+			var tile_pos = Vector2(tile_x, tile_y)
+
+			# First row uses (2,11), subsequent rows use (2,10)
+			var tile_rect: Rect2i
+			if row == 0:
+				tile_rect = top_border_tile  # (2, 11)
+			else:
+				tile_rect = top_border_above_tile  # (2, 10)
+
+			_create_tile_sprite(tile_pos, tile_rect, "top_border")
+
 func _determine_tile_type(x: int, y: int) -> String:
 	var max_x = arena_width_tiles - 1
 	var max_y = arena_height_tiles - 1
@@ -511,35 +534,13 @@ func _determine_tile_type(x: int, y: int) -> String:
 	var in_left = x < left_threshold
 	var in_right = x > right_threshold
 
-	var at_inner_top = y == top_threshold
-	var at_inner_bottom = y == bottom_threshold
-	var at_inner_left = x == left_threshold
-	var at_inner_right = x == right_threshold
-
-	# Inner corners
-	if at_inner_top and at_inner_left: return "inner_top_left"
-	if at_inner_top and at_inner_right: return "inner_top_right"
-	if at_inner_bottom and at_inner_left: return "inner_bottom_left"
-	if at_inner_bottom and at_inner_right: return "inner_bottom_right"
-
-	# Inner edges
-	if at_inner_top and not in_left and not in_right: return "inner_top"
-	if at_inner_bottom and not in_left and not in_right: return "inner_bottom"
-	if at_inner_left and not in_top and not in_bottom: return "inner_left"
-	if at_inner_right and not in_top and not in_bottom: return "inner_right"
-
-	# Dark grass border
-	if in_left or in_right or in_top or in_bottom:
-		return "dark_grass"
-
+	# Inner edge tiles removed - all non-outer areas use light grass
 	return "light_grass"
 
 func _get_tile_rect(tile_type: String, _x: int, _y: int) -> Rect2i:
 	match tile_type:
 		"light_grass":
 			return light_field_tiles[rng.randi() % light_field_tiles.size()]
-		"dark_grass":
-			return dark_grass_tiles[rng.randi() % dark_grass_tiles.size()]
 
 		"outer_top": return outer_edge_tiles["top"]
 		"outer_bottom": return outer_edge_tiles["bottom"]
@@ -550,14 +551,7 @@ func _get_tile_rect(tile_type: String, _x: int, _y: int) -> Rect2i:
 		"outer_bottom_left": return outer_edge_tiles["bottom_left"]
 		"outer_bottom_right": return outer_edge_tiles["bottom_right"]
 
-		"inner_top": return inner_edge_tiles["top"]
-		"inner_bottom": return inner_edge_tiles["bottom"]
-		"inner_left": return inner_edge_tiles["left"]
-		"inner_right": return inner_edge_tiles["right"]
-		"inner_top_left": return inner_edge_tiles["top_left"]
-		"inner_top_right": return inner_edge_tiles["top_right"]
-		"inner_bottom_left": return inner_edge_tiles["bottom_left"]
-		"inner_bottom_right": return inner_edge_tiles["bottom_right"]
+		# Inner edge tiles removed - no longer used
 
 		"water": return water_grass_center
 		"water_edge_top": return water_grass_edges["top"]
@@ -788,6 +782,18 @@ func _generate_tall_grass_clusters() -> void:
 		if _is_water_tile(x, y):
 			continue
 
+		# Check if any surrounding tiles (for base grass) would be on water
+		var has_water_nearby = false
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				if _is_water_tile(x + dx, y + dy):
+					has_water_nearby = true
+					break
+			if has_water_nearby:
+				break
+		if has_water_nearby:
+			continue
+
 		var center_pos = Vector2(
 			arena_offset_x + x * scaled_tile_size + scaled_tile_size / 2,
 			arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
@@ -837,8 +843,10 @@ func _create_grass_sprite(pos: Vector2, region: Rect2i, is_tall: bool) -> void:
 	sprite.position = pos
 
 	if is_tall:
-		# High z-index to render on top of characters/enemies
-		sprite.z_index = 100
+		# Very high z-index to render on top of characters/enemies
+		# Use z_as_relative = false to ensure absolute z ordering
+		sprite.z_as_relative = false
+		sprite.z_index = 1000
 	else:
 		# Base tiles render below characters
 		sprite.z_index = -5

@@ -59,8 +59,7 @@ static func _create_blizzard() -> ActiveAbilityData:
 	 .with_duration(5.0) \
 	 .with_slow(0.5, 1.0) \
 	 .with_effect("frost_nova") \
-	 .with_prerequisite("frost_nova", 0) \
-	 .with_prefix("Blizzard", BASE_NAME, BASE_ID)
+	 .with_prerequisite("frost_nova", 0)
 
 static func _create_absolute_zero() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -76,8 +75,7 @@ static func _create_absolute_zero() -> ActiveAbilityData:
 	 .with_stun(3.0) \
 	 .with_effect("frost_nova") \
 	 .with_prerequisite("frost_nova_blizzard", 0) \
-	 .with_signature("All enemies frozen 3s, shatter for 50% bonus damage on death") \
-	 .with_suffix("of Absolute Zero", BASE_NAME, "Blizzard", BASE_ID)
+	 .with_signature("All enemies frozen 3s, shatter for 50% bonus damage on death")
 
 static func _create_ice_prison() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -92,8 +90,7 @@ static func _create_ice_prison() -> ActiveAbilityData:
 	 .with_range(300.0) \
 	 .with_stun(2.0) \
 	 .with_effect("frost_nova") \
-	 .with_prerequisite("frost_nova", 1) \
-	 .with_prefix("Prison", BASE_NAME, BASE_ID)
+	 .with_prerequisite("frost_nova", 1)
 
 static func _create_shatter() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -110,8 +107,7 @@ static func _create_shatter() -> ActiveAbilityData:
 	 .with_stun(2.5) \
 	 .with_effect("frost_nova") \
 	 .with_prerequisite("frost_nova_prison", 1) \
-	 .with_signature("Up to 5 targets frozen, each shatters dealing AoE damage") \
-	 .with_suffix("of Shattering", BASE_NAME, "Prison", BASE_ID)
+	 .with_signature("Up to 5 targets frozen, each shatters dealing AoE damage")
 
 static func _create_frost_totem() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -127,13 +123,12 @@ static func _create_frost_totem() -> ActiveAbilityData:
 	 .with_slow(0.45, 2.0) \
 	 .with_duration(10.0) \
 	 .with_effect("totem_of_frost") \
-	 .with_prerequisite("frost_nova", 2) \
-	 .with_prefix("Totem", BASE_NAME, BASE_ID)
+	 .with_prerequisite("frost_nova", 2)
 
 static func _create_blizzard_totem() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"frost_nova_blizzard_totem",
-		"Totem Frost Nova of the Blizzard",
+		"Blizzard Totem",
 		"Summon a powerful totem that creates a massive blizzard around it.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
@@ -145,8 +140,7 @@ static func _create_blizzard_totem() -> ActiveAbilityData:
 	 .with_duration(15.0) \
 	 .with_effect("blizzard_totem") \
 	 .with_prerequisite("frost_nova_totem", 2) \
-	 .with_signature("Massive slow zone, 70% slow, periodic freeze pulses, 15s duration") \
-	 .with_suffix("of the Blizzard", BASE_NAME, "Totem", BASE_ID)
+	 .with_signature("Massive slow zone, 70% slow, periodic freeze pulses, 15s duration")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["frost_nova", "frost_nova_blizzard", "frost_nova_absolute", "frost_nova_prison", "frost_nova_shatter", "frost_nova_totem", "frost_nova_blizzard_totem"]

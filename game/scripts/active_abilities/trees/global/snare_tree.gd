@@ -61,8 +61,7 @@ static func _create_pressure_mine() -> ActiveAbilityData:
 	).with_damage(100.0, 3.0) \
 	 .with_aoe(220.0) \
 	 .with_effect("pressure_mine") \
-	 .with_prerequisite("glue_bomb", 0) \
-	 .with_prefix("Explosive", BASE_NAME, BASE_ID)
+	 .with_prerequisite("glue_bomb", 0)
 
 # ============================================
 # TIER 3 - BRANCH A: MINEFIELD (SIGNATURE)
@@ -71,7 +70,7 @@ static func _create_pressure_mine() -> ActiveAbilityData:
 static func _create_minefield() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"snare_minefield",
-		"Explosive Glue Bomb of the Minefield",
+		"Minefield",
 		"Deploy 5 pressure mines in an area. Massive chain explosion potential.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
@@ -82,8 +81,7 @@ static func _create_minefield() -> ActiveAbilityData:
 	 .with_projectiles(5, 0) \
 	 .with_effect("minefield") \
 	 .with_prerequisite("snare_mine", 0) \
-	 .with_signature("5 mines, chain reaction when one explodes, massive AoE damage") \
-	 .with_suffix("of the Minefield", BASE_NAME, "Explosive", BASE_ID)
+	 .with_signature("5 mines, chain reaction when one explodes, massive AoE damage")
 
 # ============================================
 # TIER 2 - BRANCH B: SLOW ZONE PATH
@@ -104,8 +102,7 @@ static func _create_tar_pit() -> ActiveAbilityData:
 	 .with_stun(1.0) \
 	 .with_duration(8.0) \
 	 .with_effect("tar_pit") \
-	 .with_prerequisite("glue_bomb", 1) \
-	 .with_prefix("Sticky", BASE_NAME, BASE_ID)
+	 .with_prerequisite("glue_bomb", 1)
 
 # ============================================
 # TIER 3 - BRANCH B: WEB OF SLOTH (SIGNATURE)
@@ -114,7 +111,7 @@ static func _create_tar_pit() -> ActiveAbilityData:
 static func _create_web_of_sloth() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
 		"snare_web",
-		"Sticky Glue Bomb of Sloth",
+		"Web of Sloth",
 		"Create a massive web zone that spreads and roots enemies.",
 		ActiveAbilityData.Rarity.EPIC,
 		ActiveAbilityData.ClassType.GLOBAL,
@@ -127,8 +124,7 @@ static func _create_web_of_sloth() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("web_of_sloth") \
 	 .with_prerequisite("snare_tar", 1) \
-	 .with_signature("Massive 350 radius, 95% slow, periodic root, 10s duration") \
-	 .with_suffix("of Sloth", BASE_NAME, "Sticky", BASE_ID)
+	 .with_signature("Massive 350 radius, 95% slow, periodic root, 10s duration")
 
 # ============================================
 # UTILITY FUNCTIONS

@@ -50,8 +50,7 @@ static func _create_explosive_decoy() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_duration(5.0) \
 	 .with_effect("explosive_decoy") \
-	 .with_prerequisite("decoy", 0) \
-	 .with_prefix("Explosive", BASE_NAME, BASE_ID)
+	 .with_prerequisite("decoy", 0)
 
 static func _create_chain_reaction() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_chain_reaction() -> ActiveAbilityData:
 	 .with_projectiles(3, 0) \
 	 .with_effect("chain_reaction") \
 	 .with_prerequisite("decoy_explosive", 0) \
-	 .with_signature("3 decoys in triangle, chain explosions, final blast is 2x") \
-	 .with_suffix("of Chain Reaction", BASE_NAME, "Explosive", BASE_ID)
+	 .with_signature("3 decoys in triangle, chain explosions, final blast is 2x")
 
 static func _create_mirror_image() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -83,8 +81,7 @@ static func _create_mirror_image() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(8.0) \
 	 .with_effect("mirror_image") \
-	 .with_prerequisite("decoy", 1) \
-	 .with_prefix("Mirror", BASE_NAME, BASE_ID)
+	 .with_prerequisite("decoy", 1)
 
 static func _create_army_of_me() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -100,8 +97,7 @@ static func _create_army_of_me() -> ActiveAbilityData:
 	 .with_projectiles(3, 0) \
 	 .with_effect("army_of_me") \
 	 .with_prerequisite("decoy_mirror", 1) \
-	 .with_signature("3 permanent clones at 35% damage, respawn after 10s if killed") \
-	 .with_suffix("of the Legion", BASE_NAME, "Mirror", BASE_ID)
+	 .with_signature("3 permanent clones at 35% damage, respawn after 10s if killed")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["decoy", "decoy_explosive", "decoy_chain", "decoy_mirror", "decoy_army"]

@@ -49,8 +49,7 @@ static func _create_time_stop() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_duration(1.5) \
 	 .with_effect("time_slow") \
-	 .with_prerequisite("time_slow", 0) \
-	 .with_prefix("Stop", BASE_NAME, BASE_ID)
+	 .with_prerequisite("time_slow", 0)
 
 static func _create_temporal_prison() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -67,8 +66,7 @@ static func _create_temporal_prison() -> ActiveAbilityData:
 	 .with_stun(3.0) \
 	 .with_effect("time_slow") \
 	 .with_prerequisite("time_stop", 0) \
-	 .with_signature("Enemies frozen, all damage stored and dealt at once when released") \
-	 .with_suffix("of Temporal Prison", BASE_NAME, "Stop", BASE_ID)
+	 .with_signature("Enemies frozen, all damage stored and dealt at once when released")
 
 static func _create_rewind() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_rewind() -> ActiveAbilityData:
 		20.0
 	).with_damage(0.0, 0.0) \
 	 .with_effect("time_slow") \
-	 .with_prerequisite("time_slow", 1) \
-	 .with_prefix("Rewind", BASE_NAME, BASE_ID)
+	 .with_prerequisite("time_slow", 1)
 
 static func _create_chronoshift() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_chronoshift() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("time_slow") \
 	 .with_prerequisite("time_rewind", 1) \
-	 .with_signature("Full HP/position restore, enemies damaged during period take it again") \
-	 .with_suffix("of Chronoshift", BASE_NAME, "Rewind", BASE_ID)
+	 .with_signature("Full HP/position restore, enemies damaged during period take it again")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["time_slow", "time_stop", "time_prison", "time_rewind", "time_chronoshift"]

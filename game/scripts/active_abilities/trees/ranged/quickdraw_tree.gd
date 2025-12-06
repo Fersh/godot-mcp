@@ -49,8 +49,7 @@ static func _create_reflex() -> ActiveAbilityData:
 	).with_damage(45.0, 1.1) \
 	 .with_range(400.0) \
 	 .with_effect("reflex_shot") \
-	 .with_prerequisite("quickdraw", 0) \
-	 .with_prefix("Reflex", BASE_NAME, BASE_ID)
+	 .with_prerequisite("quickdraw", 0)
 
 static func _create_gunslinger() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_gunslinger() -> ActiveAbilityData:
 	 .with_aoe(250.0) \
 	 .with_effect("gunslinger") \
 	 .with_prerequisite("quickdraw_reflex", 0) \
-	 .with_signature("6 instant shots at different targets, each kill resets cooldown by 2s") \
-	 .with_suffix("of the Gunslinger", BASE_NAME, "Reflex", BASE_ID)
+	 .with_signature("6 instant shots at different targets, each kill resets cooldown by 2s")
 
 static func _create_execute() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -81,8 +79,7 @@ static func _create_execute() -> ActiveAbilityData:
 	).with_damage(80.0, 1.8) \
 	 .with_range(450.0) \
 	 .with_effect("execution_shot") \
-	 .with_prerequisite("quickdraw", 1) \
-	 .with_prefix("Execution", BASE_NAME, BASE_ID)
+	 .with_prerequisite("quickdraw", 1)
 
 static func _create_deadeye() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -97,8 +94,7 @@ static func _create_deadeye() -> ActiveAbilityData:
 	 .with_range(500.0) \
 	 .with_effect("deadeye") \
 	 .with_prerequisite("quickdraw_execute", 1) \
-	 .with_signature("Guaranteed critical hit, ignores armor, kills below 30% HP instantly") \
-	 .with_suffix("of the Deadeye", BASE_NAME, "Execution", BASE_ID)
+	 .with_signature("Guaranteed critical hit, ignores armor, kills below 30% HP instantly")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["quickdraw", "quickdraw_reflex", "quickdraw_gunslinger", "quickdraw_execute", "quickdraw_deadeye"]

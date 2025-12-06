@@ -51,8 +51,7 @@ static func _create_focused() -> ActiveAbilityData:
 	 .with_range(400.0) \
 	 .with_duration(2.0) \
 	 .with_effect("focused_fire") \
-	 .with_prerequisite("barrage", 0) \
-	 .with_prefix("Focused", BASE_NAME, BASE_ID)
+	 .with_prerequisite("barrage", 0)
 
 static func _create_bullet_storm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_bullet_storm() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("bullet_storm") \
 	 .with_prerequisite("barrage_focused", 0) \
-	 .with_signature("50+ projectiles over duration, armor shred stacks, execute low HP enemies") \
-	 .with_suffix("of the Storm", BASE_NAME, "Focused", BASE_ID)
+	 .with_signature("50+ projectiles over duration, armor shred stacks, execute low HP enemies")
 
 static func _create_spread() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -85,8 +83,7 @@ static func _create_spread() -> ActiveAbilityData:
 	 .with_aoe(200.0) \
 	 .with_duration(1.5) \
 	 .with_effect("spread_fire") \
-	 .with_prerequisite("barrage", 1) \
-	 .with_prefix("Spread", BASE_NAME, BASE_ID)
+	 .with_prerequisite("barrage", 1)
 
 static func _create_lead_rain() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -104,8 +101,7 @@ static func _create_lead_rain() -> ActiveAbilityData:
 	 .with_slow(0.5, 4.0) \
 	 .with_effect("lead_rain") \
 	 .with_prerequisite("barrage_spread", 1) \
-	 .with_signature("Suppression zone, enemies slowed inside, continuous damage ticks") \
-	 .with_suffix("of Lead Rain", BASE_NAME, "Spread", BASE_ID)
+	 .with_signature("Suppression zone, enemies slowed inside, continuous damage ticks")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["barrage", "barrage_focused", "barrage_bullet_storm", "barrage_spread", "barrage_lead_rain"]

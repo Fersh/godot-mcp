@@ -51,8 +51,7 @@ static func _create_flame() -> ActiveAbilityData:
 	 .with_aoe(120.0) \
 	 .with_duration(6.0) \
 	 .with_effect("thorns") \
-	 .with_prerequisite("thorns", 0) \
-	 .with_prefix("Flame", BASE_NAME, BASE_ID)
+	 .with_prerequisite("thorns", 0)
 
 static func _create_inferno() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_inferno() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("thorns") \
 	 .with_prerequisite("thorns_flame", 0) \
-	 .with_signature("Constant fire damage to all nearby, stacking burn, explodes on expire") \
-	 .with_suffix("of the Inferno", BASE_NAME, "Flame", BASE_ID)
+	 .with_signature("Constant fire damage to all nearby, stacking burn, explodes on expire")
 
 static func _create_lightning() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -84,8 +82,7 @@ static func _create_lightning() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(6.0) \
 	 .with_effect("thorns") \
-	 .with_prerequisite("thorns", 1) \
-	 .with_prefix("Lightning", BASE_NAME, BASE_ID)
+	 .with_prerequisite("thorns", 1)
 
 static func _create_storm() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -102,8 +99,7 @@ static func _create_storm() -> ActiveAbilityData:
 	 .with_stun(0.3) \
 	 .with_effect("thorns") \
 	 .with_prerequisite("thorns_lightning", 1) \
-	 .with_signature("Constant lightning strikes, chains between enemies, brief stuns") \
-	 .with_suffix("of the Storm", BASE_NAME, "Lightning", BASE_ID)
+	 .with_signature("Constant lightning strikes, chains between enemies, brief stuns")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["thorns", "thorns_flame", "thorns_inferno", "thorns_lightning", "thorns_storm"]

@@ -52,8 +52,7 @@ static func _create_cluster() -> ActiveAbilityData:
 	 .with_aoe(80.0) \
 	 .with_projectiles(4, 0) \
 	 .with_effect("bomb") \
-	 .with_prerequisite("bomb", 0) \
-	 .with_prefix("Cluster", BASE_NAME, BASE_ID)
+	 .with_prerequisite("bomb", 0)
 
 static func _create_carpet() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -70,8 +69,7 @@ static func _create_carpet() -> ActiveAbilityData:
 	 .with_duration(3.0) \
 	 .with_effect("bomb") \
 	 .with_prerequisite("bomb_cluster", 0) \
-	 .with_signature("12 explosions over 3 seconds, burning ground, massive area") \
-	 .with_suffix("of Carpet Bombing", BASE_NAME, "Cluster", BASE_ID)
+	 .with_signature("12 explosions over 3 seconds, burning ground, massive area")
 
 static func _create_sticky() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -86,8 +84,7 @@ static func _create_sticky() -> ActiveAbilityData:
 	 .with_range(350.0) \
 	 .with_aoe(120.0) \
 	 .with_effect("bomb") \
-	 .with_prerequisite("bomb", 1) \
-	 .with_prefix("Sticky", BASE_NAME, BASE_ID)
+	 .with_prerequisite("bomb", 1)
 
 static func _create_remote() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -104,8 +101,7 @@ static func _create_remote() -> ActiveAbilityData:
 	 .with_duration(30.0) \
 	 .with_effect("bomb") \
 	 .with_prerequisite("bomb_sticky", 1) \
-	 .with_signature("Place 5 bombs, detonate on command, chain reaction bonus damage") \
-	 .with_suffix("of Remote Detonation", BASE_NAME, "Sticky", BASE_ID)
+	 .with_signature("Place 5 bombs, detonate on command, chain reaction bonus damage")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["bomb", "bomb_cluster", "bomb_carpet", "bomb_sticky", "bomb_remote"]

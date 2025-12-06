@@ -32,6 +32,7 @@ var cancel_button: Button = null
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
 var pixel_font: Font = null
+var desc_font: Font = null
 var rarity_particle_shader: Shader = null
 
 func _ready() -> void:
@@ -40,6 +41,10 @@ func _ready() -> void:
 	add_to_group("ability_selection_ui")
 	# Use the same font as points/coins display
 	pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+
+	# Load Quicksand font for descriptions
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
+		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
 
 	# Load rarity particle shader
 	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
@@ -280,7 +285,12 @@ func create_ability_card(ability, index: int) -> Button:
 	name_spacer.custom_minimum_size = Vector2(0, 40)  # 40px margin below title
 	vbox.add_child(name_spacer)
 
-	# Description
+	# Description (with padding via MarginContainer)
+	var desc_margin = MarginContainer.new()
+	desc_margin.add_theme_constant_override("margin_left", 10)
+	desc_margin.add_theme_constant_override("margin_right", 10)
+	desc_margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.text = ability_desc
@@ -290,9 +300,10 @@ func create_ability_card(ability, index: int) -> Button:
 	desc_label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	if pixel_font:
-		desc_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(desc_label)
+	if desc_font:
+		desc_label.add_theme_font_override("font", desc_font)
+	desc_margin.add_child(desc_label)
+	vbox.add_child(desc_margin)
 
 	# Stat changes container (no longer used for active ability upgrades per design)
 	var stats_container = VBoxContainer.new()

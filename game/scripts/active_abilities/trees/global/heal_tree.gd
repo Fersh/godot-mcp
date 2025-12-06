@@ -49,8 +49,7 @@ static func _create_regen_aura() -> ActiveAbilityData:
 	 .with_aoe(150.0) \
 	 .with_duration(6.0) \
 	 .with_effect("healing_light") \
-	 .with_prerequisite("healing_light", 0) \
-	 .with_prefix("Regenerating", BASE_NAME, BASE_ID)
+	 .with_prerequisite("healing_light", 0)
 
 static func _create_sanctuary() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -66,8 +65,7 @@ static func _create_sanctuary() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("healing_light") \
 	 .with_prerequisite("heal_regen", 0) \
-	 .with_signature("Heal zone + 30% damage reduction while inside") \
-	 .with_suffix("of Sanctuary", BASE_NAME, "Regenerating", BASE_ID)
+	 .with_signature("Heal zone + 30% damage reduction while inside")
 
 static func _create_emergency_heal() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -80,8 +78,7 @@ static func _create_emergency_heal() -> ActiveAbilityData:
 		12.0
 	).with_damage(50.0, 1.2) \
 	 .with_effect("healing_light") \
-	 .with_prerequisite("healing_light", 1) \
-	 .with_prefix("Emergency", BASE_NAME, BASE_ID)
+	 .with_prerequisite("healing_light", 1)
 
 static func _create_martyrdom() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -96,8 +93,7 @@ static func _create_martyrdom() -> ActiveAbilityData:
 	 .with_duration(10.0) \
 	 .with_effect("healing_light") \
 	 .with_prerequisite("heal_emergency", 1) \
-	 .with_signature("Full heal, but +50% damage taken for 10 seconds") \
-	 .with_suffix("of Martyrdom", BASE_NAME, "Emergency", BASE_ID)
+	 .with_signature("Full heal, but +50% damage taken for 10 seconds")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["healing_light", "heal_regen", "heal_sanctuary", "heal_emergency", "heal_martyr"]

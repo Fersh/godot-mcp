@@ -55,8 +55,8 @@ func _ready() -> void:
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
 
 	# Load Quicksand font for descriptions
-	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Regular.ttf"):
-		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Regular.ttf")
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/Quicksand-Medium.ttf"):
+		desc_font = load("res://assets/fonts/Quicksand/Quicksand-Medium.ttf")
 
 	_create_ui()
 
@@ -620,7 +620,12 @@ func _create_tooltip() -> void:
 	spacer.custom_minimum_size = Vector2(0, 8)
 	vbox.add_child(spacer)
 
-	# Description label
+	# Description label (with padding via MarginContainer)
+	var desc_margin = MarginContainer.new()
+	desc_margin.name = "DescMargin"
+	desc_margin.add_theme_constant_override("margin_left", 10)
+	desc_margin.add_theme_constant_override("margin_right", 10)
+
 	var desc_label = Label.new()
 	desc_label.name = "DescLabel"
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -628,9 +633,10 @@ func _create_tooltip() -> void:
 	desc_label.add_theme_color_override("font_color", Color.WHITE)
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 200
-	if pixel_font:
-		desc_label.add_theme_font_override("font", pixel_font)
-	vbox.add_child(desc_label)
+	if desc_font:
+		desc_label.add_theme_font_override("font", desc_font)
+	desc_margin.add_child(desc_label)
+	vbox.add_child(desc_margin)
 
 	# Cooldown spacer
 	var cd_spacer = Control.new()
@@ -678,7 +684,8 @@ func _update_tooltip_content() -> void:
 		return
 
 	var name_label = vbox.get_node("NameLabel") as Label
-	var desc_label = vbox.get_node("DescLabel") as Label
+	var desc_margin = vbox.get_node_or_null("DescMargin") as MarginContainer
+	var desc_label = desc_margin.get_node("DescLabel") as Label if desc_margin else null
 	var cd_label = vbox.get_node("CooldownLabel") as Label
 	var rarity_label = rarity_tag.get_node("RarityLabel") as Label if rarity_tag else null
 

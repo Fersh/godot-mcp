@@ -51,8 +51,7 @@ static func _create_blind() -> ActiveAbilityData:
 	 .with_aoe(180.0) \
 	 .with_duration(5.0) \
 	 .with_effect("blinding_smoke") \
-	 .with_prerequisite("smoke_bomb", 0) \
-	 .with_prefix("Blinding", BASE_NAME, BASE_ID)
+	 .with_prerequisite("smoke_bomb", 0)
 
 static func _create_darkness() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -68,8 +67,7 @@ static func _create_darkness() -> ActiveAbilityData:
 	 .with_duration(6.0) \
 	 .with_effect("total_darkness") \
 	 .with_prerequisite("smoke_blind", 0) \
-	 .with_signature("Enemies completely blind, you gain 50% crit chance in darkness") \
-	 .with_suffix("of Darkness", BASE_NAME, "Blinding", BASE_ID)
+	 .with_signature("Enemies completely blind, you gain 50% crit chance in darkness")
 
 static func _create_poison() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -84,8 +82,7 @@ static func _create_poison() -> ActiveAbilityData:
 	 .with_aoe(160.0) \
 	 .with_duration(5.0) \
 	 .with_effect("poison_cloud") \
-	 .with_prerequisite("smoke_bomb", 1) \
-	 .with_prefix("Poison", BASE_NAME, BASE_ID)
+	 .with_prerequisite("smoke_bomb", 1)
 
 static func _create_plague() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
@@ -101,8 +98,7 @@ static func _create_plague() -> ActiveAbilityData:
 	 .with_duration(8.0) \
 	 .with_effect("plague_cloud") \
 	 .with_prerequisite("smoke_poison", 1) \
-	 .with_signature("Cloud grows over time, poison stacks, spreads to new areas") \
-	 .with_suffix("of Plague", BASE_NAME, "Poison", BASE_ID)
+	 .with_signature("Cloud grows over time, poison stacks, spreads to new areas")
 
 static func get_all_ability_ids() -> Array[String]:
 	return ["smoke_bomb", "smoke_blind", "smoke_darkness", "smoke_poison", "smoke_plague"]
