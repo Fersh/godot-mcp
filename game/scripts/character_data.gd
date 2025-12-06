@@ -15,7 +15,7 @@ enum CharacterType {
 	CYCLOPS,
 	LIZARDFOLK_KING,
 	SKELETON_KING,
-	SHARDSOUL_SLAYER,
+	#SHARDSOUL_SLAYER,  # Commented out - "Don't Fear Me" / Reaper
 	NECROMANCER,
 	KOBOLD_PRIEST,
 	RATFOLK
@@ -892,63 +892,63 @@ static func create_skeleton_king() -> CharacterData:
 
 	return data
 
-static func create_shardsoul_slayer() -> CharacterData:
-	var data = CharacterData.new()
-	data.id = "shardsoul_slayer"
-	#data.display_name = "Don't Fear Me"
-	data.display_name = "The Reaper"
-	data.description = "A savage predator that hunts the weak. Executes low-health enemies with lethal efficiency."
-	data.character_type = CharacterType.SHARDSOUL_SLAYER
-	data.attack_type = AttackType.MELEE
-
-	# Execute specialist - fast and deadly
-	data.base_health = 25.0
-	data.base_speed = 150.0
-	data.base_attack_cooldown = 0.7
-	data.base_damage = 1.4
-	data.attack_range = 60.0
-
-	# Combat stats - high crit, mobile
-	data.base_crit_rate = 0.15
-	data.base_block_rate = 0.0
-	data.base_dodge_rate = 0.12
-	data.base_armor = 1
-
-	# Sprite config (Shardsoul: 8 cols x 5 rows, 64x64 frames)
-	# Player-sized (64x64 frames need ~1.4 scale for ~90px visual)
-	data.frame_size = Vector2(64, 64)
-	data.hframes = 8
-	data.vframes = 5
-	data.sprite_scale = Vector2(1.4, 1.4)
-
-	# Animation rows
-	data.row_idle = 0
-	data.row_move = 0
-	data.row_attack = 1
-	data.row_attack_up = 1
-	data.row_attack_down = 1
-	data.row_damage = 2
-	data.row_death = 3
-
-	# Lunge/Special
-	data.row_attack_alt = 4
-	data.frames_attack_alt = 6
-	data.has_alt_attack = true
-
-	# Frame counts
-	data.frames_idle = 8
-	data.frames_move = 8
-	data.frames_attack = 8
-	data.frames_attack_up = 8
-	data.frames_attack_down = 8
-	data.frames_damage = 5
-	data.frames_death = 4
-
-	# Passive
-	data.passive_name = "Death's Embrace"
-	data.passive_description = "+30% damage to enemies below 40% HP. Killing grants +15% speed for 3s."
-
-	return data
+# COMMENTED OUT - "Don't Fear Me" / The Reaper character
+#static func create_shardsoul_slayer() -> CharacterData:
+#	var data = CharacterData.new()
+#	data.id = "shardsoul_slayer"
+#	data.display_name = "Don't Fear Me"
+#	data.description = "A savage predator that hunts the weak. Executes low-health enemies with lethal efficiency."
+#	data.character_type = CharacterType.SHARDSOUL_SLAYER
+#	data.attack_type = AttackType.MELEE
+#
+#	# Execute specialist - fast and deadly
+#	data.base_health = 25.0
+#	data.base_speed = 150.0
+#	data.base_attack_cooldown = 0.7
+#	data.base_damage = 1.4
+#	data.attack_range = 60.0
+#
+#	# Combat stats - high crit, mobile
+#	data.base_crit_rate = 0.15
+#	data.base_block_rate = 0.0
+#	data.base_dodge_rate = 0.12
+#	data.base_armor = 1
+#
+#	# Sprite config (Shardsoul: 8 cols x 5 rows, 64x64 frames)
+#	# Player-sized (64x64 frames need ~1.4 scale for ~90px visual)
+#	data.frame_size = Vector2(64, 64)
+#	data.hframes = 8
+#	data.vframes = 5
+#	data.sprite_scale = Vector2(1.4, 1.4)
+#
+#	# Animation rows
+#	data.row_idle = 0
+#	data.row_move = 0
+#	data.row_attack = 1
+#	data.row_attack_up = 1
+#	data.row_attack_down = 1
+#	data.row_damage = 2
+#	data.row_death = 3
+#
+#	# Lunge/Special
+#	data.row_attack_alt = 4
+#	data.frames_attack_alt = 6
+#	data.has_alt_attack = true
+#
+#	# Frame counts
+#	data.frames_idle = 8
+#	data.frames_move = 8
+#	data.frames_attack = 8
+#	data.frames_attack_up = 8
+#	data.frames_attack_down = 8
+#	data.frames_damage = 5
+#	data.frames_death = 4
+#
+#	# Passive
+#	data.passive_name = "Death's Embrace"
+#	data.passive_description = "+30% damage to enemies below 40% HP. Killing grants +15% speed for 3s."
+#
+#	return data
 
 static func create_necromancer() -> CharacterData:
 	var data = CharacterData.new()

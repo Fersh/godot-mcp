@@ -29,7 +29,7 @@ var minotaur_texture: Texture2D
 var cyclops_texture: Texture2D
 var lizardfolk_king_texture: Texture2D
 var skeleton_king_texture: Texture2D
-var shardsoul_slayer_texture: Texture2D
+#var shardsoul_slayer_texture: Texture2D  # Commented out - Don't Fear Me / Reaper
 var necromancer_texture: Texture2D
 var kobold_priest_texture: Texture2D
 var ratfolk_texture: Texture2D
@@ -62,7 +62,7 @@ func _init_characters() -> void:
 	cyclops_texture = load("res://assets/sprites/Cyclops Sprite Sheet.png")
 	lizardfolk_king_texture = load("res://assets/sprites/Lizardfolk King Sprite Sheet.png")
 	skeleton_king_texture = load("res://assets/sprites/Skeleton King Sprite Sheet 96x96px.png")
-	shardsoul_slayer_texture = load("res://assets/sprites/Shardsoul Slayer Sprite Sheet.png")
+	#shardsoul_slayer_texture = load("res://assets/sprites/Shardsoul Slayer Sprite Sheet.png")  # Commented out
 	necromancer_texture = load("res://assets/sprites/Bandit Necromancer Sprite Sheet.png")
 	kobold_priest_texture = load("res://assets/sprites/Kobold Priest Sprite Sheet.png")
 	ratfolk_texture = load("res://assets/sprites/ratfolk.png")
@@ -138,10 +138,10 @@ func _init_characters() -> void:
 	#skeleton_king.sprite_texture = skeleton_king_texture
 	#characters["skeleton_king"] = skeleton_king
 
-	# Create shardsoul slayer - The Reaper
-	var shardsoul_slayer = CharacterData.create_shardsoul_slayer()
-	shardsoul_slayer.sprite_texture = shardsoul_slayer_texture
-	characters["shardsoul_slayer"] = shardsoul_slayer
+	# Create shardsoul slayer - Don't Fear Me / Reaper (COMMENTED OUT)
+	#var shardsoul_slayer = CharacterData.create_shardsoul_slayer()
+	#shardsoul_slayer.sprite_texture = shardsoul_slayer_texture
+	#characters["shardsoul_slayer"] = shardsoul_slayer
 
 	# Create necromancer - The Lonely One
 	var necromancer = CharacterData.create_necromancer()

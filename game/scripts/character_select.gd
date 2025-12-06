@@ -272,12 +272,12 @@ func _create_selector_buttons() -> void:
 
 	# Reorder: original 7 first, then new characters in thematic groups
 	# Row 1: archer, knight, monk, mage, beast
-	# Row 2: assassin, barbarian, golem, lizardfolk_king, shardsoul_slayer
+	# Row 2: assassin, barbarian, golem, lizardfolk_king
 	# Row 3: necromancer, kobold_priest, ratfolk, minotaur
-	# COMMENTED OUT: orc, cyclops, skeleton_king
+	# COMMENTED OUT: orc, cyclops, skeleton_king, shardsoul_slayer (Don't Fear Me / Reaper)
 	var order = [
 		"archer", "knight", "monk", "mage", "beast",
-		"assassin", "barbarian", "golem", "lizardfolk_king", "shardsoul_slayer",
+		"assassin", "barbarian", "golem", "lizardfolk_king",
 		"necromancer", "kobold_priest", "ratfolk", "minotaur"
 	]
 	characters_list = []
@@ -399,9 +399,9 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 		"skeleton_king":
 			sprite_scale = 1.0  # 96x96 frames
 			sprite_pos = Vector2(38, 42)
-		"shardsoul_slayer":
-			sprite_scale = 1.1  # 64x64 frames - smaller
-			sprite_pos = Vector2(38, 32)  # Move up
+		#"shardsoul_slayer":  # Commented out - Don't Fear Me / Reaper
+		#	sprite_scale = 1.1  # 64x64 frames - smaller
+		#	sprite_pos = Vector2(38, 32)  # Move up
 		"necromancer":
 			sprite_scale = 1.8  # 32x32 frames - 10% smaller
 			sprite_pos = Vector2(38, 33)  # Move up 5px
@@ -598,8 +598,8 @@ func _update_preview() -> void:
 			class_type_text = "Lizard"
 		"skeleton_king":
 			class_type_text = "Undead"
-		"shardsoul_slayer":
-			class_type_text = "Slayer"
+		#"shardsoul_slayer":  # Commented out - Don't Fear Me / Reaper
+		#	class_type_text = "Slayer"
 		"necromancer":
 			class_type_text = "Summoner"
 		"kobold_priest":
@@ -651,8 +651,8 @@ func _update_preview() -> void:
 			preview_scale = 1.3  # 128x64 frames - smaller
 		"skeleton_king":
 			preview_scale = 1.3  # 96x96 frames
-		"shardsoul_slayer":
-			preview_scale = 1.5  # 64x64 frames - smaller
+		#"shardsoul_slayer":  # Commented out - Don't Fear Me / Reaper
+		#	preview_scale = 1.5  # 64x64 frames - smaller
 		"necromancer":
 			preview_scale = 2.2  # 32x32 frames - 10% smaller
 		"kobold_priest":

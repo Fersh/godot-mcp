@@ -220,7 +220,8 @@ func _style_button(button: Button, base_color: Color) -> void:
 const CHARACTER_IDS = [
 	"archer", "knight", "monk", "mage", "beast", "assassin", "barbarian",
 	"golem", "orc", "minotaur", "cyclops", "lizardfolk_king",
-	"skeleton_king", "shardsoul_slayer", "necromancer", "kobold_priest", "ratfolk"
+	"skeleton_king", "necromancer", "kobold_priest", "ratfolk"
+	# "shardsoul_slayer" - commented out (Don't Fear Me / Reaper)
 ]
 const CHARACTER_NAMES = {
 	"archer": "Rob N. Hood",
@@ -236,7 +237,7 @@ const CHARACTER_NAMES = {
 	"cyclops": "Glasses",
 	"lizardfolk_king": "Liz",
 	"skeleton_king": "Bonathan",
-	"shardsoul_slayer": "Reaper",  # "Don't Fear Me"
+	#"shardsoul_slayer": "Reaper",  # "Don't Fear Me" - commented out
 	"necromancer": "Steve",
 	"kobold_priest": "Yip-Yap",
 	"ratfolk": "Pizza Rat"
@@ -257,6 +258,8 @@ func _setup_character_row() -> void:
 	character_tabs.add_theme_constant_override("separation", 10)
 
 	# Left side: Character dropdown + Sort dropdown + Combine button
+	var left_margin = MarginContainer.new()
+	left_margin.add_theme_constant_override("margin_top", 10)
 	var left_container = HBoxContainer.new()
 	left_container.add_theme_constant_override("separation", 10)
 
@@ -264,7 +267,7 @@ func _setup_character_row() -> void:
 	for i in range(CHARACTER_IDS.size()):
 		var char_id = CHARACTER_IDS[i]
 		character_dropdown.add_item(CHARACTER_NAMES[char_id], i)
-	character_dropdown.custom_minimum_size = Vector2(130, 36)
+	character_dropdown.custom_minimum_size = Vector2(150, 36)
 	character_dropdown.fit_to_longest_item = false
 	character_dropdown.clip_text = true
 	if pixel_font:
@@ -315,7 +318,8 @@ func _setup_character_row() -> void:
 	combine_button.pressed.connect(_on_combine_button_pressed)
 	left_container.add_child(combine_button)
 
-	character_tabs.add_child(left_container)
+	left_margin.add_child(left_container)
+	character_tabs.add_child(left_margin)
 
 	# Align with panels after layout
 	_align_character_row.call_deferred()
@@ -385,37 +389,66 @@ func _setup_slot_filter_tabs() -> void:
 	var tabs_container = HBoxContainer.new()
 	tabs_container.name = "SlotFilterTabs"
 	tabs_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	tabs_container.add_theme_constant_override("separation", 4)
+	tabs_container.add_theme_constant_override("separation", 10)
 
 	slot_filter_buttons.clear()
 
-	# Filter options: All + each slot type
-	# Short names for tabs to fit better
+	# Filter options with icons
+	var icon_base = "res://assets/sprites/icons/raven/32x32/"
 	var filter_options = [
-		{"slot": -1, "name": "All"},
-		{"slot": ItemData.Slot.WEAPON, "name": "Wpn"},
-		{"slot": ItemData.Slot.HELMET, "name": "Helm"},
-		{"slot": ItemData.Slot.CHEST, "name": "Chest"},
-		{"slot": ItemData.Slot.BELT, "name": "Belt"},
-		{"slot": ItemData.Slot.LEGS, "name": "Legs"},
-		{"slot": ItemData.Slot.RING, "name": "Ring"},
+		{"slot": -1, "icon": icon_base + "fb313.png"},
+		{"slot": ItemData.Slot.WEAPON, "icon": icon_base + "fb1449.png"},
+		{"slot": ItemData.Slot.HELMET, "icon": icon_base + "fb1913.png"},
+		{"slot": ItemData.Slot.CHEST, "icon": icon_base + "fb1863.png"},
+		{"slot": ItemData.Slot.BELT, "icon": icon_base + "fb2192.png"},
+		{"slot": ItemData.Slot.LEGS, "icon": icon_base + "fb2072.png"},
+		{"slot": ItemData.Slot.RING, "icon": icon_base + "fb1844.png"},
 	]
 
 	for option in filter_options:
 		var btn = Button.new()
-		btn.text = option.name
-		btn.custom_minimum_size = Vector2(60, 28)
-		if pixel_font:
-			btn.add_theme_font_override("font", pixel_font)
-		btn.add_theme_font_size_override("font_size", 12)
+		btn.custom_minimum_size = Vector2(60, 60)
 		btn.pressed.connect(_on_slot_filter_changed.bind(option.slot))
+
+		# Add icon
+		var icon_path = option.icon
+		if ResourceLoader.exists(icon_path):
+			var center = CenterContainer.new()
+			center.set_anchors_preset(Control.PRESET_FULL_RECT)
+			var icon = TextureRect.new()
+			icon.texture = load(icon_path)
+			icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon.custom_minimum_size = Vector2(36, 36)
+			icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			center.add_child(icon)
+			btn.add_child(center)
 
 		slot_filter_buttons.append(btn)
 		tabs_container.add_child(btn)
 
-	# Insert tabs after the "Inventory" label (index 0)
-	inventory_section.add_child(tabs_container)
-	inventory_section.move_child(tabs_container, 1)
+	# Create wrapper to hold tabs above inventory panel
+	var main_row = inventory_panel.get_parent()
+	var panel_index = inventory_panel.get_index()
+
+	var wrapper = VBoxContainer.new()
+	wrapper.name = "InventoryWrapper"
+	wrapper.add_theme_constant_override("separation", 0)
+	wrapper.clip_contents = false
+
+	# Wrap tabs in margin container with negative top margin so they extend above
+	var tabs_margin = MarginContainer.new()
+	tabs_margin.add_theme_constant_override("margin_top", -60)
+	tabs_margin.add_child(tabs_container)
+
+	# Reparent inventory panel into wrapper
+	main_row.remove_child(inventory_panel)
+	wrapper.add_child(tabs_margin)
+	wrapper.add_child(inventory_panel)
+
+	# Add wrapper to main row at original position
+	main_row.add_child(wrapper)
+	main_row.move_child(wrapper, panel_index)
 
 	# Apply initial styling
 	_update_slot_filter_buttons()
@@ -430,32 +463,34 @@ func _update_slot_filter_buttons() -> void:
 
 		var style = StyleBoxFlat.new()
 		if is_selected:
-			style.bg_color = Color(0.35, 0.30, 0.45, 1.0)
-			style.border_color = Color(0.6, 0.5, 0.7, 1.0)
+			# Match inventory panel background
+			style.bg_color = Color(0.02, 0.02, 0.03, 0.95)
+			style.border_color = Color(0.15, 0.14, 0.2, 1)
 		else:
-			style.bg_color = Color(0.12, 0.10, 0.15, 1.0)
-			style.border_color = Color(0.25, 0.22, 0.3, 1.0)
+			style.bg_color = Color(0.08, 0.07, 0.10, 0.9)
+			style.border_color = Color(0.15, 0.14, 0.2, 1)
 
 		style.set_border_width_all(2)
-		style.border_width_bottom = 3
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_left = 2
-		style.corner_radius_bottom_right = 2
+		style.border_width_bottom = 0 if is_selected else 2
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_left = 0
+		style.corner_radius_bottom_right = 0
 		style.content_margin_left = 6
 		style.content_margin_right = 6
-		style.content_margin_top = 2
-		style.content_margin_bottom = 2
+		style.content_margin_top = 6
+		style.content_margin_bottom = 6
 
 		var style_hover = style.duplicate()
-		style_hover.bg_color = style.bg_color.lightened(0.1)
-		style_hover.border_color = style.border_color.lightened(0.15)
+		style_hover.bg_color = style.bg_color.lightened(0.08)
 
 		btn.add_theme_stylebox_override("normal", style)
 		btn.add_theme_stylebox_override("hover", style_hover)
 		btn.add_theme_stylebox_override("pressed", style)
 		btn.add_theme_stylebox_override("focus", style)
-		btn.add_theme_color_override("font_color", COLOR_TEXT if is_selected else COLOR_TEXT_DIM)
+
+		# Dim icon when not selected
+		btn.modulate = Color(1, 1, 1, 1) if is_selected else Color(0.5, 0.5, 0.5, 0.7)
 
 func _on_slot_filter_changed(slot: int) -> void:
 	if SoundManager:
@@ -586,14 +621,14 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 	var container = VBoxContainer.new()
 	container.add_theme_constant_override("separation", 8)
 	# Set consistent width for all slots (matches width with equipped item) - increased by 10%
-	container.custom_minimum_size = Vector2(118, 0)
+	container.custom_minimum_size = Vector2(130, 0)
 
 	# Slot label
 	var slot_label = Label.new()
 	slot_label.text = SLOT_NAMES[slot]
 	if pixel_font:
 		slot_label.add_theme_font_override("font", pixel_font)
-	slot_label.add_theme_font_size_override("font_size", 18)
+	slot_label.add_theme_font_size_override("font_size", 16)
 	slot_label.add_theme_color_override("font_color", COLOR_TEXT_DIM)
 	slot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	container.add_child(slot_label)
@@ -670,7 +705,7 @@ func _create_equipment_slot(slot: ItemData.Slot) -> Control:
 
 	if item_name_font:
 		name_label.add_theme_font_override("font", item_name_font)
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.custom_minimum_size = Vector2(70, 0)
 	container.add_child(name_label)
@@ -808,8 +843,8 @@ func _refresh_inventory() -> void:
 			if item.slot == current_slot_filter:
 				items.append(item)
 
-	# Create 72 slots (6 columns x 12 rows) - scrollable
-	var total_slots = 72
+	# Create 110 slots (5 columns x 22 rows) - scrollable
+	var total_slots = 110
 
 	for i in range(total_slots):
 		if i < items.size():
@@ -824,7 +859,7 @@ func _refresh_inventory() -> void:
 
 func _create_empty_slot() -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(80, 80)
+	button.custom_minimum_size = Vector2(100, 100)
 	button.disabled = true
 
 	# Style - dark empty slot
@@ -847,7 +882,7 @@ func _create_empty_slot() -> Button:
 
 func _create_inventory_card(item: ItemData) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(80, 80)
+	button.custom_minimum_size = Vector2(100, 100)
 	button.pressed.connect(_on_inventory_item_pressed.bind(item))
 
 	# Style
@@ -918,7 +953,7 @@ func _create_inventory_card(item: ItemData) -> Button:
 		icon.texture = load(item.icon_path)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.custom_minimum_size = Vector2(50, 50)
+		icon.custom_minimum_size = Vector2(65, 65)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		center.add_child(icon)
 	else:
