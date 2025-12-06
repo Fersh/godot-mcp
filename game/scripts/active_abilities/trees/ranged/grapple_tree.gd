@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(400.0) \
 	 .with_movement() \
-	 .with_effect("grapple")
+	 .with_effect("grapple") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon27_Grapple.png")
 
 static func _create_pull() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		10.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(6.0) \
-	 .with_effect("decoy")
+	 .with_effect("decoy") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon23_Decoy.png")
 
 static func _create_explosive_decoy() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

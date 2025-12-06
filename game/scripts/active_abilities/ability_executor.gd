@@ -10,6 +10,45 @@ class_name AbilityExecutor
 # Preloaded effect scenes (lazy loaded)
 var _effect_scenes: Dictionary = {}
 
+# Emissive shader for bloom effects
+var _emissive_shader: Shader = preload("res://shaders/emissive.gdshader")
+
+# Effects that should glow (mapped effect name -> [emission_strength, Color])
+var _glowing_effects: Dictionary = {
+	# Fire effects - orange/red glow
+	"fireball": [2.5, Color(1.0, 0.5, 0.2)],
+	"fireball_sprite": [2.5, Color(1.0, 0.5, 0.2)],
+	"fire_cast": [2.0, Color(1.0, 0.6, 0.2)],
+	"firespin": [2.0, Color(1.0, 0.5, 0.2)],
+	"burning_crater": [2.0, Color(1.0, 0.4, 0.1)],
+	"flame_whirlwind_pixel": [2.0, Color(1.0, 0.5, 0.2)],
+	"inferno_tornado_pixel": [2.5, Color(1.0, 0.4, 0.1)],
+	"explosion": [3.0, Color(1.0, 0.6, 0.2)],
+	"explosion_sprite": [3.0, Color(1.0, 0.6, 0.2)],
+	# Lightning effects - blue/white glow
+	"lightning": [3.0, Color(0.6, 0.8, 1.0)],
+	"chain_lightning": [3.0, Color(0.6, 0.8, 1.0)],
+	"lightning_strike": [3.0, Color(0.7, 0.9, 1.0)],
+	"thunderstorm": [2.5, Color(0.6, 0.8, 1.0)],
+	# Ice effects - cyan glow
+	"frost_nova": [2.0, Color(0.5, 0.9, 1.0)],
+	"frost_arrow": [1.8, Color(0.5, 0.9, 1.0)],
+	"ice_cast": [2.0, Color(0.5, 0.9, 1.0)],
+	"ice_shatter": [2.0, Color(0.6, 0.9, 1.0)],
+	# Holy/Light effects - yellow/white glow
+	"holy": [2.5, Color(1.0, 0.95, 0.7)],
+	"healing_light": [2.0, Color(0.8, 1.0, 0.8)],
+	"divine_shield": [2.0, Color(1.0, 0.9, 0.5)],
+	"blinding_flash": [3.0, Color(1.0, 1.0, 0.9)],
+	# Magic effects - purple glow
+	"magic_cast": [2.0, Color(0.8, 0.5, 1.0)],
+	"black_hole": [2.5, Color(0.6, 0.3, 1.0)],
+	"shadowstep": [2.0, Color(0.5, 0.3, 0.8)],
+	# Meteor - intense orange
+	"meteor_strike": [3.0, Color(1.0, 0.5, 0.1)],
+	"meteor_warning": [1.5, Color(1.0, 0.3, 0.1)],
+}
+
 # Track base scale for gigantamax to prevent infinite scaling
 var _gigantamax_base_scales: Dictionary = {}  # player instance_id -> base_scale
 
@@ -348,6 +387,19 @@ func _get_aimed_target_position(player: Node2D, ability: ActiveAbilityData) -> V
 	var range_dist = ability.range_distance if ability.range_distance > 0 else 300.0
 	return player.global_position + direction * range_dist
 
+func _clamp_to_arena(pos: Vector2, player: Node2D) -> Vector2:
+	"""Clamp position to dynamic arena bounds from player (for procedural maps)."""
+	# Use player's dynamic arena bounds if available
+	if "arena_bounds" in player and player.arena_bounds.size.x > 0 and player.arena_bounds.size.y > 0:
+		var margin = player.arena_margin if "arena_margin" in player else 40.0
+		pos.x = clamp(pos.x, player.arena_bounds.position.x + margin, player.arena_bounds.end.x - margin)
+		pos.y = clamp(pos.y, player.arena_bounds.position.y + margin, player.arena_bounds.end.y - margin)
+	else:
+		# Fallback to legacy hardcoded bounds
+		pos.x = clamp(pos.x, -60, 1596)
+		pos.y = clamp(pos.y, 40, 1382 - 40)
+	return pos
+
 func _deal_damage_to_enemy(enemy: Node2D, damage: float, is_crit: bool = false) -> void:
 	"""Apply damage to an enemy. Mark for flying head effect if this kill them."""
 	if enemy.has_method("take_damage"):
@@ -373,6 +425,31 @@ func _apply_knockback_to_enemy(enemy: Node2D, direction: Vector2, force: float) 
 	if enemy.has_method("apply_knockback"):
 		enemy.apply_knockback(direction * force)
 
+func _apply_glow_to_effect(effect: Node, mapped_effect: String) -> void:
+	"""Apply emissive shader to effect for bloom glow."""
+	if not _glowing_effects.has(mapped_effect):
+		return
+
+	var glow_data = _glowing_effects[mapped_effect]
+	var emission_strength: float = glow_data[0]
+	var emission_tint: Color = glow_data[1]
+
+	# Create emissive material
+	var mat = ShaderMaterial.new()
+	mat.shader = _emissive_shader
+	mat.set_shader_parameter("emission_strength", emission_strength)
+	mat.set_shader_parameter("emission_tint", emission_tint)
+
+	# Apply to all sprite children recursively
+	_apply_material_recursive(effect, mat)
+
+func _apply_material_recursive(node: Node, material: ShaderMaterial) -> void:
+	"""Recursively apply material to all CanvasItem nodes."""
+	if node is CanvasItem:
+		node.material = material
+	for child in node.get_children():
+		_apply_material_recursive(child, material)
+
 func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) -> Node:
 	"""Spawn a visual effect at a position."""
 	# Map effect IDs to sprite-based effects
@@ -395,6 +472,8 @@ func _spawn_effect(effect_id: String, position: Vector2, parent: Node = null) ->
 			effect.global_position = position
 		# Make abilities 90% opacity so game is visible beneath
 		effect.modulate.a = 0.9
+		# Apply emissive glow for bloom if this effect should glow
+		_apply_glow_to_effect(effect, mapped_effect)
 		# Configure effect based on type
 		_configure_spawned_effect(effect, effect_id)
 		return effect
@@ -913,8 +992,7 @@ func _execute_shield_bash(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	# Calculate end position with arena bounds
 	var end_pos = start_pos + direction * dash_distance
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+	end_pos = _clamp_to_arena(end_pos, player)
 
 	# Dash forward then hit
 	var tween = create_tween()
@@ -1065,8 +1143,7 @@ func _execute_dash_strike(ability: ActiveAbilityData, player: Node2D) -> void:
 		direction = _get_attack_direction(player)
 		end_pos = start_pos + direction * ability.range_distance
 
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+	end_pos = _clamp_to_arena(end_pos, player)
 
 	var tween = create_tween()
 	tween.tween_property(player, "global_position", end_pos, 0.15)
@@ -1178,8 +1255,7 @@ func _execute_savage_leap(ability: ActiveAbilityData, player: Node2D) -> void:
 	var target_pos = _get_enemy_cluster_center(player.global_position, ability.range_distance)
 
 	# Clamp to arena
-	target_pos.x = clamp(target_pos.x, -60, 1596)
-	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+	target_pos = _clamp_to_arena(target_pos, player)
 
 	# Store original scale
 	var original_scale = player.scale
@@ -1230,8 +1306,7 @@ func _execute_blade_rush(ability: ActiveAbilityData, player: Node2D) -> void:
 		end_pos = start_pos + direction * ability.range_distance
 
 	# Clamp end position to arena
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+	end_pos = _clamp_to_arena(end_pos, player)
 
 	# Dash through enemies
 	var tween = create_tween()
@@ -1568,8 +1643,7 @@ func _execute_quick_roll(ability: ActiveAbilityData, player: Node2D) -> void:
 		player.set_invulnerable(true)
 
 	var target_pos = player.global_position + direction * ability.range_distance
-	target_pos.x = clamp(target_pos.x, -60, 1596)
-	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+	target_pos = _clamp_to_arena(target_pos, player)
 
 	var tween = create_tween()
 	tween.tween_property(player, "global_position", target_pos, 0.15)
@@ -1786,8 +1860,7 @@ func _execute_fan_of_knives(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_sentry_turret(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a single turret at player position
 	var turret_pos = player.global_position
-	turret_pos.x = clamp(turret_pos.x, -60, 1596)
-	turret_pos.y = clamp(turret_pos.y, 40, 1382 - 40)
+	turret_pos = _clamp_to_arena(turret_pos, player)
 
 	var turret = _spawn_effect("sentry_turret", turret_pos)
 	if turret and turret.has_method("setup"):
@@ -1918,8 +1991,7 @@ func _execute_sentry_network(ability: ActiveAbilityData, player: Node2D) -> void
 	]
 
 	for pos in turret_positions:
-		pos.x = clamp(pos.x, -60, 1596)
-		pos.y = clamp(pos.y, 40, 1382 - 40)
+		pos = _clamp_to_arena(pos, player)
 		var turret = _spawn_effect("sentry_turret", pos)
 		if turret and turret.has_method("setup"):
 			turret.setup(ability.duration, _get_damage(ability))
@@ -1945,8 +2017,7 @@ func _execute_rain_of_vengeance(ability: ActiveAbilityData, player: Node2D) -> v
 				var arrow_pos = player.global_position + random_offset
 
 				# Clamp to screen
-				arrow_pos.x = clamp(arrow_pos.x, -60, 1596)
-				arrow_pos.y = clamp(arrow_pos.y, 40, 1382 - 40)
+				arrow_pos = _clamp_to_arena(arrow_pos, player)
 
 				# Spawn falling arrow visual
 				_spawn_barrage_arrow(arrow_pos, damage / (waves * 2), ability.radius)
@@ -2204,8 +2275,7 @@ func _execute_shadowstep(ability: ActiveAbilityData, player: Node2D) -> void:
 		var direction = _get_attack_direction(player)
 		target_pos = player.global_position + direction * ability.range_distance
 
-	target_pos.x = clamp(target_pos.x, -60, 1596)
-	target_pos.y = clamp(target_pos.y, 40, 1382 - 40)
+	target_pos = _clamp_to_arena(target_pos, player)
 
 	# Spawn effect at start position
 	_spawn_effect("shadowstep", start_pos)
@@ -2313,8 +2383,7 @@ func _execute_thunderstorm(ability: ActiveAbilityData, player: Node2D) -> void:
 func _execute_summon_golem(ability: ActiveAbilityData, player: Node2D) -> void:
 	# Spawn a golem ally that fights for the player
 	var golem_pos = player.global_position + Vector2(60, 0)
-	golem_pos.x = clamp(golem_pos.x, -60, 1596)
-	golem_pos.y = clamp(golem_pos.y, 40, 1382 - 40)
+	golem_pos = _clamp_to_arena(golem_pos, player)
 
 	var golem = _spawn_effect("summon_golem", golem_pos)
 	if golem and golem.has_method("setup"):
@@ -2356,9 +2425,7 @@ func _execute_army_of_the_dead(ability: ActiveAbilityData, player: Node2D) -> vo
 		var angle = TAU * i / skeleton_count
 		var offset = Vector2(cos(angle), sin(angle)) * 80
 		var spawn_pos = player.global_position + offset
-
-		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
-		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+		spawn_pos = _clamp_to_arena(spawn_pos, player)
 
 		var skeleton = _spawn_effect("skeleton_warrior", spawn_pos)
 		if skeleton and skeleton.has_method("setup"):
@@ -3585,9 +3652,7 @@ func _execute_summon_party(ability: ActiveAbilityData, player: Node2D) -> void:
 		var angle = TAU * i / party_size
 		var offset = Vector2(cos(angle), sin(angle)) * 70
 		var spawn_pos = player.global_position + offset
-
-		spawn_pos.x = clamp(spawn_pos.x, -60, 1596)
-		spawn_pos.y = clamp(spawn_pos.y, 40, 1382 - 40)
+		spawn_pos = _clamp_to_arena(spawn_pos, player)
 
 		_spawn_party_member(spawn_pos, damage / party_size, ability.duration, summon_types[i])
 
@@ -3764,8 +3829,7 @@ func _execute_panic_button(ability: ActiveAbilityData, player: Node2D) -> void:
 
 	# Dash away
 	var end_pos = start_pos + escape_dir * ability.range_distance
-	end_pos.x = clamp(end_pos.x, -60, 1596)
-	end_pos.y = clamp(end_pos.y, 40, 1382 - 40)
+	end_pos = _clamp_to_arena(end_pos, player)
 
 	var tween = create_tween()
 	tween.tween_property(player, "global_position", end_pos, 0.2)

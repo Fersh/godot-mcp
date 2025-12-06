@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(50.0, 1.2) \
 	 .with_range(300.0) \
 	 .with_aoe(100.0) \
-	 .with_effect("bomb")
+	 .with_effect("bomb") \
+	 .with_icon("res://assets/sprites/icons/thiefskills/PNG/Icon32_Bomb.png")
 
 static func _create_cluster() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

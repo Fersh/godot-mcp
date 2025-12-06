@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(200.0) \
 	 .with_movement() \
-	 .with_effect("teleport")
+	 .with_effect("teleport") \
+	 .with_icon("res://assets/sprites/icons/demonskills/PNG/Group37_Teleport.png")
 
 static func _create_blink() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

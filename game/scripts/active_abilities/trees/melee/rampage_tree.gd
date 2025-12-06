@@ -49,7 +49,8 @@ static func _create_base() -> ActiveAbilityData:
 		15.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(5.0) \
-	 .with_effect("rampage_pixel")
+	 .with_effect("rampage_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon36_Rampage.png")
 
 static func _create_frenzy() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

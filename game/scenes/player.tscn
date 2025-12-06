@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/sprites/archer.png" id="2_texture"]
@@ -7,6 +7,15 @@
 [ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="5_damage_number"]
 [ext_resource type="PackedScene" path="res://scenes/muzzle_flash.tscn" id="6_muzzle_flash"]
 [ext_resource type="PackedScene" path="res://scenes/swipe_effect.tscn" id="7_swipe_effect"]
+[ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="8_hit_flash"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_player"]
+shader = ExtResource("8_hit_flash")
+shader_parameter/flash_intensity = 0.0
+shader_parameter/flash_color = Color(1, 1, 1, 1)
+shader_parameter/outline_enabled = true
+shader_parameter/outline_color = Color(0, 0, 0, 0.8)
+shader_parameter/outline_width = 1.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(18, 21)
@@ -21,6 +30,7 @@ muzzle_flash_scene = ExtResource("6_muzzle_flash")
 swipe_effect_scene = ExtResource("7_swipe_effect")
 
 [node name="Sprite" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_player")
 scale = Vector2(1.875, 1.875)
 texture = ExtResource("2_texture")
 hframes = 8

@@ -42,7 +42,8 @@ static func _create_base() -> ActiveAbilityData:
 		12.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(5.0) \
-	 .with_effect("barrier")
+	 .with_effect("barrier") \
+	 .with_icon("res://assets/sprites/icons/demonskills/PNG/Group13_Barrier.png")
 
 static func _create_absorb() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

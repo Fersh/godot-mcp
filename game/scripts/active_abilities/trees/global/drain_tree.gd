@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		8.0
 	).with_damage(40.0, 1.0) \
 	 .with_range(250.0) \
-	 .with_effect("life_drain")
+	 .with_effect("life_drain") \
+	 .with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon19_Drain.png")
 
 static func _create_siphon() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

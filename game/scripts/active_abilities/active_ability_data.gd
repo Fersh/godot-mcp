@@ -239,9 +239,25 @@ func get_display_name() -> String:
 
 func get_icon_ability_id() -> String:
 	## Get the base ability ID for icon lookup (upgrades use base ability's icon)
-	if base_ability_id.is_empty():
-		return id
-	return base_ability_id
+	## First check if base_ability_id was explicitly set (via with_prefix/with_suffix)
+	if not base_ability_id.is_empty() and base_ability_id != id:
+		return base_ability_id
+	## For tree abilities, walk up the prerequisite chain to find the root
+	if not prerequisite_id.is_empty():
+		return _get_tree_root_id()
+	return id
+
+func _get_tree_root_id() -> String:
+	## Walk up the prerequisite chain to find the tree's root ability ID
+	var current_id = prerequisite_id
+	var visited = {id: true}  # Prevent infinite loops
+	while not current_id.is_empty() and not visited.has(current_id):
+		visited[current_id] = true
+		var prereq = AbilityTreeRegistry.get_ability(current_id)
+		if prereq == null or prereq.prerequisite_id.is_empty():
+			return current_id  # Found the root
+		current_id = prereq.prerequisite_id
+	return current_id if not current_id.is_empty() else id
 
 # Utility methods for tier system
 func is_base() -> bool:

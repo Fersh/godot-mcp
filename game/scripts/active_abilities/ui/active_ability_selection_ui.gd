@@ -793,10 +793,26 @@ func _create_icon_circle(ability: ActiveAbilityData) -> Control:
 	icon_drawer.custom_minimum_size = Vector2(ICON_SIZE, ICON_SIZE)
 	icon_drawer.size = Vector2(ICON_SIZE, ICON_SIZE)
 
-	# Load the icon texture
-	var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
-	if ResourceLoader.exists(icon_path):
-		icon_drawer.icon_texture = load(icon_path)
+	# Load the icon texture - check multiple sources
+	var loaded_icon: Texture2D = null
+
+	# First check if ability has a custom icon_path set
+	if ability.icon_path != "" and ResourceLoader.exists(ability.icon_path):
+		loaded_icon = load(ability.icon_path)
+	# Check if this is a tree ability - try to get base ability's icon
+	elif not ability.base_ability_id.is_empty():
+		var base_ability = AbilityTreeRegistry.get_ability(ability.base_ability_id)
+		if base_ability and base_ability.icon_path != "" and ResourceLoader.exists(base_ability.icon_path):
+			loaded_icon = load(base_ability.icon_path)
+
+	# Try assets/icons/abilities path
+	if not loaded_icon:
+		var icon_path = "res://assets/icons/abilities/" + ability.get_icon_ability_id() + ".png"
+		if ResourceLoader.exists(icon_path):
+			loaded_icon = load(icon_path)
+
+	if loaded_icon:
+		icon_drawer.icon_texture = loaded_icon
 	else:
 		# Fallback letter
 		icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
@@ -824,13 +840,32 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 			var icon_drawer = icon_circle.get_child(0) as IconCircleDrawer
 			if icon_drawer:
 				icon_drawer.border_color = Color(0.2, 0.9, 0.3)  # Green border for all active abilities
-				var icon_path = "res://assets/icons/abilities/" + ability.id + ".png"
-				if ResourceLoader.exists(icon_path):
-					icon_drawer.icon_texture = load(icon_path)
+
+				# Load the icon texture - check multiple sources
+				var loaded_icon: Texture2D = null
+
+				# First check if ability has a custom icon_path set
+				if ability.icon_path != "" and ResourceLoader.exists(ability.icon_path):
+					loaded_icon = load(ability.icon_path)
+				# Check if this is a tree ability - try to get base ability's icon
+				elif not ability.base_ability_id.is_empty():
+					var base_ability = AbilityTreeRegistry.get_ability(ability.base_ability_id)
+					if base_ability and base_ability.icon_path != "" and ResourceLoader.exists(base_ability.icon_path):
+						loaded_icon = load(base_ability.icon_path)
+
+				# Try assets/icons/abilities path
+				if not loaded_icon:
+					var icon_path = "res://assets/icons/abilities/" + ability.get_icon_ability_id() + ".png"
+					if ResourceLoader.exists(icon_path):
+						loaded_icon = load(icon_path)
+
+				if loaded_icon:
+					icon_drawer.icon_texture = loaded_icon
 					icon_drawer.fallback_letter = ""
 				else:
 					icon_drawer.icon_texture = null
 					icon_drawer.fallback_letter = ability.name.substr(0, 1).to_upper()
+
 				icon_drawer.show_skillshot_indicator = ability.supports_skillshot()
 				icon_drawer.queue_redraw()
 
@@ -964,13 +999,15 @@ func _on_ability_selected(index: int) -> void:
 		)
 
 func _animate_card_selected(button: Button, on_complete: Callable) -> void:
-	"""Animate the selected card growing bigger."""
+	"""Animate the selected card with pressed effect then growing bigger."""
 	button.pivot_offset = button.size / 2
 
 	var tween = create_tween()
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 
-	# Grow bigger then immediately complete
+	# Press down effect first
+	tween.tween_property(button, "scale", Vector2(0.95, 0.95), 0.05).set_ease(Tween.EASE_OUT)
+	# Then grow bigger
 	tween.tween_property(button, "scale", Vector2(1.15, 1.15), 0.1).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_callback(on_complete)
 

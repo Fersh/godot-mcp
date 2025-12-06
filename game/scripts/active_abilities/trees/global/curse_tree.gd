@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(300.0) \
 	 .with_duration(5.0) \
-	 .with_effect("curse")
+	 .with_effect("curse") \
+	 .with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon23_Curse.png")
 
 static func _create_weakness() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

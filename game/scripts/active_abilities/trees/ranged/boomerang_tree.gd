@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(35.0, 1.0) \
 	 .with_range(350.0) \
 	 .with_projectiles(1, 500.0) \
-	 .with_effect("boomerang")
+	 .with_effect("boomerang") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon45_Boomerang.png")
 
 static func _create_multi_rang() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(10.0, 0.4) \
 	 .with_range(350.0) \
 	 .with_duration(1.5) \
-	 .with_effect("barrage")
+	 .with_effect("barrage") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon46_Barrage.png")
 
 static func _create_focused() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

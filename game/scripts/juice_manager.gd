@@ -34,6 +34,7 @@ var vignette_overlay: ColorRect = null
 var chromatic_overlay: ColorRect = null
 var damage_flash_overlay: ColorRect = null
 var low_hp_overlay: ColorRect = null
+var desaturate_overlay: ColorRect = null
 var original_camera_offset: Vector2 = Vector2.ZERO
 var original_camera_zoom: Vector2 = Vector2.ONE
 
@@ -152,6 +153,26 @@ func register_damage_flash(overlay: ColorRect) -> void:
 
 func register_low_hp_vignette(overlay: ColorRect) -> void:
 	low_hp_overlay = overlay
+
+func register_desaturate(overlay: ColorRect) -> void:
+	desaturate_overlay = overlay
+
+# Death effect - fade to grayscale
+func death_desaturate(duration: float = 0.5) -> void:
+	if not desaturate_overlay or not desaturate_overlay.material:
+		return
+	var tween = create_tween()
+	tween.tween_method(func(val: float):
+		desaturate_overlay.material.set_shader_parameter("amount", val)
+		desaturate_overlay.material.set_shader_parameter("darken", val * 0.3)
+	, 0.0, 1.0, duration).set_ease(Tween.EASE_OUT)
+
+# Reset desaturation (e.g., on respawn)
+func reset_desaturate() -> void:
+	if not desaturate_overlay or not desaturate_overlay.material:
+		return
+	desaturate_overlay.material.set_shader_parameter("amount", 0.0)
+	desaturate_overlay.material.set_shader_parameter("darken", 0.0)
 
 # Screen shake with optional rotation
 func shake(intensity: float, rotation: float = 0.0) -> void:

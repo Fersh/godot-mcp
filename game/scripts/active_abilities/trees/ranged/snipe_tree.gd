@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(80.0, 1.6) \
 	 .with_range(600.0) \
 	 .with_cast_time(1.0) \
-	 .with_effect("snipe")
+	 .with_effect("snipe") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon3_Snipe.png")
 
 static func _create_headshot() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -6,6 +6,7 @@ uniform float intensity : hint_range(0.0, 3.0) = 1.0;
 uniform float speed : hint_range(0.1, 5.0) = 1.5;
 uniform float particle_density : hint_range(1.0, 30.0) = 12.0;
 uniform float pixel_size : hint_range(0.01, 0.15) = 0.06;
+uniform float emission_strength : hint_range(0.0, 3.0) = 1.5; // HDR bloom emission
 
 // Pseudo-random function
 float random(vec2 st) {
@@ -71,6 +72,9 @@ void fragment() {
 
     // Brighten center particles slightly
     color = mix(color, vec3(1.0), particles * 0.2);
+
+    // Apply HDR emission for bloom effect
+    color *= emission_strength;
 
     // Output with alpha
     COLOR = vec4(color, particles * rarity_color.a);

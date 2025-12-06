@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		8.0
 	).with_damage(50.0, 1.0) \
 	 .with_slow(0.5, 2.0) \
-	 .with_effect("trap")
+	 .with_effect("trap") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon25_Trap.png")
 
 static func _create_bear_trap() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

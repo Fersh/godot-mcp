@@ -1010,12 +1010,17 @@ func _check_daily_refresh() -> void:
 
 func _refresh_daily_missions() -> void:
 	"""Generate new daily missions for today - one from each tier."""
-	daily_date = Time.get_date_string_from_system()
+	var today = Time.get_date_string_from_system()
+	var is_new_day = daily_date != today
+
+	daily_date = today
 	active_daily_missions.clear()
 
-	# Reset all daily mission progress
-	for mission in daily_missions:
-		mission.reset_progress()
+	# Only reset daily mission progress if it's actually a new day
+	# This preserves progress for missions completed today if the game restarts
+	if is_new_day:
+		for mission in daily_missions:
+			mission.reset_progress()
 
 	# Organize missions by tier based on reward coins
 	var easy_tier: Array = []    # 100 coins

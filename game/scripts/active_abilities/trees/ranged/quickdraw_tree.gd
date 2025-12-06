@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		6.0
 	).with_damage(50.0, 1.2) \
 	 .with_range(400.0) \
-	 .with_effect("quickdraw")
+	 .with_effect("quickdraw") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon43_Quickdraw.png")
 
 static func _create_reflex() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

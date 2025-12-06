@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(50.0, 1.3) \
 	 .with_range(350.0) \
 	 .with_projectiles(1, 600.0) \
-	 .with_effect("throw_weapon_pixel")
+	 .with_effect("throw_weapon_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon10_ThrowWeapon.png")
 
 static func _create_ricochet() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

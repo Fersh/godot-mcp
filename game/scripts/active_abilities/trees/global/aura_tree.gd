@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		15.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(6.0) \
-	 .with_effect("empower")
+	 .with_effect("empower") \
+	 .with_icon("res://assets/sprites/icons/demonskills/PNG/Group10_Empower.png")
 
 static func _create_might() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

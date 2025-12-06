@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(200.0) \
 	 .with_movement() \
-	 .with_effect("blink")
+	 .with_effect("blink") \
+	 .with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon27_Blink.png")
 
 static func _create_phase() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

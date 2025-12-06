@@ -49,7 +49,8 @@ static func _create_base() -> ActiveAbilityData:
 		15.0
 	).with_damage(25.0, 0.8) \
 	 .with_duration(15.0) \
-	 .with_effect("summon_minion")
+	 .with_effect("summon_minion") \
+	 .with_icon("res://assets/sprites/icons/demonskills/PNG/Group9_Summon.png")
 
 static func _create_golem() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

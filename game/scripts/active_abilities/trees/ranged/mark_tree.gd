@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_range(500.0) \
 	 .with_duration(6.0) \
-	 .with_effect("mark_target")
+	 .with_effect("mark_target") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon14_MarkTarget.png")
 
 static func _create_hunters_mark() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

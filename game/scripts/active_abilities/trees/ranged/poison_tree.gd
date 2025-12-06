@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(20.0, 0.8) \
 	 .with_projectiles(1, 550.0) \
 	 .with_duration(5.0) \
-	 .with_effect("poison_arrow")
+	 .with_effect("poison_arrow") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon32_PoisonArrow.png")
 
 static func _create_plague() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

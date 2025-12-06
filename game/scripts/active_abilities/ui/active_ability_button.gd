@@ -435,7 +435,21 @@ func _load_icon() -> void:
 		icon_texture.texture = null
 		return
 
-	# Use base ability's icon for upgrades (they share the same icon)
+	# First check if ability has a custom icon_path set
+	if ability.icon_path != "" and ResourceLoader.exists(ability.icon_path):
+		icon_texture.texture = load(ability.icon_path)
+		cooldown_label.visible = false
+		return
+
+	# Check if this is a tree ability - try to get base ability's icon
+	if not ability.base_ability_id.is_empty():
+		var base_ability = AbilityTreeRegistry.get_ability(ability.base_ability_id)
+		if base_ability and base_ability.icon_path != "" and ResourceLoader.exists(base_ability.icon_path):
+			icon_texture.texture = load(base_ability.icon_path)
+			cooldown_label.visible = false
+			return
+
+	# Try assets/icons/abilities path using base ability ID
 	var icon_id = ability.get_icon_ability_id()
 	var icon_path = "res://assets/icons/abilities/" + icon_id + ".png"
 	if ResourceLoader.exists(icon_path):
@@ -819,18 +833,33 @@ func _update_tooltip_content() -> void:
 		tooltip_panel.add_theme_stylebox_override("panel", style)
 
 	elif ability:
-		# Ability tooltip
-		var rarity_color = ActiveAbilityData.get_rarity_color(ability.rarity)
+		# Ability tooltip - show rank based on tier
+		var rank = 1
+		match ability.tier:
+			ActiveAbilityData.AbilityTier.BASE:
+				rank = 1
+			ActiveAbilityData.AbilityTier.BRANCH:
+				rank = 2
+			ActiveAbilityData.AbilityTier.SIGNATURE:
+				rank = 3
+
+		# Rank colors: 1=white, 2=blue, 3=gold
+		var rank_colors = [
+			Color(0.9, 0.9, 0.9),    # Rank 1 - White
+			Color(0.3, 0.5, 1.0),    # Rank 2 - Blue
+			Color(1.0, 0.85, 0.0),   # Rank 3 - Gold
+		]
+		var rank_color = rank_colors[rank - 1]
 
 		if rarity_tag and rarity_label:
-			rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
-			# Use black text for common (light background), white for others
-			var label_color = Color.BLACK if ability.rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
+			rarity_label.text = "Rank " + str(rank)
+			# Use black text for rank 1 (light background), white for others
+			var label_color = Color.BLACK if rank == 1 else Color.WHITE
 			rarity_label.add_theme_color_override("font_color", label_color)
 
-			# Style the rarity tag
+			# Style the rank tag
 			var tag_style = StyleBoxFlat.new()
-			tag_style.bg_color = rarity_color
+			tag_style.bg_color = rank_color
 			tag_style.set_corner_radius_all(4)
 			tag_style.content_margin_left = 8
 			tag_style.content_margin_right = 8
@@ -846,9 +875,9 @@ func _update_tooltip_content() -> void:
 		if cd_label:
 			cd_label.text = str(int(ability.cooldown)) + "s cooldown"
 
-		# Update border color
+		# Update border color to match rank
 		var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-		style.border_color = rarity_color
+		style.border_color = rank_color
 		tooltip_panel.add_theme_stylebox_override("panel", style)
 	else:
 		# Empty slot

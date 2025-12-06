@@ -35,6 +35,7 @@ var pixel_font: Font = null
 var desc_font: Font = null
 var desc_bold_font: Font = null
 var rarity_particle_shader: Shader = null
+var bloom_shader: Shader = null
 
 func _ready() -> void:
 	visible = false
@@ -53,6 +54,11 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://shaders/rarity_particles.gdshader"):
 		rarity_particle_shader = load("res://shaders/rarity_particles.gdshader")
 
+	# Load bloom shader and add bloom overlay for UI flames
+	if ResourceLoader.exists("res://shaders/bloom.gdshader"):
+		bloom_shader = load("res://shaders/bloom.gdshader")
+		_add_bloom_overlay()
+
 	# Apply pixel font to title
 	if pixel_font and title_label:
 		title_label.add_theme_font_override("font", pixel_font)
@@ -61,6 +67,23 @@ func _ready() -> void:
 	_branch_selector = BranchSelector.new()
 	_branch_selector.branch_selected.connect(_on_branch_selected)
 	_branch_selector.selection_cancelled.connect(_on_branch_cancelled)
+
+func _add_bloom_overlay() -> void:
+	## Add a bloom overlay to make UI flames glow
+	var bloom_rect = ColorRect.new()
+	bloom_rect.name = "BloomOverlay"
+	bloom_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bloom_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var bloom_mat = ShaderMaterial.new()
+	bloom_mat.shader = bloom_shader
+	bloom_mat.set_shader_parameter("intensity", 0.35)
+	bloom_mat.set_shader_parameter("threshold", 0.65)
+	bloom_mat.set_shader_parameter("blur_size", 2.5)
+	bloom_rect.material = bloom_mat
+
+	# Add as last child so it renders on top
+	add_child(bloom_rect)
 
 func _set_mouse_filter_recursive(control: Control, filter: Control.MouseFilter) -> void:
 	## Recursively set mouse_filter on control and all its children
@@ -405,8 +428,8 @@ func create_ability_card(ability, index: int) -> Button:
 	button.add_child(rarity_tag)
 	_set_mouse_filter_recursive(rarity_tag, Control.MOUSE_FILTER_PASS)
 
-	# Add particle effect container
-	var particle_container = _create_particle_container_for_ability(display_ability)
+	# Add particle effect container - use original ability to detect trigger cards
+	var particle_container = _create_particle_container_for_ability(ability)
 	particle_container.name = "ParticleContainer"
 	particle_container.visible = false
 	button.add_child(particle_container)
@@ -906,6 +929,7 @@ func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
 		top_mat.set_shader_parameter("speed", 1.2)
 		top_mat.set_shader_parameter("particle_density", density)
 		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_particles.material = top_mat
 	else:
 		top_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
@@ -933,6 +957,7 @@ func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
 		tl_mat.set_shader_parameter("speed", 1.0)
 		tl_mat.set_shader_parameter("particle_density", density * 0.5)
 		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		tl_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_left_particles.material = tl_mat
 	else:
 		top_left_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
@@ -960,6 +985,7 @@ func _create_particle_container(rarity: AbilityData.Rarity) -> Control:
 		tr_mat.set_shader_parameter("speed", 1.1)
 		tr_mat.set_shader_parameter("particle_density", density * 0.5)
 		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		tr_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_right_particles.material = tr_mat
 	else:
 		top_right_particles.color = Color(rarity_color.r, rarity_color.g, rarity_color.b, 0.3)
@@ -1047,6 +1073,7 @@ func _create_passive_tier_particle_container(tier_rank: int) -> Control:
 		top_mat.set_shader_parameter("speed", 1.2)
 		top_mat.set_shader_parameter("particle_density", density)
 		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_particles.material = top_mat
 	else:
 		top_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
@@ -1074,6 +1101,7 @@ func _create_passive_tier_particle_container(tier_rank: int) -> Control:
 		tl_mat.set_shader_parameter("speed", 1.0)
 		tl_mat.set_shader_parameter("particle_density", density * 0.5)
 		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		tl_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_left_particles.material = tl_mat
 	else:
 		top_left_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
@@ -1101,6 +1129,7 @@ func _create_passive_tier_particle_container(tier_rank: int) -> Control:
 		tr_mat.set_shader_parameter("speed", 1.1)
 		tr_mat.set_shader_parameter("particle_density", density * 0.5)
 		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		tr_mat.set_shader_parameter("emission_strength", 1.8)  # HDR bloom
 		top_right_particles.material = tr_mat
 	else:
 		top_right_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
@@ -1154,6 +1183,7 @@ func _create_upgrade_particle_container(target_rank: int = 2) -> Control:
 		top_mat.set_shader_parameter("speed", 1.2)
 		top_mat.set_shader_parameter("particle_density", density)
 		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_mat.set_shader_parameter("emission_strength", 2.0)  # HDR bloom - brighter for green
 		top_particles.material = top_mat
 	else:
 		top_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)
@@ -1181,6 +1211,7 @@ func _create_upgrade_particle_container(target_rank: int = 2) -> Control:
 		tl_mat.set_shader_parameter("speed", 1.0)
 		tl_mat.set_shader_parameter("particle_density", density * 0.5)
 		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		tl_mat.set_shader_parameter("emission_strength", 2.0)  # HDR bloom
 		top_left_particles.material = tl_mat
 	else:
 		top_left_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)
@@ -1208,6 +1239,7 @@ func _create_upgrade_particle_container(target_rank: int = 2) -> Control:
 		tr_mat.set_shader_parameter("speed", 1.1)
 		tr_mat.set_shader_parameter("particle_density", density * 0.5)
 		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		tr_mat.set_shader_parameter("emission_strength", 2.0)  # HDR bloom
 		top_right_particles.material = tr_mat
 	else:
 		top_right_particles.color = Color(green_color.r, green_color.g, green_color.b, 0.3)

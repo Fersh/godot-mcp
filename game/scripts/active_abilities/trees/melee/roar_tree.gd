@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(0.0, 0.0) \
 	 .with_aoe(200.0) \
 	 .with_duration(2.0) \
-	 .with_effect("roar_pixel")
+	 .with_effect("roar_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon24_Roar.png")
 
 static func _create_intimidate() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

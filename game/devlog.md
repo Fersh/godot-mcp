@@ -2005,3 +2005,52 @@ game/scripts/abilities/effects/
 15. `game/scripts/active_abilities/active_ability_data.gd` - Tier enum, prerequisite fields, builder methods
 16. `game/scripts/active_abilities/ability_executor.gd` - Modular executor routing
 17. `game/scripts/abilities/ability_manager.gd` - Effect module wiring
+
+---
+
+## Post-Processing Visual Effects
+
+Added a comprehensive post-processing system to enhance the game's visual presentation.
+
+### Effects Added
+
+1. **Bloom/Glow** (`shaders/bloom.gdshader`)
+   - Soft glow on bright pixels
+   - Applied to ability effects via emissive shader
+   - UI flames on ability selection cards
+   - Settings: intensity 0.35, threshold 0.65, blur_size 2.5
+
+2. **Color Grading** (`shaders/color_grading.gdshader`)
+   - Brightness, contrast, saturation controls
+   - Color temperature (warm/cool)
+   - Shadow/midtone/highlight tinting
+   - Subtle cinematic look: slight contrast boost, minor desaturation, warm highlights
+
+3. **Film Grain** (`shaders/film_grain.gdshader`)
+   - Subtle animated noise texture
+   - Monochrome or colored grain option
+   - Very subtle at 0.03 intensity
+
+4. **Desaturation** (`shaders/desaturate.gdshader`)
+   - Dynamic grayscale effect for death/pause
+   - Controllable via `JuiceManager.death_desaturate()`
+   - Includes optional darkening
+
+5. **CRT/Scanlines** (`shaders/crt.gdshader`) - Optional
+   - Scanlines, screen curvature, RGB separation
+   - Retro arcade aesthetic (disabled by default)
+
+6. **Emissive** (`shaders/emissive.gdshader`)
+   - Makes sprites glow for bloom effect
+   - Applied to magical ability effects
+
+### Bug Fixes
+- Fixed trigger card flames not showing (was passing wrong ability type to particle creator)
+- Added `emission_strength` to rarity_particles.gdshader for HDR bloom support
+
+### Files Modified
+- `scenes/juice_overlay.tscn` - Added bloom, color grading, film grain, desaturate layers
+- `scripts/juice_overlay.gd` - Register desaturate overlay
+- `scripts/juice_manager.gd` - Added `death_desaturate()` and `reset_desaturate()` functions
+- `scripts/ability_selection_ui.gd` - Fixed trigger card particle bug, added UI bloom
+- `shaders/rarity_particles.gdshader` - Added emission_strength for HDR bloom

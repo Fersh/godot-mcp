@@ -42,7 +42,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(30.0, 1.0) \
 	 .with_aoe(120.0) \
 	 .with_duration(1.5) \
-	 .with_effect("whirlwind_pixel")
+	 .with_effect("whirlwind_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon20_Whirlwind.png")
 
 static func _create_blade_vortex() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

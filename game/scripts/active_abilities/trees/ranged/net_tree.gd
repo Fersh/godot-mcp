@@ -37,7 +37,8 @@ static func _create_base() -> ActiveAbilityData:
 	 .with_range(300.0) \
 	 .with_aoe(100.0) \
 	 .with_slow(0.5, 3.0) \
-	 .with_effect("net")
+	 .with_effect("net") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon26_Net.png")
 
 static func _create_electric() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

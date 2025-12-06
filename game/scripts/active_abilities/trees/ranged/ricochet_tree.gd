@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		5.0
 	).with_damage(25.0, 0.8) \
 	 .with_range(400.0) \
-	 .with_effect("ricochet")
+	 .with_effect("ricochet") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon41_Ricochet.png")
 
 static func _create_chain() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

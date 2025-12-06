@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(20.0, 0.5) \
 	 .with_aoe(100.0) \
 	 .with_duration(5.0) \
-	 .with_effect("thorns")
+	 .with_effect("thorns") \
+	 .with_icon("res://assets/sprites/icons/undeadskills/PNG/Icon47_Thorns.png")
 
 static func _create_flame() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

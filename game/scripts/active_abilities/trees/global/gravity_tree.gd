@@ -37,7 +37,8 @@ static func _create_base() -> ActiveAbilityData:
 	 .with_aoe(180.0) \
 	 .with_duration(3.0) \
 	 .with_knockback(-200.0) \
-	 .with_effect("gravity_well")
+	 .with_effect("gravity_well") \
+	 .with_icon("res://assets/sprites/icons/demonskills/PNG/Group42_GravityWell.png")
 
 static func _create_crush() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

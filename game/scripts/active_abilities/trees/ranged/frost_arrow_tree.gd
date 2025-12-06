@@ -36,7 +36,8 @@ static func _create_base() -> ActiveAbilityData:
 	).with_damage(30.0, 1.0) \
 	 .with_projectiles(1, 500.0) \
 	 .with_slow(0.3, 3.0) \
-	 .with_effect("frost_arrow")
+	 .with_effect("frost_arrow") \
+	 .with_icon("res://assets/sprites/icons/archerskills/PNG/Icon24_FrostArrow.png")
 
 static func _create_freezing() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		6.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(1.5) \
-	 .with_effect("block_pixel")
+	 .with_effect("block_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon16_Block.png")
 
 static func _create_reflect() -> ActiveAbilityData:
 	return ActiveAbilityData.new(

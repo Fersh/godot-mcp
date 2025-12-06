@@ -35,7 +35,8 @@ static func _create_base() -> ActiveAbilityData:
 		4.0
 	).with_damage(0.0, 0.0) \
 	 .with_duration(0.5) \
-	 .with_effect("parry_pixel")
+	 .with_effect("parry_pixel") \
+	 .with_icon("res://assets/sprites/icons/barbarianskills/PNG/Icon35_Parry.png")
 
 static func _create_counter() -> ActiveAbilityData:
 	return ActiveAbilityData.new(
