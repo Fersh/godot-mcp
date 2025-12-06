@@ -39,6 +39,10 @@ func _ready() -> void:
 	collision_layer = 8
 	collision_mask = 0  # Static body, doesn't need to detect
 
+	# CRITICAL: Use absolute z_index so we're not affected by parent's z_index
+	# TileBackground has z_index = -10, which would offset our z_index otherwise
+	z_as_relative = false
+
 	# Find player
 	await get_tree().process_frame
 	var players = get_tree().get_nodes_in_group("player")

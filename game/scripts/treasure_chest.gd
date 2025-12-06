@@ -26,6 +26,9 @@ func _ready() -> void:
 	collision_layer = 0
 	collision_mask = 1  # Detect player
 
+	# Use absolute z_index (not relative to parent TileBackground which has z_index = -10)
+	z_as_relative = false
+
 	# Create sprite
 	sprite = Sprite2D.new()
 	sprite.name = "Sprite"
