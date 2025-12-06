@@ -687,6 +687,18 @@ func _generate_trees_structured() -> void:
 		if _is_water_tile(x, y):
 			continue
 
+		# Check if tree would be too close to water (at least 1 tile away)
+		var too_close_to_water = false
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				if _is_water_tile(x + dx, y + dy):
+					too_close_to_water = true
+					break
+			if too_close_to_water:
+				break
+		if too_close_to_water:
+			continue
+
 		# Check distance from roads (wider exclusion zone)
 		var too_close_to_road = false
 		for road_pos in dirt_positions:
@@ -995,15 +1007,24 @@ func _generate_small_decorations() -> void:
 			decoration_sprites.append(sprite)
 
 func _spawn_treasure_chest(scaled_tile_size: float) -> void:
-	"""Spawn a single treasure chest in a valid random location."""
+	"""Spawn a single treasure chest away from player spawn area."""
 	var chest_scene = load("res://scenes/environment/treasure_chest.tscn")
 	if not chest_scene:
 		push_error("TreasureChest: Could not load treasure_chest.tscn")
 		return
 
-	var min_tree_distance = scaled_tile_size * 1.5  # Keep away from trees (reduced from 2.0)
+	var min_tree_distance = scaled_tile_size * 1.5
+	# Player spawns in central clearing - chest must be at least 1 screen away
+	# Screen is 1280x752, so use ~700 pixels as minimum distance from center
+	var min_distance_from_center = 700.0
 	var attempts = 0
-	var max_attempts = 200  # Increased attempts
+	var max_attempts = 200
+
+	# Calculate the center of the arena in world coordinates
+	var arena_center = Vector2(
+		arena_offset_x + (arena_width_tiles / 2.0) * scaled_tile_size,
+		arena_offset_y + (arena_height_tiles / 2.0) * scaled_tile_size
+	)
 
 	while attempts < max_attempts:
 		attempts += 1
@@ -1021,6 +1042,10 @@ func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 			arena_offset_y + y * scaled_tile_size + scaled_tile_size / 2
 		)
 
+		# Skip if too close to arena center (player spawn area)
+		if pos.distance_to(arena_center) < min_distance_from_center:
+			continue
+
 		# Check distance from all trees
 		var too_close_to_tree = false
 		for tree_pos in placed_tree_positions:
@@ -1030,16 +1055,11 @@ func _spawn_treasure_chest(scaled_tile_size: float) -> void:
 		if too_close_to_tree:
 			continue
 
-		# Check if directly on water tile (skip adjacent water check for more positions)
-		if _is_water_tile(x, y):
-			continue
-
 		# Valid position found - spawn the chest
 		chest_node = chest_scene.instantiate()
 		chest_node.position = pos
 		chest_node.z_index = int(pos.y / 10)
 		add_child(chest_node)
-		print("TreasureChest: Spawned at position ", pos, " after ", attempts, " attempts")
 		return
 
 	push_error("TreasureChest: Could not find valid position after %d attempts" % max_attempts)

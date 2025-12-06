@@ -626,15 +626,19 @@ func _create_tooltip() -> void:
 	desc_margin.add_theme_constant_override("margin_left", 10)
 	desc_margin.add_theme_constant_override("margin_right", 10)
 
-	var desc_label = Label.new()
+	var desc_label = RichTextLabel.new()
 	desc_label.name = "DescLabel"
-	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 15)
-	desc_label.add_theme_color_override("font_color", Color.WHITE)
+	desc_label.bbcode_enabled = true
+	desc_label.fit_content = true
+	desc_label.scroll_active = false
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.custom_minimum_size.x = 200
+	desc_label.add_theme_font_size_override("normal_font_size", 15)
+	desc_label.add_theme_font_size_override("bold_font_size", 15)
+	desc_label.add_theme_color_override("default_color", Color.WHITE)
 	if desc_font:
-		desc_label.add_theme_font_override("font", desc_font)
+		desc_label.add_theme_font_override("normal_font", desc_font)
+		desc_label.add_theme_font_override("bold_font", desc_font)
 	desc_margin.add_child(desc_label)
 	vbox.add_child(desc_margin)
 
@@ -685,7 +689,7 @@ func _update_tooltip_content() -> void:
 
 	var name_label = vbox.get_node("NameLabel") as Label
 	var desc_margin = vbox.get_node_or_null("DescMargin") as MarginContainer
-	var desc_label = desc_margin.get_node("DescLabel") as Label if desc_margin else null
+	var desc_label = desc_margin.get_node("DescLabel") as RichTextLabel if desc_margin else null
 	var cd_label = vbox.get_node("CooldownLabel") as Label
 	var rarity_label = rarity_tag.get_node("RarityLabel") as Label if rarity_tag else null
 
@@ -697,7 +701,7 @@ func _update_tooltip_content() -> void:
 			name_label.text = "Dodge"
 			name_label.add_theme_color_override("font_color", DODGE_COLOR.lightened(0.3))
 		if desc_label:
-			desc_label.text = "Quickly dash backward away from the nearest enemy. Brief invulnerability during the dodge."
+			desc_label.text = DescriptionFormatter.format("Quickly dash backward away from the nearest enemy. Brief invulnerability during the dodge.")
 		if cd_label:
 			cd_label.text = "5s Cooldown"
 
@@ -730,7 +734,7 @@ func _update_tooltip_content() -> void:
 			name_label.text = ability.name
 			name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # White for all active abilities
 		if desc_label:
-			desc_label.text = ability.description
+			desc_label.text = DescriptionFormatter.format(ability.description)
 		if cd_label:
 			cd_label.text = str(int(ability.cooldown)) + "s Cooldown"
 
@@ -746,7 +750,7 @@ func _update_tooltip_content() -> void:
 			name_label.text = "Empty Slot"
 			name_label.add_theme_color_override("font_color", Color.WHITE)
 		if desc_label:
-			desc_label.text = "No ability equipped in this slot yet."
+			desc_label.text = "No ability equipped in this slot yet."  # No formatting needed for this simple text
 		if cd_label:
 			cd_label.text = ""
 

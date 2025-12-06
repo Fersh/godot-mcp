@@ -573,10 +573,9 @@ func get_scene_for_type(enemy_type: String) -> PackedScene:
 			return enemy_scene
 
 func get_spawn_position() -> Vector2:
-	# Spawn at the edge of the visible screen, but INSIDE the arena (on land)
+	# Spawn just outside the visible screen edge, as close as possible to player
 	var player = get_tree().get_first_node_in_group("player")
 	if not player:
-		# Fallback to center of arena
 		return Vector2((ARENA_LEFT + ARENA_RIGHT) / 2, (ARENA_TOP + ARENA_BOTTOM) / 2)
 
 	var viewport = get_viewport()
@@ -592,56 +591,123 @@ func get_spawn_position() -> Vector2:
 	var half_width = screen_size.x / 2.0
 	var half_height = screen_size.y / 2.0
 
-	# Spawn just outside visible screen but inside arena bounds
-	var spawn_offset = 50.0  # Just outside screen edge
-	var margin = 150.0  # Stay well away from arena edges (water borders are 10 tiles = 640px outside)
+	var spawn_offset = 40.0  # Just barely outside screen edge
+	var margin = 100.0  # Stay away from arena water edges
+
+	# Calculate screen edge positions
+	var screen_left = screen_center.x - half_width
+	var screen_right = screen_center.x + half_width
+	var screen_top = screen_center.y - half_height
+	var screen_bottom = screen_center.y + half_height
+
+	# Build list of valid spawn edges (edges where spawn would be inside arena)
+	var valid_edges: Array = []
+
+	# Check each edge - only add if spawn position would be inside arena
+	# Left edge
+	var left_spawn_x = screen_left - spawn_offset
+	if left_spawn_x >= ARENA_LEFT + margin:
+		valid_edges.append("left")
+
+	# Right edge
+	var right_spawn_x = screen_right + spawn_offset
+	if right_spawn_x <= ARENA_RIGHT - margin:
+		valid_edges.append("right")
+
+	# Top edge
+	var top_spawn_y = screen_top - spawn_offset
+	if top_spawn_y >= ARENA_TOP + margin:
+		valid_edges.append("top")
+
+	# Bottom edge
+	var bottom_spawn_y = screen_bottom + spawn_offset
+	if bottom_spawn_y <= ARENA_BOTTOM - margin:
+		valid_edges.append("bottom")
+
+	# If no valid edges (player cornered), find closest arena edge that's off-screen
+	if valid_edges.is_empty():
+		return _get_closest_offscreen_arena_position(screen_center, half_width, half_height, margin)
+
+	# Pick a random valid edge and spawn along it
+	var edge = valid_edges[randi() % valid_edges.size()]
 	var pos: Vector2
-	var roll = randf()
-	var attempts = 0
-	var max_attempts = 10
 
-	while attempts < max_attempts:
-		attempts += 1
-
-		if roll < 0.25:
-			# Left edge of screen
+	match edge:
+		"left":
 			pos = Vector2(
-				screen_center.x - half_width - spawn_offset,
-				screen_center.y + randf_range(-half_height * 0.8, half_height * 0.8)
+				screen_left - spawn_offset,
+				screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
 			)
-		elif roll < 0.5:
-			# Right edge of screen
+		"right":
 			pos = Vector2(
-				screen_center.x + half_width + spawn_offset,
-				screen_center.y + randf_range(-half_height * 0.8, half_height * 0.8)
+				screen_right + spawn_offset,
+				screen_center.y + randf_range(-half_height * 0.7, half_height * 0.7)
 			)
-		elif roll < 0.75:
-			# Top edge of screen
+		"top":
 			pos = Vector2(
-				screen_center.x + randf_range(-half_width * 0.8, half_width * 0.8),
-				screen_center.y - half_height - spawn_offset
+				screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
+				screen_top - spawn_offset
 			)
-		else:
-			# Bottom edge of screen
+		"bottom":
 			pos = Vector2(
-				screen_center.x + randf_range(-half_width * 0.8, half_width * 0.8),
-				screen_center.y + half_height + spawn_offset
+				screen_center.x + randf_range(-half_width * 0.7, half_width * 0.7),
+				screen_bottom + spawn_offset
 			)
 
-		# Clamp to arena bounds (stay on land, avoid water)
-		pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
-		pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
+	# Final clamp to ensure we're inside arena
+	pos.x = clamp(pos.x, ARENA_LEFT + margin, ARENA_RIGHT - margin)
+	pos.y = clamp(pos.y, ARENA_TOP + margin, ARENA_BOTTOM - margin)
 
-		# If position is valid (inside arena), use it
-		if pos.x >= ARENA_LEFT + margin and pos.x <= ARENA_RIGHT - margin \
-		   and pos.y >= ARENA_TOP + margin and pos.y <= ARENA_BOTTOM - margin:
-			return pos
+	return pos
 
-		# Try a different edge
-		roll = randf()
+func _get_closest_offscreen_arena_position(screen_center: Vector2, half_width: float, half_height: float, margin: float) -> Vector2:
+	"""When player is near arena corner, find closest spawn point that's off-screen but in arena."""
+	var spawn_offset = 40.0
 
-	# Fallback if all attempts failed
-	return _get_fallback_spawn_position()
+	# Try each arena edge and pick the one closest to screen center
+	var candidates: Array = []
+
+	# If arena left edge is off-screen to the left
+	if ARENA_LEFT + margin < screen_center.x - half_width:
+		candidates.append(Vector2(
+			max(ARENA_LEFT + margin, screen_center.x - half_width - spawn_offset),
+			clamp(screen_center.y + randf_range(-half_height * 0.5, half_height * 0.5), ARENA_TOP + margin, ARENA_BOTTOM - margin)
+		))
+
+	# If arena right edge is off-screen to the right
+	if ARENA_RIGHT - margin > screen_center.x + half_width:
+		candidates.append(Vector2(
+			min(ARENA_RIGHT - margin, screen_center.x + half_width + spawn_offset),
+			clamp(screen_center.y + randf_range(-half_height * 0.5, half_height * 0.5), ARENA_TOP + margin, ARENA_BOTTOM - margin)
+		))
+
+	# If arena top edge is off-screen above
+	if ARENA_TOP + margin < screen_center.y - half_height:
+		candidates.append(Vector2(
+			clamp(screen_center.x + randf_range(-half_width * 0.5, half_width * 0.5), ARENA_LEFT + margin, ARENA_RIGHT - margin),
+			max(ARENA_TOP + margin, screen_center.y - half_height - spawn_offset)
+		))
+
+	# If arena bottom edge is off-screen below
+	if ARENA_BOTTOM - margin > screen_center.y + half_height:
+		candidates.append(Vector2(
+			clamp(screen_center.x + randf_range(-half_width * 0.5, half_width * 0.5), ARENA_LEFT + margin, ARENA_RIGHT - margin),
+			min(ARENA_BOTTOM - margin, screen_center.y + half_height + spawn_offset)
+		))
+
+	if candidates.is_empty():
+		return _get_fallback_spawn_position()
+
+	# Pick closest candidate to screen center
+	var best = candidates[0]
+	var best_dist = best.distance_to(screen_center)
+	for c in candidates:
+		var dist = c.distance_to(screen_center)
+		if dist < best_dist:
+			best = c
+			best_dist = dist
+
+	return best
 
 func _get_fallback_spawn_position() -> Vector2:
 	"""Fallback spawn position inside the arena."""

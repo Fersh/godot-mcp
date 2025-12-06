@@ -207,51 +207,110 @@ func _create_treasure_popup(reward_type: String, reward_data: Dictionary) -> Can
 	title.add_theme_constant_override("shadow_offset_y", 2)
 	vbox.add_child(title)
 
-	# Reward description
-	var reward_label = Label.new()
-	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	if pixel_font:
-		reward_label.add_theme_font_override("font", pixel_font)
-	reward_label.add_theme_font_size_override("font_size", 14)
-
+	# Reward content based on type
 	match reward_type:
 		"coins":
-			reward_label.text = "%d GOLD COINS!" % reward_data.get("amount", 0)
-			reward_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
-			# Actually give the coins
+			# Coins display with icon
+			var coins_container = HBoxContainer.new()
+			coins_container.alignment = BoxContainer.ALIGNMENT_CENTER
+			coins_container.add_theme_constant_override("separation", 15)
+			vbox.add_child(coins_container)
+
+			# Coin icon (use the same gold coin sprite enemies drop)
+			var coin_icon = TextureRect.new()
+			if ResourceLoader.exists("res://assets/sprites/icons/raven/32x32/fb171.png"):
+				var coin_tex = load("res://assets/sprites/icons/raven/32x32/fb171.png")
+				coin_icon.texture = coin_tex
+			coin_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			coin_icon.custom_minimum_size = Vector2(64, 64)
+			coins_container.add_child(coin_icon)
+
+			# Coin amount label
+			var coin_label = Label.new()
+			coin_label.text = "%d" % reward_data.get("amount", 0)
+			if pixel_font:
+				coin_label.add_theme_font_override("font", pixel_font)
+			coin_label.add_theme_font_size_override("font_size", 28)
+			coin_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+			coins_container.add_child(coin_label)
+
 			_give_coins(reward_data.get("amount", 0))
+
 		"item":
 			var item = reward_data.get("item")
 			if item:
-				# ItemData is a Resource, access properties directly
+				# Item icon
+				if item.icon_path != "" and ResourceLoader.exists(item.icon_path):
+					var item_icon = TextureRect.new()
+					item_icon.texture = load(item.icon_path)
+					item_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					item_icon.custom_minimum_size = Vector2(80, 80)
+					var icon_container = CenterContainer.new()
+					icon_container.add_child(item_icon)
+					vbox.add_child(icon_container)
+
+				# Item name
 				var item_name = item.get_full_name() if item.has_method("get_full_name") else item.display_name
-				reward_label.text = "EQUIPMENT:\n%s" % item_name
-				reward_label.add_theme_color_override("font_color", item.get_rarity_color() if item.has_method("get_rarity_color") else Color.WHITE)
-				# Item will be given when closing popup
+				var name_label = Label.new()
+				name_label.text = item_name
+				name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				if pixel_font:
+					name_label.add_theme_font_override("font", pixel_font)
+				name_label.add_theme_font_size_override("font_size", 16)
+				name_label.add_theme_color_override("font_color", item.get_rarity_color() if item.has_method("get_rarity_color") else Color.WHITE)
+				vbox.add_child(name_label)
+
+				# Item stats in a scroll container
+				var stats_scroll = ScrollContainer.new()
+				stats_scroll.custom_minimum_size = Vector2(340, 80)
+				stats_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+				vbox.add_child(stats_scroll)
+
+				var stats_label = Label.new()
+				stats_label.text = item.get_stat_description() if item.has_method("get_stat_description") else ""
+				stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				if pixel_font:
+					stats_label.add_theme_font_override("font", pixel_font)
+				stats_label.add_theme_font_size_override("font_size", 10)
+				stats_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+				stats_scroll.add_child(stats_label)
+
 				canvas.set_meta("pending_item", item)
 			else:
-				reward_label.text = "50 GOLD COINS!"
-				reward_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+				# Fallback to coins
+				var fallback_label = Label.new()
+				fallback_label.text = "50 GOLD COINS!"
+				fallback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+				if pixel_font:
+					fallback_label.add_theme_font_override("font", pixel_font)
+				fallback_label.add_theme_font_size_override("font_size", 14)
+				fallback_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+				vbox.add_child(fallback_label)
 				_give_coins(50)
+
 		"ability":
 			var ability_name = reward_data.get("ability_name", "")
+			var ability_label = Label.new()
+			ability_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			if pixel_font:
+				ability_label.add_theme_font_override("font", pixel_font)
+			ability_label.add_theme_font_size_override("font_size", 14)
+
 			if ability_name != "":
-				reward_label.text = "NEW ABILITY:\n%s" % ability_name
-				reward_label.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
-				# Give the ability
+				ability_label.text = "NEW ABILITY:\n%s" % ability_name
+				ability_label.add_theme_color_override("font_color", Color(0.4, 0.9, 1.0))
 				var ability_id = reward_data.get("ability_id", "")
 				if ability_id != "" and AbilityManager:
 					AbilityManager.acquire_ability(ability_id)
 			else:
-				reward_label.text = "75 GOLD COINS!"
-				reward_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
+				ability_label.text = "75 GOLD COINS!"
+				ability_label.add_theme_color_override("font_color", Color(1, 0.9, 0.4))
 				_give_coins(75)
-
-	vbox.add_child(reward_label)
+			vbox.add_child(ability_label)
 
 	# Spacer
 	var spacer = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 20)
+	spacer.custom_minimum_size = Vector2(0, 10)
 	vbox.add_child(spacer)
 
 	# Sweet button
@@ -288,7 +347,7 @@ func _on_sweet_pressed(popup: CanvasLayer) -> void:
 		var item = popup.get_meta("pending_item")
 		if item and EquipmentManager:
 			# Add to inventory or equip
-			EquipmentManager.add_item_to_inventory(item)
+			EquipmentManager.add_pending_item(item)
 
 	# Resume game
 	get_tree().paused = false

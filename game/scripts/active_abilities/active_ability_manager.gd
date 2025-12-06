@@ -549,11 +549,17 @@ func _execute_dodge(direction: Vector2) -> void:
 	# Calculate target position
 	var target_pos = player.global_position + direction * DODGE_DISTANCE
 
-	# Clamp to arena bounds (expanded horizontally)
-	const ARENA_HEIGHT = 1382
-	const MARGIN_Y = 40
-	target_pos.x = clamp(target_pos.x, -60, 1596)
-	target_pos.y = clamp(target_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
+	# Clamp to dynamic arena bounds from player (for procedural maps)
+	if "arena_bounds" in player and player.arena_bounds.size.x > 0 and player.arena_bounds.size.y > 0:
+		var margin = player.arena_margin if "arena_margin" in player else 40.0
+		target_pos.x = clamp(target_pos.x, player.arena_bounds.position.x + margin, player.arena_bounds.end.x - margin)
+		target_pos.y = clamp(target_pos.y, player.arena_bounds.position.y + margin, player.arena_bounds.end.y - margin)
+	else:
+		# Fallback to legacy hardcoded bounds
+		const ARENA_HEIGHT = 1382
+		const MARGIN_Y = 40
+		target_pos.x = clamp(target_pos.x, -60, 1596)
+		target_pos.y = clamp(target_pos.y, MARGIN_Y, ARENA_HEIGHT - MARGIN_Y)
 
 	# Check for Phantom Strike - find enemies in dodge path
 	var enemies_in_path: Array = []
