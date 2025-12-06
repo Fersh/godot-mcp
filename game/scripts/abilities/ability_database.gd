@@ -87,14 +87,15 @@ static func get_active_synergy_abilities() -> Array[AbilityData]:
 			AbilityData.Type.PASSIVE,
 			[{effect_type = AbilityData.EffectType.COMBO_MASTER, value = 0.15}]
 		),
-		AbilityData.new(
-			"kill_accelerant",
-			"Kill Accelerant",
-			"Kills reduce ultimate cooldown by 0.5s",
-			AbilityData.Rarity.EPIC,
-			AbilityData.Type.PASSIVE,
-			[{effect_type = AbilityData.EffectType.KILL_ACCELERANT, value = 0.5}]
-		),
+		# Commented out - Kill Accelerant disabled
+		#AbilityData.new(
+		#	"kill_accelerant",
+		#	"Kill Accelerant",
+		#	"Kills reduce ultimate cooldown by 0.5s",
+		#	AbilityData.Rarity.EPIC,
+		#	AbilityData.Type.PASSIVE,
+		#	[{effect_type = AbilityData.EffectType.KILL_ACCELERANT, value = 0.5}]
+		#),
 		# Legendary - Powerful active synergies
 		AbilityData.new(
 			"double_charge",

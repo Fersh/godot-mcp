@@ -28,6 +28,7 @@ var cancel_button: Button = null
 
 @onready var panel: PanelContainer = $Panel
 @onready var title_label: Label = $Panel/VBoxContainer/TitleLabel
+@onready var subtitle_container: HBoxContainer = $Panel/VBoxContainer/SubtitleContainer
 @onready var choices_container: HBoxContainer = $Panel/VBoxContainer/ChoicesContainer
 
 var pixel_font: Font = null
@@ -119,6 +120,18 @@ func show_choices(abilities: Array) -> void:
 			print("  [", i, "] Unknown type: ", typeof(a))
 	current_choices = abilities
 
+	# Hide title and subtitle for passive/upgrade level selections (levels other than 1, 5, 10)
+	# Detected by checking if choices contain passives or trigger cards (not pure active ability selection)
+	var is_passive_level = false
+	for a in abilities:
+		if a is AbilityData or (a is Dictionary and a.has("is_trigger")):
+			is_passive_level = true
+			break
+	if title_label:
+		title_label.visible = not is_passive_level
+	if subtitle_container:
+		subtitle_container.visible = not is_passive_level
+
 	# Get all passive abilities for the slot machine pool (we only roll passives during animation)
 	all_abilities_pool = AbilityManager.get_available_abilities()
 	if all_abilities_pool.is_empty():
@@ -161,9 +174,10 @@ func show_choices(abilities: Array) -> void:
 	_animate_entrance()
 
 func create_ability_card(ability, index: int) -> Button:
-	## Create a card for either AbilityData (passive), ActiveAbilityData (upgrade), or trigger card
+	## Create a banner-shaped card for abilities
+	## Rectangle on top with a triangle point at the bottom
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(312, 360)
+	button.custom_minimum_size = Vector2(240, 320)  # Narrower, slightly shorter
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -346,10 +360,95 @@ func create_ability_card(ability, index: int) -> Button:
 	# Style the button (upgrade-aware) - use original ability to detect trigger cards
 	_style_button_for_ability(button, ability)
 
+	# Add banner point (triangle) at the bottom
+	var banner_point = _create_banner_point(ability)
+	banner_point.name = "BannerPoint"
+	button.add_child(banner_point)
+
+	# Connect hover signals for banner point color updates
+	button.mouse_entered.connect(_on_card_hover_entered.bind(button))
+	button.mouse_exited.connect(_on_card_hover_exited.bind(button))
+
 	# Connect click
 	button.pressed.connect(_on_ability_selected.bind(index))
 
 	return button
+
+func _create_banner_point(ability) -> Control:
+	## Create the triangle point at the bottom of the banner card
+	var container = Control.new()
+	container.name = "BannerPointContainer"
+	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	container.anchor_top = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = 0
+	container.offset_bottom = 40  # Triangle height
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Create triangle using a Polygon2D
+	var triangle = Polygon2D.new()
+	triangle.name = "TriangleFill"
+
+	# Get the border color for the triangle (match card border)
+	var is_upgrade = _is_active_ability_upgrade(ability)
+	var is_trigger = ability is Dictionary
+	var border_color: Color
+	var fill_color: Color
+	var border_width: float = 3.0
+
+	if is_upgrade or is_trigger:
+		border_color = Color(0.2, 0.9, 0.3)  # Green
+		fill_color = Color(0.08, 0.18, 0.1, 0.98)  # Dark green background
+		border_width = 4.0  # Thicker for upgrades
+	elif ability is AbilityData:
+		var next_rank = _get_passive_next_rank(ability)
+		border_color = _get_tier_border_color(next_rank)
+		fill_color = _get_tier_bg_color(next_rank)
+	else:
+		border_color = Color(0.4, 0.4, 0.4)
+		fill_color = Color(0.15, 0.15, 0.18, 0.98)
+
+	# Store colors for hover updates
+	container.set_meta("fill_color", fill_color)
+	container.set_meta("border_color", border_color)
+	container.set_meta("border_width", border_width)
+
+	# Triangle points: full width at top, point at bottom center
+	# Card width is 240, triangle centered
+	var card_width = 240.0
+	var point_height = 40.0
+	triangle.polygon = PackedVector2Array([
+		Vector2(0, 0),           # Top left
+		Vector2(card_width, 0),  # Top right
+		Vector2(card_width / 2, point_height)  # Bottom center point
+	])
+	triangle.color = fill_color
+	container.add_child(triangle)
+
+	# Add border outline for the triangle (left edge and right edge)
+	var left_border = Line2D.new()
+	left_border.name = "LeftBorder"
+	left_border.points = PackedVector2Array([
+		Vector2(0, 0),
+		Vector2(card_width / 2, point_height)
+	])
+	left_border.width = border_width
+	left_border.default_color = border_color
+	left_border.end_cap_mode = Line2D.LINE_CAP_ROUND
+	container.add_child(left_border)
+
+	var right_border = Line2D.new()
+	right_border.name = "RightBorder"
+	right_border.points = PackedVector2Array([
+		Vector2(card_width / 2, point_height),
+		Vector2(card_width, 0)
+	])
+	right_border.width = border_width
+	right_border.default_color = border_color
+	right_border.end_cap_mode = Line2D.LINE_CAP_ROUND
+	container.add_child(right_border)
+
+	return container
 
 func _is_active_ability_upgrade(ability) -> bool:
 	## Check if this is an ActiveAbilityData upgrade (not a passive)
@@ -402,14 +501,14 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 	var tag_text: String
 
 	if is_upgrade:
-		# All upgrade cards get green tag
-		tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
-		tag_text = "Upgrade"
+		# All active ability upgrade cards get green tag with "Active" label
+		tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all active upgrades
+		tag_text = "Active"
 	elif ability is AbilityData:
-		# Passive abilities use tier-based colors
+		# Passive abilities use tier-based colors with "Passive" label
 		var next_rank = _get_passive_next_rank(ability)
 		tag_style.bg_color = _get_tier_color(next_rank)
-		tag_text = _get_tier_name(next_rank)
+		tag_text = "Passive"
 	else:
 		tag_style.bg_color = _get_rarity_color(ability)
 		tag_text = _get_rarity_name(ability)
@@ -435,7 +534,7 @@ func _create_rarity_tag_for_ability(ability) -> CenterContainer:
 	return center
 
 func _create_trigger_rarity_tag() -> CenterContainer:
-	## Create a rarity tag for trigger cards that shows "Upgrade"
+	## Create a rarity tag for trigger cards that shows "Active"
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	center.anchor_left = 0
@@ -448,7 +547,7 @@ func _create_trigger_rarity_tag() -> CenterContainer:
 	var tag = PanelContainer.new()
 
 	var tag_style = StyleBoxFlat.new()
-	tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for upgrade
+	tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for active upgrade
 	tag_style.set_corner_radius_all(4)
 	tag_style.content_margin_left = 10
 	tag_style.content_margin_right = 10
@@ -458,7 +557,7 @@ func _create_trigger_rarity_tag() -> CenterContainer:
 
 	var label = Label.new()
 	label.name = "RarityLabel"
-	label.text = "Upgrade"
+	label.text = "Active"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 12)
 	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))
@@ -533,11 +632,10 @@ func _create_particle_container_for_ability(ability) -> Control:
 					target_rank = 3  # Upgrading to T3
 		return _create_upgrade_particle_container(target_rank)
 
-	# Passive abilities use tier-based particles (not rarity-based)
+	# Passive abilities use tier-based particles with flames for ALL tiers
 	if ability is AbilityData:
 		var next_rank = _get_passive_next_rank(ability)
-		var tier_rarity = _get_tier_rarity(next_rank)
-		return _create_particle_container(tier_rarity)
+		return _create_passive_tier_particle_container(next_rank)
 
 	if ability is ActiveAbilityData:
 		# Map ActiveAbilityData.Rarity to AbilityData.Rarity for particles
@@ -684,7 +782,13 @@ func _style_button_for_ability(button: Button, ability) -> void:
 		style.border_color = Color(0.4, 0.4, 0.4)
 		style.set_border_width_all(3)
 
-	style.set_corner_radius_all(12)
+	# Banner shape: rounded top corners, flat bottom for triangle attachment
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
+	# Remove bottom border since triangle continues the shape
+	style.border_width_bottom = 0
 
 	button.add_theme_stylebox_override("normal", style)
 
@@ -822,6 +926,121 @@ func _get_particle_density(rarity: AbilityData.Rarity) -> float:
 		_:
 			return 0.0
 
+func _create_passive_tier_particle_container(tier_rank: int) -> Control:
+	## Create flame particles for passive abilities based on tier rank
+	## ALL tiers get flames - tier determines color and intensity
+	## Tier 1 = small white flames, Tier 2 = bigger blue flames, Tier 3 = lots of purple flames
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	container.z_index = -1  # Render behind card content
+	container.clip_contents = false
+
+	# Get tier-based color and intensity (shifted up from rarity system)
+	var tier_color: Color
+	var intensity: float
+	var density: float
+	match tier_rank:
+		1:
+			tier_color = Color(0.9, 0.9, 0.9)  # White
+			intensity = 1.0  # Small flames
+			density = 8.0
+		2:
+			tier_color = Color(0.3, 0.5, 1.0)  # Blue
+			intensity = 1.4  # Bigger flames
+			density = 12.0
+		3:
+			tier_color = Color(0.6, 0.2, 0.8)  # Purple
+			intensity = 1.8  # Lots of flames
+			density = 16.0
+		_:
+			tier_color = Color(0.9, 0.9, 0.9)
+			intensity = 1.0
+			density = 8.0
+
+	# Create main top particle strip (behind card, rising above)
+	var top_particles = ColorRect.new()
+	top_particles.custom_minimum_size = Vector2(200, 130)
+	top_particles.anchor_left = 0.5
+	top_particles.anchor_right = 0.5
+	top_particles.anchor_top = 0.0
+	top_particles.anchor_bottom = 0.0
+	top_particles.offset_left = -100
+	top_particles.offset_right = 100
+	top_particles.offset_top = -100
+	top_particles.offset_bottom = 30
+	top_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var top_mat = ShaderMaterial.new()
+		top_mat.shader = rarity_particle_shader
+		top_mat.set_shader_parameter("rarity_color", tier_color)
+		top_mat.set_shader_parameter("intensity", intensity)
+		top_mat.set_shader_parameter("speed", 1.2)
+		top_mat.set_shader_parameter("particle_density", density)
+		top_mat.set_shader_parameter("pixel_size", 0.07)
+		top_particles.material = top_mat
+	else:
+		top_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
+
+	container.add_child(top_particles)
+
+	# Create top-left corner particle effect
+	var top_left_particles = ColorRect.new()
+	top_left_particles.custom_minimum_size = Vector2(80, 130)
+	top_left_particles.anchor_left = 0.0
+	top_left_particles.anchor_right = 0.0
+	top_left_particles.anchor_top = 0.0
+	top_left_particles.anchor_bottom = 0.0
+	top_left_particles.offset_left = -30
+	top_left_particles.offset_right = 50
+	top_left_particles.offset_top = -80
+	top_left_particles.offset_bottom = 50
+	top_left_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tl_mat = ShaderMaterial.new()
+		tl_mat.shader = rarity_particle_shader
+		tl_mat.set_shader_parameter("rarity_color", tier_color)
+		tl_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tl_mat.set_shader_parameter("speed", 1.0)
+		tl_mat.set_shader_parameter("particle_density", density * 0.5)
+		tl_mat.set_shader_parameter("pixel_size", 0.08)
+		top_left_particles.material = tl_mat
+	else:
+		top_left_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
+
+	container.add_child(top_left_particles)
+
+	# Create top-right corner particle effect
+	var top_right_particles = ColorRect.new()
+	top_right_particles.custom_minimum_size = Vector2(80, 130)
+	top_right_particles.anchor_left = 1.0
+	top_right_particles.anchor_right = 1.0
+	top_right_particles.anchor_top = 0.0
+	top_right_particles.anchor_bottom = 0.0
+	top_right_particles.offset_left = -50
+	top_right_particles.offset_right = 30
+	top_right_particles.offset_top = -80
+	top_right_particles.offset_bottom = 50
+	top_right_particles.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if rarity_particle_shader:
+		var tr_mat = ShaderMaterial.new()
+		tr_mat.shader = rarity_particle_shader
+		tr_mat.set_shader_parameter("rarity_color", tier_color)
+		tr_mat.set_shader_parameter("intensity", intensity * 0.8)
+		tr_mat.set_shader_parameter("speed", 1.1)
+		tr_mat.set_shader_parameter("particle_density", density * 0.5)
+		tr_mat.set_shader_parameter("pixel_size", 0.08)
+		top_right_particles.material = tr_mat
+	else:
+		top_right_particles.color = Color(tier_color.r, tier_color.g, tier_color.b, 0.3)
+
+	container.add_child(top_right_particles)
+
+	return container
+
 func _create_upgrade_particle_container(target_rank: int = 2) -> Control:
 	## Create green flame particles for upgrade abilities
 	## Rank 2 = smaller flames, Rank 3 = bigger/more intense flames
@@ -944,6 +1163,47 @@ func _update_particle_container(container: Control, rarity: AbilityData.Rarity) 
 	for child in container.get_children():
 		if child is ColorRect and child.material is ShaderMaterial:
 			child.material.set_shader_parameter("rarity_color", rarity_color)
+			# Top center strip gets full intensity, corners get reduced
+			if child_index == 0:
+				child.material.set_shader_parameter("intensity", intensity)
+				child.material.set_shader_parameter("particle_density", density)
+			else:
+				child.material.set_shader_parameter("intensity", intensity * 0.8)
+				child.material.set_shader_parameter("particle_density", density * 0.5)
+			child_index += 1
+
+func _update_passive_tier_particle_container(container: Control, tier_rank: int) -> void:
+	## Update particle container for passive abilities based on tier rank
+	## ALL tiers show flames - tier determines color and intensity
+	container.visible = true
+
+	# Get tier-based color and intensity
+	var tier_color: Color
+	var intensity: float
+	var density: float
+	match tier_rank:
+		1:
+			tier_color = Color(0.9, 0.9, 0.9)  # White
+			intensity = 1.0  # Small flames
+			density = 8.0
+		2:
+			tier_color = Color(0.3, 0.5, 1.0)  # Blue
+			intensity = 1.4  # Bigger flames
+			density = 12.0
+		3:
+			tier_color = Color(0.6, 0.2, 0.8)  # Purple
+			intensity = 1.8  # Lots of flames
+			density = 16.0
+		_:
+			tier_color = Color(0.9, 0.9, 0.9)
+			intensity = 1.0
+			density = 8.0
+
+	# Update all particle strips
+	var child_index = 0
+	for child in container.get_children():
+		if child is ColorRect and child.material is ShaderMaterial:
+			child.material.set_shader_parameter("rarity_color", tier_color)
 			# Top center strip gets full intensity, corners get reduced
 			if child_index == 0:
 				child.material.set_shader_parameter("intensity", intensity)
@@ -1172,14 +1432,14 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 			var tag_text: String
 			if is_upgrade:
-				# All upgrades (including triggers) get green tag
-				tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all upgrades
-				tag_text = "Upgrade"
+				# All active ability upgrades (including triggers) get green tag
+				tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green for all active upgrades
+				tag_text = "Active"
 			elif display_ability is AbilityData:
-				# Passive abilities use tier-based colors
+				# Passive abilities use tier-based colors with "Passive" label
 				var next_rank = _get_passive_next_rank(display_ability)
 				tag_style.bg_color = _get_tier_color(next_rank)
-				tag_text = _get_tier_name(next_rank)
+				tag_text = "Passive"
 			else:
 				tag_style.bg_color = _get_rarity_color(display_ability)
 				tag_text = _get_rarity_name(display_ability)
@@ -1207,10 +1467,9 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 					target_rank = 3 if display_ability.is_signature() else 2
 				_update_particle_container_to_upgrade(particle_container, target_rank)
 			elif display_ability is AbilityData:
-				# Passive abilities use tier-based particles
+				# Passive abilities use tier-based particles (ALL tiers get flames)
 				var next_rank = _get_passive_next_rank(display_ability)
-				var tier_rarity = _get_tier_rarity(next_rank)
-				_update_particle_container(particle_container, tier_rarity)
+				_update_passive_tier_particle_container(particle_container, next_rank)
 			else:
 				var passive_rarity = _map_active_to_passive_rarity(display_ability.rarity)
 				_update_particle_container(particle_container, passive_rarity)
@@ -1262,6 +1521,25 @@ func update_card_content(button: Button, ability, is_final_reveal: bool = false)
 			new_upgrade_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))
 		else:
 			new_upgrade_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.3))
+
+func _on_card_hover_entered(button: Button) -> void:
+	## Update banner point color when card is hovered
+	var banner_point = button.get_node_or_null("BannerPoint")
+	if banner_point:
+		var fill_color = banner_point.get_meta("fill_color", Color(0.15, 0.15, 0.18, 0.98))
+		var hover_fill = fill_color.lightened(0.1)
+		var triangle = banner_point.get_node_or_null("TriangleFill")
+		if triangle:
+			triangle.color = hover_fill
+
+func _on_card_hover_exited(button: Button) -> void:
+	## Restore banner point color when hover ends
+	var banner_point = button.get_node_or_null("BannerPoint")
+	if banner_point:
+		var fill_color = banner_point.get_meta("fill_color", Color(0.15, 0.15, 0.18, 0.98))
+		var triangle = banner_point.get_node_or_null("TriangleFill")
+		if triangle:
+			triangle.color = fill_color
 
 func _on_ability_selected(index: int) -> void:
 	# Don't allow selection while rolling
@@ -1775,9 +2053,13 @@ func _show_branch_cards(branches: Array[ActiveAbilityData]) -> void:
 	ability_buttons.clear()
 	particle_containers.clear()
 
-	# Update title
+	# Update title - make visible and set text
 	if title_label:
+		title_label.visible = true
 		title_label.text = "CHOOSE UPGRADE"
+	# Hide subtitle for upgrade selection
+	if subtitle_container:
+		subtitle_container.visible = false
 
 	# Update current choices to branches
 	current_choices.clear()
@@ -1912,12 +2194,22 @@ func _on_cancel_pressed() -> void:
 	ability_buttons.clear()
 	particle_containers.clear()
 
-	# Restore title
-	if title_label:
-		title_label.text = "LEVEL UP!"
-
 	# Restore original choices
 	current_choices = saved
+
+	# Check if restoring to passive level (should hide title)
+	var is_passive_level = false
+	for a in current_choices:
+		if a is AbilityData or (a is Dictionary and a.has("is_trigger")):
+			is_passive_level = true
+			break
+
+	# Restore title visibility based on whether we're at a passive level
+	if title_label:
+		title_label.visible = not is_passive_level
+		title_label.text = "LEVEL UP!"
+	if subtitle_container:
+		subtitle_container.visible = not is_passive_level
 	for i in current_choices.size():
 		var card = create_ability_card(current_choices[i], i)
 		card.disabled = false
@@ -1970,7 +2262,11 @@ func _create_rank_circle(ability, next_rank: int) -> Control:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color.WHITE)
+	# Use black text for gold (max rank) backgrounds, white for others
+	if is_max_rank:
+		label.add_theme_color_override("font_color", Color.BLACK)
+	else:
+		label.add_theme_color_override("font_color", Color.WHITE)
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 

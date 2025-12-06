@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" path="res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf" id="2_font"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
-bg_color = Color(0, 0, 0, 0.92)
+bg_color = Color(0, 0, 0, 0.96)
 
 [node name="AbilitySelection" type="CanvasLayer"]
 layer = 100
@@ -66,7 +66,7 @@ custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 clip_contents = false
 size_flags_horizontal = 4
-theme_override_constants/separation = 16
+theme_override_constants/separation = 40
 alignment = 1
 
 [node name="BottomSpacer" type="Control" parent="Panel/VBoxContainer"]

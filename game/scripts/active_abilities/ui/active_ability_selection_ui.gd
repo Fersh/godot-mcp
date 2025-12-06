@@ -154,9 +154,9 @@ func _create_ui() -> void:
 	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 
-	# Style the panel with dark semi-transparent background
+	# Style the panel with dark semi-transparent background (matches passive selection)
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0, 0, 0, 0.92)
+	panel_style.bg_color = Color(0, 0, 0, 0.96)
 	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 
@@ -171,7 +171,7 @@ func _create_ui() -> void:
 	# Title
 	title_label = Label.new()
 	title_label.name = "TitleLabel"
-	title_label.text = "NEW ABILITY!"
+	title_label.text = "CHOOSE ACTIVE ABILITY"
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.add_theme_font_size_override("font_size", 34)
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
@@ -179,9 +179,11 @@ func _create_ui() -> void:
 		title_label.add_theme_font_override("font", pixel_font)
 	vbox.add_child(title_label)
 
-	# Subtitle container for colored text
+	# Subtitle container - hidden for active ability selection
 	var subtitle_container = HBoxContainer.new()
+	subtitle_container.name = "SubtitleContainer"
 	subtitle_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	subtitle_container.visible = false  # Hidden
 
 	var subtitle_prefix = Label.new()
 	subtitle_prefix.name = "SubtitlePrefix"
@@ -219,10 +221,10 @@ func _create_ui() -> void:
 	cards_spacer.custom_minimum_size = Vector2(0, 20)
 	vbox.add_child(cards_spacer)
 
-	# Choices container - centered horizontally
+	# Choices container - centered horizontally (spacing matches passive selection)
 	choices_container = HBoxContainer.new()
 	choices_container.name = "ChoicesContainer"
-	choices_container.add_theme_constant_override("separation", 20)
+	choices_container.add_theme_constant_override("separation", 40)
 	choices_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	choices_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vbox.add_child(choices_container)
@@ -325,24 +327,8 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 	if all_abilities_pool.is_empty():
 		all_abilities_pool = abilities
 
-	# Update title and subtitle based on level
-	match level:
-		1:
-			title_label.text = "FIRST ABILITY!"
-			if subtitle_prefix_label:
-				subtitle_prefix_label.text = "Choose your first "
-		5:
-			title_label.text = "NEW ABILITY!"
-			if subtitle_prefix_label:
-				subtitle_prefix_label.text = "Choose your second "
-		10:
-			title_label.text = "ULTIMATE ABILITY!"
-			if subtitle_prefix_label:
-				subtitle_prefix_label.text = "Choose your third "
-		_:
-			title_label.text = "NEW ABILITY!"
-			if subtitle_prefix_label:
-				subtitle_prefix_label.text = "Choose your "
+	# Use consistent title for all levels
+	title_label.text = "CHOOSE ACTIVE ABILITY"
 
 	# Clear previous buttons and particle containers
 	for button in ability_buttons:
@@ -377,7 +363,7 @@ func show_choices(abilities: Array[ActiveAbilityData], level: int) -> void:
 
 func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	var button = Button.new()
-	button.custom_minimum_size = Vector2(312, 360)  # Increased by 20%
+	button.custom_minimum_size = Vector2(240, 320)  # Banner size (matches passive cards)
 	button.focus_mode = Control.FOCUS_ALL
 	button.clip_contents = false
 
@@ -495,12 +481,22 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 
 	_style_button(button, ability.rarity, ability)
 
+	# Add banner point (triangle) at bottom
+	var banner_point = _create_banner_point()
+	banner_point.name = "BannerPoint"
+	button.add_child(banner_point)
+
+	# Connect hover signals for the triangle
+	button.mouse_entered.connect(_on_card_hover_entered.bind(button))
+	button.mouse_exited.connect(_on_card_hover_exited.bind(button))
+
 	button.pressed.connect(_on_ability_selected.bind(index))
 
 	return button
 
-func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
+func _create_rarity_tag(_rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	# Use CenterContainer to properly center the tag
+	# All active ability cards show "Active" with green color
 	var center = CenterContainer.new()
 	center.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	center.anchor_left = 0
@@ -512,9 +508,9 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 
 	var tag = PanelContainer.new()
 
-	# Style the tag
+	# Style the tag - green for all active abilities
 	var tag_style = StyleBoxFlat.new()
-	tag_style.bg_color = ActiveAbilityData.get_rarity_color(rarity)
+	tag_style.bg_color = Color(0.2, 0.9, 0.3)  # Green
 	tag_style.set_corner_radius_all(4)
 	tag_style.content_margin_left = 10
 	tag_style.content_margin_right = 10
@@ -522,15 +518,13 @@ func _create_rarity_tag(rarity: ActiveAbilityData.Rarity) -> CenterContainer:
 	tag_style.content_margin_bottom = 4
 	tag.add_theme_stylebox_override("panel", tag_style)
 
-	# Rarity label inside tag
+	# Label shows "Active" for all
 	var label = Label.new()
 	label.name = "RarityLabel"
-	label.text = ActiveAbilityData.get_rarity_name(rarity)
+	label.text = "Active"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 12)
-	# Use black text for common (light background), white for others
-	var label_color = Color.BLACK if rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
-	label.add_theme_color_override("font_color", label_color)
+	label.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1))  # Dark text
 	if pixel_font:
 		label.add_theme_font_override("font", pixel_font)
 	tag.add_child(label)
@@ -621,48 +615,21 @@ func _create_prerequisite_indicator(ability: ActiveAbilityData) -> Control:
 
 	return container
 
-func _style_button(button: Button, rarity: ActiveAbilityData.Rarity, ability: ActiveAbilityData = null) -> void:
+func _style_button(button: Button, _rarity: ActiveAbilityData.Rarity, _ability: ActiveAbilityData = null) -> void:
 	var style = StyleBoxFlat.new()
 
-	# Reduced transparency (0.98 instead of 0.95)
-	match rarity:
-		ActiveAbilityData.Rarity.COMMON:
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
-			style.border_color = Color(0.4, 0.4, 0.4)
-		ActiveAbilityData.Rarity.RARE:
-			style.bg_color = Color(0.1, 0.15, 0.25, 0.98)
-			style.border_color = Color(0.3, 0.5, 1.0)
-		ActiveAbilityData.Rarity.EPIC:
-			style.bg_color = Color(0.15, 0.1, 0.2, 0.98)  # Purple-tinted background
-			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
-		ActiveAbilityData.Rarity.LEGENDARY:
-			style.bg_color = Color(0.2, 0.18, 0.1, 0.98)  # Yellow-tinted background
-			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
-		ActiveAbilityData.Rarity.MYTHIC:
-			style.bg_color = Color(0.18, 0.08, 0.1, 0.98)  # Dark red-tinted background
-			style.border_color = ActiveAbilityData.get_rarity_color(rarity)
-		_:
-			# Fallback for unknown rarity
-			style.bg_color = Color(0.15, 0.15, 0.18, 0.98)
-			style.border_color = Color(0.4, 0.4, 0.4)
+	# All active ability cards use green styling
+	style.bg_color = Color(0.08, 0.18, 0.1, 0.98)  # Dark green background
+	style.border_color = Color(0.2, 0.9, 0.3)  # Green border
 
-	# Override border color for tiered abilities
-	if ability:
-		if ability.is_branch():
-			# Green border for Tier 2 upgrades
-			style.border_color = Color(0.2, 0.9, 0.3)
-			style.bg_color = Color(0.08, 0.18, 0.1, 0.98)  # Subtle green tint
-		elif ability.is_signature():
-			# Gold border for Tier 3 signature abilities
-			style.border_color = Color(1.0, 0.85, 0.3)
-			style.bg_color = Color(0.18, 0.15, 0.08, 0.98)  # Subtle gold tint
-
-	var border_width = 3
-	if ability and ability.is_upgrade():
-		border_width = 4  # Thicker border for upgrades
-
-	style.set_border_width_all(border_width)
-	style.set_corner_radius_all(12)
+	style.set_border_width_all(4)
+	# Banner shape: rounded top corners, flat bottom for triangle attachment
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
+	# Remove bottom border since triangle continues the shape
+	style.border_width_bottom = 0
 
 	button.add_theme_stylebox_override("normal", style)
 
@@ -673,6 +640,73 @@ func _style_button(button: Button, rarity: ActiveAbilityData.Rarity, ability: Ac
 	var pressed_style = style.duplicate()
 	pressed_style.bg_color = pressed_style.bg_color.darkened(0.1)
 	button.add_theme_stylebox_override("pressed", pressed_style)
+
+func _create_banner_point() -> Control:
+	"""Create the triangle point at the bottom of the banner card."""
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	container.anchor_top = 1.0
+	container.anchor_bottom = 1.0
+	container.offset_top = 0
+	container.offset_bottom = 40  # Height of triangle
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Green colors for active ability cards
+	var bg_color = Color(0.08, 0.18, 0.1, 0.98)
+	var border_color = Color(0.2, 0.9, 0.3)
+
+	# Triangle polygon (pointing down)
+	var triangle = Polygon2D.new()
+	triangle.name = "TriangleFill"
+	# Points: top-left, top-right, bottom-center
+	triangle.polygon = PackedVector2Array([
+		Vector2(0, 0),      # Top-left
+		Vector2(240, 0),    # Top-right (card width)
+		Vector2(120, 40)    # Bottom-center (point)
+	])
+	triangle.color = bg_color
+	container.add_child(triangle)
+
+	# Border lines for the triangle
+	var left_border = Line2D.new()
+	left_border.name = "LeftBorder"
+	left_border.points = PackedVector2Array([
+		Vector2(0, 0),
+		Vector2(120, 40)
+	])
+	left_border.width = 4
+	left_border.default_color = border_color
+	container.add_child(left_border)
+
+	var right_border = Line2D.new()
+	right_border.name = "RightBorder"
+	right_border.points = PackedVector2Array([
+		Vector2(240, 0),
+		Vector2(120, 40)
+	])
+	right_border.width = 4
+	right_border.default_color = border_color
+	container.add_child(right_border)
+
+	return container
+
+func _on_card_hover_entered(button: Button) -> void:
+	"""Handle hover for the card including the banner point."""
+	var banner_point = button.get_node_or_null("BannerPoint")
+	if banner_point:
+		var triangle = banner_point.get_node_or_null("TriangleFill") as Polygon2D
+		if triangle:
+			# Lighten the triangle to match hover state
+			triangle.color = Color(0.08, 0.18, 0.1, 0.98).lightened(0.1)
+
+func _on_card_hover_exited(button: Button) -> void:
+	"""Handle hover exit for the card including the banner point."""
+	var banner_point = button.get_node_or_null("BannerPoint")
+	if banner_point:
+		var triangle = banner_point.get_node_or_null("TriangleFill") as Polygon2D
+		if triangle:
+			# Restore original color
+			triangle.color = Color(0.08, 0.18, 0.1, 0.98)
 
 func _create_separator_style(rarity: ActiveAbilityData.Rarity) -> StyleBoxLine:
 	var style = StyleBoxLine.new()
@@ -766,20 +800,8 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	if cooldown_label:
 		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
 
-	# Update rarity tag (child 1 of button is CenterContainer, which contains PanelContainer)
-	var center_container = button.get_child(1) as CenterContainer
-	if center_container:
-		var rarity_tag = center_container.get_child(0) as PanelContainer
-		if rarity_tag:
-			var tag_style = rarity_tag.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-			tag_style.bg_color = ActiveAbilityData.get_rarity_color(ability.rarity)
-			rarity_tag.add_theme_stylebox_override("panel", tag_style)
-			var rarity_label = rarity_tag.get_child(0) as Label
-			if rarity_label:
-				rarity_label.text = ActiveAbilityData.get_rarity_name(ability.rarity)
-				# Use black text for common (light background), white for others
-				var label_color = Color.BLACK if ability.rarity == ActiveAbilityData.Rarity.COMMON else Color.WHITE
-				rarity_label.add_theme_color_override("font_color", label_color)
+	# Keep rarity tag as green "Active" for all active ability cards
+	# (No need to update - it stays constant during slot machine)
 
 	# Update particle container - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control
