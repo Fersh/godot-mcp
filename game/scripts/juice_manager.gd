@@ -8,9 +8,13 @@ var shake_intensity: float = 0.0
 var shake_rotation: float = 0.0
 var shake_decay: float = 8.0
 
-# Hit stop
-var hitstop_timer: float = 0.0
+# Hit stop (using real time in msec)
+var hitstop_end_time: int = 0  # Time.get_ticks_msec() when hitstop should end
 var original_time_scale: float = 1.0
+
+# Player damage freeze cooldown (max 1 every 3 seconds)
+var player_damage_freeze_end_time: int = 0  # Real time when cooldown ends
+const PLAYER_DAMAGE_FREEZE_COOLDOWN_MS: int = 3000
 
 # Chromatic aberration
 var chromatic_intensity: float = 0.0
@@ -42,11 +46,12 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _process(delta: float) -> void:
-	# Handle hit stop
-	if hitstop_timer > 0:
-		hitstop_timer -= delta
-		if hitstop_timer <= 0:
-			Engine.time_scale = original_time_scale
+	var current_time = Time.get_ticks_msec()
+
+	# Handle hit stop using real time
+	if hitstop_end_time > 0 and current_time >= hitstop_end_time:
+		Engine.time_scale = original_time_scale
+		hitstop_end_time = 0
 
 	# Only process visual effects when not paused
 	if get_tree().paused:
@@ -171,9 +176,10 @@ func hitstop(duration: float = 0.05) -> void:
 	# Check if freeze frames are enabled in settings
 	if GameSettings and not GameSettings.freeze_frames_enabled:
 		return
-	if hitstop_timer <= 0:
+	if hitstop_end_time <= 0:
 		original_time_scale = Engine.time_scale
-	hitstop_timer = duration
+	# Convert duration to milliseconds and set end time
+	hitstop_end_time = Time.get_ticks_msec() + int(duration * 1000)
 	Engine.time_scale = 0.05
 
 # Micro hitstop for hits (1 frame at 60fps)
@@ -317,8 +323,12 @@ func trigger_level_up_celebration() -> void:
 # ============================================
 
 func player_damage_freeze() -> void:
-	"""1-frame freeze when player takes damage for impact."""
-	hitstop_micro()
+	"""1-frame freeze when player takes damage for impact. Max once every 3 seconds."""
+	var current_time = Time.get_ticks_msec()
+	if current_time < player_damage_freeze_end_time:
+		return
+	player_damage_freeze_end_time = current_time + PLAYER_DAMAGE_FREEZE_COOLDOWN_MS
+	hitstop(0.016)  # Exactly 1 frame at 60fps
 
 # ============================================
 # CRITICAL HIT EFFECTS

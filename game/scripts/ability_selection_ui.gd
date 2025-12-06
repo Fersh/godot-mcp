@@ -338,8 +338,8 @@ func create_ability_card(ability, index: int) -> Button:
 	button.add_child(particle_container)
 	particle_containers.append(particle_container)
 
-	# Style the button (upgrade-aware)
-	_style_button_for_ability(button, display_ability)
+	# Style the button (upgrade-aware) - use original ability to detect trigger cards
+	_style_button_for_ability(button, ability)
 
 	# Connect click
 	button.pressed.connect(_on_ability_selected.bind(index))
