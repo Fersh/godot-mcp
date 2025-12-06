@@ -28,6 +28,9 @@ var comb_color: Color = Color(0.9, 0.2, 0.2)  # Red comb
 var eye_color: Color = Color(0.1, 0.1, 0.1)   # Black eye
 
 func _ready() -> void:
+	# Add to minions group for summon tracking
+	add_to_group("minions")
+
 	player = get_tree().get_first_node_in_group("player")
 	if player:
 		global_position = player.global_position + Vector2(randf_range(-50, 50), randf_range(-50, 50))
@@ -122,6 +125,10 @@ func peck_target() -> void:
 		if AbilityManager:
 			damage *= AbilityManager.get_summon_damage_multiplier()
 		target.take_damage(damage)
+
+	# Try to draw aggro from the enemy we attacked
+	if target.has_method("draw_aggro"):
+		target.draw_aggro(self)
 
 	# Small knockback
 	if target.has_method("apply_knockback"):

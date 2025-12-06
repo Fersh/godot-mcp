@@ -273,12 +273,12 @@ func _create_selector_buttons() -> void:
 	# Reorder: original 7 first, then new characters in thematic groups
 	# Row 1: archer, knight, monk, mage, beast
 	# Row 2: assassin, barbarian, golem, lizardfolk_king, shardsoul_slayer
-	# Row 3: necromancer, kobold_priest, ratfolk, (2 placeholders)
-	# COMMENTED OUT: orc, minotaur, cyclops, skeleton_king
+	# Row 3: necromancer, kobold_priest, ratfolk, minotaur, skeleton_king
+	# COMMENTED OUT: orc, cyclops
 	var order = [
 		"archer", "knight", "monk", "mage", "beast",
 		"assassin", "barbarian", "golem", "lizardfolk_king", "shardsoul_slayer",
-		"necromancer", "kobold_priest", "ratfolk"
+		"necromancer", "kobold_priest", "ratfolk", "minotaur", "skeleton_king"
 	]
 	characters_list = []
 	print("CharacterSelect: Building character list from %d available characters" % all_chars.size())
@@ -356,6 +356,10 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 	sprite.vframes = char_data.vframes
 	sprite.frame = char_data.row_idle * char_data.hframes
 	sprite.centered = true
+	# Use region_rect if specified (for sprite sheets with extra pixels)
+	if char_data.sprite_region.size.x > 0 and char_data.sprite_region.size.y > 0:
+		sprite.region_enabled = true
+		sprite.region_rect = char_data.sprite_region
 	# Manual scales for 80x80 squares
 	var sprite_scale = 2.0
 	var sprite_pos = Vector2(38, 38)
@@ -376,7 +380,7 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_pos = Vector2(38, 38)
 		"assassin":
 			sprite_scale = 1.62  # Reduced 10% more to match other characters
-			sprite_pos = Vector2(38, 33)  # Moved up 5px
+			sprite_pos = Vector2(38, 35)  # Moved down 2px
 		# New characters
 		"golem":
 			sprite_scale = 1.8  # 32x32 frames - smaller to fit
@@ -384,8 +388,8 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 		"orc":
 			sprite_scale = 2.0  # 32x32 frames
 		"minotaur":
-			sprite_scale = 0.8  # 96x96 frames - smaller
-			sprite_pos = Vector2(38, 42)
+			sprite_scale = 0.88  # 96x96 frames - 10% bigger
+			sprite_pos = Vector2(38, 44)  # Move down 2px
 		"cyclops":
 			sprite_scale = 1.1  # 64x64 frames - 10% bigger
 			sprite_pos = Vector2(38, 40)  # Move up 5px
@@ -393,18 +397,20 @@ func _create_selector_button(char_data: CharacterData, index: int) -> Dictionary
 			sprite_scale = 0.9  # 128x64 frames - smaller
 			sprite_pos = Vector2(38, 45)  # Center better
 		"skeleton_king":
-			sprite_scale = 1.0  # 96x96 frames
-			sprite_pos = Vector2(38, 42)
+			sprite_scale = 0.75  # 128x96 frames - adjusted for wider frame
+			sprite_pos = Vector2(38, 40)  # Centered
 		"shardsoul_slayer":
 			sprite_scale = 1.1  # 64x64 frames - smaller
 			sprite_pos = Vector2(38, 32)  # Move up
 		"necromancer":
 			sprite_scale = 1.8  # 32x32 frames - 10% smaller
+			sprite_pos = Vector2(38, 33)  # Move up 5px
 		"kobold_priest":
 			sprite_scale = 2.0  # 32x32 frames
+			sprite_pos = Vector2(38, 33)  # Move up 5px
 		"ratfolk":
 			sprite_scale = 1.5  # 64x32 frames
-			sprite_pos = Vector2(38, 42)  # Adjust for wide sprite
+			sprite_pos = Vector2(38, 37)  # Move up 5px
 	sprite.scale = Vector2(sprite_scale, sprite_scale)
 	sprite.position = sprite_pos
 	sprite_holder.add_child(sprite)
@@ -608,6 +614,12 @@ func _update_preview() -> void:
 	preview_sprite.hframes = char_data.hframes
 	preview_sprite.vframes = char_data.vframes
 	preview_sprite.frame = char_data.row_idle * char_data.hframes
+	# Use region_rect if specified (for sprite sheets with extra pixels)
+	if char_data.sprite_region.size.x > 0 and char_data.sprite_region.size.y > 0:
+		preview_sprite.region_enabled = true
+		preview_sprite.region_rect = char_data.sprite_region
+	else:
+		preview_sprite.region_enabled = false
 
 	# Manual scales to match mage visually
 	var preview_scale = 2.5
@@ -632,13 +644,13 @@ func _update_preview() -> void:
 		"orc":
 			preview_scale = 2.5  # 32x32 frames
 		"minotaur":
-			preview_scale = 1.1  # 96x96 frames - smaller
+			preview_scale = 1.32  # 96x96 frames - 20% bigger
 		"cyclops":
 			preview_scale = 1.4  # 64x64 frames - smaller
 		"lizardfolk_king":
 			preview_scale = 1.3  # 128x64 frames - smaller
 		"skeleton_king":
-			preview_scale = 1.3  # 96x96 frames
+			preview_scale = 1.0  # 128x96 frames - adjusted for wider frame
 		"shardsoul_slayer":
 			preview_scale = 1.5  # 64x64 frames - smaller
 		"necromancer":

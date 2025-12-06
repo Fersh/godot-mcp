@@ -376,7 +376,7 @@ func get_overall_unlock_progress() -> float:
 	"""Returns 0.0-1.0 progress for overall unlocks."""
 	var total_princesses = 21
 	var total_difficulties = 7
-	var total_characters = 13  # Updated (4 characters commented out)
+	var total_characters = 15  # Updated (2 characters commented out: orc, cyclops)
 	var total_locked_abilities = get_total_locked_passives() + get_total_locked_actives() + get_total_locked_ultimates()
 	var total_elites = get_total_unique_elites()
 

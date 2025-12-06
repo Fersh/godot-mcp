@@ -54,6 +54,9 @@ enum AttackType {
 @export var vframes: int = 8
 @export var sprite_scale: Vector2 = Vector2(1.875, 1.875)
 @export var sprite_offset: Vector2 = Vector2(0, 0)  # Offset to center sprite if frames are off-center
+@export var use_left_facing_rows: bool = false  # If true, use row offset for left-facing instead of flip_h
+@export var left_facing_row_offset: int = 0  # Row offset to add when facing left
+@export var sprite_region: Rect2 = Rect2()  # If set (non-zero), use region_enabled with this rect
 
 # Animation row indices (0-indexed)
 @export_group("Animation Rows")
@@ -683,9 +686,14 @@ static func create_minotaur() -> CharacterData:
 	data.frame_size = Vector2(96, 96)
 	data.hframes = 10
 	data.vframes = 20
-	data.sprite_scale = Vector2(0.9, 0.9)
+	data.sprite_scale = Vector2(1.08, 1.08)  # 20% bigger than 0.9
+	# Use region_rect to clip sprite sheet to exact dimensions (prevents frame shifting)
+	data.sprite_region = Rect2(0, 0, 960, 1920)  # 10 cols * 96 = 960, 20 rows * 96 = 1920
+	# Uses left-facing rows (rows 10-19) instead of flip_h
+	data.use_left_facing_rows = true
+	data.left_facing_row_offset = 10
 
-	# Animation rows (uses left-facing rows via offset)
+	# Animation rows (right-facing, rows 0-9)
 	data.row_idle = 0
 	data.row_move = 1
 	data.row_attack = 3      # AOE slam
@@ -697,7 +705,7 @@ static func create_minotaur() -> CharacterData:
 	# Frame counts
 	data.frames_idle = 5
 	data.frames_move = 8
-	data.frames_attack = 10
+	data.frames_attack = 9  # Reduced from 10 - last frame was empty
 	data.frames_attack_up = 6
 	data.frames_attack_down = 6
 	data.frames_damage = 3
@@ -842,12 +850,13 @@ static func create_skeleton_king() -> CharacterData:
 	data.base_dodge_rate = 0.05
 	data.base_armor = 2
 
-	# Sprite config (Skeleton King: 9 cols x 7 rows, 96x96 frames)
-	# Player-sized (96x96 frames need ~0.9 scale for ~86px visual)
-	data.frame_size = Vector2(96, 96)
-	data.hframes = 9
+	# Sprite config (Skeleton King: 10 cols x 7 rows, 128x96 frames)
+	# Sprite sheet is 1280x672, with 10 columns of 128px wide frames (character centered within)
+	# Player-sized (make 15% bigger than 0.9 = 1.035)
+	data.frame_size = Vector2(128, 96)
+	data.hframes = 10
 	data.vframes = 7
-	data.sprite_scale = Vector2(0.9, 0.9)
+	data.sprite_scale = Vector2(1.035, 1.035)  # 15% bigger than 0.9
 
 	# Animation rows
 	data.row_idle = 0
@@ -1095,7 +1104,7 @@ static func create_ratfolk() -> CharacterData:
 	data.frames_death = 5
 
 	# Passive
-	data.passive_name = "Scurry"
-	data.passive_description = "After attacking, gain +20% dodge for 1s. Every 3rd attack deals double damage."
+	data.passive_name = "Scavenger"
+	data.passive_description = "Find 2x more health items from enemies."
 
 	return data

@@ -118,8 +118,9 @@ static func get_tier_for_time(game_time_seconds: float) -> int:
 
 # Static method to check if a potion should drop
 # Base 2% chance, with higher tiers having weighted chance at later times
-static func should_drop_potion(game_time_seconds: float) -> Dictionary:
-	var base_chance = 0.02  # 2% base
+# drop_multiplier increases the chance (e.g., 2.0 = 2x more likely)
+static func should_drop_potion(game_time_seconds: float, drop_multiplier: float = 1.0) -> Dictionary:
+	var base_chance = 0.02 * drop_multiplier  # 2% base, modified by multiplier
 
 	# Determine max tier available
 	var max_tier = get_tier_for_time(game_time_seconds)

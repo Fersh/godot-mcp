@@ -118,10 +118,10 @@ func _init_characters() -> void:
 	#orc.sprite_texture = orc_texture
 	#characters["orc"] = orc
 
-	# Create minotaur - The Bullsh*t (COMMENTED OUT)
-	#var minotaur = CharacterData.create_minotaur()
-	#minotaur.sprite_texture = minotaur_texture
-	#characters["minotaur"] = minotaur
+	# Create minotaur - The Bullsh*t
+	var minotaur = CharacterData.create_minotaur()
+	minotaur.sprite_texture = minotaur_texture
+	characters["minotaur"] = minotaur
 
 	# Create cyclops - The One Eyed Monster (COMMENTED OUT)
 	#var cyclops = CharacterData.create_cyclops()
@@ -133,10 +133,10 @@ func _init_characters() -> void:
 	lizardfolk_king.sprite_texture = lizardfolk_king_texture
 	characters["lizardfolk_king"] = lizardfolk_king
 
-	# Create skeleton king - The Leech King (COMMENTED OUT)
-	#var skeleton_king = CharacterData.create_skeleton_king()
-	#skeleton_king.sprite_texture = skeleton_king_texture
-	#characters["skeleton_king"] = skeleton_king
+	# Create skeleton king - The Leech King
+	var skeleton_king = CharacterData.create_skeleton_king()
+	skeleton_king.sprite_texture = skeleton_king_texture
+	characters["skeleton_king"] = skeleton_king
 
 	# Create shardsoul slayer - The Reaper
 	var shardsoul_slayer = CharacterData.create_shardsoul_slayer()
@@ -379,12 +379,9 @@ func get_passive_bonuses() -> Dictionary:
 			bonuses["corruption_damage_reduction"] = 0.03  # Enemies deal 3% less per stack
 
 		"ratfolk":
-			# Scurry: +20% dodge after attacking, every 3rd attack deals double damage
-			bonuses["has_scurry"] = 1.0
-			bonuses["scurry_dodge_bonus"] = 0.20  # +20% dodge after attack
-			bonuses["scurry_duration"] = 1.0  # 1 second duration
-			bonuses["scurry_combo_hits"] = 3  # Every 3rd hit
-			bonuses["scurry_combo_damage"] = 2.0  # Double damage on combo hit
+			# Scavenger: Find 2x more health items
+			bonuses["has_scavenger"] = 1.0
+			bonuses["health_drop_multiplier"] = 2.0  # 2x health item drops
 
 	return bonuses
 

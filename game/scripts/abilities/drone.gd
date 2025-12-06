@@ -20,6 +20,9 @@ var current_target: Node2D = null
 @onready var player: Node2D = null
 
 func _ready() -> void:
+	# Add to minions group for summon tracking
+	add_to_group("minions")
+
 	player = get_tree().get_first_node_in_group("player")
 
 	# Offset based on index
@@ -100,6 +103,10 @@ func fire_at(target: Node2D) -> void:
 	# Deal damage
 	if target.has_method("take_damage"):
 		target.take_damage(damage)
+
+	# Try to draw aggro from the enemy we attacked
+	if target.has_method("draw_aggro"):
+		target.draw_aggro(self)
 
 	# Fade out line
 	var tween = create_tween()

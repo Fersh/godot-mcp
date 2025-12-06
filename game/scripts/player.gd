@@ -169,6 +169,10 @@ var animation_frame: float = 0.0
 # Sprite offset (for off-center sprites like beast)
 var base_sprite_offset: Vector2 = Vector2.ZERO
 
+# Left-facing row support (for sprites with separate left-facing rows like minotaur)
+var use_left_facing_rows: bool = false
+var left_facing_row_offset: int = 0
+
 # Combat
 var attack_timer: float = 0.0
 var is_attacking: bool = false
@@ -337,6 +341,17 @@ func _load_character_data() -> void:
 		sprite.offset = base_sprite_offset
 		# Prevent texture bleeding between sprite sheet frames
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		# Use region_rect if specified (for sprite sheets with extra pixels beyond expected dimensions)
+		if character_data.sprite_region.size.x > 0 and character_data.sprite_region.size.y > 0:
+			sprite.region_enabled = true
+			sprite.region_rect = character_data.sprite_region
+
+	# Setup left-facing row support (for sprites like minotaur with separate left-facing rows)
+	use_left_facing_rows = character_data.use_left_facing_rows
+	left_facing_row_offset = character_data.left_facing_row_offset
+	# For sprites with left-facing rows, ensure flip_h is never used
+	if use_left_facing_rows and sprite:
+		sprite.flip_h = false
 
 	# Setup animation rows
 	row_idle = character_data.row_idle
@@ -848,8 +863,11 @@ func _physics_process(delta: float) -> void:
 		# Flip direction rapidly for frantic attack animation
 		if bladestorm_flip_timer >= BLADESTORM_FLIP_SPEED:
 			bladestorm_flip_timer = 0.0
-			sprite.flip_h = not sprite.flip_h
 			facing_right = not facing_right
+			# For sprites with left-facing rows (like minotaur), toggle facing direction only
+			# For other sprites, use flip_h for the visual effect
+			if not use_left_facing_rows:
+				sprite.flip_h = not sprite.flip_h
 		# End bladestorm when timer expires
 		if bladestorm_timer <= 0:
 			stop_bladestorm_animation()
@@ -1019,6 +1037,10 @@ func _physics_process(delta: float) -> void:
 			elif active_buffs.has("combo_master"):
 				active_buffs.erase("combo_master")
 				buffs_changed = true
+
+	# Update summons buff (tracks all minions from any source)
+	if _update_summons_buff():
+		buffs_changed = true
 
 	if buffs_changed:
 		emit_signal("buff_changed", active_buffs)
@@ -1195,7 +1217,9 @@ func try_attack() -> void:
 		# Update facing direction
 		if attack_direction.x != 0:
 			facing_right = attack_direction.x > 0
-			sprite.flip_h = not facing_right
+			# Use row offset for sprites with left-facing rows (like minotaur), otherwise use flip_h
+			if not use_left_facing_rows:
+				sprite.flip_h = not facing_right
 
 		var enemy_dist = global_position.distance_to(closest_enemy.global_position)
 
@@ -2176,7 +2200,9 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 		# Update facing based on movement when not attacking
 		if move_direction.x != 0:
 			facing_right = move_direction.x > 0
-			sprite.flip_h = not facing_right
+			# Use row offset for sprites with left-facing rows (like minotaur), otherwise use flip_h
+			if not use_left_facing_rows:
+				sprite.flip_h = not facing_right
 	else:
 		target_row = row_idle
 
@@ -2198,8 +2224,13 @@ func update_animation(delta: float, move_direction: Vector2) -> void:
 	# Clamp animation frame to valid range to prevent empty frames
 	var clamped_frame = mini(int(animation_frame), max_frames - 1)
 
+	# Calculate actual row (add offset for left-facing sprites like minotaur)
+	var actual_row = current_row
+	if use_left_facing_rows and not facing_right:
+		actual_row += left_facing_row_offset
+
 	# Set the sprite frame
-	sprite.frame = current_row * cols_per_row + clamped_frame
+	sprite.frame = actual_row * cols_per_row + clamped_frame
 
 	# Apply sprite offset (for off-center sprites like beast)
 	# When sprite is flipped, we need to negate X offset to keep character centered
@@ -2786,10 +2817,12 @@ func dash_toward(target_pos: Vector2) -> void:
 	# Update facing direction
 	if direction.x > 0:
 		facing_right = true
-		sprite.flip_h = false
+		if not use_left_facing_rows:
+			sprite.flip_h = false
 	elif direction.x < 0:
 		facing_right = false
-		sprite.flip_h = true
+		if not use_left_facing_rows:
+			sprite.flip_h = true
 
 	# Create tween for smooth dash movement
 	var tween = create_tween()
@@ -2818,11 +2851,11 @@ func dash(direction: Vector2, distance: float, duration: float = 0.2) -> void:
 	# Update facing direction based on dash direction
 	if direction.x > 0.1:
 		facing_right = true
-		if sprite:
+		if sprite and not use_left_facing_rows:
 			sprite.flip_h = false
 	elif direction.x < -0.1:
 		facing_right = false
-		if sprite:
+		if sprite and not use_left_facing_rows:
 			sprite.flip_h = true
 
 	# Create tween for smooth dash movement
@@ -2937,10 +2970,12 @@ func _perform_flow_dash(target_pos: Vector2) -> void:
 	# Update facing direction
 	if direction.x > 0:
 		facing_right = true
-		sprite.flip_h = false
+		if not use_left_facing_rows:
+			sprite.flip_h = false
 	elif direction.x < 0:
 		facing_right = false
-		sprite.flip_h = true
+		if not use_left_facing_rows:
+			sprite.flip_h = true
 
 	# Create tween for smooth dash movement
 	var tween = create_tween()
@@ -3066,6 +3101,32 @@ func _summon_skeleton() -> void:
 	# Auto-cleanup particles
 	var timer = get_tree().create_timer(1.0)
 	timer.timeout.connect(particles.queue_free)
+
+func _update_summons_buff() -> bool:
+	"""Update the summons buff display showing total active minions. Returns true if changed."""
+	# Count all minions from the "minions" group
+	var minions = get_tree().get_nodes_in_group("minions")
+	var valid_count = 0
+	for minion in minions:
+		if is_instance_valid(minion):
+			valid_count += 1
+
+	var changed = false
+	if valid_count > 0:
+		var new_name = "Summons x" + str(valid_count)
+		if not active_buffs.has("summons") or active_buffs["summons"].name != new_name:
+			active_buffs["summons"] = {
+				"timer": -1,  # No timer, based on active minions
+				"duration": -1,
+				"name": new_name,
+				"description": str(valid_count) + " minion" + ("s" if valid_count > 1 else "") + " active",
+				"color": Color(0.5, 0.9, 0.5)  # Green for summons
+			}
+			changed = true
+	elif active_buffs.has("summons"):
+		active_buffs.erase("summons")
+		changed = true
+	return changed
 
 # ============================================
 # RANGER HEARTSEEKER SYSTEM

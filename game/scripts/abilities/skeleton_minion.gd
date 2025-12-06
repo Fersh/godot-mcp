@@ -5,8 +5,8 @@ extends Node2D
 
 var owner_player: Node2D = null
 var health: float = 30.0
-var damage: float = 10.0
-var speed: float = 150.0
+var damage: float = 8.0  # Reduced 20%
+var speed: float = 120.0  # Reduced 20%
 var attack_range: float = 40.0
 var attack_cooldown: float = 1.0
 var attack_timer: float = 0.0
@@ -14,6 +14,8 @@ var lifetime: float = 5.0  # 5 second duration
 var current_target: Node2D = null
 
 var sprite: Sprite2D = null
+var health_bar: Node2D = null
+var max_health: float = 30.0
 
 # Animation system (matching enemy_skeleton.gd)
 var animation_speed: float = 10.0
@@ -45,6 +47,9 @@ const FRAME_COUNTS = {
 }
 
 func _ready() -> void:
+	# Add to minions group for aggro system
+	add_to_group("minions")
+
 	# Use the skeleton enemy sprite
 	sprite = Sprite2D.new()
 	if ResourceLoader.exists("res://assets/sprites/SkeletalWarrior_Sprites.png"):
@@ -52,10 +57,20 @@ func _ready() -> void:
 		sprite.hframes = 10
 		sprite.vframes = 10
 		sprite.frame = 0
-		sprite.scale = Vector2(2.0, 2.0)
-		# Add a green tint to distinguish from enemy skeletons
-		sprite.modulate = Color(0.7, 1.0, 0.7, 1.0)
+		sprite.scale = Vector2(1.8, 1.8)  # Reduced 10%
+		# Add a yellow tint to distinguish from enemy skeletons
+		sprite.modulate = Color(1.0, 1.0, 0.5, 1.0)
 	add_child(sprite)
+
+	# Add health bar
+	var health_bar_scene = load("res://scenes/health_bar.tscn")
+	if health_bar_scene:
+		health_bar = health_bar_scene.instantiate()
+		health_bar.bar_width = 30.0  # Smaller bar for minion
+		health_bar.bar_height = 5.0
+		health_bar.offset_y = -35.0  # Position above sprite
+		add_child(health_bar)
+		health_bar.set_health(health, max_health)
 
 func _process(delta: float) -> void:
 	if is_dying:
@@ -160,6 +175,10 @@ func attack() -> void:
 	if current_target and current_target.has_method("take_damage"):
 		current_target.take_damage(damage)
 
+		# Try to draw aggro from the enemy we attacked
+		if current_target.has_method("draw_aggro"):
+			current_target.draw_aggro(self)
+
 	# Attack visual - bone slash
 	var slash = Line2D.new()
 	slash.add_point(global_position)
@@ -175,12 +194,16 @@ func attack() -> void:
 func take_damage(amount: float) -> void:
 	health -= amount
 
+	# Update health bar
+	if health_bar:
+		health_bar.set_health(health, max_health)
+
 	# Flash red on damage
 	if sprite:
 		sprite.modulate = Color(1, 0.5, 0.5, 1)
 		var tween = create_tween()
-		# Reset to green tint (friendly skeleton)
-		tween.tween_property(sprite, "modulate", Color(0.7, 1.0, 0.7, 1.0), 0.1)
+		# Reset to yellow tint (friendly skeleton)
+		tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 0.5, 1.0), 0.1)
 
 	if health <= 0:
 		die()
@@ -192,6 +215,10 @@ func die() -> void:
 	is_dying = true
 	current_row = ROW_DEATH
 	animation_frame = 0.0
+
+	# Hide health bar when dying
+	if health_bar:
+		health_bar.visible = false
 
 func spawn_death_particles() -> void:
 	# Death effect - bone fragments

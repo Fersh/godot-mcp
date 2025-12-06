@@ -29,6 +29,13 @@ var died_from_ability: bool = false  # Track ability kills for flying head effec
 var attack_timer: float = 0.0
 var can_attack: bool = true
 
+# Aggro system - allows minions to draw attention
+var current_target: Node2D = null  # Can be player or minion
+var aggro_target: Node2D = null  # Minion that drew aggro
+var aggro_timer: float = 0.0
+const AGGRO_DURATION: float = 3.0  # How long to chase a minion
+const AGGRO_CHANCE: float = 0.5  # 50% chance to aggro on minion that attacks
+
 # Attack wind-up system
 var is_winding_up: bool = false
 var windup_timer: float = 0.0
@@ -211,6 +218,9 @@ func _physics_process(delta: float) -> void:
 		return
 	handle_status_effects(delta)
 
+	# Update aggro system
+	_update_aggro(delta)
+
 	# Apply status effect tint continuously (must run every frame)
 	if is_burning or is_poisoned or is_slowed or is_stunned or is_frozen or is_bleeding or is_shocked:
 		_update_status_modulate()
@@ -236,12 +246,15 @@ func _physics_process(delta: float) -> void:
 
 # Override in subclasses for custom AI behavior
 func _process_behavior(delta: float) -> void:
-	if player and is_instance_valid(player):
-		var to_player = player.global_position - global_position
-		var distance = to_player.length()
+	# Use current_target (can be player or aggro'd minion)
+	var target = current_target if current_target and is_instance_valid(current_target) else player
+
+	if target and is_instance_valid(target):
+		var to_target = target.global_position - global_position
+		var distance = to_target.length()
 
 		if distance > attack_range:
-			var direction = to_player.normalized()
+			var direction = to_target.normalized()
 
 			# Check if we're stuck (not moving despite trying)
 			var movement_distance = global_position.distance_to(last_position)
@@ -267,7 +280,7 @@ func _process_behavior(delta: float) -> void:
 			# Apply movement with optional avoidance
 			var move_direction: Vector2
 			if is_avoiding:
-				# Blend avoidance direction with player direction for smoother pathing
+				# Blend avoidance direction with target direction for smoother pathing
 				move_direction = (avoidance_direction * 0.7 + direction * 0.3).normalized()
 			else:
 				move_direction = direction
@@ -275,12 +288,12 @@ func _process_behavior(delta: float) -> void:
 			velocity = move_direction * speed
 			move_and_slide()
 			last_position = global_position
-			update_animation(delta, ROW_MOVE, direction)  # Always face player
+			update_animation(delta, ROW_MOVE, direction)  # Always face target
 		else:
 			velocity = Vector2.ZERO
 			stuck_timer = 0.0
 			is_avoiding = false
-			update_animation(delta, ROW_ATTACK, to_player.normalized())
+			update_animation(delta, ROW_ATTACK, to_target.normalized())
 			if can_attack:
 				start_attack()
 	else:
@@ -331,6 +344,18 @@ func start_attack() -> void:
 
 # Override in subclasses for ranged attacks, etc.
 func _on_attack_complete() -> void:
+	# Determine attack target (minion or player)
+	var target = current_target if current_target and is_instance_valid(current_target) else player
+
+	# Attack minion if that's our target
+	if target and target != player and target.has_method("take_damage"):
+		var dist_to_target = global_position.distance_to(target.global_position)
+		if dist_to_target <= attack_range * 1.0:
+			target.take_damage(attack_damage)
+			can_attack = false
+			return
+
+	# Attack player
 	if player and is_instance_valid(player) and player.has_method("take_damage"):
 		var dist_to_player = global_position.distance_to(player.global_position)
 		if dist_to_player <= attack_range * 1.0:  # Exact range check
@@ -423,6 +448,39 @@ func handle_windup(delta: float) -> bool:
 			_on_attack_complete()
 		return true
 	return false
+
+# ============================================
+# AGGRO SYSTEM - Minions can draw enemy attention
+# ============================================
+
+func _update_aggro(delta: float) -> void:
+	"""Update aggro timer and current target."""
+	if aggro_timer > 0:
+		aggro_timer -= delta
+		if aggro_timer <= 0:
+			# Aggro expired, go back to player
+			aggro_target = null
+			current_target = player
+
+	# Validate current target
+	if current_target and not is_instance_valid(current_target):
+		current_target = player
+		aggro_target = null
+		aggro_timer = 0.0
+
+func draw_aggro(minion: Node2D) -> void:
+	"""Called when a minion attacks this enemy. May cause enemy to target the minion."""
+	if is_dying:
+		return
+
+	# Only have a chance to aggro
+	if randf() > AGGRO_CHANCE:
+		return
+
+	# Set the minion as our target
+	aggro_target = minion
+	current_target = minion
+	aggro_timer = AGGRO_DURATION
 
 func take_damage(amount: float, is_critical: bool = false) -> void:
 	if is_dying:
@@ -891,9 +949,16 @@ func try_drop_health_potion() -> void:
 	if stats and "time_survived" in stats:
 		game_time = stats.time_survived
 
+	# Check for player's health drop multiplier (Ratfolk Scavenger passive)
+	var drop_multiplier: float = 1.0
+	if CharacterManager:
+		var bonuses = CharacterManager.get_character_bonuses()
+		if bonuses.get("has_scavenger", 0) > 0:
+			drop_multiplier = bonuses.get("health_drop_multiplier", 1.0)
+
 	# Use the static method from health_potion script to check drop
 	var HealthPotion = load("res://scripts/health_potion.gd")
-	var drop_result = HealthPotion.should_drop_potion(game_time)
+	var drop_result = HealthPotion.should_drop_potion(game_time, drop_multiplier)
 
 	if not drop_result.drop:
 		return
