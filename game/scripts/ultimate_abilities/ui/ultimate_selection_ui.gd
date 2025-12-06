@@ -31,6 +31,7 @@ var roll_tick_timers: Array[float] = []
 @onready var choices_container: HBoxContainer
 
 var pixel_font: Font = null
+var desc_font: Font = null
 
 func _ready() -> void:
 	visible = false
@@ -40,6 +41,8 @@ func _ready() -> void:
 
 	if ResourceLoader.exists("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"):
 		pixel_font = load("res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf")
+	if ResourceLoader.exists("res://assets/fonts/Quicksand/static/Quicksand-Regular.ttf"):
+		desc_font = load("res://assets/fonts/Quicksand/static/Quicksand-Regular.ttf")
 
 	_create_ui()
 
@@ -253,12 +256,12 @@ func _create_ultimate_card(ultimate: UltimateAbilityData, index: int) -> Button:
 	# Cooldown info
 	var cooldown_label = Label.new()
 	cooldown_label.name = "CooldownLabel"
-	cooldown_label.text = "Cooldown: " + str(int(ultimate.cooldown)) + "s"
+	cooldown_label.text = str(int(ultimate.cooldown)) + "s cooldown"
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 12)
+	cooldown_label.add_theme_font_size_override("font_size", 14)
 	cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.55, 0.4))
-	if pixel_font:
-		cooldown_label.add_theme_font_override("font", pixel_font)
+	if desc_font:
+		cooldown_label.add_theme_font_override("font", desc_font)
 	vbox.add_child(cooldown_label)
 
 	# Bottom spacer
@@ -370,7 +373,7 @@ func _update_card_content(button: Button, ultimate: UltimateAbilityData) -> void
 	# Update cooldown (child 4)
 	var cooldown_label = vbox.get_child(4) as Label
 	if cooldown_label:
-		cooldown_label.text = "Cooldown: " + str(int(ultimate.cooldown)) + "s"
+		cooldown_label.text = str(int(ultimate.cooldown)) + "s cooldown"
 
 func _on_ultimate_selected(index: int) -> void:
 	if is_rolling:

@@ -437,10 +437,10 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	upgradeable_label.name = "UpgradeableLabel"
 	upgradeable_label.text = "Upgradeable"
 	upgradeable_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	upgradeable_label.add_theme_font_size_override("font_size", 12)
+	upgradeable_label.add_theme_font_size_override("font_size", 14)
 	upgradeable_label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))  # Green
-	if pixel_font:
-		upgradeable_label.add_theme_font_override("font", pixel_font)
+	if desc_font:
+		upgradeable_label.add_theme_font_override("font", desc_font)
 	# Only show for base abilities that are part of a tree
 	upgradeable_label.visible = not ability.is_upgrade() and AbilityTreeRegistry.is_ability_in_tree(ability.id)
 	vbox.add_child(upgradeable_label)
@@ -448,12 +448,12 @@ func _create_ability_card(ability: ActiveAbilityData, index: int) -> Button:
 	# Cooldown info
 	var cooldown_label = Label.new()
 	cooldown_label.name = "CooldownLabel"
-	cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
+	cooldown_label.text = str(int(ability.cooldown)) + "s cooldown"
 	cooldown_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cooldown_label.add_theme_font_size_override("font_size", 12)
+	cooldown_label.add_theme_font_size_override("font_size", 14)
 	cooldown_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-	if pixel_font:
-		cooldown_label.add_theme_font_override("font", pixel_font)
+	if desc_font:
+		cooldown_label.add_theme_font_override("font", desc_font)
 	vbox.add_child(cooldown_label)
 
 	# Bottom spacer
@@ -827,7 +827,7 @@ func _update_card_content(button: Button, ability: ActiveAbilityData, is_final_r
 	# Update cooldown (child 6)
 	var cooldown_label = vbox.get_child(6) as Label
 	if cooldown_label:
-		cooldown_label.text = "Cooldown: " + str(int(ability.cooldown)) + "s"
+		cooldown_label.text = str(int(ability.cooldown)) + "s cooldown"
 
 	# Update particle container - only show on final reveal
 	var particle_container = button.get_node_or_null("ParticleContainer") as Control

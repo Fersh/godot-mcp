@@ -383,10 +383,10 @@ func _create_tooltip() -> void:
 	var cd_label = Label.new()
 	cd_label.name = "CooldownLabel"
 	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cd_label.add_theme_font_size_override("font_size", 12)
+	cd_label.add_theme_font_size_override("font_size", 14)
 	cd_label.add_theme_color_override("font_color", Color(0.7, 0.6, 0.4))
-	if pixel_font:
-		cd_label.add_theme_font_override("font", pixel_font)
+	if desc_font:
+		cd_label.add_theme_font_override("font", desc_font)
 	vbox.add_child(cd_label)
 
 	add_child(tooltip_panel)
@@ -409,7 +409,7 @@ func _update_tooltip_content() -> void:
 	if desc_label:
 		desc_label.text = DescriptionFormatter.format(ultimate.description)
 	if cd_label:
-		cd_label.text = "Cooldown: " + str(int(ultimate.cooldown)) + "s"
+		cd_label.text = str(int(ultimate.cooldown)) + "s cooldown"
 
 func _show_tooltip() -> void:
 	if tooltip_visible or not has_ultimate:

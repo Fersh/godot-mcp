@@ -656,10 +656,10 @@ func _create_tooltip() -> void:
 	var cd_label = Label.new()
 	cd_label.name = "CooldownLabel"
 	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cd_label.add_theme_font_size_override("font_size", 12)
+	cd_label.add_theme_font_size_override("font_size", 14)
 	cd_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-	if pixel_font:
-		cd_label.add_theme_font_override("font", pixel_font)
+	if desc_font:
+		cd_label.add_theme_font_override("font", desc_font)
 	vbox.add_child(cd_label)
 
 	# Add tooltip to button
@@ -707,7 +707,7 @@ func _update_tooltip_content() -> void:
 		if desc_label:
 			desc_label.text = DescriptionFormatter.format("Quickly dash backward away from the nearest enemy. Brief invulnerability during the dodge.")
 		if cd_label:
-			cd_label.text = "5s Cooldown"
+			cd_label.text = "5s cooldown"
 
 		# Update border color
 		var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
@@ -740,7 +740,7 @@ func _update_tooltip_content() -> void:
 		if desc_label:
 			desc_label.text = DescriptionFormatter.format(ability.description)
 		if cd_label:
-			cd_label.text = str(int(ability.cooldown)) + "s Cooldown"
+			cd_label.text = str(int(ability.cooldown)) + "s cooldown"
 
 		# Update border color
 		var style = tooltip_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
